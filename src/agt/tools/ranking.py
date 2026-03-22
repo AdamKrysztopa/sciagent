@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import math
 import re
 from datetime import date
 
@@ -55,15 +56,38 @@ def deduplicate_papers(papers: list[NormalizedPaper]) -> list[NormalizedPaper]:
 
 
 def compute_rank_score(paper: NormalizedPaper, *, current_year: int | None = None) -> float:
-    """Apply the AGT-6 scoring formula with safe handling for missing fields."""
+    """Compute normalized quality score using relevance, impact, and recency signals."""
 
     active_year = current_year if current_year is not None else date.today().year
-    semantic = paper.semantic_score
-    year_term = 0.0
+
+    raw_semantic = max(0.0, paper.semantic_score)
+    if raw_semantic <= 1.0:
+        semantic = raw_semantic
+    else:
+        semantic = min(1.0, math.log1p(raw_semantic) / math.log(101.0))
+
+    citation_signal = min(1.0, math.log1p(max(0, paper.citation_count)) / math.log(1001.0))
+    influential_signal = min(
+        1.0, math.log1p(max(0, paper.influential_citation_count)) / math.log(251.0)
+    )
+
+    recency = 0.0
     if paper.year is not None:
-        year_term = (active_year - paper.year) * -0.3
-    open_access_bonus = 0.2 if paper.open_access else 0.0
-    return semantic * 0.7 + year_term + open_access_bonus
+        age = max(0, active_year - paper.year)
+        recency = max(0.0, 1.0 - min(age, 20) / 20.0)
+
+    abstract_bonus = 0.05 if paper.abstract and paper.abstract.strip() else 0.0
+    open_access_bonus = 0.03 if paper.open_access else 0.0
+
+    score = (
+        semantic * 0.45
+        + citation_signal * 0.30
+        + influential_signal * 0.10
+        + recency * 0.12
+        + abstract_bonus
+        + open_access_bonus
+    )
+    return score * 100.0
 
 
 def rank_and_index_papers(

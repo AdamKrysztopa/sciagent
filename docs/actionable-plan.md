@@ -181,6 +181,8 @@ Status: **In Progress** — P0 slice implemented; builds on M2 foundation and re
 - [x] S2.5-2b exclude-keyword parsing and enforcement implemented in [src/agt/tools/query_constraints.py](../src/agt/tools/query_constraints.py) (`not about`, `excluding`, `but not`; title/abstract filtering).
 - [x] S2.5-2c date-range window parsing implemented in [src/agt/tools/query_constraints.py](../src/agt/tools/query_constraints.py) (`between YYYY and YYYY`, `from YYYY to YYYY`).
 - [x] S2.5-3c dynamic year penalty implemented in [src/agt/tools/ranking.py](../src/agt/tools/ranking.py) using `datetime.date.today().year`.
+- [x] Retrieval default changed to semantic-first query execution in [src/agt/tools/search_papers.py](../src/agt/tools/search_papers.py): raw user query (or LLM rewrite) is now primary, with regex mode retained only as a fallback.
+- [x] Ranking quality upgraded in [src/agt/tools/ranking.py](../src/agt/tools/ranking.py) to combine normalized semantic relevance, citation counts, influential citations, recency, abstract presence, and open-access signal.
 - [x] S2.5-4a dedicated OpenAlex tests added in [tests/test_openalex.py](../tests/test_openalex.py) (5 tests).
 - [x] S2.5-4b dedicated Crossref tests added in [tests/test_crossref.py](../tests/test_crossref.py) (5 tests).
 - [x] PubMed and Europe PMC test coverage added in [tests/test_pubmed.py](../tests/test_pubmed.py) and [tests/test_europe_pmc.py](../tests/test_europe_pmc.py).

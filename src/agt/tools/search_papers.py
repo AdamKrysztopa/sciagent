@@ -46,7 +46,14 @@ async def _fetch_from_sources(
         retries=settings.semantic_scholar_retries,
     )
     try:
-        results.extend(await semantic_client.search(query=query, limit=limit))
+        results.extend(
+            await semantic_client.search(
+                query=query,
+                limit=limit,
+                year_min=constraints.year.min_year,
+                year_max=constraints.year.max_year,
+            )
+        )
     except Exception as exc:  # pragma: no cover - handled by integration behavior
         failures.append(f"semantic_scholar: {exc}")
 
@@ -146,7 +153,7 @@ async def search_papers(  # noqa: PLR0912
     fetch_limit = min(capped_limit * _OVER_FETCH_MULTIPLIER, _MAX_FETCH_LIMIT)
 
     regex_query = _build_regex_query(constraints, query)
-    retrieval_query = regex_query
+    retrieval_query = query
     topic = ""
 
     # --- LLM query rewriting ---
@@ -156,7 +163,8 @@ async def search_papers(  # noqa: PLR0912
             retrieval_query = rewritten.search_query
             topic = rewritten.topic
         except Exception:
-            pass  # fall back to regex query
+            retrieval_query = query
+            topic = ""
 
     # --- Primary search ---
     results, failures = await _fetch_from_sources(

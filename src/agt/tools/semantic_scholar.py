@@ -17,7 +17,10 @@ class SemanticScholarResponseError(RuntimeError):
 class SemanticScholarClient:
     """Small bounded client for Semantic Scholar Graph API."""
 
-    _fields = "title,year,abstract,url,isOpenAccess,authors,externalIds,score,citationCount"
+    _fields = (
+        "title,year,abstract,url,isOpenAccess,authors,externalIds,"
+        "score,citationCount,influentialCitationCount"
+    )
 
     def __init__(
         self,
@@ -32,7 +35,14 @@ class SemanticScholarClient:
         self._retries = retries
         self._base_url = base_url.rstrip("/")
 
-    async def search(self, query: str, *, limit: int) -> list[NormalizedPaper]:
+    async def search(
+        self,
+        query: str,
+        *,
+        limit: int,
+        year_min: int | None = None,
+        year_max: int | None = None,
+    ) -> list[NormalizedPaper]:
         """Search papers and normalize into internal model list."""
 
         if not query.strip():
@@ -42,13 +52,19 @@ class SemanticScholarClient:
         if self._api_key:
             headers["x-api-key"] = self._api_key
 
+        params: dict[str, str] = {
+            "query": query,
+            "limit": str(limit),
+            "fields": self._fields,
+        }
+        if year_min is not None or year_max is not None:
+            lower = str(year_min) if year_min is not None else ""
+            upper = str(year_max) if year_max is not None else ""
+            params["year"] = f"{lower}-{upper}"
+
         response_data = await self._request_json(
             path="/paper/search",
-            params={
-                "query": query,
-                "limit": str(limit),
-                "fields": self._fields,
-            },
+            params=params,
             headers=headers,
         )
 
@@ -160,6 +176,11 @@ class SemanticScholarClient:
         if isinstance(raw_citations, int):
             citation_count = max(0, raw_citations)
 
+        influential_citation_count = 0
+        raw_influential = item.get("influentialCitationCount")
+        if isinstance(raw_influential, int):
+            influential_citation_count = max(0, raw_influential)
+
         open_access = bool(item.get("isOpenAccess") is True)
 
         return NormalizedPaper(
@@ -173,5 +194,6 @@ class SemanticScholarClient:
             source="semantic_scholar",
             semantic_score=semantic_score,
             citation_count=citation_count,
+            influential_citation_count=influential_citation_count,
             open_access=open_access,
         )

@@ -21,6 +21,7 @@ class NormalizedPaper(BaseModel):
     index: int | None = None
     semantic_score: float = 0.0
     citation_count: int = 0
+    influential_citation_count: int = 0
     open_access: bool = False
     summary: str | None = None
     score: float = 0.0

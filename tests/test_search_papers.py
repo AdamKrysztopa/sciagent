@@ -15,9 +15,18 @@ from agt.tools.semantic_scholar import SemanticScholarResponseError
 class _FakeClient:
     papers: list[NormalizedPaper]
 
-    async def search(self, query: str, *, limit: int) -> list[NormalizedPaper]:
+    async def search(
+        self,
+        query: str,
+        *,
+        limit: int,
+        year_min: int | None = None,
+        year_max: int | None = None,
+    ) -> list[NormalizedPaper]:
         _ = query
         _ = limit
+        _ = year_min
+        _ = year_max
         return self.papers
 
 
@@ -103,8 +112,17 @@ async def test_search_papers_applies_constraints_and_keyword_query(
     captured_queries: list[str] = []
 
     class _CapturingClient:
-        async def search(self, query: str, *, limit: int) -> list[NormalizedPaper]:
+        async def search(
+            self,
+            query: str,
+            *,
+            limit: int,
+            year_min: int | None = None,
+            year_max: int | None = None,
+        ) -> list[NormalizedPaper]:
             _ = limit
+            _ = year_min
+            _ = year_max
             captured_queries.append(query)
             return papers
 
@@ -144,9 +162,18 @@ async def test_search_papers_raises_when_all_sources_fail(
     })
 
     class _FailClient:
-        async def search(self, query: str, *, limit: int) -> list[NormalizedPaper]:
+        async def search(
+            self,
+            query: str,
+            *,
+            limit: int,
+            year_min: int | None = None,
+            year_max: int | None = None,
+        ) -> list[NormalizedPaper]:
             _ = query
             _ = limit
+            _ = year_min
+            _ = year_max
             raise RuntimeError("boom")
 
     def _fail_factory(**kwargs: object) -> _FailClient:
