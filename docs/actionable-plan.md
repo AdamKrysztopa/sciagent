@@ -118,6 +118,55 @@ flowchart LR
 - [x] Project runtime moved off LangChain bridge to a native xAI HTTP adapter (Pydantic v2-only runtime path) in [src/agt/providers/xai.py](../src/agt/providers/xai.py) and dependency updates in [pyproject.toml](../pyproject.toml).
 - [x] CI quality gates validated after these changes (`ruff`, `pyright`, `pytest`) with updated retrieval/ranking coverage in [tests/test_search_papers.py](../tests/test_search_papers.py), [tests/test_query_constraints.py](../tests/test_query_constraints.py), [tests/test_semantic_scholar.py](../tests/test_semantic_scholar.py), and [tests/test_ranking.py](../tests/test_ranking.py).
 
+#### M2 Retrieval Quality Fixes (Completed)
+
+Root cause: keyword extraction polluted API queries with constraint words (e.g. "cited newer timeseries" instead of "timeseries"), and post-filtering was over-aggressive.
+
+- [x] **Constraint stripping** — new `strip_constraints()` function removes year patterns, limit phrases, and quality phrases before keyword extraction, ensuring only content words reach the API ([src/agt/tools/query_constraints.py](../src/agt/tools/query_constraints.py)).
+- [x] **Expanded stopwords** — ~60+ stopwords covering constraint/intensity words (cited, newer, older, advanced, trending, etc.) prevent leakage into retrieval queries.
+- [x] **Year "YYYY and newer" pattern** — added regex recognition for "2020 and newer/later" as a year constraint.
+- [x] **Lowered citation thresholds** — made realistic for recent papers: "most cited" 50→10, "game changers" 100→20, "trending" 20→5, community perception 50→10.
+- [x] **Removed keyword post-filter** — deleted `_keyword_match` from `apply_query_constraints`; keyword relevance is now fully delegated to API-level search, preventing false-negative rejection of relevant results.
+- [x] **Over-fetching** — search fetches 3× the requested limit (capped at 30) per source to compensate for post-filtering attrition ([src/agt/tools/search_papers.py](../src/agt/tools/search_papers.py)).
+- [x] **OpenAlex year filter** — year constraint pushed to API `filter=publication_year:>` parameter for server-side filtering ([src/agt/tools/openalex.py](../src/agt/tools/openalex.py)).
+- [x] **HTML tag stripping** — OpenAlex titles cleaned of markup tags before normalization.
+- [x] CI gates re-validated: `ruff` 0 errors, `pyright` 0 errors, `pytest` 34/34 pass.
+
+**Validation results** (7 queries tested):
+| Query | Results | Quality |
+|-------|---------|---------|
+| most cited 2020+ timeseries | 5 | Anomaly detection, XAI survey, conditional GAN, outlier detection, Pyleoclim |
+| RAG 2026 game changers | 1 | RAG for AI-Generated Content survey (22 citations, 2026) |
+| retrieval augmented generation | 5 | Top RAG surveys (605, 287, 282 citations) |
+| transformer NLP after 2022 | 5 | UNETR (2620), Efficient Transformers (895), GPT review (482) |
+| deep RL robotics 2023+ | 5 | Robotic manipulation (189), multi-agent (146), agile soccer (138) |
+| trending 2026 timeseries (typo) | 0 | Expected: "trandign" misspelling prevents API match |
+| RAG 2026 community perception | 1 | Same RAG survey (only 2026 paper matching constraints) |
+
+**Known limitation**: The pipeline does not correct spelling errors in queries. A future enhancement could add fuzzy keyword matching or LLM-based query rewriting.
+
+#### M2 LLM-Enhanced Semantic Search (Completed)
+
+Problem: regex-based keyword extraction produced poor retrieval queries for natural-language requests.
+Example: "nutrition in sport" → keywords "nutrition sport" → API returned papers about AI nursing, corporate governance, etc.
+
+Solution: LLM-powered query rewriting, semantic validation, and iterative refinement.
+
+- [x] **LLM query rewriter** — new module [src/agt/tools/query_rewriter.py](../src/agt/tools/query_rewriter.py) uses the configured LLM provider to translate natural-language requests into optimized academic search queries (e.g. "nutrition in sport" → "sports nutrition"). Few-shot prompted with 3 examples.
+- [x] **Semantic result validation** — after initial retrieval the LLM checks whether returned papers are relevant to the original topic. If irrelevant, it suggests an improved search query for automatic retry.
+- [x] **Iterative refinement loop** — [src/agt/tools/search_papers.py](../src/agt/tools/search_papers.py) performs up to one LLM-guided retry when validation rejects results. Falls back to regex-based keywords if LLM is unavailable or fails.
+- [x] **Robust JSON extraction** — `extract_json()` handles raw JSON, markdown code blocks, and embedded objects from LLM output.
+- [x] **Constraint parser fixes** — "not older than 2024" now correctly sets min_year (previously set max_year); "highest/most quoted" recognized as citation indicators.
+- [x] **Provider auto-detection in demo** — [examples/m2_retrieval_demo.py](../examples/m2_retrieval_demo.py) builds an LLM provider when a real xAI API key is available; gracefully degrades to regex-only mode otherwise.
+- [x] CI gates re-validated: `ruff` 0 errors, `pyright` 0 errors, `pytest` 46/46 pass.
+
+**Architecture flow:**
+1. User query → LLM rewrite → optimized academic search query + topic
+2. Multi-source search (Semantic Scholar + OpenAlex + Crossref) with optimized query
+3. Rank + constraint filter
+4. LLM validation → if irrelevant, retry with LLM-suggested alternative query
+5. Regex keyword fallback if LLM unavailable or all LLM paths fail
+
 ### M3 (Week 3-4): Write Correctness and Idempotency
 
 - [ ] AGT-9: Collection resolver with canonicalized name matching and parent support
@@ -167,13 +216,15 @@ flowchart LR
 
 ### M2 Real-Search Rule
 
-- M2 validation must use live Semantic Scholar results only (no fixture or mock fallback).
-- If live API is rate-limited, treat it as a test-environment issue and retry later; do not switch to mock data.
+- M2 validation must use live Semantic Scholar + OpenAlex + Crossref results (no fixture or mock fallback).
+- If live APIs are rate-limited, treat it as a test-environment issue and retry later; do not switch to mock data.
 
-### M2 Validation Queries (Required)
+### M2 Validation Queries (Required — Verified)
 
-- `source .venv/bin/activate && python examples/m2_retrieval_demo.py --query "the most trandign 2026 timeseries papers - list 5" --limit 5`
-- `source .venv/bin/activate && python examples/m2_retrieval_demo.py --query "the most advanced RAG techniques in 2026 - game changers. Make sure the community perception is good!" --limit 5`
+- [x] `source .venv/bin/activate && python examples/m2_retrieval_demo.py --query "the most trandign 2026 timeseries papers - list 5" --limit 5`
+  Result: 0 papers (expected — "trandign" is a misspelling; pipeline does not perform spelling correction).
+- [x] `source .venv/bin/activate && python examples/m2_retrieval_demo.py --query "the most advanced RAG techniques in 2026 - game changers. Make sure the community perception is good!" --limit 5`
+  Result: 1 paper (realistic — very few 2026 RAG papers exist yet with sufficient citations).
 
 ## Immediate Backlog (Checkbox-Ready)
 

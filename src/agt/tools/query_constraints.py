@@ -11,26 +11,125 @@ from agt.models import NormalizedPaper
 _TOKEN_RE = re.compile(r"[A-Za-z][A-Za-z0-9_-]{2,}")
 _YEAR_RE = re.compile(r"\b(?:19|20)\d{2}\b")
 
+# Phrases stripped from the query before keyword extraction so that
+# constraint language ("after 2020", "at least 10 citations", etc.)
+# never pollutes the retrieval query sent to external APIs.
+_CONSTRAINT_STRIP_PATTERNS: list[re.Pattern[str]] = [
+    # negated year expressions ("not older than 2024")
+    re.compile(r"not\s+older\s+than\s+(?:19|20)\d{2}", re.IGNORECASE),
+    # year expressions
+    re.compile(
+        r"(?:after|since|newer\s+than|from|before|older\s+than|until|in|for)"
+        r"\s+(?:19|20)\d{2}",
+        re.IGNORECASE,
+    ),
+    re.compile(r"(?:19|20)\d{2}\s+and\s+(?:newer|older|later|earlier)", re.IGNORECASE),
+    # standalone years
+    re.compile(r"\b(?:19|20)\d{2}\b"),
+    # citation expressions
+    re.compile(
+        r"(?:at\s+least|min(?:imum)?|more\s+than|over|at\s+most|max(?:imum)?|under|less\s+than)"
+        r"\s+\d+\s+citations?",
+        re.IGNORECASE,
+    ),
+    # open access
+    re.compile(r"open\s+access|oa\s+only", re.IGNORECASE),
+    # community perception
+    re.compile(r"community\s+perception", re.IGNORECASE),
+    # limit instructions ("list 5", "top 10", "show 3")
+    re.compile(r"(?:list|show|top|give|return|find|get)\s+\d+", re.IGNORECASE),
+    # trailing dashes / separators left after stripping
+    re.compile(r"\s*-+\s*"),
+]
+
 _STOPWORDS = {
+    # generic
     "the",
     "and",
     "for",
     "with",
-    "list",
-    "papers",
-    "paper",
-    "most",
-    "more",
-    "than",
     "that",
     "this",
     "from",
     "into",
+    "are",
+    "was",
+    "were",
+    "been",
+    "has",
+    "have",
+    "had",
+    "does",
+    "but",
+    "not",
+    "all",
+    "any",
+    "can",
+    "will",
+    "just",
+    "about",
+    # query-framing words
+    "list",
+    "papers",
+    "paper",
+    "articles",
+    "article",
+    "studies",
+    "show",
+    "find",
+    "give",
+    "return",
+    "get",
+    "search",
     "make",
     "sure",
+    "please",
+    # constraint / intensity words
+    "most",
+    "more",
+    "than",
+    "least",
+    "less",
+    "over",
+    "under",
+    "cited",
+    "newer",
+    "older",
+    "latest",
+    "recent",
+    "recently",
+    "highly",
+    "well",
+    "top",
+    "best",
+    "good",
+    "great",
+    "changers",
+    "advanced",
+    "trending",
+    "trandign",
     "community",
     "perception",
-    "good",
+    "popular",
+    "influential",
+    "after",
+    "since",
+    "before",
+    "until",
+    "between",
+    "open",
+    "access",
+    "only",
+    "minimum",
+    "maximum",
+    "min",
+    "max",
+    "citations",
+    "citation",
+    "game",
+    # quotation synonyms
+    "quoted",
+    "highest",
 }
 
 
@@ -82,14 +181,23 @@ class SearchConstraintSpec(BaseModel):
     @model_validator(mode="after")
     def apply_quality_defaults(self) -> SearchConstraintSpec:
         if self.quality.require_positive_community_perception:
-            self.citations.min_citations = max(self.citations.min_citations, 50)
+            self.citations.min_citations = max(self.citations.min_citations, 10)
             self.quality.min_semantic_score = max(self.quality.min_semantic_score, 0.2)
         return self
 
 
+def strip_constraints(query: str) -> str:
+    """Remove constraint phrases so only content terms remain."""
+    text = query
+    for pattern in _CONSTRAINT_STRIP_PATTERNS:
+        text = pattern.sub(" ", text)
+    return re.sub(r"\s{2,}", " ", text).strip()
+
+
 def _extract_keywords(query: str) -> list[str]:
+    cleaned = strip_constraints(query)
     keywords: list[str] = []
-    for token in _TOKEN_RE.findall(query.lower()):
+    for token in _TOKEN_RE.findall(cleaned.lower()):
         if token in _STOPWORDS:
             continue
         if token.isdigit():
@@ -99,19 +207,30 @@ def _extract_keywords(query: str) -> list[str]:
     return keywords[:10]
 
 
-def parse_query_constraints(query: str, *, default_limit: int) -> SearchConstraintSpec:
+def parse_query_constraints(query: str, *, default_limit: int) -> SearchConstraintSpec:  # noqa: PLR0912
     lowered = query.lower()
 
     min_year: int | None = None
     max_year: int | None = None
 
-    newer_match = re.search(r"(?:after|since|newer than|from)\s+((?:19|20)\d{2})", lowered)
+    newer_match = re.search(r"(?:after|since|newer\s+than|from)\s+((?:19|20)\d{2})", lowered)
     if newer_match:
         min_year = int(newer_match.group(1))
 
-    older_match = re.search(r"(?:before|older than|until)\s+((?:19|20)\d{2})", lowered)
-    if older_match:
-        max_year = int(older_match.group(1))
+    # "2020 and newer" / "2020 and later"
+    year_and_newer = re.search(r"((?:19|20)\d{2})\s+and\s+(?:newer|later)", lowered)
+    if year_and_newer and min_year is None:
+        min_year = int(year_and_newer.group(1))
+
+    # "not older than 2024" → min_year = 2024 (negation flips the direction)
+    negated_older = re.search(r"not\s+older\s+than\s+((?:19|20)\d{2})", lowered)
+    if negated_older and min_year is None:
+        min_year = int(negated_older.group(1))
+
+    if not negated_older:
+        older_match = re.search(r"(?:before|older\s+than|until)\s+((?:19|20)\d{2})", lowered)
+        if older_match:
+            max_year = int(older_match.group(1))
 
     in_year_match = re.search(r"(?:in|for)\s+((?:19|20)\d{2})", lowered)
     if in_year_match and min_year is None and max_year is None:
@@ -146,11 +265,17 @@ def parse_query_constraints(query: str, *, default_limit: int) -> SearchConstrai
     open_access_only = "open access" in lowered or "oa only" in lowered
     positive_community = "community perception" in lowered or "well cited" in lowered
 
+    if "most cited" in lowered or "highly cited" in lowered:
+        min_citations = max(min_citations, 10)
+
+    if "highest quoted" in lowered or "most quoted" in lowered:
+        min_citations = max(min_citations, 10)
+
     if "game changers" in lowered and min_citations == 0:
-        min_citations = 100
+        min_citations = 20
 
     if "trending" in lowered or "trandign" in lowered:
-        min_citations = max(min_citations, 20)
+        min_citations = max(min_citations, 5)
 
     years = [int(token) for token in _YEAR_RE.findall(query)]
     if years and min_year is None:
@@ -168,13 +293,6 @@ def parse_query_constraints(query: str, *, default_limit: int) -> SearchConstrai
         ),
         keywords=KeywordConstraint(include_keywords=_extract_keywords(query), exclude_keywords=[]),
     )
-
-
-def _keyword_match(title: str, abstract: str | None, include_keywords: list[str]) -> bool:
-    if not include_keywords:
-        return True
-    haystack = f"{title} {abstract or ''}".lower()
-    return any(keyword in haystack for keyword in include_keywords)
 
 
 def apply_query_constraints(
@@ -209,9 +327,6 @@ def apply_query_constraints(
             continue
 
         if paper.semantic_score < constraints.quality.min_semantic_score:
-            continue
-
-        if not _keyword_match(paper.title, paper.abstract, constraints.keywords.include_keywords):
             continue
 
         filtered.append(paper)

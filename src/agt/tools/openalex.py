@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any, cast
 
 import httpx
@@ -28,18 +29,28 @@ class OpenAlexClient:
         self._retries = retries
         self._base_url = base_url.rstrip("/")
 
-    async def search(self, query: str, *, limit: int) -> list[NormalizedPaper]:
+    async def search(
+        self,
+        query: str,
+        *,
+        limit: int,
+        year_min: int | None = None,
+    ) -> list[NormalizedPaper]:
         """Search OpenAlex and return normalized papers."""
 
         if not query.strip():
             return []
 
+        params: dict[str, str] = {
+            "search": query,
+            "per-page": str(limit),
+        }
+        if year_min is not None:
+            params["filter"] = f"publication_year:>{year_min - 1}"
+
         payload = await self._request_json(
             path="/works",
-            params={
-                "search": query,
-                "per-page": str(limit),
-            },
+            params=params,
         )
 
         raw_items = payload.get("results")
@@ -80,7 +91,7 @@ class OpenAlexClient:
 
     @staticmethod
     def _normalize_item(item: dict[str, Any]) -> NormalizedPaper | None:
-        title = str(item.get("title") or "").strip()
+        title = re.sub(r"<[^>]+>", "", str(item.get("title") or "")).strip()
         if not title:
             return None
 

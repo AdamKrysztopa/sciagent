@@ -5,27 +5,53 @@ from __future__ import annotations
 import argparse
 import asyncio
 import os
+from pathlib import Path
 
 import httpx
 
 from agt.config import Settings
 from agt.guardrails import configure_guardrails, thread_context
+from agt.providers.protocol import LLMProvider
+from agt.providers.router import build_provider
 from agt.tools.search_papers import search_papers
 from agt.tools.semantic_scholar import SemanticScholarResponseError
 from agt.tools.summarize import summarize_papers
 
+_DUMMY_KEY = "xai-local"
 
-def _configure_local_env_defaults() -> None:
-    os.environ.setdefault("AGT_XAI_API_KEY", "xai-local")
-    os.environ.setdefault("AGT_ZOTERO_API_KEY", "zot-local")
-    os.environ.setdefault("AGT_ZOTERO_LIBRARY_ID", "local-library")
-    os.environ.setdefault("AGT_SUMMARIZATION_USE_LLM", "false")
+
+def _resolve_xai_key() -> str:
+    """Resolve xAI API key from environment variables or .env file."""
+    key = os.getenv("AGT_XAI_API_KEY") or os.getenv("XAI_API_KEY")
+    if key:
+        return key
+    env_path = Path(".env")
+    if env_path.exists():
+        for line in env_path.read_text().splitlines():
+            stripped = line.strip()
+            if stripped.startswith("#") or "=" not in stripped:
+                continue
+            name, _, value = stripped.partition("=")
+            if name.strip() in ("XAI_API_KEY", "AGT_XAI_API_KEY"):
+                return value.strip().strip("\"'")
+    return _DUMMY_KEY
+
+
+def _try_build_provider(settings: Settings) -> LLMProvider | None:
+    """Build an LLM provider for query rewriting when a real API key is set."""
+    try:
+        key = settings.xai_api_key.get_secret_value()
+        if key == _DUMMY_KEY:
+            return None
+        return build_provider(settings)
+    except Exception:
+        return None
 
 
 async def _run(query: str, limit: int) -> int:
-    _configure_local_env_defaults()
+    xai_key = _resolve_xai_key()
     settings = Settings.model_validate({
-        "AGT_XAI_API_KEY": os.getenv("AGT_XAI_API_KEY", os.getenv("XAI_API_KEY", "xai-local")),
+        "AGT_XAI_API_KEY": xai_key,
         "AGT_ZOTERO_API_KEY": os.getenv(
             "AGT_ZOTERO_API_KEY", os.getenv("ZOTERO_API_KEY", "zot-local")
         ),
@@ -38,6 +64,7 @@ async def _run(query: str, limit: int) -> int:
         "AGT_SUMMARIZATION_USE_LLM": False,
     })
     configure_guardrails(settings)
+    provider = _try_build_provider(settings)
 
     try:
         with thread_context("example-m2"):
@@ -46,6 +73,7 @@ async def _run(query: str, limit: int) -> int:
                 limit=limit,
                 settings=settings,
                 thread_id="example-m2",
+                provider=provider,
             )
     except httpx.HTTPStatusError as exc:
         print("M2 Retrieval Example")
@@ -70,7 +98,8 @@ async def _run(query: str, limit: int) -> int:
     )
 
     print("M2 Retrieval Example")
-    print("mode: live Semantic Scholar")
+    mode = "live search + LLM rewrite" if provider else "live search (regex keywords)"
+    print(f"mode: {mode}")
     print(f"query: {query}")
     print(f"results: {len(papers)}")
     print("-" * 80)
