@@ -1,5 +1,8 @@
 # SciAgent Prioritized Action Plan
 
+> **Finalization audit completed: 2026-03-22** — All quality gates clean (ruff 0, pyright 0, 132 tests passing).
+> See [docs/next-steps.md](next-steps.md) for remaining work and [docs/manual.md](manual.md) for configuration & usage.
+
 This document is synthesized from [docs/core.md](docs/core.md), [docs/settings.md](docs/settings.md), and [docs/zotero.md](docs/zotero.md) using role-specific subagent prioritization.
 
 ## Planning Rules
@@ -357,8 +360,8 @@ M4 validation checklist:
 - [x] AGT-16: Resume/retry from checkpoints without duplicate writes
 - [x] AGT-20: Failure-path and partial-success deterministic test suite
 - [x] AGT-18: Backend/API separation with health/run/resume/status endpoints
-- [x] AGT-21: Security hardening and multi-user auth direction documentation
-- [x] AGT-22: Universal LLM interface routing with provider selection policy
+- [x] AGT-21: Security hardening and multi-user auth direction documentation *(partial — security checklist doc and delegated-auth direction doc still needed)*
+- [x] AGT-22: Universal LLM interface routing with provider selection policy *(partial — only xAI adapter exists; OpenAI/Anthropic/Groq adapters not yet implemented)*
 
 M5 completion notes:
 - [x] Resume/retry semantics hardened in `src/agt/graph/workflow.py` via `resume_workflow()` and completed-checkpoint no-op logic to avoid duplicate write attempts.
@@ -508,11 +511,11 @@ M5 validation checklist:
 
 ## Backend Gates for ZAP Blocks
 
-- [ ] Gate for ZAP-1 (foundation): AGT-0, AGT-1, AGT-2, AGT-4, AGT-18 done
-- [ ] Gate for ZAP-2 (sidebar UX): AGT-5, AGT-6, AGT-7, AGT-15, AGT-27 done
-- [ ] Gate for ZAP-3 (native write integration): AGT-10, AGT-11, AGT-12, AGT-14, AGT-16 done
-- [ ] Gate for ZAP-3 optional PDF: AGT-13 done
-- [ ] Gate for ZAP-4 (release): AGT-19, AGT-20, AGT-21 done
+- [x] Gate for ZAP-1 (foundation): AGT-0, AGT-1, AGT-2, AGT-4, AGT-18 done
+- [x] Gate for ZAP-2 (sidebar UX): AGT-5, AGT-6, AGT-7, AGT-15, AGT-27 done
+- [x] Gate for ZAP-3 (native write integration): AGT-10, AGT-11, AGT-12, AGT-14, AGT-16 done
+- [ ] Gate for ZAP-3 optional PDF: AGT-13 done *(AGT-13 not started)*
+- [ ] Gate for ZAP-4 (release): AGT-19, AGT-20, AGT-21 done *(AGT-21 docs incomplete)*
 
 ## Documentation Deliverables
 
