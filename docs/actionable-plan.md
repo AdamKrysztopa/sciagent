@@ -167,6 +167,123 @@ Solution: LLM-powered query rewriting, semantic validation, and iterative refine
 4. LLM validation → if irrelevant, retry with LLM-suggested alternative query
 5. Regex keyword fallback if LLM unavailable or all LLM paths fail
 
+### M2.5: Retrieval Quality & Coverage Improvements
+
+Status: **In Progress** — P0 slice implemented; builds on M2 foundation and remains independent from M3.
+
+#### M2.5 Progress Update (Completed)
+
+- [x] S2.5-1a PubMed client implemented in [src/agt/tools/pubmed.py](../src/agt/tools/pubmed.py) with E-Utilities `esearch` + `efetch`, normalization into `NormalizedPaper`, and `PubMedResponseError`.
+- [x] S2.5-1c Europe PMC client implemented in [src/agt/tools/europe_pmc.py](../src/agt/tools/europe_pmc.py) with normalized `isOpenAccess`, DOI, citation count, and author parsing.
+- [x] `search_papers` orchestration expanded to include PubMed + Europe PMC in [src/agt/tools/search_papers.py](../src/agt/tools/search_papers.py).
+- [x] Config updates delivered in [src/agt/config.py](../src/agt/config.py): `ncbi_api_key`, `core_api_key`, `serpapi_key`, `dimensions_key` plus aliases and per-source retrieval rate-limit fields.
+- [x] Guardrail service-rate routing updated in [src/agt/guardrails.py](../src/agt/guardrails.py) for `openalex`, `crossref`, `pubmed`, and `europe_pmc`.
+- [x] S2.5-2b exclude-keyword parsing and enforcement implemented in [src/agt/tools/query_constraints.py](../src/agt/tools/query_constraints.py) (`not about`, `excluding`, `but not`; title/abstract filtering).
+- [x] S2.5-2c date-range window parsing implemented in [src/agt/tools/query_constraints.py](../src/agt/tools/query_constraints.py) (`between YYYY and YYYY`, `from YYYY to YYYY`).
+- [x] S2.5-3c dynamic year penalty implemented in [src/agt/tools/ranking.py](../src/agt/tools/ranking.py) using `datetime.date.today().year`.
+- [x] S2.5-4a dedicated OpenAlex tests added in [tests/test_openalex.py](../tests/test_openalex.py) (5 tests).
+- [x] S2.5-4b dedicated Crossref tests added in [tests/test_crossref.py](../tests/test_crossref.py) (5 tests).
+- [x] PubMed and Europe PMC test coverage added in [tests/test_pubmed.py](../tests/test_pubmed.py) and [tests/test_europe_pmc.py](../tests/test_europe_pmc.py).
+- [x] CI-quality validation after M2.5 P0 slice: `ruff` clean, `pyright` 0 errors, `pytest` 69/69 pass.
+
+#### Current M2 audit baseline (what exists)
+
+- 5 search engines: Semantic Scholar, OpenAlex, Crossref, PubMed, Europe PMC.
+- Regex constraint parser (year, citations, OA, quality flags, ~70 stopwords).
+- LLM query rewriter with one validation-retry loop.
+- Ranking formula: `0.7×semantic + (cur_year − year)×−0.3 + 0.2×OA`.
+- No pagination (single page per source). No spelling correction.
+- Crossref returns `semantic_score=0.0` and `open_access=False` always.
+- OpenAlex returns no abstract. Semantic Scholar has optional abstract.
+- `exclude_keywords` enforcement implemented. Date-range windows implemented.
+- Citation thresholds still hardcoded, over-fetch cap 30, dynamic current year scoring enabled.
+- 69 passing tests, including dedicated OpenAlex and Crossref client suites.
+
+---
+
+#### S2.5-1  Add more academic search engines
+
+Each new client lives in its own file under `src/agt/tools/`, returns `list[NormalizedPaper]`, and plugs into `_fetch_from_sources()` in `search_papers.py`.
+
+| # | Engine | Why | Coder task |
+|---|--------|-----|------------|
+| **a** | **PubMed / E-Utilities** | Dominant in biomedical/nutrition/clinical literature; covers MeSH-tagged content OpenAlex misses. | Create `src/agt/tools/pubmed.py`. Use NCBI E-Utilities `esearch` + `efetch` (REST, XML). Extract PMID, title, abstract, authors, year, DOI, MeSH terms. Map to `NormalizedPaper` (source `"pubmed"`, `semantic_score=0.0`). Add `AGT_NCBI_API_KEY` optional field to `config.py` (`api_key` param raises rate limit from 3→10 req/s). Add `PubMedResponseError`. Write ≥3 tests in `tests/test_pubmed.py` (normalization, missing-fields, error). |
+| **b** | **CORE (core.ac.uk)** | Full-text open-access aggregator; 300M+ records; returns abstracts and full-text snippets that improve ranking. | Create `src/agt/tools/core_ac.py`. Use CORE API v3 `GET /search/works` (bearer token). Extract title, abstract, year, authors, DOI, download URL, `is_open_access`. Map to `NormalizedPaper`. Add `AGT_CORE_API_KEY` to `config.py`. Write ≥3 tests. |
+| **c** | **Europe PMC** | Overlaps PubMed with additional European funded research + preprints; good abstract coverage. | Create `src/agt/tools/europe_pmc.py`. Use Europe PMC REST `search` endpoint (no auth). Extract PMID, PMCID, title, abstract, year, DOI, authors, `isOpenAccess`. Map to `NormalizedPaper`. Write ≥3 tests. |
+| **d** | **arXiv API** | Direct access to preprints (CS, physics, math, quantitative biology); Semantic Scholar may lag new submissions. | Create `src/agt/tools/arxiv_api.py`. Use arXiv API `query` endpoint (Atom/XML). Extract arXiv ID, title, abstract, authors, published date, category, PDF link. Map to `NormalizedPaper` (source `"arxiv"`, `open_access=True` always). Rate-limit: 1 req/3s. Write ≥3 tests. |
+| **e** | **OpenCitations (COCI)** | Citation-count enrichment for any DOI; fixes Crossref's `is-referenced-by-count` undercount. | Create `src/agt/tools/opencitations.py`. Use COCI REST `citation-count/{doi}`. After primary search, batch-enrich `citation_count` for papers that have DOIs. This is a **post-search enrichment step**, not a search source. Wire into `_rank_and_filter()` or a new `_enrich_citations()` helper. Write ≥3 tests. |
+| **f** | **Google Scholar (via SerpAPI or scholarly)** | Broadest coverage; captures grey literature, books, theses. Requires paid SerpAPI key OR `scholarly` scraper (fragile). | Create `src/agt/tools/google_scholar.py`. If SerpAPI: use `search_type=scholar` JSON endpoint. If `scholarly`: use `scholarly.search_pubs()`. Extract title, year, citations, URL, authors, abstract snippet. Map to `NormalizedPaper`. Add `AGT_SERPAPI_KEY` to `config.py`. Write ≥3 tests. Mark as **optional/experimental** — SerpAPI is paid, `scholarly` breaks on CAPTCHAs. |
+| **g** | **BASE (Bielefeld Academic Search Engine)** | 400M+ docs from 11k+ providers; strong for European and OA content. | Create `src/agt/tools/base_search.py`. Use BASE Search API (SRU/OpenSearch, no auth needed). Parse SRU XML response. Extract title, authors, year, DOI, URL, `dcterms:accessRights`. Map to `NormalizedPaper`. Write ≥3 tests. |
+| **h** | **Dimensions** | Holistic research metadata including grants, patents, clinical trials; rich citation data. | Create `src/agt/tools/dimensions.py`. Use Dimensions Analytics API (requires free or institutional key). Authenticate via `/authenticate` endpoint. Search `/dsl.json` with DSL query. Extract title, year, authors, DOI, `times_cited`, `open_access`. Map to `NormalizedPaper`. Add `AGT_DIMENSIONS_KEY` to `config.py`. Write ≥3 tests. |
+
+**Orchestration change in `search_papers.py`:**
+- Add each new client to `_fetch_from_sources()` alongside existing three.
+- Wrap each in `try/except` with failure logging (same pattern as existing clients).
+- Add a rate-limit `guardrails.acquire()` call per new source with a sensible default (e.g. `pubmed_rate_limit_per_minute: int = 100` in config).
+- If a source needs an API key and the key is not configured, **skip silently** (log at DEBUG level, don't error).
+
+**Config changes in `config.py`:**
+- Add optional `SecretStr | None` fields: `ncbi_api_key`, `core_api_key`, `serpapi_key`, `dimensions_key`.
+- Add aliases so both `AGT_NCBI_API_KEY` and `NCBI_API_KEY` work (same pattern as existing keys).
+- Add per-source rate-limit fields with sane defaults.
+
+---
+
+#### S2.5-2  Improve keyword and semantic search quality
+
+| # | Improvement | Coder task |
+|---|-------------|------------|
+| **a** | **KeyBERT / embedding-based keyword extraction as an LLM-free fallback.** Currently when no LLM provider is available the pipeline falls back to regex stopword stripping. A lightweight local model would produce far better keywords. | Add `keybert` to `[project.optional-dependencies]` in `pyproject.toml` under a `[keywords]` extra. Create `src/agt/tools/keyword_extractor.py` with function `extract_keywords(query: str, top_n: int = 5) -> list[str]`. Use `KeyBERT` with `"all-MiniLM-L6-v2"` (small, fast). In `search_papers.py`, if `provider is None`, try KeyBERT before falling back to regex. Add a `AGT_USE_KEYBERT: bool = False` config flag (opt-in). Write ≥3 tests with mocked model. |
+| **b** | **Exclude-keyword enforcement.** `SearchConstraintSpec.keywords.exclude_keywords` exists in the model but is never populated or enforced. | In `query_constraints.py`, add regex patterns for `"not about X"`, `"excluding X"`, `"but not X"` → populate `exclude_keywords`. In `apply_query_constraints()`, reject papers whose title OR abstract contains any exclude keyword (case-insensitive substring match). Write ≥3 tests. |
+| **c** | **Date-range windows.** Currently only min/max year; users say "between 2020 and 2024" and only one bound is captured. | In `query_constraints.py`, add regex: `r"between\s+((?:19\|20)\d{2})\s+and\s+((?:19\|20)\d{2})"` → set both `min_year` and `max_year`. Also handle `"from 2020 to 2024"`. Write ≥2 tests. |
+| **d** | **Spelling correction.** "trandign" → "trending" produces 0 results. | Add `pyspellchecker` to dependencies. Create `src/agt/tools/spell_check.py` with `correct_query(query: str) -> str`. Apply **before** constraint parsing in `search_papers.py`. Only correct words not in a domain dictionary (add academic terms: "arxiv", "pubmed", etc.). Write ≥3 tests. Gate behind `AGT_USE_SPELL_CHECK: bool = False` config flag. |
+| **e** | **Synonym / query expansion.** "nutrition in sport" should also search "sports nutrition", "exercise nutrition", "athletic diet". | In `query_rewriter.py`, extend the LLM rewrite prompt to also return a `synonyms: list[str]` field (2–4 alternative phrasings). In `search_papers.py`, run one fetch with the primary rewritten query **and** one fetch with the top synonym — merge results before ranking. When LLM is unavailable, skip expansion. Write ≥2 tests with fake provider. |
+| **f** | **Per-source query adaptation.** PubMed works best with MeSH terms; arXiv with field-specific prefixes (`cat:cs.IR`); Semantic Scholar with natural language. | In `query_rewriter.py`, extend `RewrittenQuery` model with optional `pubmed_query`, `arxiv_categories` fields. Update the LLM prompt to output source-specific hints. In `_fetch_from_sources()`, pass the adapted query per source. For regex fallback, keep the generic query. Write ≥2 tests. |
+
+---
+
+#### S2.5-3  Ranking and scoring improvements
+
+| # | Improvement | Coder task |
+|---|-------------|------------|
+| **a** | **Citation enrichment from OpenCitations.** Crossref undercounts; Semantic Scholar may lag. | (See S2.5-1e above.) After `_fetch_from_sources()`, call `_enrich_citations(papers)` which batch-queries OpenCitations COCI for all papers with DOIs. Overwrite `citation_count` if OpenCitations returns a higher value. Write ≥2 tests. |
+| **b** | **Abstract-based re-ranking.** Current ranking uses only `semantic_score` from the API. Papers with abstracts should get a re-rank boost based on query–abstract similarity. | Add `sentence-transformers` to optional deps (`[rerank]` extra). Create `src/agt/tools/reranker.py` with `rerank_papers(query: str, papers: list[NormalizedPaper], top_k: int) -> list[NormalizedPaper]`. Compute cosine similarity between query embedding and each abstract embedding using `all-MiniLM-L6-v2`. Replace `semantic_score` with the local score for papers that have abstracts. Gate behind `AGT_USE_RERANKER: bool = False`. Wire into `_rank_and_filter()`. Write ≥3 tests with mocked embeddings. |
+| **c** | **Dynamic year penalty.** Currently hardcoded `current_year = 2026`. | In `ranking.py`, replace `2026` with `datetime.date.today().year`. No config needed. Write 1 test that mocks date. |
+| **d** | **Configurable citation thresholds.** "most cited" → 10, "game changers" → 20, etc. are hardcoded. | Add `Settings` fields: `citation_threshold_most_cited: int = 10`, `citation_threshold_game_changers: int = 20`, `citation_threshold_trending: int = 5`. In `query_constraints.py`, read these from a `settings` parameter instead of hardcoded values. Thread `settings` through from `search_papers.py`. Write ≥2 tests. |
+
+---
+
+#### S2.5-4  Robustness and testing gaps
+
+| # | Improvement | Coder task |
+|---|-------------|------------|
+| **a** | **Dedicated OpenAlex client tests.** Currently zero. | Create `tests/test_openalex.py`. Test: normalization from real-shaped payload, HTML tag stripping, year filter parameter construction, error on malformed response, missing fields handled gracefully. ≥5 tests. |
+| **b** | **Dedicated Crossref client tests.** Currently zero. | Create `tests/test_crossref.py`. Test: normalization, author name assembly, year extraction from `published-print` vs `published-online`, missing title handling, error response. ≥5 tests. |
+| **c** | **Parallel source fetching.** Currently sources are fetched sequentially. | In `_fetch_from_sources()`, replace the sequential for-loop with `asyncio.gather()` (or `asyncio.TaskGroup` on Python 3.11+). Each source gets its own `try/except` wrapper via a helper coroutine. Maintain the same failure-list semantics. Write 1 integration test that verifies all sources are called. |
+| **d** | **Pagination support.** Currently single-page per source. | For each client that supports cursors (Semantic Scholar `offset`, OpenAlex `cursor`, Crossref `offset`), add an optional `max_pages: int = 1` parameter. When `max_pages > 1`, fetch additional pages and concatenate. Expose via a new `AGT_SEARCH_MAX_PAGES: int = 1` config field. Write ≥2 tests per client with pagination. |
+| **e** | **Unicode and encoding edge cases.** Untested. | Add tests in `tests/test_ranking.py` and `tests/test_query_constraints.py` for: CJK characters in titles, diacritics in author names, RTL text, emoji in queries, zero-width characters. ≥5 tests total. |
+| **f** | **Rate-limit backoff.** Currently `RateLimitExceededError` is raised immediately with no retry. | In `guardrails.py`, add an optional `wait_for_token(service, thread_id, timeout_seconds)` async method that sleeps until a token is available (with timeout). In `_fetch_from_sources()`, use `wait_for_token` instead of `acquire` to avoid hard failures on transient rate-limit bursts. Write ≥2 tests. |
+
+---
+
+#### S2.5-5  Observability and diagnostics
+
+| # | Improvement | Coder task |
+|---|-------------|------------|
+| **a** | **Search metadata in response.** User can't see which sources contributed, which query was actually sent, or whether LLM rewrite was used. | Add a `SearchMetadata` model to `models.py` with fields: `original_query`, `rewritten_query`, `regex_query`, `sources_used: list[str]`, `sources_failed: list[str]`, `mode: Literal["llm_rewrite", "regex"]`, `retry_count`, `total_fetched`, `total_after_filter`. Return `(papers, metadata)` tuple from `search_papers()`. Update demo to print metadata. Write ≥2 tests. |
+| **b** | **Per-source timing.** No visibility into which sources are slow. | In `_fetch_from_sources()`, wrap each client call with `time.monotonic()` start/end. Include `source_timings: dict[str, float]` in `SearchMetadata`. Write 1 test. |
+
+---
+
+#### Priority and sequencing
+
+| Priority | Items | Rationale |
+|----------|-------|-----------|
+| **P0 — do first** | S2.5-1a (PubMed), S2.5-1c (Europe PMC), S2.5-2b (exclude keywords), S2.5-2c (date ranges), S2.5-3c (dynamic year), S2.5-4a–b (OpenAlex/Crossref tests) | High impact, low risk, no new dependencies. |
+| **P1 — do next** | S2.5-1b (CORE), S2.5-1d (arXiv), S2.5-1e (OpenCitations), S2.5-2e (synonym expansion), S2.5-4c (parallel fetch), S2.5-4f (rate-limit backoff), S2.5-5a–b (metadata/timing) | Medium complexity, strong quality signal. |
+| **P2 — when ready** | S2.5-1g (BASE), S2.5-1h (Dimensions), S2.5-2a (KeyBERT), S2.5-2d (spell check), S2.5-2f (per-source query), S2.5-3a (citation enrichment), S2.5-3b (reranker), S2.5-3d (configurable thresholds), S2.5-4d (pagination), S2.5-4e (unicode tests) | New optional deps, experimental, or lower urgency. |
+| **P3 — optional** | S2.5-1f (Google Scholar/SerpAPI) | Paid API or fragile scraper; defer. |
+
 ### M3 (Week 3-4): Write Correctness and Idempotency
 
 - [ ] AGT-9: Collection resolver with canonicalized name matching and parent support

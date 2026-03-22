@@ -10,6 +10,8 @@ from agt.models import NormalizedPaper
 
 _TOKEN_RE = re.compile(r"[A-Za-z][A-Za-z0-9_-]{2,}")
 _YEAR_RE = re.compile(r"\b(?:19|20)\d{2}\b")
+_BETWEEN_YEAR_RE = re.compile(r"between\s+((?:19|20)\d{2})\s+and\s+((?:19|20)\d{2})")
+_FROM_TO_YEAR_RE = re.compile(r"from\s+((?:19|20)\d{2})\s+to\s+((?:19|20)\d{2})")
 
 # Phrases stripped from the query before keyword extraction so that
 # constraint language ("after 2020", "at least 10 citations", etc.)
@@ -207,14 +209,44 @@ def _extract_keywords(query: str) -> list[str]:
     return keywords[:10]
 
 
-def parse_query_constraints(query: str, *, default_limit: int) -> SearchConstraintSpec:  # noqa: PLR0912
+def _extract_exclude_keywords(query: str) -> list[str]:
+    patterns = [
+        re.compile(r"not\s+about\s+([^.,;:]+)", re.IGNORECASE),
+        re.compile(r"excluding\s+([^.,;:]+)", re.IGNORECASE),
+        re.compile(r"but\s+not\s+([^.,;:]+)", re.IGNORECASE),
+    ]
+    exclude: list[str] = []
+    for pattern in patterns:
+        for match in pattern.finditer(query):
+            phrase = match.group(1).strip().lower()
+            for token in _TOKEN_RE.findall(phrase):
+                if token in _STOPWORDS:
+                    continue
+                if token not in exclude:
+                    exclude.append(token)
+    return exclude[:10]
+
+
+def parse_query_constraints(  # noqa: PLR0912, PLR0915
+    query: str, *, default_limit: int
+) -> SearchConstraintSpec:
     lowered = query.lower()
 
     min_year: int | None = None
     max_year: int | None = None
 
+    between_match = _BETWEEN_YEAR_RE.search(lowered)
+    if between_match:
+        min_year = int(between_match.group(1))
+        max_year = int(between_match.group(2))
+
+    from_to_match = _FROM_TO_YEAR_RE.search(lowered)
+    if from_to_match:
+        min_year = int(from_to_match.group(1))
+        max_year = int(from_to_match.group(2))
+
     newer_match = re.search(r"(?:after|since|newer\s+than|from)\s+((?:19|20)\d{2})", lowered)
-    if newer_match:
+    if newer_match and min_year is None:
         min_year = int(newer_match.group(1))
 
     # "2020 and newer" / "2020 and later"
@@ -229,7 +261,7 @@ def parse_query_constraints(query: str, *, default_limit: int) -> SearchConstrai
 
     if not negated_older:
         older_match = re.search(r"(?:before|older\s+than|until)\s+((?:19|20)\d{2})", lowered)
-        if older_match:
+        if older_match and max_year is None:
             max_year = int(older_match.group(1))
 
     in_year_match = re.search(r"(?:in|for)\s+((?:19|20)\d{2})", lowered)
@@ -291,7 +323,10 @@ def parse_query_constraints(query: str, *, default_limit: int) -> SearchConstrai
             open_access_only=open_access_only,
             require_positive_community_perception=positive_community,
         ),
-        keywords=KeywordConstraint(include_keywords=_extract_keywords(query), exclude_keywords=[]),
+        keywords=KeywordConstraint(
+            include_keywords=_extract_keywords(query),
+            exclude_keywords=_extract_exclude_keywords(query),
+        ),
     )
 
 
@@ -328,6 +363,11 @@ def apply_query_constraints(
 
         if paper.semantic_score < constraints.quality.min_semantic_score:
             continue
+
+        if constraints.keywords.exclude_keywords:
+            text = f"{paper.title} {paper.abstract or ''}".lower()
+            if any(keyword in text for keyword in constraints.keywords.exclude_keywords):
+                continue
 
         filtered.append(paper)
 

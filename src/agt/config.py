@@ -60,6 +60,22 @@ class Settings(BaseSettings):
         default=None,
         validation_alias=AliasChoices("AGT_SEMANTIC_SCHOLAR_API_KEY", "SEMANTIC_SCHOLAR_API_KEY"),
     )
+    ncbi_api_key: SecretStr | None = Field(
+        default=None,
+        validation_alias=AliasChoices("AGT_NCBI_API_KEY", "NCBI_API_KEY"),
+    )
+    core_api_key: SecretStr | None = Field(
+        default=None,
+        validation_alias=AliasChoices("AGT_CORE_API_KEY", "CORE_API_KEY"),
+    )
+    serpapi_key: SecretStr | None = Field(
+        default=None,
+        validation_alias=AliasChoices("AGT_SERPAPI_KEY", "SERPAPI_KEY"),
+    )
+    dimensions_key: SecretStr | None = Field(
+        default=None,
+        validation_alias=AliasChoices("AGT_DIMENSIONS_KEY", "DIMENSIONS_KEY"),
+    )
     openai_api_key: SecretStr | None = Field(
         default=None,
         validation_alias=AliasChoices("AGT_OPENAI_API_KEY", "OPENAI_API_KEY"),
@@ -136,6 +152,34 @@ class Settings(BaseSettings):
         ge=1,
         validation_alias=AliasChoices(
             "AGT_SEMANTIC_SCHOLAR_RATE_LIMIT_PER_MINUTE", "SEMANTIC_SCHOLAR_RATE_LIMIT_PER_MINUTE"
+        ),
+    )
+    openalex_rate_limit_per_minute: int = Field(
+        default=100,
+        ge=1,
+        validation_alias=AliasChoices(
+            "AGT_OPENALEX_RATE_LIMIT_PER_MINUTE", "OPENALEX_RATE_LIMIT_PER_MINUTE"
+        ),
+    )
+    crossref_rate_limit_per_minute: int = Field(
+        default=80,
+        ge=1,
+        validation_alias=AliasChoices(
+            "AGT_CROSSREF_RATE_LIMIT_PER_MINUTE", "CROSSREF_RATE_LIMIT_PER_MINUTE"
+        ),
+    )
+    pubmed_rate_limit_per_minute: int = Field(
+        default=100,
+        ge=1,
+        validation_alias=AliasChoices(
+            "AGT_PUBMED_RATE_LIMIT_PER_MINUTE", "PUBMED_RATE_LIMIT_PER_MINUTE"
+        ),
+    )
+    europe_pmc_rate_limit_per_minute: int = Field(
+        default=100,
+        ge=1,
+        validation_alias=AliasChoices(
+            "AGT_EUROPE_PMC_RATE_LIMIT_PER_MINUTE", "EUROPE_PMC_RATE_LIMIT_PER_MINUTE"
         ),
     )
     zotero_rate_limit_per_minute: int = Field(

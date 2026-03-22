@@ -57,6 +57,8 @@ async def test_search_papers_ranks_and_indexes(monkeypatch: pytest.MonkeyPatch) 
     monkeypatch.setattr(search_module, "SemanticScholarClient", _fake_client_factory(papers))
     monkeypatch.setattr(search_module, "OpenAlexClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "CrossrefClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "PubMedClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
 
     ranked = await search_module.search_papers(
         query="test",
@@ -114,6 +116,8 @@ async def test_search_papers_applies_constraints_and_keyword_query(
     monkeypatch.setattr(search_module, "SemanticScholarClient", _capturing_factory)
     monkeypatch.setattr(search_module, "OpenAlexClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "CrossrefClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "PubMedClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
 
     ranked = await search_module.search_papers(
         query="quantum optimizer after 2025 at least 10 citations open access",
@@ -153,6 +157,8 @@ async def test_search_papers_raises_when_all_sources_fail(
     monkeypatch.setattr(search_module, "SemanticScholarClient", _fail_factory)
     monkeypatch.setattr(search_module, "OpenAlexClient", _fail_factory)
     monkeypatch.setattr(search_module, "CrossrefClient", _fail_factory)
+    monkeypatch.setattr(search_module, "PubMedClient", _fail_factory)
+    monkeypatch.setattr(search_module, "EuropePMCClient", _fail_factory)
 
     with pytest.raises(SemanticScholarResponseError, match="all retrieval providers failed"):
         await search_module.search_papers(

@@ -7,7 +7,9 @@ from agt.guardrails import current_thread_id, get_guardrails
 from agt.models import NormalizedPaper
 from agt.providers.protocol import LLMProvider
 from agt.tools.crossref import CrossrefClient
+from agt.tools.europe_pmc import EuropePMCClient
 from agt.tools.openalex import OpenAlexClient
+from agt.tools.pubmed import PubMedClient
 from agt.tools.query_constraints import (
     SearchConstraintSpec,
     apply_query_constraints,
@@ -48,7 +50,7 @@ async def _fetch_from_sources(
     except Exception as exc:  # pragma: no cover - handled by integration behavior
         failures.append(f"semantic_scholar: {exc}")
 
-    guardrails.acquire("semantic_scholar", thread_id)
+    guardrails.acquire("openalex", thread_id)
     openalex_client = OpenAlexClient(
         timeout_seconds=settings.semantic_scholar_timeout_seconds,
         retries=settings.semantic_scholar_retries,
@@ -64,7 +66,7 @@ async def _fetch_from_sources(
     except Exception as exc:  # pragma: no cover - handled by integration behavior
         failures.append(f"openalex: {exc}")
 
-    guardrails.acquire("semantic_scholar", thread_id)
+    guardrails.acquire("crossref", thread_id)
     crossref_client = CrossrefClient(
         timeout_seconds=settings.semantic_scholar_timeout_seconds,
         retries=settings.semantic_scholar_retries,
@@ -73,6 +75,30 @@ async def _fetch_from_sources(
         results.extend(await crossref_client.search(query=query, limit=limit))
     except Exception as exc:  # pragma: no cover - handled by integration behavior
         failures.append(f"crossref: {exc}")
+
+    guardrails.acquire("pubmed", thread_id)
+    ncbi_api_key = None
+    if settings.ncbi_api_key is not None:
+        ncbi_api_key = settings.ncbi_api_key.get_secret_value()
+    pubmed_client = PubMedClient(
+        timeout_seconds=settings.semantic_scholar_timeout_seconds,
+        retries=settings.semantic_scholar_retries,
+        api_key=ncbi_api_key,
+    )
+    try:
+        results.extend(await pubmed_client.search(query=query, limit=limit))
+    except Exception as exc:  # pragma: no cover - handled by integration behavior
+        failures.append(f"pubmed: {exc}")
+
+    guardrails.acquire("europe_pmc", thread_id)
+    europe_pmc_client = EuropePMCClient(
+        timeout_seconds=settings.semantic_scholar_timeout_seconds,
+        retries=settings.semantic_scholar_retries,
+    )
+    try:
+        results.extend(await europe_pmc_client.search(query=query, limit=limit))
+    except Exception as exc:  # pragma: no cover - handled by integration behavior
+        failures.append(f"europe_pmc: {exc}")
 
     return results, failures
 

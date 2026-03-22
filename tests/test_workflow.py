@@ -23,6 +23,10 @@ class _FakeSettings:
     log_level: str = "INFO"
     runtime: _FakeRuntime = field(default_factory=_FakeRuntime)
     semantic_scholar_rate_limit_per_minute: int = 100
+    openalex_rate_limit_per_minute: int = 100
+    crossref_rate_limit_per_minute: int = 80
+    pubmed_rate_limit_per_minute: int = 100
+    europe_pmc_rate_limit_per_minute: int = 100
     zotero_rate_limit_per_minute: int = 60
     llm_rate_limit_per_minute: int = 120
     workflow_max_cost_usd: float = 0.5

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import re
+from datetime import date
 
 from agt.models import NormalizedPaper
 
@@ -53,19 +54,20 @@ def deduplicate_papers(papers: list[NormalizedPaper]) -> list[NormalizedPaper]:
     return list(by_key.values())
 
 
-def compute_rank_score(paper: NormalizedPaper, *, current_year: int = 2026) -> float:
+def compute_rank_score(paper: NormalizedPaper, *, current_year: int | None = None) -> float:
     """Apply the AGT-6 scoring formula with safe handling for missing fields."""
 
+    active_year = current_year if current_year is not None else date.today().year
     semantic = paper.semantic_score
     year_term = 0.0
     if paper.year is not None:
-        year_term = (current_year - paper.year) * -0.3
+        year_term = (active_year - paper.year) * -0.3
     open_access_bonus = 0.2 if paper.open_access else 0.0
     return semantic * 0.7 + year_term + open_access_bonus
 
 
 def rank_and_index_papers(
-    papers: list[NormalizedPaper], *, current_year: int = 2026
+    papers: list[NormalizedPaper], *, current_year: int | None = None
 ) -> list[NormalizedPaper]:
     """Sort papers deterministically and assign stable 0-based indices."""
 

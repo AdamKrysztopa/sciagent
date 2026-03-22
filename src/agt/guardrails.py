@@ -18,7 +18,7 @@ _thread_id_context: ContextVar[str] = ContextVar("agt_thread_id", default="globa
 class _GuardrailsRegistry:
     lock: threading.Lock = field(default_factory=threading.Lock)
     instance: Guardrails | None = None
-    signature: tuple[int, int, int, float] | None = None
+    signature: tuple[int, int, int, int, int, int, int, float] | None = None
 
 
 _registry = _GuardrailsRegistry()
@@ -71,9 +71,13 @@ class Guardrails:
     """In-memory guardrail registry keyed by service and thread_id."""
 
     semantic_scholar_rate_per_minute: int
-    zotero_rate_per_minute: int
-    llm_rate_per_minute: int
-    workflow_max_cost_usd: float
+    openalex_rate_per_minute: int = 100
+    crossref_rate_per_minute: int = 80
+    pubmed_rate_per_minute: int = 100
+    europe_pmc_rate_per_minute: int = 100
+    zotero_rate_per_minute: int = 60
+    llm_rate_per_minute: int = 120
+    workflow_max_cost_usd: float = 0.5
     _buckets: dict[tuple[str, str], TokenBucket] = field(init=False)
     _cost_by_thread: dict[str, float] = field(init=False)
     _lock: threading.Lock = field(init=False)
@@ -84,11 +88,15 @@ class Guardrails:
         self._lock = threading.Lock()
 
     def _service_rate(self, service: str) -> int:
-        if service == "semantic_scholar":
-            return self.semantic_scholar_rate_per_minute
-        if service == "zotero":
-            return self.zotero_rate_per_minute
-        return self.llm_rate_per_minute
+        rates = {
+            "semantic_scholar": self.semantic_scholar_rate_per_minute,
+            "openalex": self.openalex_rate_per_minute,
+            "crossref": self.crossref_rate_per_minute,
+            "pubmed": self.pubmed_rate_per_minute,
+            "europe_pmc": self.europe_pmc_rate_per_minute,
+            "zotero": self.zotero_rate_per_minute,
+        }
+        return rates.get(service, self.llm_rate_per_minute)
 
     def acquire(self, service: str, thread_id: str) -> None:
         with self._lock:
@@ -112,9 +120,13 @@ class Guardrails:
             self._cost_by_thread[thread_id] = spent
 
 
-def _guardrail_signature(settings: Settings) -> tuple[int, int, int, float]:
+def _guardrail_signature(settings: Settings) -> tuple[int, int, int, int, int, int, int, float]:
     return (
         settings.semantic_scholar_rate_limit_per_minute,
+        settings.openalex_rate_limit_per_minute,
+        settings.crossref_rate_limit_per_minute,
+        settings.pubmed_rate_limit_per_minute,
+        settings.europe_pmc_rate_limit_per_minute,
         settings.zotero_rate_limit_per_minute,
         settings.llm_rate_limit_per_minute,
         settings.workflow_max_cost_usd,
@@ -129,6 +141,10 @@ def configure_guardrails(settings: Settings) -> Guardrails:
         if _registry.instance is None or _registry.signature != signature:
             _registry.instance = Guardrails(
                 semantic_scholar_rate_per_minute=settings.semantic_scholar_rate_limit_per_minute,
+                openalex_rate_per_minute=settings.openalex_rate_limit_per_minute,
+                crossref_rate_per_minute=settings.crossref_rate_limit_per_minute,
+                pubmed_rate_per_minute=settings.pubmed_rate_limit_per_minute,
+                europe_pmc_rate_per_minute=settings.europe_pmc_rate_limit_per_minute,
                 zotero_rate_per_minute=settings.zotero_rate_limit_per_minute,
                 llm_rate_per_minute=settings.llm_rate_limit_per_minute,
                 workflow_max_cost_usd=settings.workflow_max_cost_usd,

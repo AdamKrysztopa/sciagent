@@ -13,6 +13,8 @@ EXPECTED_MIN_CITATIONS = 10
 
 _EXPECTED_MIN_YEAR_2020 = 2020
 _EXPECTED_MIN_YEAR_2024 = 2024
+_EXPECTED_MIN_YEAR_2021 = 2021
+_EXPECTED_MAX_YEAR_2023 = 2023
 _EXPECTED_MIN_CITATIONS_MOST_CITED = 10
 _EXPECTED_FILTER_COUNT = 2
 
@@ -87,6 +89,33 @@ def test_keywords_exclude_constraint_words() -> None:
     assert "game" not in kw
 
 
+def test_parse_between_year_range_sets_both_bounds() -> None:
+    constraints = parse_query_constraints(
+        "graph learning papers between 2020 and 2024",
+        default_limit=5,
+    )
+    assert constraints.year.min_year == _EXPECTED_MIN_YEAR_2020
+    assert constraints.year.max_year == _EXPECTED_MIN_YEAR_2024
+
+
+def test_parse_from_to_year_range_sets_both_bounds() -> None:
+    constraints = parse_query_constraints(
+        "transformer papers from 2021 to 2023",
+        default_limit=5,
+    )
+    assert constraints.year.min_year == _EXPECTED_MIN_YEAR_2021
+    assert constraints.year.max_year == _EXPECTED_MAX_YEAR_2023
+
+
+def test_parse_exclude_keywords_from_query() -> None:
+    constraints = parse_query_constraints(
+        "nutrition in sport excluding supplements but not marketing",
+        default_limit=5,
+    )
+    assert "supplements" in constraints.keywords.exclude_keywords
+    assert "marketing" in constraints.keywords.exclude_keywords
+
+
 def test_apply_query_constraints_filters_by_year_citations_open_access_and_keywords() -> None:
     constraints = parse_query_constraints(
         "graph learning after 2023 at least 10 citations open access",
@@ -135,3 +164,41 @@ def test_apply_query_constraints_filters_by_year_citations_open_access_and_keywo
     assert len(filtered) == _EXPECTED_FILTER_COUNT
     assert filtered[0].title == "Graph learning advances"
     assert filtered[1].title == "Vision transformers"
+
+
+def test_apply_query_constraints_filters_excluded_keywords_in_title_and_abstract() -> None:
+    constraints = parse_query_constraints(
+        "nutrition papers not about supplements",
+        default_limit=10,
+    )
+
+    papers = [
+        NormalizedPaper(
+            title="Sports nutrition overview",
+            abstract="General recommendations for athletes",
+            year=2024,
+            citation_count=20,
+            open_access=True,
+            semantic_score=0.7,
+        ),
+        NormalizedPaper(
+            title="Supplements and performance",
+            abstract="Dosing and efficacy",
+            year=2024,
+            citation_count=20,
+            open_access=True,
+            semantic_score=0.8,
+        ),
+        NormalizedPaper(
+            title="Hydration strategies",
+            abstract="supplements are discussed in this review",
+            year=2024,
+            citation_count=20,
+            open_access=True,
+            semantic_score=0.8,
+        ),
+    ]
+
+    filtered = apply_query_constraints(papers, constraints)
+    assert len(filtered) == 1
+    assert filtered[0].title == "Sports nutrition overview"

@@ -1,4 +1,7 @@
+import pytest
+
 from agt.models import NormalizedPaper
+from agt.tools import ranking as ranking_module
 from agt.tools.ranking import compute_rank_score, rank_and_index_papers
 
 EXPECTED_DEDUP_COUNT = 2
@@ -72,3 +75,22 @@ def test_dedup_uses_arxiv_id_when_doi_missing() -> None:
     assert len(ranked) == EXPECTED_ARXIV_DEDUP_COUNT
     assert ranked[0].arxiv_id == "2401.00001"
     assert ranked[0].semantic_score == EXPECTED_WINNING_ARXIV_SCORE
+
+
+def test_compute_rank_score_uses_dynamic_current_year(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class _FakeDate:
+        @staticmethod
+        def today():
+            return _FakeDate()
+
+        @property
+        def year(self) -> int:
+            return 2030
+
+    monkeypatch.setattr(ranking_module, "date", _FakeDate)
+    paper = NormalizedPaper(title="Future", year=2028, semantic_score=1.0, open_access=False)
+
+    score = compute_rank_score(paper)
+    assert round(score, 4) == round(1.0 * 0.7 + (2030 - 2028) * -0.3, 4)
