@@ -1,11 +1,11 @@
 ---
 name: zotero-plugin
-description: Build and validate Zotero plugin features based on zotero.md milestones and constraints.
+description: Build and validate Zotero plugin features based on docs/zotero.md milestones and constraints.
 ---
 
 # Zotero Plugin Skill
 
-Use this skill when implementing or reviewing plugin-side features described in `zotero.md`.
+Use this skill when implementing or reviewing plugin-side features described in `docs/zotero.md`.
 
 ## Inputs
 

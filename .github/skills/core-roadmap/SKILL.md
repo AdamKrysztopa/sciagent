@@ -1,16 +1,16 @@
 ---
 name: core-roadmap
-description: Translate core.md epics into delivery-ready tickets, implementation plans, and validation checklists.
+description: Translate docs/core.md epics into delivery-ready tickets, implementation plans, and validation checklists.
 ---
 
 # Core Roadmap Skill
 
-Use this skill when the task involves backlog decomposition, sequencing, implementation mapping, or acceptance checks for `core.md`.
+Use this skill when the task involves backlog decomposition, sequencing, implementation mapping, or acceptance checks for `docs/core.md`.
 
 ## Inputs
 
 - Requested feature or bugfix scope.
-- Relevant section IDs from `core.md`.
+- Relevant section IDs from `docs/core.md`.
 
 ## Procedure
 
