@@ -20,13 +20,25 @@ if st.button("Run", type="primary"):
     if not query.strip():
         st.warning("Enter a query first.")
     else:
-        state = asyncio.run(
-            run_workflow(query=query, collection_name=collection, approved=approved)
-        )
+        try:
+            state = asyncio.run(
+                run_workflow(query=query, collection_name=collection, approved=approved)
+            )
+        except RuntimeError as exc:
+            st.error(str(exc))
+            st.stop()
+
+        st.caption(f"request_id={state['request_id']} thread_id={state['thread_id']}")
         st.subheader("Results")
         for idx, paper in enumerate(state["papers"]):
             st.markdown(f"**{idx}. {paper.title}**")
             st.write({"year": paper.year, "doi": paper.doi, "score": paper.score})
 
+        st.subheader("Preflight")
+        st.json(state["preflight"])
+
         st.subheader("Write Status")
         st.json(state["write_result"])
+
+        st.subheader("Trace")
+        st.json(state["trace_spans"])

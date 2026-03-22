@@ -23,8 +23,12 @@ class NormalizedPaper(BaseModel):
 class AgentState(TypedDict):
     """Serializable state used by the workflow engine."""
 
+    request_id: str
+    thread_id: str
     messages: list[str]
     papers: list[NormalizedPaper]
     collection_name: str | None
     approved: bool
+    preflight: dict[str, Any]
+    trace_spans: list[dict[str, Any]]
     write_result: dict[str, Any] | None

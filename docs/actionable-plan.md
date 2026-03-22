@@ -90,13 +90,13 @@ flowchart LR
 ### M1 (Week 1-2): Foundation and Observability
 
 - [x] Baseline repo bootstrap with uv, ruff, pyright, pytest, pre-commit, CI
-- [ ] AGT-0: Strict settings model and typed env aliases in [src/agt/config.py](src/agt/config.py)
-- [ ] AGT-1: Fail-fast startup for required secrets and env profile overrides
-- [ ] AGT-2: Real Zotero read/write preflight exposed in status output
-- [ ] AGT-3: LLMProvider protocol with provider-agnostic interface and xAI baseline adapter
-- [ ] Multi-provider config base: normalize provider key ingestion from AGT_* and plain key aliases
-- [ ] AGT-4: Request/thread IDs and span-level tracing for search/approve/write
-- [ ] Docs: add reproducibility contract in [docs/settings.md](docs/settings.md)
+- [x] AGT-0: Strict settings model and typed env aliases in [src/agt/config.py](src/agt/config.py)
+- [x] AGT-1: Fail-fast startup for required secrets and env profile overrides
+- [x] AGT-2: Real Zotero read/write preflight exposed in status output
+- [x] AGT-3: LLMProvider protocol with provider-agnostic interface and xAI baseline adapter
+- [x] Multi-provider config base: normalize provider key ingestion from AGT_* and plain key aliases
+- [x] AGT-4: Request/thread IDs and span-level tracing for search/approve/write
+- [x] Docs: add reproducibility contract in [docs/settings.md](docs/settings.md)
 
 ### M2 (Week 2-3): Retrieval and Ranking Core
 

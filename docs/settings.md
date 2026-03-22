@@ -1,9 +1,9 @@
 # AGT Quick-Start: Full Technical Stack & Bootstrap Guide (2026 Edition)
 
-**Target:** Zero-to-MVP in <30 minutes for a solo dev or small team.  
-**Python requirement:** `>= 3.13` (recommended: **3.14** – released Oct 2025, fully stable in March 2026).  
-**Package manager:** `uv` (Astral) – 10–20× faster than pip/poetry.  
-**Lint / Format / Type-check:** `ruff` + `pyright` (the modern “ty” stack – blazing fast, zero config bloat).  
+**Target:** Zero-to-MVP in <30 minutes for a solo dev or small team.
+**Python requirement:** `>= 3.13` (recommended: **3.14** – released Oct 2025, fully stable in March 2026).
+**Package manager:** `uv` (Astral) – 10–20× faster than pip/poetry.
+**Lint / Format / Type-check:** `ruff` + `pyright` (the modern “ty” stack – blazing fast, zero config bloat).
 
 This document is **copy-paste ready**. Follow the steps in order and you will have a clean, production-grade repo with the exact stack from the AGT epics.
 
@@ -173,9 +173,9 @@ CMD ["uv", "run", "streamlit", "run", "src/agt/ui/app.py", "--server.port=8501"]
 
 ## 8. Next Steps After Bootstrap (links to epics)
 
-1. Run `uv sync` → open in editor → you already have a working repo.  
-2. Implement **AGT-0** (config.py) first – 15 minutes.  
-3. Then **AGT-14** (models.py + AgentState) – another 20 minutes.  
+1. Run `uv sync` → open in editor → you already have a working repo.
+2. Implement **AGT-0** (config.py) first – 15 minutes.
+3. Then **AGT-14** (models.py + AgentState) – another 20 minutes.
 4. Paste the LangGraph skeleton from earlier responses → you have a running agent.
 
 You now have:
@@ -185,3 +185,26 @@ You now have:
 - Ready for Docker, CI, and scaling to Redis checkpointers
 
 **Just run the bootstrap block above and you’re literally 30 seconds away from typing your first natural-language paper search.**
+
+## Reproducibility Contract
+
+- Runtime configuration must be loaded through `pydantic-settings` only.
+- Startup must fail fast when required settings are missing or invalid.
+- Secrets must never appear in logs; all structured and plain logs are redacted.
+- CI and local execution should run through `uv` with identical commands:
+  - `uv run ruff check`
+  - `uv run pytest -q`
+
+## Provider Swap Contract
+
+- Internal model calls must use the `LLMProvider` protocol in `src/agt/providers/protocol.py`.
+- Provider construction is centralized in `src/agt/providers/router.py`.
+- Runtime provider behavior is fully controlled by settings:
+  - `AGT_LLM_PROVIDER` or `LLM_PROVIDER`
+  - `AGT_MODEL_NAME`
+  - `AGT_TIMEOUT_SECONDS`
+  - `AGT_RETRIES`
+  - `AGT_TEMPERATURE`
+  - `AGT_ENV` + `AGT_ENV_OVERRIDES` for environment-specific overrides
+- Current default implementation is xAI via `src/agt/providers/xai.py`.
+- OpenAI/Anthropic/Groq adapters should implement the same protocol and be added only in the router, with no workflow-level changes.
