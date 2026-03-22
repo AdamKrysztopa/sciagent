@@ -1,142 +1,197 @@
-# SciAgent Actionable Plan
+# SciAgent Prioritized Action Plan
 
-This plan is derived from `docs/core.md`, `docs/settings.md`, and `docs/zotero.md`.
+This document is synthesized from [docs/core.md](docs/core.md), [docs/settings.md](docs/settings.md), and [docs/zotero.md](docs/zotero.md) using role-specific subagent prioritization.
 
-## Phase 0: Baseline (Done)
+## Planning Rules
 
-1. Initialize Python project and toolchain with `uv`, `ruff`, `pyright`, and `pytest`.
-2. Create starter package layout in `src/agt/` and quality gates in CI.
-3. Configure local pre-commit hooks and GitHub Actions workflow.
+1. Prioritize write safety and approval-gate integrity over feature breadth.
+2. Treat AGT-11 as a release gate for any workflow that writes to Zotero.
+3. Keep reproducibility and deterministic CI behavior as mandatory constraints.
+4. Use checklist execution and story IDs in every PR.
+5. Treat multi-provider LLM support as a core requirement because provider keys are already present in local environment.
 
-## Phase 1: Platform Foundation (P0, AGT-0 to AGT-4)
+## Already Completed (Audit)
 
-### Sprint Goal
+- [x] Repository bootstrap completed with uv, pyproject, lockfile, and package layout
+- [x] Local quality gates wired: pre-commit with ruff and pyright
+- [x] CI workflow created for lint, type-check, and tests
+- [x] Core strategy docs moved to `docs/` and internal references updated
+- [x] Prioritized milestone plan created from AGT and ZAP backlogs
+- [x] Dependency plot added to this document
+- [x] Multi-provider environment readiness detected (OPENAI_API_KEY, ANTHROPIC_API_KEY, XAI_API_KEY)
 
-Deliver safe startup, typed settings, LLM provider boundary, and traceable execution.
+## Dependency Plot
 
-### Action Items
+```mermaid
+flowchart LR
+	AGT0[AGT-0] --> AGT1[AGT-1]
+	AGT0 --> AGT3[AGT-3]
+	AGT1 --> AGT2[AGT-2]
+	AGT1 --> AGT4[AGT-4]
+	AGT3 --> AGT4
 
-1. AGT-0 + AGT-1: Harden `src/agt/config.py`.
-- Add strict field constraints and explicit environment aliases.
-- Add unit tests for missing required secrets and invalid library type.
-- Enforce redaction for structured and exception logs.
+	AGT1 --> AGT5[AGT-5]
+	AGT5 --> AGT6[AGT-6]
+	AGT5 --> AGT7[AGT-7]
+	AGT6 --> AGT7
+	AGT3 --> AGT7
 
-2. AGT-2: Implement Zotero permission preflight in `src/agt/zotero/preflight.py`.
-- Add startup check for read/write permission.
-- Return machine-readable preflight status for UI/API health.
+	AGT2 --> AGT9[AGT-9]
+	AGT2 --> AGT10[AGT-10]
+	AGT5 --> AGT10
+	AGT1 --> AGT14[AGT-14]
+	AGT3 --> AGT14
+	AGT5 --> AGT14
+	AGT9 --> AGT11[AGT-11]
+	AGT10 --> AGT11
+	AGT14 --> AGT11
+	AGT9 --> AGT12[AGT-12]
+	AGT10 --> AGT12
 
-3. AGT-3: Add provider abstraction in `src/agt/providers/`.
-- Define `LLMProvider` protocol (`invoke`, `ainvoke`, tool support).
-- Implement xAI adapter and config-driven timeout/retry/model settings.
+	AGT7 --> AGT15[AGT-15]
+	AGT9 --> AGT15
+	AGT10 --> AGT15
+	AGT14 --> AGT15
+	AGT15 --> AGT16[AGT-16]
+	AGT15 --> AGT17[AGT-17]
+	AGT17 --> AGT19[AGT-19]
+	AGT15 --> AGT19
+	AGT19 --> AGT20[AGT-20]
+	AGT12 --> AGT20
+	AGT16 --> AGT20
 
-4. AGT-4: Add observability.
-- Add request/thread IDs across graph execution.
-- Instrument search, approval, and write nodes with spans.
-- Add structured logging setup with per-step context.
+	AGT15 --> AGT18[AGT-18]
+	AGT16 --> AGT18
+	AGT17 --> AGT18
+	AGT1 --> AGT21[AGT-21]
+	AGT2 --> AGT21
+	AGT18 --> AGT21
 
-### Exit Criteria
+	AGT3 --> AGT27[AGT-27]
+	AGT5 --> AGT27
+	AGT3 --> AGT22[AGT-22]
+	AGT20 --> AGT22
 
-1. Startup fails fast on invalid config and missing secrets.
-2. Preflight output is visible in health endpoint or CLI status.
-3. LLM adapter can be swapped without graph-level changes.
-4. Workflow traces show node-by-node execution.
+	AGT11 --> ZAP0[ZAP-0..2]
+	AGT15 --> ZAP3[ZAP-3..5]
+	AGT16 --> ZAP6[ZAP-6..8]
+	AGT19 --> ZAP9[ZAP-9..11]
+	AGT21 --> ZAP9
+```
 
-## Phase 2: Retrieval + Ranking (P0, AGT-5 to AGT-7)
+## Critical Path
 
-### Sprint Goal
+1. AGT-0 -> AGT-1 -> AGT-5 -> AGT-6 -> AGT-7 -> AGT-14 -> AGT-15 -> AGT-17 -> AGT-19 -> AGT-20 -> AGT-18 -> AGT-21
+2. Parallel release-gate branch: AGT-2 -> AGT-9 + AGT-10 -> AGT-11
+3. Risk gate: AGT-11 must be complete before shipping any approve-to-write flow.
 
-Produce stable, ranked, deduplicated `NormalizedPaper` results.
+## Milestone Plan
 
-### Action Items
+### M1 (Week 1-2): Foundation and Observability
 
-1. AGT-5: Implement Semantic Scholar client wrapper in `src/agt/tools/search_papers.py`.
-- Map responses to `NormalizedPaper` only.
-- Handle timeout/retries/malformed payloads.
+- [x] Baseline repo bootstrap with uv, ruff, pyright, pytest, pre-commit, CI
+- [ ] AGT-0: Strict settings model and typed env aliases in [src/agt/config.py](src/agt/config.py)
+- [ ] AGT-1: Fail-fast startup for required secrets and env profile overrides
+- [ ] AGT-2: Real Zotero read/write preflight exposed in status output
+- [ ] AGT-3: LLMProvider protocol with provider-agnostic interface and xAI baseline adapter
+- [ ] Multi-provider config base: normalize provider key ingestion from AGT_* and plain key aliases
+- [ ] AGT-4: Request/thread IDs and span-level tracing for search/approve/write
+- [ ] Docs: add reproducibility contract in [docs/settings.md](docs/settings.md)
 
-2. AGT-6: Implement rank/filter/dedup engine in new `src/agt/retrieval/ranking.py`.
-- Add DOI + title-hash dedup.
-- Implement explicit score formula from `docs/core.md`.
+### M2 (Week 2-3): Retrieval and Ranking Core
 
-3. AGT-7: Implement summary + selection model.
-- Keep summaries deterministic and bounded to 3-4 sentences.
-- Preserve stable 0-based result indices for all views.
+- [ ] AGT-5: Semantic Scholar wrapper returns only NormalizedPaper models
+- [ ] AGT-6: Ranking + dedup engine with formula and stable index guarantees
+- [ ] AGT-7: Deterministic bounded summarization for presentation layer
+- [ ] AGT-27: Rate-limit and cost guardrails integrated into retrieval/provider paths
 
-### Exit Criteria
+### M3 (Week 3-4): Write Correctness and Idempotency
 
-1. Same query yields stable ordering with deterministic indices.
-2. Duplicate papers collapse correctly.
-3. Retrieval path fully covered with mocked tests.
+- [ ] AGT-9: Collection resolver with canonicalized name matching and parent support
+- [ ] AGT-10: Zotero item mapper with deterministic creator mapping and validation
+- [ ] AGT-11: Idempotent upsert (DOI primary, title+author hash fallback)
+- [ ] AGT-12: Write outcome schema created/unchanged/failed and retry-safe failures
 
-## Phase 3: Approval-Gated Write Path (P0, AGT-9 to AGT-16)
+### M4 (Week 4-5): Approval-Gated Workflow and MVP Demo
 
-### Sprint Goal
+- [ ] AGT-14: Checkpoint-safe AgentState with thread isolation
+- [ ] AGT-15: Search -> present -> approve -> write flow with explicit approval gate
+- [ ] AGT-17: Streamlit UX for selection, approval, and per-item status
+- [ ] AGT-19: Deterministic end-to-end happy path with mocked external services
 
-Guarantee idempotent Zotero writes behind explicit approval.
+### M5 (Week 6-8): Production v1 Hardening
 
-### Action Items
+- [ ] AGT-16: Resume/retry from checkpoints without duplicate writes
+- [ ] AGT-20: Failure-path and partial-success deterministic test suite
+- [ ] AGT-18: Backend/API separation with health/run/resume/status endpoints
+- [ ] AGT-21: Security hardening and multi-user auth direction documentation
+- [ ] AGT-22: Universal LLM interface routing with provider selection policy
 
-1. AGT-14: Replace placeholder `AgentState` with full checkpoint-safe workflow state.
-2. AGT-15: Implement graph states for search -> present -> approve -> write.
-3. AGT-9 + AGT-10: Add collection resolver and item mapping/validation modules.
-4. AGT-11 + AGT-12: Add idempotent upsert and partial-success response handling.
-5. AGT-16: Implement resume/retry from saved checkpoints.
+### M6 (Parallel Track): Zotero Native Add-on
 
-### Exit Criteria
+- [ ] ZAP-0 to ZAP-2: Plugin foundation, hot reload, backend connection layer
+- [ ] ZAP-3 to ZAP-5: Sidebar UX for search and explicit approve/reject/edit actions
+- [ ] ZAP-6 to ZAP-8: Native collection/item writes with idempotency and optional PDF
+- [ ] ZAP-9 to ZAP-11: Preferences, offline/error handling, signing and release automation
 
-1. No write happens without explicit approve action.
-2. Re-running same approval does not create duplicates.
-3. Interrupted runs can resume from checkpoint safely.
+## Immediate Backlog (Checkbox-Ready)
 
-## Phase 4: Product Delivery (AGT-17 to AGT-18)
+- [ ] Add provider protocol package and baseline xAI adapter implementation
+- [ ] Add OpenAI adapter implementing the same LLMProvider contract
+- [ ] Add Anthropic adapter implementing the same LLMProvider contract
+- [ ] Add provider router with explicit selection strategy (config default + per-request override)
+- [ ] Add provider health/probe command and startup diagnostics for enabled providers
+- [ ] Add model registry config (provider, model, timeout, retries, temperature) with strict validation
+- [ ] Add fallback chain policy (primary, secondary, fail-fast) with explicit audit logging
+- [ ] Add strict config validation tests for missing/invalid secrets
+- [ ] Implement live Zotero preflight capability check on startup
+- [ ] Add trace/span helpers and propagate request/thread IDs through workflow state
+- [ ] Implement Semantic Scholar client with bounded retry and error normalization
+- [ ] Add ranking and dedup module with formula tests for recency/open-access weighting
+- [ ] Expand AgentState to include checkpoint versioning and audit-safe status fields
+- [ ] Implement explicit approval node with guaranteed zero-side-effect reject path
+- [ ] Implement collection resolver canonicalization tests (case/trim/parent)
+- [ ] Implement item mapper validation tests for journalArticle and preprint
+- [ ] Implement idempotent upsert integration tests for duplicate approval re-runs
+- [ ] Implement partial-success response rendering in UI and API
+- [ ] Add resume-from-checkpoint tests for interrupted post-search and post-approval paths
+- [ ] Add CI smoke test for non-approval workflow execution via CLI
+- [ ] Switch CI dependency sync to frozen mode and enforce format check parity
+- [ ] Move test-only dependencies out of runtime dependency list
+- [ ] Add deterministic CI test env vars (for example TZ and PYTHONHASHSEED)
+- [ ] Add API contract tests for health/run/resume/status payload schemas
+- [ ] Add security checklist section and release gate in documentation
+- [ ] Add plugin-backend contract versioning before ZAP-3 implementation starts
 
-### Sprint Goal
+## Multi-Provider Rollout Checklist
 
-Deliver a usable Streamlit prototype while preserving backend separation.
+- [ ] Phase A: Provider abstraction locked and covered by unit tests
+- [ ] Phase B: xAI + OpenAI + Anthropic adapters passing shared contract test suite
+- [ ] Phase C: Routing policy enabled (single provider, pinned provider, fallback chain)
+- [ ] Phase D: Tracing and cost telemetry include provider and model labels
+- [ ] Phase E: Failure semantics standardized across providers for UI/API compatibility
+- [ ] Phase F: Documentation updated with provider selection, env aliases, and safe defaults
 
-### Action Items
+## Backend Gates for ZAP Blocks
 
-1. Build approval-focused UI fragments in `src/agt/ui/app.py`.
-2. Show per-item status: created, unchanged, failed.
-3. Separate backend workflow API from UI rendering code.
+- [ ] Gate for ZAP-1 (foundation): AGT-0, AGT-1, AGT-2, AGT-4, AGT-18 done
+- [ ] Gate for ZAP-2 (sidebar UX): AGT-5, AGT-6, AGT-7, AGT-15, AGT-27 done
+- [ ] Gate for ZAP-3 (native write integration): AGT-10, AGT-11, AGT-12, AGT-14, AGT-16 done
+- [ ] Gate for ZAP-3 optional PDF: AGT-13 done
+- [ ] Gate for ZAP-4 (release): AGT-19, AGT-20, AGT-21 done
 
-### Exit Criteria
+## Documentation Deliverables
 
-1. User can search, review, approve/reject, and inspect outcomes in one flow.
-2. UI errors are actionable and tied to workflow step.
+- [ ] Keep [docs/core.md](docs/core.md) dependency edges updated when story dependencies change
+- [ ] Keep [docs/settings.md](docs/settings.md) aligned with CI and pre-commit behavior
+- [ ] Add endpoint contract section to [docs/core.md](docs/core.md) for AGT-18 and plugin usage
+- [ ] Add release checklist document for MVP and Production v1 promotion criteria
 
-## Phase 5: Zotero Add-on Track (ZAP-0 to ZAP-11)
+## PR Checklist Template
 
-### Sprint Goal
-
-Ship native Zotero plugin against backend contracts.
-
-### Action Items
-
-1. ZAP-0 to ZAP-2: bootstrap plugin template, hot reload, backend connection.
-2. ZAP-3 to ZAP-5: sidebar UX with search + approval controls.
-3. ZAP-6 to ZAP-8: native collection/item write path + optional PDF attach.
-4. ZAP-9 to ZAP-11: preferences, error handling, packaging/release automation.
-
-### Exit Criteria
-
-1. Full native search -> approve -> write flow works from Zotero UI.
-2. Plugin release can be produced from CI.
-
-## Immediate Next 10 Tasks
-
-1. Add `src/agt/providers/protocol.py` and xAI adapter.
-2. Expand `Settings` tests for fail-fast validation and redaction.
-3. Implement Semantic Scholar adapter with retries.
-4. Add ranking/dedup module with formula tests.
-5. Expand `AgentState` to checkpoint-safe schema from `docs/core.md`.
-6. Implement explicit approval node and reject path.
-7. Implement collection resolver with canonicalization tests.
-8. Implement idempotent upsert (DOI then title+author hash) with integration tests.
-9. Add trace IDs and structured logging middleware/helpers.
-10. Add a workflow status endpoint or CLI status command exposing preflight + trace IDs.
-
-## Tracking Rules
-
-1. Every PR must cite story IDs (for example, AGT-11).
-2. Every story implementation must include tests for its acceptance criteria.
-3. All write-path stories must include idempotency and approval-gate checks.
+- [ ] PR title includes story IDs (for example AGT-11)
+- [ ] Acceptance criteria mapped in PR body
+- [ ] Unit/integration/e2e tests included where applicable
+- [ ] Idempotency checks included for any write-path change
+- [ ] Approval-gate behavior validated for workflow changes
+- [ ] Trace/log redaction verified for new logs
