@@ -7,6 +7,7 @@ from agt.guardrails import current_thread_id, get_guardrails
 from agt.models import NormalizedPaper
 from agt.tools.crossref import CrossrefClient
 from agt.tools.openalex import OpenAlexClient
+from agt.tools.query_constraints import apply_query_constraints, parse_query_constraints
 from agt.tools.ranking import rank_and_index_papers
 from agt.tools.semantic_scholar import SemanticScholarClient, SemanticScholarResponseError
 
@@ -27,6 +28,8 @@ async def search_papers(
     guardrails = get_guardrails()
     active_thread = thread_id or current_thread_id()
     capped_limit = min(limit, active_settings.semantic_scholar_limit)
+    constraints = parse_query_constraints(query, default_limit=capped_limit)
+    retrieval_query = " ".join(constraints.keywords.include_keywords) or query
     results: list[NormalizedPaper] = []
     failures: list[str] = []
 
@@ -40,7 +43,7 @@ async def search_papers(
         retries=active_settings.semantic_scholar_retries,
     )
     try:
-        results.extend(await semantic_client.search(query=query, limit=capped_limit))
+        results.extend(await semantic_client.search(query=retrieval_query, limit=capped_limit))
     except Exception as exc:  # pragma: no cover - handled by integration behavior
         failures.append(f"semantic_scholar: {exc}")
 
@@ -50,7 +53,7 @@ async def search_papers(
         retries=active_settings.semantic_scholar_retries,
     )
     try:
-        results.extend(await openalex_client.search(query=query, limit=capped_limit))
+        results.extend(await openalex_client.search(query=retrieval_query, limit=capped_limit))
     except Exception as exc:  # pragma: no cover - handled by integration behavior
         failures.append(f"openalex: {exc}")
 
@@ -60,7 +63,7 @@ async def search_papers(
         retries=active_settings.semantic_scholar_retries,
     )
     try:
-        results.extend(await crossref_client.search(query=query, limit=capped_limit))
+        results.extend(await crossref_client.search(query=retrieval_query, limit=capped_limit))
     except Exception as exc:  # pragma: no cover - handled by integration behavior
         failures.append(f"crossref: {exc}")
 
@@ -68,4 +71,9 @@ async def search_papers(
         failure_text = "; ".join(failures) if failures else "no sources returned any papers"
         raise SemanticScholarResponseError(f"all retrieval providers failed: {failure_text}")
 
-    return rank_and_index_papers(results)
+    ranked = rank_and_index_papers(results)
+    filtered = apply_query_constraints(ranked, constraints)
+    for index, paper in enumerate(filtered):
+        paper.index = index
+
+    return filtered

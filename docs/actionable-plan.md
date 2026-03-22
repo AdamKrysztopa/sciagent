@@ -105,6 +105,19 @@ flowchart LR
 - [x] AGT-7: Deterministic bounded summarization for presentation layer
 - [x] AGT-27: Rate-limit and cost guardrails integrated into retrieval/provider paths
 
+#### M2 Add-ons (Completed)
+
+- [x] M2 example switched to live-search only mode in [examples/m2_retrieval_demo.py](../examples/m2_retrieval_demo.py) (fixture/mock fallback removed).
+- [x] Live-search runtime handles API-limit and malformed-response failures with user-readable output (no traceback) in [examples/m2_retrieval_demo.py](../examples/m2_retrieval_demo.py).
+- [x] Retrieval expanded beyond Semantic Scholar using additional live sources:
+	OpenAlex client in [src/agt/tools/openalex.py](../src/agt/tools/openalex.py),
+	Crossref client in [src/agt/tools/crossref.py](../src/agt/tools/crossref.py),
+	and merged search orchestration in [src/agt/tools/search_papers.py](../src/agt/tools/search_papers.py).
+- [x] Query tightening added with validated constraint parsing/filtering and keyword-focused retrieval query handling in [src/agt/tools/query_constraints.py](../src/agt/tools/query_constraints.py) and [src/agt/tools/search_papers.py](../src/agt/tools/search_papers.py).
+- [x] Citation and arXiv metadata now propagate in normalized retrieval models and ranking dedup fallbacks in [src/agt/models.py](../src/agt/models.py), [src/agt/tools/semantic_scholar.py](../src/agt/tools/semantic_scholar.py), and [src/agt/tools/ranking.py](../src/agt/tools/ranking.py).
+- [x] Project runtime moved off LangChain bridge to a native xAI HTTP adapter (Pydantic v2-only runtime path) in [src/agt/providers/xai.py](../src/agt/providers/xai.py) and dependency updates in [pyproject.toml](../pyproject.toml).
+- [x] CI quality gates validated after these changes (`ruff`, `pyright`, `pytest`) with updated retrieval/ranking coverage in [tests/test_search_papers.py](../tests/test_search_papers.py), [tests/test_query_constraints.py](../tests/test_query_constraints.py), [tests/test_semantic_scholar.py](../tests/test_semantic_scholar.py), and [tests/test_ranking.py](../tests/test_ranking.py).
+
 ### M3 (Week 3-4): Write Correctness and Idempotency
 
 - [ ] AGT-9: Collection resolver with canonicalized name matching and parent support
@@ -161,17 +174,6 @@ flowchart LR
 
 - `source .venv/bin/activate && python examples/m2_retrieval_demo.py --query "the most trandign 2026 timeseries papers - list 5" --limit 5`
 - `source .venv/bin/activate && python examples/m2_retrieval_demo.py --query "the most advanced RAG techniques in 2026 - game changers. Make sure the community perception is good!" --limit 5`
-
-### Recently Implemented (Do Not Lose)
-
-- [x] M2 example switched to live-search only mode in [examples/m2_retrieval_demo.py](../examples/m2_retrieval_demo.py) (fixture/mock fallback removed).
-- [x] Live-search runtime now handles API-limit and malformed-response failures with user-readable output (no traceback) in [examples/m2_retrieval_demo.py](../examples/m2_retrieval_demo.py).
-- [x] Retrieval expanded beyond Semantic Scholar using additional live sources:
-	OpenAlex client in [src/agt/tools/openalex.py](../src/agt/tools/openalex.py),
-	Crossref client in [src/agt/tools/crossref.py](../src/agt/tools/crossref.py),
-	and merged search orchestration in [src/agt/tools/search_papers.py](../src/agt/tools/search_papers.py).
-- [x] Project runtime moved off LangChain bridge to a native xAI HTTP adapter (Pydantic v2-only runtime path) in [src/agt/providers/xai.py](../src/agt/providers/xai.py) and dependency updates in [pyproject.toml](../pyproject.toml).
-- [x] CI quality gates validated after these changes (`ruff`, `pyright`, `pytest`) with updated tests including multi-source search behavior in [tests/test_search_papers.py](../tests/test_search_papers.py).
 
 ## Immediate Backlog (Checkbox-Ready)
 

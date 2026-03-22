@@ -2,6 +2,8 @@ from agt.models import NormalizedPaper
 from agt.tools.ranking import compute_rank_score, rank_and_index_papers
 
 EXPECTED_DEDUP_COUNT = 2
+EXPECTED_ARXIV_DEDUP_COUNT = 1
+EXPECTED_WINNING_ARXIV_SCORE = 0.8
 
 
 def test_rank_formula_and_missing_fields() -> None:
@@ -47,3 +49,26 @@ def test_dedup_and_stable_indices() -> None:
     assert [paper.index for paper in ranked] == [0, 1]
     assert ranked[0].doi == "10.1000/abc"
     assert ranked[0].score >= ranked[1].score
+
+
+def test_dedup_uses_arxiv_id_when_doi_missing() -> None:
+    papers = [
+        NormalizedPaper(
+            title="First",
+            arxiv_id="2401.00001",
+            semantic_score=0.2,
+            year=2023,
+        ),
+        NormalizedPaper(
+            title="Second",
+            arxiv_id="2401.00001",
+            semantic_score=0.8,
+            year=2024,
+        ),
+    ]
+
+    ranked = rank_and_index_papers(papers)
+
+    assert len(ranked) == EXPECTED_ARXIV_DEDUP_COUNT
+    assert ranked[0].arxiv_id == "2401.00001"
+    assert ranked[0].semantic_score == EXPECTED_WINNING_ARXIV_SCORE

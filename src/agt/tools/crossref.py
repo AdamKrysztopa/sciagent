@@ -148,6 +148,11 @@ class CrossrefClient:
         url_value = item.get("URL")
         url = url_value.strip() if isinstance(url_value, str) and url_value.strip() else None
 
+        citation_count = 0
+        references_count_value = item.get("is-referenced-by-count")
+        if isinstance(references_count_value, int):
+            citation_count = max(0, references_count_value)
+
         return NormalizedPaper(
             title=title,
             year=year,
@@ -157,5 +162,6 @@ class CrossrefClient:
             url=url,
             source="crossref",
             semantic_score=0.0,
+            citation_count=citation_count,
             open_access=False,
         )

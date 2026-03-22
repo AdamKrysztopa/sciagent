@@ -13,12 +13,14 @@ class NormalizedPaper(BaseModel):
     title: str
     year: int | None = None
     doi: str | None = None
+    arxiv_id: str | None = None
     abstract: str | None = None
     authors: list[str] = Field(default_factory=list)
     url: str | None = None
     source: str = "semantic_scholar"
     index: int | None = None
     semantic_score: float = 0.0
+    citation_count: int = 0
     open_access: bool = False
     summary: str | None = None
     score: float = 0.0

@@ -37,6 +37,7 @@ if st.button("Run", type="primary"):
                 "source": paper.source,
                 "year": paper.year,
                 "doi": paper.doi,
+                "arxiv_id": paper.arxiv_id,
                 "score": paper.score,
             })
             if paper.summary:

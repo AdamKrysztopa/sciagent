@@ -21,6 +21,13 @@ def _normalized_doi(value: str | None) -> str | None:
     return normalized or None
 
 
+def _normalized_arxiv_id(value: str | None) -> str | None:
+    if value is None:
+        return None
+    normalized = value.strip().lower()
+    return normalized or None
+
+
 def _title_author_hash(paper: NormalizedPaper) -> str:
     authors = "|".join(author.strip().lower() for author in paper.authors)
     raw = f"{_normalize_title(paper.title)}::{authors}"
@@ -28,12 +35,18 @@ def _title_author_hash(paper: NormalizedPaper) -> str:
 
 
 def deduplicate_papers(papers: list[NormalizedPaper]) -> list[NormalizedPaper]:
-    """Collapse duplicates using DOI first, then title+author hash fallback."""
+    """Collapse duplicates using DOI first, then arXiv ID, then title+author hash fallback."""
 
     by_key: dict[str, NormalizedPaper] = {}
     for paper in papers:
         doi = _normalized_doi(paper.doi)
-        key = f"doi:{doi}" if doi is not None else f"title:{_title_author_hash(paper)}"
+        arxiv_id = _normalized_arxiv_id(paper.arxiv_id)
+        if doi is not None:
+            key = f"doi:{doi}"
+        elif arxiv_id is not None:
+            key = f"arxiv:{arxiv_id}"
+        else:
+            key = f"title:{_title_author_hash(paper)}"
         existing = by_key.get(key)
         if existing is None or paper.semantic_score > existing.semantic_score:
             by_key[key] = paper

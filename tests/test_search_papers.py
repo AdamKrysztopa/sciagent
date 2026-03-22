@@ -49,8 +49,8 @@ async def test_search_papers_ranks_and_indexes(monkeypatch: pytest.MonkeyPatch) 
     })
 
     papers = [
-        NormalizedPaper(title="A", year=2025, semantic_score=0.4, open_access=False),
-        NormalizedPaper(title="B", year=2026, semantic_score=0.5, open_access=True),
+        NormalizedPaper(title="Test paper A", year=2025, semantic_score=0.4, open_access=False),
+        NormalizedPaper(title="Test paper B", year=2026, semantic_score=0.5, open_access=True),
     ]
 
     monkeypatch.setattr(search_module, "get_guardrails", _fake_get_guardrails)
@@ -65,7 +65,67 @@ async def test_search_papers_ranks_and_indexes(monkeypatch: pytest.MonkeyPatch) 
     )
 
     assert [paper.index for paper in ranked] == [0, 1]
-    assert ranked[0].title == "B"
+    assert ranked[0].title == "Test paper B"
+
+
+@pytest.mark.anyio
+async def test_search_papers_applies_constraints_and_keyword_query(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "123",
+        "AGT_SUMMARIZATION_USE_LLM": False,
+    })
+
+    papers = [
+        NormalizedPaper(
+            title="Quantum optimizer",
+            abstract="Open source benchmark",
+            year=2026,
+            citation_count=12,
+            open_access=True,
+            semantic_score=0.6,
+        ),
+        NormalizedPaper(
+            title="Quantum optimizer old study",
+            abstract="Legacy setup",
+            year=2022,
+            citation_count=300,
+            open_access=True,
+            semantic_score=0.9,
+        ),
+    ]
+
+    captured_queries: list[str] = []
+
+    class _CapturingClient:
+        async def search(self, query: str, *, limit: int) -> list[NormalizedPaper]:
+            _ = limit
+            captured_queries.append(query)
+            return papers
+
+    def _capturing_factory(**kwargs: object) -> _CapturingClient:
+        _ = kwargs
+        return _CapturingClient()
+
+    monkeypatch.setattr(search_module, "get_guardrails", _fake_get_guardrails)
+    monkeypatch.setattr(search_module, "SemanticScholarClient", _capturing_factory)
+    monkeypatch.setattr(search_module, "OpenAlexClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "CrossrefClient", _fake_client_factory([]))
+
+    ranked = await search_module.search_papers(
+        query="quantum optimizer after 2025 at least 10 citations open access",
+        settings=settings,
+        thread_id="thread-1",
+    )
+
+    assert len(ranked) == 1
+    assert ranked[0].title == "Quantum optimizer"
+    assert ranked[0].index == 0
+    assert captured_queries
+    assert "quantum" in captured_queries[0]
 
 
 @pytest.mark.anyio

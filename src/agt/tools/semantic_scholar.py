@@ -17,7 +17,7 @@ class SemanticScholarResponseError(RuntimeError):
 class SemanticScholarClient:
     """Small bounded client for Semantic Scholar Graph API."""
 
-    _fields = "title,year,abstract,url,isOpenAccess,authors,externalIds,score"
+    _fields = "title,year,abstract,url,isOpenAccess,authors,externalIds,score,citationCount"
 
     def __init__(
         self,
@@ -139,17 +139,26 @@ class SemanticScholarClient:
                         authors.append(name.strip())
 
         doi: str | None = None
+        arxiv_id: str | None = None
         external_ids = item.get("externalIds")
         if isinstance(external_ids, dict):
             external_ids_mapping = cast(dict[str, Any], external_ids)
             doi_value = external_ids_mapping.get("DOI")
             if isinstance(doi_value, str) and doi_value.strip():
                 doi = doi_value.strip()
+            arxiv_value = external_ids_mapping.get("ArXiv")
+            if isinstance(arxiv_value, str) and arxiv_value.strip():
+                arxiv_id = arxiv_value.strip()
 
         semantic_score = 0.0
         raw_score = item.get("score")
         if isinstance(raw_score, (int, float)):
             semantic_score = float(raw_score)
+
+        citation_count = 0
+        raw_citations = item.get("citationCount")
+        if isinstance(raw_citations, int):
+            citation_count = max(0, raw_citations)
 
         open_access = bool(item.get("isOpenAccess") is True)
 
@@ -157,10 +166,12 @@ class SemanticScholarClient:
             title=title,
             year=year,
             doi=doi,
+            arxiv_id=arxiv_id,
             abstract=abstract,
             authors=authors,
             url=url,
             source="semantic_scholar",
             semantic_score=semantic_score,
+            citation_count=citation_count,
             open_access=open_access,
         )

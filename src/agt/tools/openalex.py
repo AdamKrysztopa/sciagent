@@ -87,14 +87,7 @@ class OpenAlexClient:
         year_value = item.get("publication_year")
         year = year_value if isinstance(year_value, int) else None
 
-        doi_value = item.get("doi")
-        doi: str | None = None
-        if isinstance(doi_value, str) and doi_value.strip():
-            normalized_doi = doi_value.strip()
-            prefix = "https://doi.org/"
-            if normalized_doi.lower().startswith(prefix):
-                normalized_doi = normalized_doi[len(prefix) :]
-            doi = normalized_doi
+        doi = OpenAlexClient._extract_doi(item)
 
         abstract = None
 
@@ -131,6 +124,8 @@ class OpenAlexClient:
         if isinstance(relevance_value, (int, float)):
             semantic_score = float(relevance_value)
 
+        citation_count = OpenAlexClient._extract_citation_count(item)
+
         return NormalizedPaper(
             title=title,
             year=year,
@@ -140,5 +135,25 @@ class OpenAlexClient:
             url=url,
             source="openalex",
             semantic_score=semantic_score,
+            citation_count=citation_count,
             open_access=open_access,
         )
+
+    @staticmethod
+    def _extract_doi(item: dict[str, Any]) -> str | None:
+        doi_value = item.get("doi")
+        if not isinstance(doi_value, str) or not doi_value.strip():
+            return None
+
+        normalized_doi = doi_value.strip()
+        prefix = "https://doi.org/"
+        if normalized_doi.lower().startswith(prefix):
+            normalized_doi = normalized_doi[len(prefix) :]
+        return normalized_doi
+
+    @staticmethod
+    def _extract_citation_count(item: dict[str, Any]) -> int:
+        cited_by_value = item.get("cited_by_count")
+        if isinstance(cited_by_value, int):
+            return max(0, cited_by_value)
+        return 0
