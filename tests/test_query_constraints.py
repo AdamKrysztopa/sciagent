@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+# ruff: noqa: I001, PLR2004
+
+from agt.config import Settings
 from agt.models import NormalizedPaper
 from agt.tools.query_constraints import (
     apply_query_constraints,
@@ -202,3 +205,55 @@ def test_apply_query_constraints_filters_excluded_keywords_in_title_and_abstract
     filtered = apply_query_constraints(papers, constraints)
     assert len(filtered) == 1
     assert filtered[0].title == "Sports nutrition overview"
+
+
+def test_exclude_keywords_matches_diacritics_and_unicode_text() -> None:
+    constraints = parse_query_constraints("energy metabolism excluding naïve", default_limit=10)
+    papers = [
+        NormalizedPaper(title="A naïve approach", abstract=None),
+        NormalizedPaper(title="Robust approach", abstract="no exclusion keyword"),
+    ]
+    filtered = apply_query_constraints(papers, constraints)
+    assert len(filtered) == 1
+    assert filtered[0].title == "Robust approach"
+
+
+def test_exclude_keywords_handles_emoji_and_cjk_query() -> None:
+    constraints = parse_query_constraints("机器学习 papers but not baseline 😊", default_limit=10)
+    papers = [
+        NormalizedPaper(title="机器学习 baseline methods", abstract=None),
+        NormalizedPaper(title="机器学习 advanced methods", abstract=None),
+    ]
+    filtered = apply_query_constraints(papers, constraints)
+    assert len(filtered) == 1
+    assert "advanced" in filtered[0].title
+
+
+def test_configurable_most_cited_threshold() -> None:
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "x",
+        "AGT_ZOTERO_API_KEY": "z",
+        "AGT_ZOTERO_LIBRARY_ID": "1",
+        "AGT_CITATION_THRESHOLD_MOST_CITED": 33,
+    })
+    constraints = parse_query_constraints(
+        "most cited graph learning papers",
+        default_limit=5,
+        settings=settings,
+    )
+    assert constraints.citations.min_citations == 33
+
+
+def test_configurable_trending_threshold() -> None:
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "x",
+        "AGT_ZOTERO_API_KEY": "z",
+        "AGT_ZOTERO_LIBRARY_ID": "1",
+        "AGT_CITATION_THRESHOLD_TRENDING": 9,
+    })
+    constraints = parse_query_constraints(
+        "trending transformer papers",
+        default_limit=5,
+        settings=settings,
+    )
+    assert constraints.citations.min_citations == 9

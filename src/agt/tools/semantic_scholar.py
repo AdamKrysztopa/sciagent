@@ -42,6 +42,7 @@ class SemanticScholarClient:
         limit: int,
         year_min: int | None = None,
         year_max: int | None = None,
+        max_pages: int = 1,
     ) -> list[NormalizedPaper]:
         """Search papers and normalize into internal model list."""
 
@@ -52,48 +53,55 @@ class SemanticScholarClient:
         if self._api_key:
             headers["x-api-key"] = self._api_key
 
-        params: dict[str, str] = {
-            "query": query,
-            "limit": str(limit),
-            "fields": self._fields,
-        }
-        if year_min is not None or year_max is not None:
-            lower = str(year_min) if year_min is not None else ""
-            upper = str(year_max) if year_max is not None else ""
-            params["year"] = f"{lower}-{upper}"
+        papers: list[NormalizedPaper] = []
+        for page_idx in range(max(1, max_pages)):
+            params: dict[str, str] = {
+                "query": query,
+                "limit": str(limit),
+                "offset": str(page_idx * limit),
+                "fields": self._fields,
+            }
+            if year_min is not None or year_max is not None:
+                lower = str(year_min) if year_min is not None else ""
+                upper = str(year_max) if year_max is not None else ""
+                params["year"] = f"{lower}-{upper}"
 
-        response_data = await self._request_json(
-            path="/paper/search",
-            params=params,
-            headers=headers,
-        )
+            response_data = await self._request_json(
+                path="/paper/search",
+                params=params,
+                headers=headers,
+            )
 
-        raw_items = response_data.get("data")
-        if not isinstance(raw_items, list):
-            error_parts: list[str] = []
-            error_value = response_data.get("error")
-            if isinstance(error_value, str) and error_value.strip():
-                error_parts.append(error_value.strip())
+            raw_items = response_data.get("data")
+            if not isinstance(raw_items, list):
+                error_parts: list[str] = []
+                error_value = response_data.get("error")
+                if isinstance(error_value, str) and error_value.strip():
+                    error_parts.append(error_value.strip())
 
-            message_value = response_data.get("message")
-            if isinstance(message_value, str) and message_value.strip():
-                error_parts.append(message_value.strip())
+                message_value = response_data.get("message")
+                if isinstance(message_value, str) and message_value.strip():
+                    error_parts.append(message_value.strip())
 
-            if error_parts:
-                joined = " | ".join(error_parts)
+                if error_parts:
+                    joined = " | ".join(error_parts)
+                    raise SemanticScholarResponseError(
+                        f"Semantic Scholar returned unexpected payload without data list: {joined}"
+                    )
+
                 raise SemanticScholarResponseError(
-                    f"Semantic Scholar returned unexpected payload without data list: {joined}"
+                    "Semantic Scholar payload missing list field: data"
                 )
 
-            raise SemanticScholarResponseError("Semantic Scholar payload missing list field: data")
+            if not raw_items:
+                break
 
-        papers: list[NormalizedPaper] = []
-        for item_obj in cast(list[object], raw_items):
-            if not isinstance(item_obj, dict):
-                continue
-            normalized = self._normalize_item(cast(dict[str, Any], item_obj))
-            if normalized is not None:
-                papers.append(normalized)
+            for item_obj in cast(list[object], raw_items):
+                if not isinstance(item_obj, dict):
+                    continue
+                normalized = self._normalize_item(cast(dict[str, Any], item_obj))
+                if normalized is not None:
+                    papers.append(normalized)
         return papers
 
     async def _request_json(

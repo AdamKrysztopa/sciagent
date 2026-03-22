@@ -182,6 +182,87 @@ class Settings(BaseSettings):
             "AGT_EUROPE_PMC_RATE_LIMIT_PER_MINUTE", "EUROPE_PMC_RATE_LIMIT_PER_MINUTE"
         ),
     )
+    core_rate_limit_per_minute: int = Field(
+        default=60,
+        ge=1,
+        validation_alias=AliasChoices(
+            "AGT_CORE_RATE_LIMIT_PER_MINUTE", "CORE_RATE_LIMIT_PER_MINUTE"
+        ),
+    )
+    arxiv_rate_limit_per_minute: int = Field(
+        default=20,
+        ge=1,
+        validation_alias=AliasChoices(
+            "AGT_ARXIV_RATE_LIMIT_PER_MINUTE", "ARXIV_RATE_LIMIT_PER_MINUTE"
+        ),
+    )
+    opencitations_rate_limit_per_minute: int = Field(
+        default=60,
+        ge=1,
+        validation_alias=AliasChoices(
+            "AGT_OPENCITATIONS_RATE_LIMIT_PER_MINUTE", "OPENCITATIONS_RATE_LIMIT_PER_MINUTE"
+        ),
+    )
+    base_rate_limit_per_minute: int = Field(
+        default=40,
+        ge=1,
+        validation_alias=AliasChoices(
+            "AGT_BASE_RATE_LIMIT_PER_MINUTE", "BASE_RATE_LIMIT_PER_MINUTE"
+        ),
+    )
+    dimensions_rate_limit_per_minute: int = Field(
+        default=40,
+        ge=1,
+        validation_alias=AliasChoices(
+            "AGT_DIMENSIONS_RATE_LIMIT_PER_MINUTE", "DIMENSIONS_RATE_LIMIT_PER_MINUTE"
+        ),
+    )
+    google_scholar_rate_limit_per_minute: int = Field(
+        default=20,
+        ge=1,
+        validation_alias=AliasChoices(
+            "AGT_GOOGLE_SCHOLAR_RATE_LIMIT_PER_MINUTE", "GOOGLE_SCHOLAR_RATE_LIMIT_PER_MINUTE"
+        ),
+    )
+    search_max_pages: int = Field(
+        default=1,
+        ge=1,
+        le=5,
+        validation_alias=AliasChoices("AGT_SEARCH_MAX_PAGES", "SEARCH_MAX_PAGES"),
+    )
+    citation_threshold_most_cited: int = Field(
+        default=10,
+        ge=0,
+        validation_alias=AliasChoices(
+            "AGT_CITATION_THRESHOLD_MOST_CITED", "CITATION_THRESHOLD_MOST_CITED"
+        ),
+    )
+    citation_threshold_game_changers: int = Field(
+        default=20,
+        ge=0,
+        validation_alias=AliasChoices(
+            "AGT_CITATION_THRESHOLD_GAME_CHANGERS", "CITATION_THRESHOLD_GAME_CHANGERS"
+        ),
+    )
+    citation_threshold_trending: int = Field(
+        default=5,
+        ge=0,
+        validation_alias=AliasChoices(
+            "AGT_CITATION_THRESHOLD_TRENDING", "CITATION_THRESHOLD_TRENDING"
+        ),
+    )
+    use_keybert: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("AGT_USE_KEYBERT", "USE_KEYBERT"),
+    )
+    use_spell_check: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("AGT_USE_SPELL_CHECK", "USE_SPELL_CHECK"),
+    )
+    use_reranker: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("AGT_USE_RERANKER", "USE_RERANKER"),
+    )
     zotero_rate_limit_per_minute: int = Field(
         default=60,
         ge=1,

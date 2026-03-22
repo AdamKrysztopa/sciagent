@@ -40,11 +40,12 @@ async def run_query(settings: Settings, query: str, limit: int, idx: int) -> str
     lines.append(f"=== Query {idx}: {query} (limit={limit}) ===")
     try:
         with thread_context(f"batch-{idx}"):
-            papers = await search_papers(
+            papers, metadata = await search_papers(
                 query=query, limit=limit, settings=settings, thread_id=f"batch-{idx}"
             )
         papers = await summarize_papers(papers, provider=None, use_llm=False, max_sentences=2)
         lines.append(f"results: {len(papers)}")
+        lines.append(f"sources_used: {', '.join(metadata.sources_used)}")
         for p in papers:
             doi = p.doi or "n/a"
             year = p.year if p.year is not None else "n/a"

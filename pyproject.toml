@@ -20,6 +20,18 @@ dependencies = [
   "vcrpy"
 ]
 
+[project.optional-dependencies]
+keywords = [
+  "keybert>=0.8.5",
+  "sentence-transformers>=3.0.0"
+]
+spell = [
+  "pyspellchecker>=0.8.1"
+]
+rerank = [
+  "sentence-transformers>=3.0.0"
+]
+
 [dependency-groups]
 dev = [
   "pre-commit",

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import threading
 import time
 from collections.abc import Iterator
@@ -18,7 +19,9 @@ _thread_id_context: ContextVar[str] = ContextVar("agt_thread_id", default="globa
 class _GuardrailsRegistry:
     lock: threading.Lock = field(default_factory=threading.Lock)
     instance: Guardrails | None = None
-    signature: tuple[int, int, int, int, int, int, int, float] | None = None
+    signature: (
+        tuple[int, int, int, int, int, int, int, int, int, int, int, int, int, float] | None
+    ) = None
 
 
 _registry = _GuardrailsRegistry()
@@ -75,6 +78,12 @@ class Guardrails:
     crossref_rate_per_minute: int = 80
     pubmed_rate_per_minute: int = 100
     europe_pmc_rate_per_minute: int = 100
+    core_rate_per_minute: int = 60
+    arxiv_rate_per_minute: int = 20
+    opencitations_rate_per_minute: int = 60
+    base_rate_per_minute: int = 40
+    dimensions_rate_per_minute: int = 40
+    google_scholar_rate_per_minute: int = 20
     zotero_rate_per_minute: int = 60
     llm_rate_per_minute: int = 120
     workflow_max_cost_usd: float = 0.5
@@ -94,6 +103,12 @@ class Guardrails:
             "crossref": self.crossref_rate_per_minute,
             "pubmed": self.pubmed_rate_per_minute,
             "europe_pmc": self.europe_pmc_rate_per_minute,
+            "core": self.core_rate_per_minute,
+            "arxiv": self.arxiv_rate_per_minute,
+            "opencitations": self.opencitations_rate_per_minute,
+            "base": self.base_rate_per_minute,
+            "dimensions": self.dimensions_rate_per_minute,
+            "google_scholar": self.google_scholar_rate_per_minute,
             "zotero": self.zotero_rate_per_minute,
         }
         return rates.get(service, self.llm_rate_per_minute)
@@ -119,14 +134,46 @@ class Guardrails:
                 )
             self._cost_by_thread[thread_id] = spent
 
+    async def wait_for_token(
+        self,
+        service: str,
+        thread_id: str,
+        timeout_seconds: float,
+    ) -> bool:
+        """Wait for a token to become available, up to timeout_seconds."""
 
-def _guardrail_signature(settings: Settings) -> tuple[int, int, int, int, int, int, int, float]:
+        deadline = time.monotonic() + max(0.0, timeout_seconds)
+        while True:
+            with self._lock:
+                key = (service, thread_id)
+                bucket = self._buckets.get(key)
+                if bucket is None:
+                    bucket = TokenBucket.create(self._service_rate(service))
+                    self._buckets[key] = bucket
+                if bucket.consume():
+                    return True
+
+            if time.monotonic() >= deadline:
+                return False
+
+            await asyncio.sleep(0.05)
+
+
+def _guardrail_signature(
+    settings: Settings,
+) -> tuple[int, int, int, int, int, int, int, int, int, int, int, int, int, float]:
     return (
         settings.semantic_scholar_rate_limit_per_minute,
         settings.openalex_rate_limit_per_minute,
         settings.crossref_rate_limit_per_minute,
         settings.pubmed_rate_limit_per_minute,
         settings.europe_pmc_rate_limit_per_minute,
+        settings.core_rate_limit_per_minute,
+        settings.arxiv_rate_limit_per_minute,
+        settings.opencitations_rate_limit_per_minute,
+        settings.base_rate_limit_per_minute,
+        settings.dimensions_rate_limit_per_minute,
+        settings.google_scholar_rate_limit_per_minute,
         settings.zotero_rate_limit_per_minute,
         settings.llm_rate_limit_per_minute,
         settings.workflow_max_cost_usd,
@@ -145,6 +192,12 @@ def configure_guardrails(settings: Settings) -> Guardrails:
                 crossref_rate_per_minute=settings.crossref_rate_limit_per_minute,
                 pubmed_rate_per_minute=settings.pubmed_rate_limit_per_minute,
                 europe_pmc_rate_per_minute=settings.europe_pmc_rate_limit_per_minute,
+                core_rate_per_minute=settings.core_rate_limit_per_minute,
+                arxiv_rate_per_minute=settings.arxiv_rate_limit_per_minute,
+                opencitations_rate_per_minute=settings.opencitations_rate_limit_per_minute,
+                base_rate_per_minute=settings.base_rate_limit_per_minute,
+                dimensions_rate_per_minute=settings.dimensions_rate_limit_per_minute,
+                google_scholar_rate_per_minute=settings.google_scholar_rate_limit_per_minute,
                 zotero_rate_per_minute=settings.zotero_rate_limit_per_minute,
                 llm_rate_per_minute=settings.llm_rate_limit_per_minute,
                 workflow_max_cost_usd=settings.workflow_max_cost_usd,

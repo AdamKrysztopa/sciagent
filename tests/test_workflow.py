@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 import pytest
 
 from agt.graph import workflow
-from agt.models import NormalizedPaper
+from agt.models import NormalizedPaper, SearchMetadata
 from agt.zotero.preflight import PreflightResult
 
 
@@ -27,6 +27,12 @@ class _FakeSettings:
     crossref_rate_limit_per_minute: int = 80
     pubmed_rate_limit_per_minute: int = 100
     europe_pmc_rate_limit_per_minute: int = 100
+    core_rate_limit_per_minute: int = 60
+    arxiv_rate_limit_per_minute: int = 20
+    opencitations_rate_limit_per_minute: int = 60
+    base_rate_limit_per_minute: int = 40
+    dimensions_rate_limit_per_minute: int = 40
+    google_scholar_rate_limit_per_minute: int = 20
     zotero_rate_limit_per_minute: int = 60
     llm_rate_limit_per_minute: int = 120
     workflow_max_cost_usd: float = 0.5
@@ -77,11 +83,14 @@ async def test_workflow_contains_ids_preflight_and_spans(monkeypatch: pytest.Mon
         *,
         settings: object | None = None,
         thread_id: str | None = None,
-    ) -> list[NormalizedPaper]:
+    ) -> tuple[list[NormalizedPaper], SearchMetadata]:
         _ = limit
         _ = settings
         _ = thread_id
-        return [NormalizedPaper(title=f"result:{query}")]
+        return (
+            [NormalizedPaper(title=f"result:{query}")],
+            SearchMetadata(original_query=query, regex_query=query),
+        )
 
     async def fake_upsert(collection_name: str, papers: list[NormalizedPaper]):
         @dataclass(slots=True)
@@ -117,6 +126,7 @@ async def test_workflow_contains_ids_preflight_and_spans(monkeypatch: pytest.Mon
     assert "approval_checkpoint" in span_names
     assert "zotero_write" in span_names
     assert state["write_result"] == {"created": 1, "unchanged": 0, "failed": 0}
+    assert state["search_metadata"] is not None
 
 
 @pytest.mark.anyio

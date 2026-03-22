@@ -1,5 +1,8 @@
 """OpenAlex API wrapper returning NormalizedPaper models."""
 
+# ruff: noqa: PLR0912
+# pyright: reportUnknownVariableType=false, reportUnknownArgumentType=false, reportUnknownMemberType=false
+
 from __future__ import annotations
 
 import re
@@ -35,35 +38,56 @@ class OpenAlexClient:
         *,
         limit: int,
         year_min: int | None = None,
+        max_pages: int = 1,
     ) -> list[NormalizedPaper]:
         """Search OpenAlex and return normalized papers."""
 
         if not query.strip():
             return []
 
-        params: dict[str, str] = {
-            "search": query,
-            "per-page": str(limit),
-        }
-        if year_min is not None:
-            params["filter"] = f"publication_year:>{year_min - 1}"
-
-        payload = await self._request_json(
-            path="/works",
-            params=params,
-        )
-
-        raw_items = payload.get("results")
-        if not isinstance(raw_items, list):
-            raise OpenAlexResponseError("OpenAlex payload missing list field: results")
-
         papers: list[NormalizedPaper] = []
-        for item_obj in cast(list[object], raw_items):
-            if not isinstance(item_obj, dict):
-                continue
-            normalized = self._normalize_item(cast(dict[str, Any], item_obj))
-            if normalized is not None:
-                papers.append(normalized)
+        cursor = "*"
+        for _ in range(max(1, max_pages)):
+            params: dict[str, str] = {
+                "search": query,
+                "per-page": str(limit),
+            }
+            if year_min is not None:
+                params["filter"] = f"publication_year:>{year_min - 1}"
+            if max_pages > 1:
+                params["cursor"] = cursor
+
+            payload = await self._request_json(
+                path="/works",
+                params=params,
+            )
+
+            raw_items = payload.get("results")
+            if not isinstance(raw_items, list):
+                raise OpenAlexResponseError("OpenAlex payload missing list field: results")
+
+            if not raw_items:
+                break
+
+            for item_obj in cast(list[object], raw_items):
+                if not isinstance(item_obj, dict):
+                    continue
+                normalized = self._normalize_item(cast(dict[str, Any], item_obj))
+                if normalized is not None:
+                    papers.append(normalized)
+
+            if max_pages == 1:
+                break
+
+            meta = payload.get("meta")
+            next_cursor: str | None = None
+            if isinstance(meta, dict):
+                candidate = meta.get("next_cursor")
+                if isinstance(candidate, str) and candidate.strip():
+                    next_cursor = candidate
+            if next_cursor is None:
+                break
+            cursor = next_cursor
         return papers
 
     async def _request_json(self, *, path: str, params: dict[str, str]) -> dict[str, Any]:

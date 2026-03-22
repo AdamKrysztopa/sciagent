@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, TypedDict
+from typing import Any, Literal, TypedDict
 
 from pydantic import BaseModel, Field
 
@@ -27,6 +27,21 @@ class NormalizedPaper(BaseModel):
     score: float = 0.0
 
 
+class SearchMetadata(BaseModel):
+    """Execution metadata captured for each search request."""
+
+    original_query: str
+    rewritten_query: str | None = None
+    regex_query: str
+    sources_used: list[str] = Field(default_factory=list)
+    sources_failed: list[str] = Field(default_factory=list)
+    mode: Literal["llm_rewrite", "regex"] = "regex"
+    retry_count: int = 0
+    total_fetched: int = 0
+    total_after_filter: int = 0
+    source_timings: dict[str, float] = Field(default_factory=dict)
+
+
 class AgentState(TypedDict):
     """Serializable state used by the workflow engine."""
 
@@ -39,3 +54,4 @@ class AgentState(TypedDict):
     preflight: dict[str, Any]
     trace_spans: list[dict[str, Any]]
     write_result: dict[str, Any] | None
+    search_metadata: dict[str, Any] | None

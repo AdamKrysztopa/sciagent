@@ -18,6 +18,9 @@ class RewrittenQuery(BaseModel):
     search_query: str
     keywords: list[str] = Field(default_factory=list)
     topic: str = ""
+    synonyms: list[str] = Field(default_factory=list)
+    pubmed_query: str | None = None
+    arxiv_categories: list[str] = Field(default_factory=list)
 
 
 class ValidationResult(BaseModel):
@@ -38,19 +41,26 @@ Rules:
 - Use standard academic terminology
 - Be concise: 2-5 keywords or a short phrase
 - Think about what terms would appear in paper titles and abstracts
+- Return 2-4 useful synonym queries for expansion
+- Optionally include a PubMed-oriented query and arXiv categories when useful
 
 Examples:
 Input: "Most recent, and highest quoted papers in nutrition in sport. not older than 2024"
 Output: {{"search_query": "sports nutrition", "keywords": ["sports", "nutrition"], \
-"topic": "nutrition in sports and athletic performance"}}
+"topic": "nutrition in sports and athletic performance", "synonyms": ["athlete nutrition", \
+"exercise nutrition"], "pubmed_query": "sports nutrition[Title/Abstract]", \
+"arxiv_categories": ["q-bio.QM"]}}
 
 Input: "the most cited 2020 and newer timeseries papers - list 5"
 Output: {{"search_query": "time series analysis", "keywords": ["time", "series", \
-"analysis"], "topic": "time series analysis methods"}}
+"analysis"], "topic": "time series analysis methods", "synonyms": ["time-series forecasting", \
+"temporal modeling"], "pubmed_query": null, "arxiv_categories": ["cs.LG", "stat.ML"]}}
 
 Input: "the most advanced RAG techniques in 2026 - game changers"
 Output: {{"search_query": "retrieval augmented generation", "keywords": ["retrieval", \
-"augmented", "generation"], "topic": "retrieval-augmented generation techniques"}}
+"augmented", "generation"], "topic": "retrieval-augmented generation techniques", \
+"synonyms": ["RAG", "retrieval-enhanced generation"], "pubmed_query": null, \
+"arxiv_categories": ["cs.CL", "cs.AI"]}}
 
 Now process this request:
 Input: "{query}"
@@ -122,11 +132,32 @@ async def rewrite_query(query: str, provider: LLMProvider) -> RewrittenQuery:
         [str(k) for k in cast(list[object], keywords_raw)] if isinstance(keywords_raw, list) else []
     )
     topic = str(parsed.get("topic", search_query)).strip()
+    synonyms_raw = parsed.get("synonyms", [])
+    synonyms = (
+        [str(value).strip() for value in cast(list[object], synonyms_raw)]
+        if isinstance(synonyms_raw, list)
+        else []
+    )
+    pubmed_query_raw = parsed.get("pubmed_query")
+    pubmed_query = str(pubmed_query_raw).strip() if isinstance(pubmed_query_raw, str) else None
+    arxiv_categories_raw = parsed.get("arxiv_categories", [])
+    arxiv_categories = (
+        [str(value).strip() for value in cast(list[object], arxiv_categories_raw)]
+        if isinstance(arxiv_categories_raw, list)
+        else []
+    )
 
     if not search_query:
         search_query = query
 
-    return RewrittenQuery(search_query=search_query, keywords=keywords, topic=topic)
+    return RewrittenQuery(
+        search_query=search_query,
+        keywords=keywords,
+        topic=topic,
+        synonyms=[value for value in synonyms if value],
+        pubmed_query=pubmed_query if pubmed_query else None,
+        arxiv_categories=[value for value in arxiv_categories if value],
+    )
 
 
 async def validate_results(

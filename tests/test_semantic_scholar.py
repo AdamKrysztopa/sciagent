@@ -105,3 +105,29 @@ async def test_semantic_scholar_malformed_payload_raises(monkeypatch: pytest.Mon
 
     with pytest.raises(SemanticScholarResponseError):
         await client.search("test", limit=5)
+
+
+@pytest.mark.anyio
+async def test_semantic_scholar_search_paginates_with_offset(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    client = SemanticScholarClient(api_key=None, timeout_seconds=5, retries=1)
+    offsets: list[str] = []
+
+    async def _fake_request_json(
+        *,
+        path: str,
+        params: dict[str, str],
+        headers: dict[str, str],
+    ) -> dict[str, Any]:
+        _ = path
+        _ = headers
+        offsets.append(params["offset"])
+        if params["offset"] == "0":
+            return {"data": [{"title": "P1"}]}
+        return {"data": [{"title": "P2"}]}
+
+    monkeypatch.setattr(client, "_request_json", _fake_request_json)
+    papers = await client.search("test", limit=1, max_pages=2)
+    assert [paper.title for paper in papers] == ["P1", "P2"]
+    assert offsets == ["0", "1"]

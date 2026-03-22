@@ -68,7 +68,7 @@ async def _run(query: str, limit: int) -> int:
 
     try:
         with thread_context("example-m2"):
-            papers = await search_papers(
+            papers, metadata = await search_papers(
                 query=query,
                 limit=limit,
                 settings=settings,
@@ -102,6 +102,11 @@ async def _run(query: str, limit: int) -> int:
     print(f"mode: {mode}")
     print(f"query: {query}")
     print(f"results: {len(papers)}")
+    print(f"sources used: {', '.join(metadata.sources_used) if metadata.sources_used else 'none'}")
+    print(
+        f"sources failed: {', '.join(metadata.sources_failed) if metadata.sources_failed else 'none'}"
+    )
+    print(f"retry count: {metadata.retry_count}")
     print("-" * 80)
 
     for paper in papers:

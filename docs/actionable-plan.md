@@ -169,7 +169,16 @@ Solution: LLM-powered query rewriting, semantic validation, and iterative refine
 
 ### M2.5: Retrieval Quality & Coverage Improvements
 
-Status: **In Progress** — P0 slice implemented; builds on M2 foundation and remains independent from M3.
+Status: **Completed** — P0 through P3 actions implemented, validated, and CI-clean.
+
+#### M2.5 Completion Gate (2026-03-22)
+
+- [x] P0 complete
+- [x] P1 complete
+- [x] P2 complete
+- [x] P3 complete
+- [x] CI clear after M2.5 completion (`uv run ruff check .`, `uv run pyright`, `uv run pytest`)
+- [x] Release recommendation: **ready to move to M3 and M4**
 
 #### M2.5 Progress Update (Completed)
 
@@ -281,10 +290,10 @@ Each new client lives in its own file under `src/agt/tools/`, returns `list[Norm
 
 | Priority | Items | Rationale |
 |----------|-------|-----------|
-| **P0 — do first** | S2.5-1a (PubMed), S2.5-1c (Europe PMC), S2.5-2b (exclude keywords), S2.5-2c (date ranges), S2.5-3c (dynamic year), S2.5-4a–b (OpenAlex/Crossref tests) | High impact, low risk, no new dependencies. |
-| **P1 — do next** | S2.5-1b (CORE), S2.5-1d (arXiv), S2.5-1e (OpenCitations), S2.5-2e (synonym expansion), S2.5-4c (parallel fetch), S2.5-4f (rate-limit backoff), S2.5-5a–b (metadata/timing) | Medium complexity, strong quality signal. |
-| **P2 — when ready** | S2.5-1g (BASE), S2.5-1h (Dimensions), S2.5-2a (KeyBERT), S2.5-2d (spell check), S2.5-2f (per-source query), S2.5-3a (citation enrichment), S2.5-3b (reranker), S2.5-3d (configurable thresholds), S2.5-4d (pagination), S2.5-4e (unicode tests) | New optional deps, experimental, or lower urgency. |
-| **P3 — optional** | S2.5-1f (Google Scholar/SerpAPI) | Paid API or fragile scraper; defer. |
+| **P0 — complete** | S2.5-1a (PubMed), S2.5-1c (Europe PMC), S2.5-2b (exclude keywords), S2.5-2c (date ranges), S2.5-3c (dynamic year), S2.5-4a–b (OpenAlex/Crossref tests) | Completed and validated in CI. |
+| **P1 — complete** | S2.5-1b (CORE), S2.5-1d (arXiv), S2.5-1e (OpenCitations), S2.5-2e (synonym expansion), S2.5-4c (parallel fetch), S2.5-4f (rate-limit backoff), S2.5-5a–b (metadata/timing) | Completed and validated in CI. |
+| **P2 — complete** | S2.5-1g (BASE), S2.5-1h (Dimensions), S2.5-2a (KeyBERT), S2.5-2d (spell check), S2.5-2f (per-source query), S2.5-3a (citation enrichment), S2.5-3b (reranker), S2.5-3d (configurable thresholds), S2.5-4d (pagination), S2.5-4e (unicode tests) | Completed and validated in CI. |
+| **P3 — complete** | S2.5-1f (Google Scholar/SerpAPI) | Implemented as optional/experimental source (skips when key is absent). |
 
 ### M3 (Week 3-4): Write Correctness and Idempotency
 

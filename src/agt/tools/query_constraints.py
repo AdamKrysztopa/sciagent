@@ -6,9 +6,10 @@ import re
 
 from pydantic import BaseModel, Field, model_validator
 
+from agt.config import Settings
 from agt.models import NormalizedPaper
 
-_TOKEN_RE = re.compile(r"[A-Za-z][A-Za-z0-9_-]{2,}")
+_TOKEN_RE = re.compile(r"[^\W\d_][\w-]{2,}", re.UNICODE)
 _YEAR_RE = re.compile(r"\b(?:19|20)\d{2}\b")
 _BETWEEN_YEAR_RE = re.compile(r"between\s+((?:19|20)\d{2})\s+and\s+((?:19|20)\d{2})")
 _FROM_TO_YEAR_RE = re.compile(r"from\s+((?:19|20)\d{2})\s+to\s+((?:19|20)\d{2})")
@@ -228,7 +229,10 @@ def _extract_exclude_keywords(query: str) -> list[str]:
 
 
 def parse_query_constraints(  # noqa: PLR0912, PLR0915
-    query: str, *, default_limit: int
+    query: str,
+    *,
+    default_limit: int,
+    settings: Settings | None = None,
 ) -> SearchConstraintSpec:
     lowered = query.lower()
 
@@ -297,17 +301,25 @@ def parse_query_constraints(  # noqa: PLR0912, PLR0915
     open_access_only = "open access" in lowered or "oa only" in lowered
     positive_community = "community perception" in lowered or "well cited" in lowered
 
+    most_cited_threshold = 10
+    game_changers_threshold = 20
+    trending_threshold = 5
+    if settings is not None:
+        most_cited_threshold = settings.citation_threshold_most_cited
+        game_changers_threshold = settings.citation_threshold_game_changers
+        trending_threshold = settings.citation_threshold_trending
+
     if "most cited" in lowered or "highly cited" in lowered:
-        min_citations = max(min_citations, 10)
+        min_citations = max(min_citations, most_cited_threshold)
 
     if "highest quoted" in lowered or "most quoted" in lowered:
-        min_citations = max(min_citations, 10)
+        min_citations = max(min_citations, most_cited_threshold)
 
     if "game changers" in lowered and min_citations == 0:
-        min_citations = 20
+        min_citations = game_changers_threshold
 
     if "trending" in lowered or "trandign" in lowered:
-        min_citations = max(min_citations, 5)
+        min_citations = max(min_citations, trending_threshold)
 
     years = [int(token) for token in _YEAR_RE.findall(query)]
     if years and min_year is None:

@@ -131,3 +131,21 @@ async def test_crossref_raises_on_malformed_payload(monkeypatch: pytest.MonkeyPa
 
     with pytest.raises(CrossrefResponseError):
         await client.search("x", limit=3)
+
+
+@pytest.mark.anyio
+async def test_crossref_search_paginates_with_offset(monkeypatch: pytest.MonkeyPatch) -> None:
+    client = CrossrefClient(timeout_seconds=5, retries=1)
+    offsets: list[str] = []
+
+    async def _fake_request_json(*, path: str, params: dict[str, str]) -> dict[str, Any]:
+        _ = path
+        offsets.append(params["offset"])
+        if params["offset"] == "0":
+            return {"message": {"items": [{"title": ["P1"]}]}}
+        return {"message": {"items": [{"title": ["P2"]}]}}
+
+    monkeypatch.setattr(client, "_request_json", _fake_request_json)
+    papers = await client.search("x", limit=1, max_pages=2)
+    assert [paper.title for paper in papers] == ["P1", "P2"]
+    assert offsets == ["0", "1"]

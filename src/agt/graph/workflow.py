@@ -49,7 +49,11 @@ async def run_workflow(
             raise RuntimeError(preflight.message)
 
         with trace_step(trace, "search", query=query):
-            papers = await search_papers(query=query, settings=settings, thread_id=trace.thread_id)
+            papers, search_metadata = await search_papers(
+                query=query,
+                settings=settings,
+                thread_id=trace.thread_id,
+            )
 
         with trace_step(trace, "summarize", paper_count=len(papers)):
             papers = await summarize_papers(
@@ -84,4 +88,5 @@ async def run_workflow(
         "preflight": preflight.to_dict(),
         "trace_spans": serialize_spans(trace.spans),
         "write_result": write_result,
+        "search_metadata": search_metadata.model_dump(),
     }

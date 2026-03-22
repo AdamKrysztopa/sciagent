@@ -74,6 +74,9 @@ async def test_rewrite_query_extracts_search_query() -> None:
         "search_query": "sports nutrition",
         "keywords": ["sports", "nutrition"],
         "topic": "nutrition in athletic performance",
+        "synonyms": ["athlete nutrition", "exercise nutrition"],
+        "pubmed_query": "sports nutrition[Title/Abstract]",
+        "arxiv_categories": ["q-bio.QM"],
     })
     provider = _FakeProvider(llm_response)
     result = await rewrite_query(
@@ -84,6 +87,9 @@ async def test_rewrite_query_extracts_search_query() -> None:
     assert result.search_query == "sports nutrition"
     assert "sports" in result.keywords
     assert result.topic == "nutrition in athletic performance"
+    assert "athlete nutrition" in result.synonyms
+    assert result.pubmed_query == "sports nutrition[Title/Abstract]"
+    assert result.arxiv_categories == ["q-bio.QM"]
 
 
 @pytest.mark.anyio

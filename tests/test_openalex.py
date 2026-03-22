@@ -113,3 +113,28 @@ async def test_openalex_search_handles_missing_optional_fields(
     assert papers[0].year is None
     assert papers[0].authors == []
     assert papers[0].open_access is False
+
+
+@pytest.mark.anyio
+async def test_openalex_search_paginates_with_cursor(monkeypatch: pytest.MonkeyPatch) -> None:
+    client = OpenAlexClient(timeout_seconds=5, retries=1)
+    calls: list[dict[str, str]] = []
+
+    async def _fake_request_json(*, path: str, params: dict[str, str]) -> dict[str, Any]:
+        _ = path
+        calls.append(dict(params))
+        if len(calls) == 1:
+            return {
+                "results": [{"title": "P1"}],
+                "meta": {"next_cursor": "abc"},
+            }
+        return {
+            "results": [{"title": "P2"}],
+            "meta": {"next_cursor": ""},
+        }
+
+    monkeypatch.setattr(client, "_request_json", _fake_request_json)
+    papers = await client.search("x", limit=1, max_pages=2)
+    assert [paper.title for paper in papers] == ["P1", "P2"]
+    assert calls[0]["cursor"] == "*"
+    assert calls[1]["cursor"] == "abc"

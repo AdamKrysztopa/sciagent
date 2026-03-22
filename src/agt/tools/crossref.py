@@ -28,36 +28,41 @@ class CrossrefClient:
         self._retries = retries
         self._base_url = base_url.rstrip("/")
 
-    async def search(self, query: str, *, limit: int) -> list[NormalizedPaper]:
+    async def search(self, query: str, *, limit: int, max_pages: int = 1) -> list[NormalizedPaper]:
         """Search Crossref and return normalized papers."""
 
         if not query.strip():
             return []
 
-        payload = await self._request_json(
-            path="/works",
-            params={
-                "query.bibliographic": query,
-                "rows": str(limit),
-            },
-        )
-
-        message = payload.get("message")
-        if not isinstance(message, dict):
-            raise CrossrefResponseError("Crossref payload missing message object")
-        message_mapping = cast(dict[str, Any], message)
-
-        raw_items = message_mapping.get("items")
-        if not isinstance(raw_items, list):
-            raise CrossrefResponseError("Crossref payload missing list field: message.items")
-
         papers: list[NormalizedPaper] = []
-        for item_obj in cast(list[object], raw_items):
-            if not isinstance(item_obj, dict):
-                continue
-            normalized = self._normalize_item(cast(dict[str, Any], item_obj))
-            if normalized is not None:
-                papers.append(normalized)
+        for page_idx in range(max(1, max_pages)):
+            payload = await self._request_json(
+                path="/works",
+                params={
+                    "query.bibliographic": query,
+                    "rows": str(limit),
+                    "offset": str(page_idx * limit),
+                },
+            )
+
+            message = payload.get("message")
+            if not isinstance(message, dict):
+                raise CrossrefResponseError("Crossref payload missing message object")
+            message_mapping = cast(dict[str, Any], message)
+
+            raw_items = message_mapping.get("items")
+            if not isinstance(raw_items, list):
+                raise CrossrefResponseError("Crossref payload missing list field: message.items")
+
+            if not raw_items:
+                break
+
+            for item_obj in cast(list[object], raw_items):
+                if not isinstance(item_obj, dict):
+                    continue
+                normalized = self._normalize_item(cast(dict[str, Any], item_obj))
+                if normalized is not None:
+                    papers.append(normalized)
         return papers
 
     async def _request_json(self, *, path: str, params: dict[str, str]) -> dict[str, Any]:
