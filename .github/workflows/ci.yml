@@ -1,0 +1,35 @@
+name: CI
+
+on:
+    push:
+        branches: ["**"]
+    pull_request:
+
+jobs:
+    quality:
+        name: Lint, Type, Test
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.14"
+
+            - name: Setup uv
+              uses: astral-sh/setup-uv@v5
+
+            - name: Sync dependencies
+              run: uv sync --all-groups
+
+            - name: Ruff check
+              run: uv run ruff check .
+
+            - name: Pyright
+              run: uv run pyright
+
+            - name: Pytest
+              run: uv run pytest -q --vcr-record=none

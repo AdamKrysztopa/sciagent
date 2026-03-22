@@ -1,0 +1,10 @@
+target-version = "py314"
+line-length = 100
+
+[lint]
+select = ["E", "F", "I", "UP", "RUF", "PL", "SIM"]
+fixable = ["ALL"]
+ignore = ["E501"]
+
+[format]
+preview = true
