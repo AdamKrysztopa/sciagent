@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Literal, TypedDict
+from typing import Any, Literal, TypedDict, cast
 
 from pydantic import BaseModel, Field
 
@@ -42,6 +42,40 @@ class SearchMetadata(BaseModel):
     source_timings: dict[str, float] = Field(default_factory=dict)
 
 
+class CollectionResult(BaseModel):
+    """Resolved collection metadata used for write auditing."""
+
+    key: str
+    name: str
+    parent_key: str | None = None
+    reused: bool
+
+
+class ItemWriteOutcome(BaseModel):
+    """Per-item write result for partial-success reporting."""
+
+    index: int
+    title: str
+    status: Literal["created", "unchanged", "failed"]
+    item_key: str | None = None
+    reason: str | None = None
+    duplicate_strategy: Literal["doi", "title_author_hash"] | None = None
+    retry_safe: bool = True
+
+
+class WriteResult(BaseModel):
+    """Typed outcome for Zotero upsert operations."""
+
+    created: int
+    unchanged: int
+    failed: int
+    collection: CollectionResult
+    outcomes: list[ItemWriteOutcome] = Field(
+        default_factory=lambda: cast(list[ItemWriteOutcome], [])
+    )
+    retry_safe_failures: int = 0
+
+
 class AgentState(TypedDict):
     """Serializable state used by the workflow engine."""
 
@@ -53,5 +87,5 @@ class AgentState(TypedDict):
     approved: bool
     preflight: dict[str, Any]
     trace_spans: list[dict[str, Any]]
-    write_result: dict[str, Any] | None
+    write_result: WriteResult | dict[str, Any] | None
     search_metadata: dict[str, Any] | None

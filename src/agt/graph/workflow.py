@@ -66,15 +66,15 @@ async def run_workflow(
         with trace_step(trace, "approval_checkpoint", approved=approved):
             logger.info("approval_checkpoint", approved=approved)
 
-        write_result: dict[str, int] | None = None
+        write_result: dict[str, object] | None = None
         if approved and papers:
             with trace_step(trace, "zotero_write", collection_name=collection_name):
-                result = await upsert_papers(collection_name=collection_name, papers=papers)
-                write_result = {
-                    "created": result.created,
-                    "unchanged": result.unchanged,
-                    "failed": result.failed,
-                }
+                result = await upsert_papers(
+                    collection_name=collection_name,
+                    papers=papers,
+                    settings=settings,
+                )
+                write_result = result.model_dump()
 
         logger.info("workflow_complete", approved=approved, paper_count=len(papers))
 

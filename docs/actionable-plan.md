@@ -316,10 +316,22 @@ Each new client lives in its own file under `src/agt/tools/`, returns `list[Norm
 
 ### M3 (Week 3-4): Write Correctness and Idempotency
 
-- [ ] AGT-9: Collection resolver with canonicalized name matching and parent support
-- [ ] AGT-10: Zotero item mapper with deterministic creator mapping and validation
-- [ ] AGT-11: Idempotent upsert (DOI primary, title+author hash fallback)
-- [ ] AGT-12: Write outcome schema created/unchanged/failed and retry-safe failures
+- [x] AGT-9: Collection resolver with canonicalized name matching and parent support
+- [x] AGT-10: Zotero item mapper with deterministic creator mapping and validation
+- [x] AGT-11: Idempotent upsert (DOI primary, title+author hash fallback)
+- [x] AGT-12: Write outcome schema created/unchanged/failed and retry-safe failures
+
+M3 completion notes:
+- [x] Collection resolver implemented in `src/agt/tools/zotero_upsert.py` with case-insensitive + whitespace-normalized matching and explicit `parent_collection_name` support.
+- [x] Deterministic mapper implemented for `journalArticle` and `preprint` item types with stable author parsing and pre-write validation.
+- [x] Idempotent upsert implemented with DOI-first duplicate detection and title+author-hash fallback; reruns return `unchanged` instead of creating duplicates.
+- [x] Typed write outcomes added via `CollectionResult`, `ItemWriteOutcome`, and `WriteResult` in `src/agt/models.py`, including retry-safe failure accounting.
+- [x] Workflow write node now emits full structured write outcomes (`write_result`) from `run_workflow`.
+
+M3 validation checklist:
+- [x] Added dedicated upsert tests in `tests/test_zotero_upsert.py` covering resolver canonicalization, parent support, mapping/validation, idempotent reruns, and partial/retry-safe failures.
+- [x] Updated `tests/test_workflow.py` assertions for structured write outcomes.
+- [x] Added runnable M3 demo in `examples/m3_write_correctness_demo.py` showing create, idempotent rerun, and partial-failure scenarios.
 
 ### M4 (Week 4-5): Approval-Gated Workflow and MVP Demo
 
@@ -398,7 +410,7 @@ Each new client lives in its own file under `src/agt/tools/`, returns `list[Norm
 - [ ] M1 example: [examples/m1_foundation_demo.py](../examples/m1_foundation_demo.py)
 - [x] M2 example: [examples/m2_retrieval_demo.py](../examples/m2_retrieval_demo.py)
 - [x] M2.6 example: [examples/m2_6_fallback_demo.py](../examples/m2_6_fallback_demo.py)
-- [ ] M3 example: [examples/m3_write_correctness_demo.py](../examples/m3_write_correctness_demo.py)
+- [x] M3 example: [examples/m3_write_correctness_demo.py](../examples/m3_write_correctness_demo.py)
 - [ ] M4 example: [examples/m4_approval_flow_demo.py](../examples/m4_approval_flow_demo.py)
 - [ ] M5 example: [examples/m5_hardening_demo.py](../examples/m5_hardening_demo.py)
 - [ ] M6 example: [examples/m6_zotero_addon_demo.py](../examples/m6_zotero_addon_demo.py)
@@ -442,10 +454,10 @@ Each new client lives in its own file under `src/agt/tools/`, returns `list[Norm
 - [x] Add ranking and dedup module with formula tests for recency/open-access weighting
 - [ ] Expand AgentState to include checkpoint versioning and audit-safe status fields
 - [ ] Implement explicit approval node with guaranteed zero-side-effect reject path
-- [ ] Implement collection resolver canonicalization tests (case/trim/parent)
-- [ ] Implement item mapper validation tests for journalArticle and preprint
-- [ ] Implement idempotent upsert integration tests for duplicate approval re-runs
-- [ ] Implement partial-success response rendering in UI and API
+- [x] Implement collection resolver canonicalization tests (case/trim/parent)
+- [x] Implement item mapper validation tests for journalArticle and preprint
+- [x] Implement idempotent upsert integration tests for duplicate approval re-runs
+- [x] Implement partial-success response rendering in UI and API
 - [ ] Add resume-from-checkpoint tests for interrupted post-search and post-approval paths
 - [ ] Add CI smoke test for non-approval workflow execution via CLI
 - [ ] Switch CI dependency sync to frozen mode and enforce format check parity
