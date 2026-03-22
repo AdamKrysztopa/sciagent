@@ -186,20 +186,20 @@ Status: **In Progress** — P0 slice implemented; builds on M2 foundation and re
 - [x] S2.5-4a dedicated OpenAlex tests added in [tests/test_openalex.py](../tests/test_openalex.py) (5 tests).
 - [x] S2.5-4b dedicated Crossref tests added in [tests/test_crossref.py](../tests/test_crossref.py) (5 tests).
 - [x] PubMed and Europe PMC test coverage added in [tests/test_pubmed.py](../tests/test_pubmed.py) and [tests/test_europe_pmc.py](../tests/test_europe_pmc.py).
-- [x] CI-quality validation after M2.5 P0 slice: `ruff` clean, `pyright` 0 errors, `pytest` 69/69 pass.
+- [x] CI-quality validation after M2.5 P0 slice: `ruff` clean, `pyright` 0 errors, `pytest` 70/70 pass.
 
 #### Current M2 audit baseline (what exists)
 
 - 5 search engines: Semantic Scholar, OpenAlex, Crossref, PubMed, Europe PMC.
 - Regex constraint parser (year, citations, OA, quality flags, ~70 stopwords).
 - LLM query rewriter with one validation-retry loop.
-- Ranking formula: `0.7×semantic + (cur_year − year)×−0.3 + 0.2×OA`.
+- Ranking formula: `0.45×semantic + 0.30×citations + 0.10×influential + 0.12×recency + 0.05×abstract_bonus + 0.03×oa_bonus`.
 - No pagination (single page per source). No spelling correction.
 - Crossref returns `semantic_score=0.0` and `open_access=False` always.
 - OpenAlex returns no abstract. Semantic Scholar has optional abstract.
 - `exclude_keywords` enforcement implemented. Date-range windows implemented.
 - Citation thresholds still hardcoded, over-fetch cap 30, dynamic current year scoring enabled.
-- 69 passing tests, including dedicated OpenAlex and Crossref client suites.
+- 70 passing tests, including dedicated OpenAlex and Crossref client suites.
 
 ---
 
