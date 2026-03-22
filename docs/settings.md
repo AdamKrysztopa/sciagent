@@ -13,8 +13,8 @@ This document is **copy-paste ready**. Follow the steps in order and you will ha
 |------------------------|---------------------------------------------|---------------------------|--------|
 | **Runtime**            | Python                                      | `>=3.13` (use 3.14)       | Free-threaded GIL optional + better error messages |
 | **Project Mgmt**       | `uv`                                        | latest (via curl)         | Replaces poetry/pip + venv in one binary |
-| **Agent Framework**    | `langgraph` + `langchain-core`              | `>=0.2.0`                 | Stateful graphs + native checkpoints |
-| **LLM**                | `langchain-xai`                             | latest                    | Official xAI Grok tool-calling support |
+| **Agent Framework**    | `langgraph`                                 | `>=0.2.0`                 | Stateful graphs + native checkpoints |
+| **LLM**                | Native xAI REST adapter (`httpx`)           | latest                    | Pydantic v2-only runtime path (no langchain bridge) |
 | **Academic Search**    | `semanticscholar`                           | latest                    | Natural-language + rich metadata |
 | **Zotero**             | `pyzotero`                                  | latest                    | Full v3 Web API (create, upsert, attachments) |
 | **Settings**           | `pydantic-settings`                         | `>=2.6`                   | Typed, validated, secret-redacted config |
@@ -42,7 +42,6 @@ cd agt-zotero-agent
 # 3. Add every package in one go (uv resolves everything instantly)
 uv add \
     langgraph \
-    langchain-xai \
     semanticscholar \
     pyzotero \
     pydantic-settings \

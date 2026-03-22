@@ -99,6 +99,76 @@ class Settings(BaseSettings):
         le=2.0,
         validation_alias=AliasChoices("AGT_TEMPERATURE", "TEMPERATURE"),
     )
+    semantic_scholar_timeout_seconds: int = Field(
+        default=15,
+        ge=1,
+        le=120,
+        validation_alias=AliasChoices(
+            "AGT_SEMANTIC_SCHOLAR_TIMEOUT_SECONDS", "SEMANTIC_SCHOLAR_TIMEOUT_SECONDS"
+        ),
+    )
+    semantic_scholar_retries: int = Field(
+        default=2,
+        ge=0,
+        le=10,
+        validation_alias=AliasChoices("AGT_SEMANTIC_SCHOLAR_RETRIES", "SEMANTIC_SCHOLAR_RETRIES"),
+    )
+    semantic_scholar_limit: int = Field(
+        default=10,
+        ge=1,
+        le=100,
+        validation_alias=AliasChoices("AGT_SEMANTIC_SCHOLAR_LIMIT", "SEMANTIC_SCHOLAR_LIMIT"),
+    )
+    summarization_max_sentences: int = Field(
+        default=4,
+        ge=3,
+        le=4,
+        validation_alias=AliasChoices(
+            "AGT_SUMMARIZATION_MAX_SENTENCES", "SUMMARIZATION_MAX_SENTENCES"
+        ),
+    )
+    summarization_use_llm: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("AGT_SUMMARIZATION_USE_LLM", "SUMMARIZATION_USE_LLM"),
+    )
+    semantic_scholar_rate_limit_per_minute: int = Field(
+        default=100,
+        ge=1,
+        validation_alias=AliasChoices(
+            "AGT_SEMANTIC_SCHOLAR_RATE_LIMIT_PER_MINUTE", "SEMANTIC_SCHOLAR_RATE_LIMIT_PER_MINUTE"
+        ),
+    )
+    zotero_rate_limit_per_minute: int = Field(
+        default=60,
+        ge=1,
+        validation_alias=AliasChoices(
+            "AGT_ZOTERO_RATE_LIMIT_PER_MINUTE", "ZOTERO_RATE_LIMIT_PER_MINUTE"
+        ),
+    )
+    llm_rate_limit_per_minute: int = Field(
+        default=120,
+        ge=1,
+        validation_alias=AliasChoices("AGT_LLM_RATE_LIMIT_PER_MINUTE", "LLM_RATE_LIMIT_PER_MINUTE"),
+    )
+    workflow_max_cost_usd: float = Field(
+        default=0.5,
+        ge=0.01,
+        validation_alias=AliasChoices("AGT_WORKFLOW_MAX_COST_USD", "WORKFLOW_MAX_COST_USD"),
+    )
+    xai_input_cost_per_1k_tokens_usd: float = Field(
+        default=0.005,
+        ge=0.0,
+        validation_alias=AliasChoices(
+            "AGT_XAI_INPUT_COST_PER_1K_TOKENS_USD", "XAI_INPUT_COST_PER_1K_TOKENS_USD"
+        ),
+    )
+    xai_output_cost_per_1k_tokens_usd: float = Field(
+        default=0.015,
+        ge=0.0,
+        validation_alias=AliasChoices(
+            "AGT_XAI_OUTPUT_COST_PER_1K_TOKENS_USD", "XAI_OUTPUT_COST_PER_1K_TOKENS_USD"
+        ),
+    )
     env_overrides: dict[RuntimeEnvironment, RuntimeConfig] = Field(
         default_factory=_empty_env_overrides,
         validation_alias=AliasChoices("AGT_ENV_OVERRIDES", "ENV_OVERRIDES"),

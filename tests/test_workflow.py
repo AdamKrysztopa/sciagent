@@ -22,6 +22,12 @@ class _FakeRuntime:
 class _FakeSettings:
     log_level: str = "INFO"
     runtime: _FakeRuntime = field(default_factory=_FakeRuntime)
+    semantic_scholar_rate_limit_per_minute: int = 100
+    zotero_rate_limit_per_minute: int = 60
+    llm_rate_limit_per_minute: int = 120
+    workflow_max_cost_usd: float = 0.5
+    summarization_use_llm: bool = False
+    summarization_max_sentences: int = 4
 
 
 def _fake_get_settings() -> _FakeSettings:
@@ -61,7 +67,16 @@ def _fake_preflight_fail(settings: object) -> PreflightResult:
 
 @pytest.mark.anyio
 async def test_workflow_contains_ids_preflight_and_spans(monkeypatch: pytest.MonkeyPatch) -> None:
-    async def fake_search(query: str, limit: int = 10) -> list[NormalizedPaper]:
+    async def fake_search(
+        query: str,
+        limit: int = 10,
+        *,
+        settings: object | None = None,
+        thread_id: str | None = None,
+    ) -> list[NormalizedPaper]:
+        _ = limit
+        _ = settings
+        _ = thread_id
         return [NormalizedPaper(title=f"result:{query}")]
 
     async def fake_upsert(collection_name: str, papers: list[NormalizedPaper]):
@@ -94,6 +109,7 @@ async def test_workflow_contains_ids_preflight_and_spans(monkeypatch: pytest.Mon
     assert "provider_init" in span_names
     assert "zotero_preflight" in span_names
     assert "search" in span_names
+    assert "summarize" in span_names
     assert "approval_checkpoint" in span_names
     assert "zotero_write" in span_names
     assert state["write_result"] == {"created": 1, "unchanged": 0, "failed": 0}

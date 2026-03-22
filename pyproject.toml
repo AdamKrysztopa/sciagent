@@ -7,10 +7,9 @@ requires-python = ">=3.13"
 dependencies = [
   "anyio>=4.6.0",
   "httpx>=0.28.0",
-  "langchain-core>=0.2.0",
-  "langchain-xai",
   "langgraph>=0.2.0",
   "langsmith",
+  "pydantic>=2.6",
   "pydantic-settings>=2.6",
   "pyzotero",
   "responses",

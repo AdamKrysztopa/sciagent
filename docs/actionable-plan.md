@@ -100,10 +100,10 @@ flowchart LR
 
 ### M2 (Week 2-3): Retrieval and Ranking Core
 
-- [ ] AGT-5: Semantic Scholar wrapper returns only NormalizedPaper models
-- [ ] AGT-6: Ranking + dedup engine with formula and stable index guarantees
-- [ ] AGT-7: Deterministic bounded summarization for presentation layer
-- [ ] AGT-27: Rate-limit and cost guardrails integrated into retrieval/provider paths
+- [x] AGT-5: Semantic Scholar wrapper returns only NormalizedPaper models
+- [x] AGT-6: Ranking + dedup engine with formula and stable index guarantees
+- [x] AGT-7: Deterministic bounded summarization for presentation layer
+- [x] AGT-27: Rate-limit and cost guardrails integrated into retrieval/provider paths
 
 ### M3 (Week 3-4): Write Correctness and Idempotency
 
@@ -134,20 +134,60 @@ flowchart LR
 - [ ] ZAP-6 to ZAP-8: Native collection/item writes with idempotency and optional PDF
 - [ ] ZAP-9 to ZAP-11: Preferences, offline/error handling, signing and release automation
 
+## Runnable Examples Per Milestone
+
+- [ ] M1 example: [examples/m1_foundation_demo.py](../examples/m1_foundation_demo.py)
+- [x] M2 example: [examples/m2_retrieval_demo.py](../examples/m2_retrieval_demo.py)
+- [ ] M3 example: [examples/m3_write_correctness_demo.py](../examples/m3_write_correctness_demo.py)
+- [ ] M4 example: [examples/m4_approval_flow_demo.py](../examples/m4_approval_flow_demo.py)
+- [ ] M5 example: [examples/m5_hardening_demo.py](../examples/m5_hardening_demo.py)
+- [ ] M6 example: [examples/m6_zotero_addon_demo.py](../examples/m6_zotero_addon_demo.py)
+
+### Example Run Commands
+
+- M1: `source .venv/bin/activate && python examples/m1_foundation_demo.py`
+- M2: `source .venv/bin/activate && python examples/m2_retrieval_demo.py --query "retrieval augmented generation"`
+- M3: `source .venv/bin/activate && python examples/m3_write_correctness_demo.py`
+- M4: `source .venv/bin/activate && python examples/m4_approval_flow_demo.py`
+- M5: `source .venv/bin/activate && python examples/m5_hardening_demo.py`
+- M6: `source .venv/bin/activate && python examples/m6_zotero_addon_demo.py`
+
+### M2 Real-Search Rule
+
+- M2 validation must use live Semantic Scholar results only (no fixture or mock fallback).
+- If live API is rate-limited, treat it as a test-environment issue and retry later; do not switch to mock data.
+
+### M2 Validation Queries (Required)
+
+- `source .venv/bin/activate && python examples/m2_retrieval_demo.py --query "the most trandign 2026 timeseries papers - list 5" --limit 5`
+- `source .venv/bin/activate && python examples/m2_retrieval_demo.py --query "the most advanced RAG techniques in 2026 - game changers. Make sure the community perception is good!" --limit 5`
+
+### Recently Implemented (Do Not Lose)
+
+- [x] M2 example switched to live-search only mode in [examples/m2_retrieval_demo.py](../examples/m2_retrieval_demo.py) (fixture/mock fallback removed).
+- [x] Live-search runtime now handles API-limit and malformed-response failures with user-readable output (no traceback) in [examples/m2_retrieval_demo.py](../examples/m2_retrieval_demo.py).
+- [x] Retrieval expanded beyond Semantic Scholar using additional live sources:
+	OpenAlex client in [src/agt/tools/openalex.py](../src/agt/tools/openalex.py),
+	Crossref client in [src/agt/tools/crossref.py](../src/agt/tools/crossref.py),
+	and merged search orchestration in [src/agt/tools/search_papers.py](../src/agt/tools/search_papers.py).
+- [x] Project runtime moved off LangChain bridge to a native xAI HTTP adapter (Pydantic v2-only runtime path) in [src/agt/providers/xai.py](../src/agt/providers/xai.py) and dependency updates in [pyproject.toml](../pyproject.toml).
+- [x] CI quality gates validated after these changes (`ruff`, `pyright`, `pytest`) with updated tests including multi-source search behavior in [tests/test_search_papers.py](../tests/test_search_papers.py).
+
 ## Immediate Backlog (Checkbox-Ready)
 
-- [ ] Add provider protocol package and baseline xAI adapter implementation
+- [x] Add provider protocol package and baseline xAI adapter implementation
 - [ ] Add OpenAI adapter implementing the same LLMProvider contract
 - [ ] Add Anthropic adapter implementing the same LLMProvider contract
-- [ ] Add provider router with explicit selection strategy (config default + per-request override)
+- [x] Add provider router with explicit selection strategy (config default + per-request override)
 - [ ] Add provider health/probe command and startup diagnostics for enabled providers
 - [ ] Add model registry config (provider, model, timeout, retries, temperature) with strict validation
 - [ ] Add fallback chain policy (primary, secondary, fail-fast) with explicit audit logging
-- [ ] Add strict config validation tests for missing/invalid secrets
-- [ ] Implement live Zotero preflight capability check on startup
-- [ ] Add trace/span helpers and propagate request/thread IDs through workflow state
-- [ ] Implement Semantic Scholar client with bounded retry and error normalization
-- [ ] Add ranking and dedup module with formula tests for recency/open-access weighting
+- [x] Add strict config validation tests for missing/invalid secrets
+- [x] Implement live Zotero preflight capability check on startup
+- [x] Add trace/span helpers and propagate request/thread IDs through workflow state
+- [x] Implement Semantic Scholar client with bounded retry and error normalization
+- [x] Add multi-source retrieval fallback clients (OpenAlex + Crossref) and merge with shared dedup/rank pipeline
+- [x] Add ranking and dedup module with formula tests for recency/open-access weighting
 - [ ] Expand AgentState to include checkpoint versioning and audit-safe status fields
 - [ ] Implement explicit approval node with guaranteed zero-side-effect reject path
 - [ ] Implement collection resolver canonicalization tests (case/trim/parent)

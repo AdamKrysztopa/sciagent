@@ -30,9 +30,17 @@ if st.button("Run", type="primary"):
 
         st.caption(f"request_id={state['request_id']} thread_id={state['thread_id']}")
         st.subheader("Results")
-        for idx, paper in enumerate(state["papers"]):
-            st.markdown(f"**{idx}. {paper.title}**")
-            st.write({"year": paper.year, "doi": paper.doi, "score": paper.score})
+        for paper in state["papers"]:
+            display_index = paper.index if paper.index is not None else -1
+            st.markdown(f"**{display_index}. {paper.title}**")
+            st.write({
+                "source": paper.source,
+                "year": paper.year,
+                "doi": paper.doi,
+                "score": paper.score,
+            })
+            if paper.summary:
+                st.caption(paper.summary)
 
         st.subheader("Preflight")
         st.json(state["preflight"])

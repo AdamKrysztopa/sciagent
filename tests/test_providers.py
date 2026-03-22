@@ -6,6 +6,7 @@ import pytest
 
 from agt.config import RuntimeConfig, Settings
 from agt.providers import router
+from agt.providers import xai as xai_module
 from agt.providers.router import build_provider
 from agt.providers.xai import XAIProvider
 
@@ -30,7 +31,28 @@ class FakeModel:
         return self
 
 
+class _Guardrails:
+    def acquire(self, service: str, thread_id: str) -> None:
+        _ = service
+        _ = thread_id
+
+    def record_cost(self, thread_id: str, amount_usd: float) -> None:
+        _ = thread_id
+        _ = amount_usd
+
+
+def _fake_get_guardrails() -> _Guardrails:
+    return _Guardrails()
+
+
+def _fake_thread_id() -> str:
+    return "thread-1"
+
+
 def test_xai_provider_invoke_and_ainvoke() -> None:
+    xai_module.get_guardrails = _fake_get_guardrails  # type: ignore[method-assign]
+    xai_module.current_thread_id = _fake_thread_id  # type: ignore[method-assign]
+
     provider = XAIProvider(
         runtime=RuntimeConfig(),
         api_key="x",
@@ -42,6 +64,9 @@ def test_xai_provider_invoke_and_ainvoke() -> None:
 
 @pytest.mark.anyio
 async def test_xai_provider_ainvoke() -> None:
+    xai_module.get_guardrails = _fake_get_guardrails  # type: ignore[method-assign]
+    xai_module.current_thread_id = _fake_thread_id  # type: ignore[method-assign]
+
     provider = XAIProvider(
         runtime=RuntimeConfig(),
         api_key="x",
@@ -76,9 +101,14 @@ def test_router_builds_xai_provider(monkeypatch: pytest.MonkeyPatch) -> None:
 
     built = _Built()
 
-    def _build_stub(runtime: RuntimeConfig, api_key: str) -> _Built:
+    def _build_stub(
+        runtime: RuntimeConfig,
+        api_key: str,
+        pricing: object,
+    ) -> _Built:
         _ = runtime
         _ = api_key
+        _ = pricing
         return built
 
     monkeypatch.setattr(router, "XAIProvider", _build_stub)
