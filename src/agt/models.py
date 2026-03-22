@@ -82,10 +82,13 @@ class AgentState(TypedDict):
     request_id: str
     thread_id: str
     messages: list[str]
-    papers: list[NormalizedPaper]
+    papers: list[dict[str, Any]]
     collection_name: str | None
     approved: bool
+    decision: Literal["approved", "rejected", "pending"]
+    phase: Literal["search_complete", "awaiting_approval", "completed", "rejected"]
+    selected_indices: list[int]
     preflight: dict[str, Any]
     trace_spans: list[dict[str, Any]]
-    write_result: WriteResult | dict[str, Any] | None
+    write_result: dict[str, Any] | None
     search_metadata: dict[str, Any] | None

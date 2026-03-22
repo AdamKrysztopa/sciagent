@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+from typing import Any, Literal
+
 import structlog
 
-from agt.config import configure_logging, get_settings
+from agt.config import Settings, configure_logging, get_settings
 from agt.guardrails import configure_guardrails, thread_context
-from agt.models import AgentState
+from agt.models import AgentState, NormalizedPaper
 from agt.observability import TraceContext, serialize_spans, trace_step
 from agt.providers.router import build_provider
 from agt.tools.search_papers import search_papers
@@ -15,34 +17,63 @@ from agt.tools.zotero_upsert import upsert_papers
 from agt.zotero.preflight import run_zotero_preflight
 
 
-async def run_workflow(
-    query: str, collection_name: str, approved: bool, thread_id: str | None = None
-) -> AgentState:
-    """Execute startup checks and then run search -> approval checkpoint -> optional write."""
+def _serialize_papers(papers: list[NormalizedPaper]) -> list[dict[str, Any]]:
+    return [paper.model_dump() for paper in papers]
 
-    settings = get_settings()
-    configure_logging(settings.log_level)
-    configure_guardrails(settings)
-    trace = TraceContext.create(thread_id=thread_id)
-    logger = structlog.get_logger("agt.workflow").bind(
+
+def _deserialize_papers(serialized: list[dict[str, Any]]) -> list[NormalizedPaper]:
+    return [NormalizedPaper.model_validate(paper) for paper in serialized]
+
+
+def _select_papers(
+    papers: list[NormalizedPaper],
+    selected_indices: list[int] | None,
+) -> tuple[list[NormalizedPaper], list[int]]:
+    if selected_indices is None:
+        all_indices = [index for index, _paper in enumerate(papers)]
+        return papers, all_indices
+
+    selected_set = set(selected_indices)
+    normalized_selected = [index for index, _paper in enumerate(papers) if index in selected_set]
+    selected_papers = [papers[index] for index in normalized_selected]
+    return selected_papers, normalized_selected
+
+
+def _logger(trace: TraceContext) -> structlog.typing.FilteringBoundLogger:
+    return structlog.get_logger("agt.workflow").bind(
         request_id=trace.request_id,
         thread_id=trace.thread_id,
     )
 
+
+async def run_search_phase(
+    query: str,
+    collection_name: str,
+    thread_id: str | None = None,
+    settings: Settings | None = None,
+) -> AgentState:
+    """Run startup, retrieval, and summarization up to the approval checkpoint."""
+
+    active_settings = settings or get_settings()
+    configure_logging(active_settings.log_level)
+    configure_guardrails(active_settings)
+    trace = TraceContext.create(thread_id=thread_id)
+    logger = _logger(trace)
+
     with thread_context(trace.thread_id):
-        with trace_step(trace, "provider_init", provider=settings.runtime.provider):
-            provider = build_provider(settings)
+        with trace_step(trace, "provider_init", provider=active_settings.runtime.provider):
+            provider = build_provider(active_settings)
             logger.info(
                 "provider_selected",
-                provider=settings.runtime.provider,
-                model_name=settings.runtime.model_name,
-                timeout_seconds=settings.runtime.timeout_seconds,
-                retries=settings.runtime.retries,
-                temperature=settings.runtime.temperature,
+                provider=active_settings.runtime.provider,
+                model_name=active_settings.runtime.model_name,
+                timeout_seconds=active_settings.runtime.timeout_seconds,
+                retries=active_settings.runtime.retries,
+                temperature=active_settings.runtime.temperature,
             )
 
         with trace_step(trace, "zotero_preflight"):
-            preflight = run_zotero_preflight(settings)
+            preflight = run_zotero_preflight(active_settings)
 
         if not preflight.ok:
             logger.error("startup_preflight_failed", preflight=preflight.to_dict())
@@ -51,7 +82,7 @@ async def run_workflow(
         with trace_step(trace, "search", query=query):
             papers, search_metadata = await search_papers(
                 query=query,
-                settings=settings,
+                settings=active_settings,
                 thread_id=trace.thread_id,
             )
 
@@ -59,34 +90,128 @@ async def run_workflow(
             papers = await summarize_papers(
                 papers,
                 provider=provider,
-                use_llm=settings.summarization_use_llm,
-                max_sentences=settings.summarization_max_sentences,
+                use_llm=active_settings.summarization_use_llm,
+                max_sentences=active_settings.summarization_max_sentences,
             )
 
-        with trace_step(trace, "approval_checkpoint", approved=approved):
-            logger.info("approval_checkpoint", approved=approved)
-
-        write_result: dict[str, object] | None = None
-        if approved and papers:
-            with trace_step(trace, "zotero_write", collection_name=collection_name):
-                result = await upsert_papers(
-                    collection_name=collection_name,
-                    papers=papers,
-                    settings=settings,
-                )
-                write_result = result.model_dump()
-
-        logger.info("workflow_complete", approved=approved, paper_count=len(papers))
+        with trace_step(trace, "approval_checkpoint", approved=False):
+            logger.info("approval_checkpoint", approved=False)
 
     return {
         "request_id": trace.request_id,
         "thread_id": trace.thread_id,
         "messages": [f"Processed query: {query}"],
-        "papers": papers,
+        "papers": _serialize_papers(papers),
         "collection_name": collection_name,
-        "approved": approved,
+        "approved": False,
+        "decision": "pending",
+        "phase": "awaiting_approval",
+        "selected_indices": [index for index, _paper in enumerate(papers)],
         "preflight": preflight.to_dict(),
         "trace_spans": serialize_spans(trace.spans),
-        "write_result": write_result,
+        "write_result": None,
         "search_metadata": search_metadata.model_dump(),
     }
+
+
+async def finalize_approval(
+    checkpoint: AgentState,
+    approved: bool,
+    *,
+    collection_name: str | None = None,
+    selected_indices: list[int] | None = None,
+    settings: Settings | None = None,
+) -> AgentState:
+    """Finalize workflow from approval checkpoint state with explicit approve/reject branch."""
+
+    active_settings = settings or get_settings()
+    configure_logging(active_settings.log_level)
+    configure_guardrails(active_settings)
+    trace = TraceContext.create(thread_id=checkpoint["thread_id"])
+    trace.request_id = checkpoint["request_id"]
+    logger = _logger(trace)
+
+    effective_collection = collection_name or checkpoint["collection_name"] or "Inbox"
+    papers = _deserialize_papers(checkpoint["papers"])
+    selected_papers, normalized_selected = _select_papers(papers, selected_indices)
+
+    write_result: dict[str, Any] | None = None
+    final_phase: Literal["search_complete", "awaiting_approval", "completed", "rejected"] = (
+        "rejected"
+    )
+    final_decision: Literal["approved", "rejected", "pending"] = "rejected"
+    if approved:
+        final_phase = "completed"
+        final_decision = "approved"
+
+    with thread_context(trace.thread_id):
+        with trace_step(trace, "approval_decision", approved=approved):
+            logger.info(
+                "approval_decision",
+                approved=approved,
+                selected_count=len(selected_papers),
+                collection_name=effective_collection,
+            )
+
+        if approved and selected_papers:
+            with trace_step(
+                trace,
+                "zotero_write",
+                collection_name=effective_collection,
+                selected_count=len(selected_papers),
+            ):
+                result = await upsert_papers(
+                    collection_name=effective_collection,
+                    papers=selected_papers,
+                    settings=active_settings,
+                )
+                write_result = result.model_dump()
+
+        logger.info(
+            "workflow_complete",
+            approved=approved,
+            paper_count=len(selected_papers),
+        )
+
+    combined_spans = checkpoint["trace_spans"] + serialize_spans(trace.spans)
+    merged_messages = checkpoint["messages"] + [
+        "Approval accepted; write executed." if approved else "Approval rejected; write skipped."
+    ]
+    return {
+        "request_id": checkpoint["request_id"],
+        "thread_id": checkpoint["thread_id"],
+        "messages": merged_messages,
+        "papers": checkpoint["papers"],
+        "collection_name": effective_collection,
+        "approved": approved,
+        "decision": final_decision,
+        "phase": final_phase,
+        "selected_indices": normalized_selected,
+        "preflight": checkpoint["preflight"],
+        "trace_spans": combined_spans,
+        "write_result": write_result,
+        "search_metadata": checkpoint["search_metadata"],
+    }
+
+
+async def run_workflow(
+    query: str,
+    collection_name: str,
+    approved: bool,
+    thread_id: str | None = None,
+    settings: Settings | None = None,
+) -> AgentState:
+    """Backward-compatible wrapper for one-shot execution."""
+
+    checkpoint = await run_search_phase(
+        query=query,
+        collection_name=collection_name,
+        thread_id=thread_id,
+        settings=settings,
+    )
+    return await finalize_approval(
+        checkpoint,
+        approved=approved,
+        collection_name=collection_name,
+        settings=settings,
+    )

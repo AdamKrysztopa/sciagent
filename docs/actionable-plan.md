@@ -335,10 +335,22 @@ M3 validation checklist:
 
 ### M4 (Week 4-5): Approval-Gated Workflow and MVP Demo
 
-- [ ] AGT-14: Checkpoint-safe AgentState with thread isolation
-- [ ] AGT-15: Search -> present -> approve -> write flow with explicit approval gate
-- [ ] AGT-17: Streamlit UX for selection, approval, and per-item status
-- [ ] AGT-19: Deterministic end-to-end happy path with mocked external services
+- [x] AGT-14: Checkpoint-safe AgentState with thread isolation
+- [x] AGT-15: Search -> present -> approve -> write flow with explicit approval gate
+- [x] AGT-17: Streamlit UX for selection, approval, and per-item status
+- [x] AGT-19: Deterministic end-to-end happy path with mocked external services
+
+M4 completion notes:
+- [x] Two-phase workflow API added in `src/agt/graph/workflow.py`: `run_search_phase()` creates a checkpoint-safe serialized state and `finalize_approval()` executes explicit approve/reject branches.
+- [x] Agent state hardened for checkpoint safety in `src/agt/models.py` with serialized paper payloads and audit fields (`phase`, `decision`, `selected_indices`).
+- [x] Collection rename/edit at approval is supported by `finalize_approval(..., collection_name=...)`; selected paper indices are enforced at write time.
+- [x] Streamlit prototype in `src/agt/ui/app.py` now implements search -> review/select -> approve/reject using `st.experimental_fragment`, with per-item write outcomes.
+- [x] Deterministic M4 E2E test added in `tests/test_e2e_m4_happy_path.py` with mocked external dependencies and exact created/unchanged/failed assertions.
+
+M4 validation checklist:
+- [x] Workflow unit coverage expanded in `tests/test_workflow.py` for reject-no-write, selection filtering, and collection rename-at-approval.
+- [x] AgentState serialization contract validated in `tests/test_models.py`.
+- [x] Runnable example implemented in `examples/m4_approval_flow_demo.py`.
 
 ### M5 (Week 6-8): Production v1 Hardening
 
@@ -407,13 +419,13 @@ M3 validation checklist:
 
 ## Runnable Examples Per Milestone
 
-- [ ] M1 example: [examples/m1_foundation_demo.py](../examples/m1_foundation_demo.py)
+- [x] M1 example: [examples/m1_foundation_demo.py](../examples/m1_foundation_demo.py)
 - [x] M2 example: [examples/m2_retrieval_demo.py](../examples/m2_retrieval_demo.py)
 - [x] M2.6 example: [examples/m2_6_fallback_demo.py](../examples/m2_6_fallback_demo.py)
 - [x] M3 example: [examples/m3_write_correctness_demo.py](../examples/m3_write_correctness_demo.py)
-- [ ] M4 example: [examples/m4_approval_flow_demo.py](../examples/m4_approval_flow_demo.py)
-- [ ] M5 example: [examples/m5_hardening_demo.py](../examples/m5_hardening_demo.py)
-- [ ] M6 example: [examples/m6_zotero_addon_demo.py](../examples/m6_zotero_addon_demo.py)
+- [x] M4 example: [examples/m4_approval_flow_demo.py](../examples/m4_approval_flow_demo.py)
+- [x] M5 example: [examples/m5_hardening_demo.py](../examples/m5_hardening_demo.py)
+- [x] M6 example: [examples/m6_zotero_addon_demo.py](../examples/m6_zotero_addon_demo.py)
 
 ### Example Run Commands
 

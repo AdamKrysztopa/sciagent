@@ -4,65 +4,37 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import os
-from pathlib import Path
 from typing import Literal
+
+from _shared_demo_helpers import (
+    default_zotero_api_key,
+    default_zotero_library_id,
+    resolve_env_key,
+    resolve_xai_key,
+    try_build_provider,
+)
 
 from agt.config import Settings
 from agt.guardrails import configure_guardrails, thread_context
-from agt.providers.protocol import LLMProvider
-from agt.providers.router import build_provider
 from agt.tools.search_papers import search_papers
-
-_DUMMY_KEY = "xai-local"
-
-
-def _resolve_xai_key() -> str:
-    key = os.getenv("AGT_XAI_API_KEY") or os.getenv("XAI_API_KEY")
-    if key:
-        return key
-    env_path = Path(".env")
-    if env_path.exists():
-        for line in env_path.read_text().splitlines():
-            stripped = line.strip()
-            if stripped.startswith("#") or "=" not in stripped:
-                continue
-            name, _, value = stripped.partition("=")
-            if name.strip() in ("AGT_XAI_API_KEY", "XAI_API_KEY"):
-                return value.strip().strip("\"'")
-    return _DUMMY_KEY
-
-
-def _try_build_provider(settings: Settings) -> LLMProvider | None:
-    try:
-        key = settings.xai_api_key.get_secret_value()
-        if key == _DUMMY_KEY:
-            return None
-        return build_provider(settings)
-    except Exception:
-        return None
 
 
 async def _run(query: str, limit: int, fallback_mode: Literal["auto", "force", "off"]) -> int:
     settings = Settings.model_validate({
-        "AGT_XAI_API_KEY": _resolve_xai_key(),
-        "AGT_ZOTERO_API_KEY": os.getenv(
-            "AGT_ZOTERO_API_KEY", os.getenv("ZOTERO_API_KEY", "zot-local")
+        "AGT_XAI_API_KEY": resolve_xai_key(),
+        "AGT_ZOTERO_API_KEY": default_zotero_api_key(),
+        "AGT_ZOTERO_LIBRARY_ID": default_zotero_library_id(),
+        "AGT_SEMANTIC_SCHOLAR_API_KEY": resolve_env_key(
+            "AGT_SEMANTIC_SCHOLAR_API_KEY", "SEMANTIC_SCHOLAR_API_KEY"
         ),
-        "AGT_ZOTERO_LIBRARY_ID": os.getenv(
-            "AGT_ZOTERO_LIBRARY_ID", os.getenv("ZOTERO_LIBRARY_ID", "local-library")
-        ),
-        "AGT_SEMANTIC_SCHOLAR_API_KEY": os.getenv(
-            "AGT_SEMANTIC_SCHOLAR_API_KEY", os.getenv("SEMANTIC_SCHOLAR_API_KEY")
-        ),
-        "AGT_CORE_API_KEY": os.getenv("AGT_CORE_API_KEY", os.getenv("CORE_API_KEY")),
-        "AGT_DIMENSIONS_KEY": os.getenv("AGT_DIMENSIONS_KEY", os.getenv("DIMENSIONS_KEY")),
-        "AGT_SERPAPI_KEY": os.getenv("AGT_SERPAPI_KEY", os.getenv("SERPAPI_KEY")),
+        "AGT_CORE_API_KEY": resolve_env_key("AGT_CORE_API_KEY", "CORE_API_KEY"),
+        "AGT_DIMENSIONS_KEY": resolve_env_key("AGT_DIMENSIONS_KEY", "DIMENSIONS_KEY"),
+        "AGT_SERPAPI_KEY": resolve_env_key("AGT_SERPAPI_KEY", "SERPAPI_KEY"),
         "AGT_ENABLE_FALLBACK_RETRIEVAL": fallback_mode != "off",
         "AGT_SUMMARIZATION_USE_LLM": False,
     })
     configure_guardrails(settings)
-    provider = _try_build_provider(settings)
+    provider = try_build_provider(settings)
 
     with thread_context("example-m2-6"):
         papers, metadata = await search_papers(

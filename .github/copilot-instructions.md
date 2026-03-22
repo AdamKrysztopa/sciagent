@@ -14,6 +14,13 @@ When making or proposing changes:
 4. Keep outputs implementation-ready and explicit about tradeoffs.
 5. Prefer strict, typed Python and testable interfaces.
 6. Preserve idempotency and approval gates for any Zotero write path.
+7. Build and validate real implementations by default; do not ship mockup-only or stub-only feature code unless the user explicitly asks for a mock/demo.
+
+Global execution policy (highest priority for this repository):
+
+1. Do not use subagents for implementation, planning, or codebase exploration unless the user explicitly requests a specific subagent by name.
+2. Execute work directly in the main coding session using local file and terminal tools.
+3. For milestone examples, prefer real runtime behavior and integration paths over mocked flows.
 
 Agent routing and research rules:
 
