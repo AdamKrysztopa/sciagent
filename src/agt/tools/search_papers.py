@@ -6,8 +6,9 @@ from __future__ import annotations
 
 import asyncio
 import time
-from collections.abc import Awaitable
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
+from typing import Literal
 
 from agt.config import Settings, get_settings
 from agt.guardrails import current_thread_id, get_guardrails
@@ -50,61 +51,63 @@ class _SourceFetchResult:
     timing_seconds: float
 
 
+@dataclass(slots=True)
+class _RetrievalProvider:
+    name: str
+    tier: Literal["primary", "fallback"]
+    enabled: bool
+    fetcher: Callable[[], Awaitable[list[NormalizedPaper]]]
+
+
 async def _fetch_one_source(
-    name: str,
+    service_name: str,
+    source_name: str,
     thread_id: str,
     fetcher: Awaitable[list[NormalizedPaper]],
 ) -> _SourceFetchResult:
     guardrails = get_guardrails()
     start = time.monotonic()
     has_token = await guardrails.wait_for_token(
-        service=name,
+        service=service_name,
         thread_id=thread_id,
         timeout_seconds=_WAIT_TOKEN_TIMEOUT_SECONDS,
     )
     if not has_token:
         return _SourceFetchResult(
-            name=name,
+            name=source_name,
             papers=[],
-            failure=f"{name}: rate limit wait timeout",
+            failure=f"{source_name}: rate limit wait timeout",
             used=True,
             timing_seconds=time.monotonic() - start,
         )
 
     try:
         papers = await fetcher
+        labeled = [paper.model_copy(update={"source": source_name}) for paper in papers]
         return _SourceFetchResult(
-            name=name,
-            papers=papers,
+            name=source_name,
+            papers=labeled,
             failure=None,
             used=True,
             timing_seconds=time.monotonic() - start,
         )
     except Exception as exc:  # pragma: no cover - handled by integration behavior
         return _SourceFetchResult(
-            name=name,
+            name=source_name,
             papers=[],
-            failure=f"{name}: {exc}",
+            failure=f"{source_name}: {exc}",
             used=True,
             timing_seconds=time.monotonic() - start,
         )
 
 
-async def _fetch_from_sources(
+def _build_retrieval_registry(
     query: str,
     limit: int,
     constraints: SearchConstraintSpec,
     settings: Settings,
-    thread_id: str,
     rewritten: RewrittenQuery | None,
-) -> tuple[list[NormalizedPaper], list[str], list[str], dict[str, float]]:
-    """Fetch papers from configured academic sources in parallel."""
-
-    results: list[NormalizedPaper] = []
-    failures: list[str] = []
-    sources_used: list[str] = []
-    timings: dict[str, float] = {}
-
+) -> list[_RetrievalProvider]:
     semantic_api_key = None
     if settings.semantic_scholar_api_key is not None:
         semantic_api_key = settings.semantic_scholar_api_key.get_secret_value()
@@ -147,68 +150,67 @@ async def _fetch_from_sources(
         retries=settings.semantic_scholar_retries,
     )
 
-    source_tasks: list[asyncio.Task[_SourceFetchResult]] = [
-        asyncio.create_task(
-            _fetch_one_source(
-                "semantic_scholar",
-                thread_id,
-                semantic_client.search(
-                    query=query,
-                    limit=limit,
-                    year_min=constraints.year.min_year,
-                    year_max=constraints.year.max_year,
-                    max_pages=settings.search_max_pages,
-                ),
-            )
+    registry: list[_RetrievalProvider] = [
+        _RetrievalProvider(
+            name="semantic_scholar",
+            tier="primary",
+            enabled=True,
+            fetcher=lambda: semantic_client.search(
+                query=query,
+                limit=limit,
+                year_min=constraints.year.min_year,
+                year_max=constraints.year.max_year,
+                max_pages=settings.search_max_pages,
+            ),
         ),
-        asyncio.create_task(
-            _fetch_one_source(
-                "openalex",
-                thread_id,
-                openalex_client.search(
-                    query=query,
-                    limit=limit,
-                    year_min=constraints.year.min_year,
-                    max_pages=settings.search_max_pages,
-                ),
-            )
+        _RetrievalProvider(
+            name="openalex",
+            tier="primary",
+            enabled=True,
+            fetcher=lambda: openalex_client.search(
+                query=query,
+                limit=limit,
+                year_min=constraints.year.min_year,
+                max_pages=settings.search_max_pages,
+            ),
         ),
-        asyncio.create_task(
-            _fetch_one_source(
-                "crossref",
-                thread_id,
-                crossref_client.search(
-                    query=query, limit=limit, max_pages=settings.search_max_pages
-                ),
-            )
+        _RetrievalProvider(
+            name="crossref",
+            tier="primary",
+            enabled=True,
+            fetcher=lambda: crossref_client.search(
+                query=query,
+                limit=limit,
+                max_pages=settings.search_max_pages,
+            ),
         ),
-        asyncio.create_task(
-            _fetch_one_source(
-                "pubmed",
-                thread_id,
-                pubmed_client.search(query=pubmed_query, limit=limit),
-            )
+        _RetrievalProvider(
+            name="pubmed",
+            tier="primary",
+            enabled=True,
+            fetcher=lambda: pubmed_client.search(query=pubmed_query, limit=limit),
         ),
-        asyncio.create_task(
-            _fetch_one_source(
-                "europe_pmc",
-                thread_id,
-                europe_pmc_client.search(query=query, limit=limit),
-            )
+        _RetrievalProvider(
+            name="europe_pmc",
+            tier="primary",
+            enabled=True,
+            fetcher=lambda: europe_pmc_client.search(query=query, limit=limit),
         ),
-        asyncio.create_task(
-            _fetch_one_source(
-                "arxiv",
-                thread_id,
-                arxiv_client.search(query=query, limit=limit, categories=arxiv_categories),
-            )
+        _RetrievalProvider(
+            name="arxiv",
+            tier="primary",
+            enabled=True,
+            fetcher=lambda: arxiv_client.search(
+                query=query,
+                limit=limit,
+                categories=arxiv_categories,
+            ),
         ),
-        asyncio.create_task(
-            _fetch_one_source(
-                "base",
-                thread_id,
-                base_client.search(query=query, limit=limit),
-            )
+        _RetrievalProvider(
+            name="base",
+            tier="primary",
+            enabled=True,
+            fetcher=lambda: base_client.search(query=query, limit=limit),
         ),
     ]
 
@@ -218,9 +220,12 @@ async def _fetch_from_sources(
             timeout_seconds=settings.semantic_scholar_timeout_seconds,
             retries=settings.semantic_scholar_retries,
         )
-        source_tasks.append(
-            asyncio.create_task(
-                _fetch_one_source("core", thread_id, core_client.search(query=query, limit=limit))
+        registry.append(
+            _RetrievalProvider(
+                name="core",
+                tier="fallback",
+                enabled=True,
+                fetcher=lambda: core_client.search(query=query, limit=limit),
             )
         )
 
@@ -230,13 +235,12 @@ async def _fetch_from_sources(
             timeout_seconds=settings.semantic_scholar_timeout_seconds,
             retries=settings.semantic_scholar_retries,
         )
-        source_tasks.append(
-            asyncio.create_task(
-                _fetch_one_source(
-                    "dimensions",
-                    thread_id,
-                    dimensions_client.search(query=query, limit=limit),
-                )
+        registry.append(
+            _RetrievalProvider(
+                name="dimensions",
+                tier="fallback",
+                enabled=True,
+                fetcher=lambda: dimensions_client.search(query=query, limit=limit),
             )
         )
 
@@ -246,13 +250,47 @@ async def _fetch_from_sources(
             timeout_seconds=settings.semantic_scholar_timeout_seconds,
             retries=settings.semantic_scholar_retries,
         )
+        registry.append(
+            _RetrievalProvider(
+                name="google_scholar",
+                tier="fallback",
+                enabled=True,
+                fetcher=lambda: google_client.search(query=query, limit=limit),
+            )
+        )
+
+    return registry
+
+
+async def _fetch_from_sources(
+    query: str,
+    limit: int,
+    constraints: SearchConstraintSpec,
+    settings: Settings,
+    thread_id: str,
+    rewritten: RewrittenQuery | None,
+    *,
+    tier: Literal["primary", "fallback", "all"] = "all",
+) -> tuple[list[NormalizedPaper], list[str], list[str], dict[str, float]]:
+    """Fetch papers from configured academic sources in parallel."""
+
+    results: list[NormalizedPaper] = []
+    failures: list[str] = []
+    sources_used: list[str] = []
+    timings: dict[str, float] = {}
+
+    registry = _build_retrieval_registry(query, limit, constraints, settings, rewritten)
+
+    source_tasks: list[asyncio.Task[_SourceFetchResult]] = []
+    for provider in registry:
+        if not provider.enabled:
+            continue
+        if tier not in ("all", provider.tier):
+            continue
+        source_name = f"{provider.name}:{provider.tier}"
         source_tasks.append(
             asyncio.create_task(
-                _fetch_one_source(
-                    "google_scholar",
-                    thread_id,
-                    google_client.search(query=query, limit=limit),
-                )
+                _fetch_one_source(provider.name, source_name, thread_id, provider.fetcher())
             )
         )
 
@@ -264,6 +302,81 @@ async def _fetch_from_sources(
         if item.failure is not None:
             failures.append(item.failure)
         results.extend(item.papers)
+
+    return results, failures, sources_used, timings
+
+
+async def _fetch_query_with_optional_fallback(
+    query: str,
+    fetch_limit: int,
+    constraints: SearchConstraintSpec,
+    settings: Settings,
+    thread_id: str,
+    rewritten: RewrittenQuery | None,
+    fallback_mode: Literal["auto", "force", "off"],
+    capped_limit: int,
+    corrected_query: str,
+) -> tuple[list[NormalizedPaper], list[str], list[str], dict[str, float]]:
+    results: list[NormalizedPaper] = []
+    failures: list[str] = []
+    sources_used: list[str] = []
+    timings: dict[str, float] = {}
+
+    primary_results, primary_failures, primary_sources, primary_timings = await _fetch_from_sources(
+        query,
+        fetch_limit,
+        constraints,
+        settings,
+        thread_id,
+        rewritten,
+        tier="primary",
+    )
+    results.extend(primary_results)
+    failures.extend(primary_failures)
+    sources_used.extend(primary_sources)
+    timings.update(primary_timings)
+
+    should_fetch_fallback = fallback_mode == "force"
+    if fallback_mode == "auto":
+        if not primary_results:
+            should_fetch_fallback = True
+        else:
+            primary_enriched = await _enrich_citations(
+                primary_results,
+                settings=settings,
+                thread_id=thread_id,
+            )
+            primary_filtered = _rank_and_filter(
+                primary_enriched,
+                constraints,
+                capped_limit,
+                settings=settings,
+                query=corrected_query,
+            )
+            should_fetch_fallback = len(primary_filtered) < capped_limit
+
+    if should_fetch_fallback:
+        (
+            fallback_results,
+            fallback_failures,
+            fallback_sources,
+            fallback_timings,
+        ) = await _fetch_from_sources(
+            query,
+            fetch_limit,
+            constraints,
+            settings,
+            thread_id,
+            rewritten,
+            tier="fallback",
+        )
+        results.extend(fallback_results)
+        failures.extend(fallback_failures)
+        for source in fallback_sources:
+            if source not in sources_used:
+                sources_used.append(source)
+        for source, value in fallback_timings.items():
+            timings[source] = timings.get(source, 0.0) + value
 
     return results, failures, sources_used, timings
 
@@ -363,6 +476,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
     settings: Settings | None = None,
     thread_id: str | None = None,
     provider: LLMProvider | None = None,
+    fallback_mode: Literal["auto", "force", "off"] | None = None,
 ) -> tuple[list[NormalizedPaper], SearchMetadata]:
     """Search multiple academic sources and return ranked normalized papers + metadata."""
 
@@ -376,6 +490,11 @@ async def search_papers(  # noqa: PLR0912, PLR0915
 
     active_settings = settings or get_settings()
     active_thread = thread_id or current_thread_id()
+    effective_fallback_mode: Literal["auto", "force", "off"]
+    if fallback_mode is not None:
+        effective_fallback_mode = fallback_mode
+    else:
+        effective_fallback_mode = "auto" if active_settings.enable_fallback_retrieval else "off"
 
     corrected_query = query
     if active_settings.use_spell_check:
@@ -422,13 +541,16 @@ async def search_papers(  # noqa: PLR0912, PLR0915
         for source, value in timings.items():
             all_timings[source] = all_timings.get(source, 0.0) + value
 
-    results, failures, sources_used, timings = await _fetch_from_sources(
+    results, failures, sources_used, timings = await _fetch_query_with_optional_fallback(
         retrieval_query,
         fetch_limit,
         constraints,
         active_settings,
         active_thread,
         rewritten,
+        effective_fallback_mode,
+        capped_limit,
+        corrected_query,
     )
     _merge_telemetry(failures, sources_used, timings)
 
@@ -440,13 +562,16 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                 synonym_failures,
                 synonym_sources,
                 synonym_timings,
-            ) = await _fetch_from_sources(
+            ) = await _fetch_query_with_optional_fallback(
                 synonym_query,
                 fetch_limit,
                 constraints,
                 active_settings,
                 active_thread,
                 rewritten,
+                effective_fallback_mode,
+                capped_limit,
+                corrected_query,
             )
             results.extend(synonym_results)
             _merge_telemetry(synonym_failures, synonym_sources, synonym_timings)
@@ -473,13 +598,16 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                         retry_failures,
                         retry_sources,
                         retry_timings,
-                    ) = await _fetch_from_sources(
+                    ) = await _fetch_query_with_optional_fallback(
                         validation.suggested_query,
                         fetch_limit,
                         constraints,
                         active_settings,
                         active_thread,
                         rewritten,
+                        effective_fallback_mode,
+                        capped_limit,
+                        corrected_query,
                     )
                     _merge_telemetry(retry_failures, retry_sources, retry_timings)
                     if retry_results:
@@ -521,13 +649,16 @@ async def search_papers(  # noqa: PLR0912, PLR0915
             fallback_failures,
             fallback_sources,
             fallback_timings,
-        ) = await _fetch_from_sources(
+        ) = await _fetch_query_with_optional_fallback(
             regex_query,
             fetch_limit,
             constraints,
             active_settings,
             active_thread,
             None,
+            effective_fallback_mode,
+            capped_limit,
+            corrected_query,
         )
         _merge_telemetry(fallback_failures, fallback_sources, fallback_timings)
         if fallback_results:

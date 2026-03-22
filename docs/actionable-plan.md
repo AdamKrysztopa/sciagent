@@ -295,6 +295,25 @@ Each new client lives in its own file under `src/agt/tools/`, returns `list[Norm
 | **P2 — complete** | S2.5-1g (BASE), S2.5-1h (Dimensions), S2.5-2a (KeyBERT), S2.5-2d (spell check), S2.5-2f (per-source query), S2.5-3a (citation enrichment), S2.5-3b (reranker), S2.5-3d (configurable thresholds), S2.5-4d (pagination), S2.5-4e (unicode tests) | Completed and validated in CI. |
 | **P3 — complete** | S2.5-1f (Google Scholar/SerpAPI) | Implemented as optional/experimental source (skips when key is absent). |
 
+### M2.6 (Week 3): Optional Recommendation and Fallback Retrieval
+
+- [x] AGT-8: Optional recommendation + fallback retrieval (feature-flagged)
+	Implementation checklist:
+	- [x] Add `AGT_ENABLE_FALLBACK_RETRIEVAL: bool = False` to `src/agt/config.py` and wire into retrieval orchestration.
+	- [x] Add a retrieval provider registry abstraction in `src/agt/tools/search_papers.py` so fallback providers can be composed without branching logic spread across the code.
+	- [x] Keep full source provenance for every result in `NormalizedPaper.source`, including fallback origin labels (`<provider>:primary` / `<provider>:fallback`).
+	- [x] Merge fallback and primary results through one shared dedup path (DOI first, title-hash fallback) before ranking.
+	- [x] Ensure fallback is only activated when primary retrieval returns fewer than target limit, or explicit fallback mode is requested (`fallback_mode="force"`).
+	Validation checklist:
+	- [x] Unit test: fallback disabled means no fallback provider calls.
+	- [x] Unit test: fallback enabled fills missing results while preserving source labels.
+	- [x] Unit test: cross-source duplicates merge to a single stable output row.
+	- [x] Integration test: mixed primary/fallback search produces deterministic ordering and indices.
+
+	M2.6 completion notes:
+	- New runnable demo: `examples/m2_6_fallback_demo.py` (supports `--fallback-mode auto|force|off`).
+	- CI validated clean after implementation: `uv run ruff check .`, `uv run pyright`, `uv run pytest -q`.
+
 ### M3 (Week 3-4): Write Correctness and Idempotency
 
 - [ ] AGT-9: Collection resolver with canonicalized name matching and parent support
@@ -324,10 +343,61 @@ Each new client lives in its own file under `src/agt/tools/`, returns `list[Norm
 - [ ] ZAP-6 to ZAP-8: Native collection/item writes with idempotency and optional PDF
 - [ ] ZAP-9 to ZAP-11: Preferences, offline/error handling, signing and release automation
 
+### M7 (Week 8-10): Pluggability and Elastic Infrastructure
+
+- [ ] AGT-23: Unified retrieval registry
+	Implementation checklist:
+	- Introduce a typed retrieval interface (for example `Protocol`) with `search(query, limit, settings)` returning `list[NormalizedPaper]`.
+	- Register providers in a single registry module (for example `src/agt/tools/retrieval_registry.py`) keyed by provider name.
+	- Move source-specific branching from `search_papers.py` into registry lookup and iteration.
+	- Enforce one normalization contract: every provider returns only `NormalizedPaper` and never raw payloads.
+	- Keep merge/dedup/rank centralized so adding a provider is one registry entry plus provider implementation.
+	Validation checklist:
+	- Unit test: adding a fake provider via registry requires no orchestrator edits.
+	- Unit test: federated query across multiple registered providers merges through shared dedup logic.
+	- Contract test: each provider implementation satisfies the same interface and model invariants.
+
+- [ ] AGT-24: Durable distributed checkpointing
+	Implementation checklist:
+	- Add LangGraph checkpointer backend (Redis or Postgres) and configure via strict settings fields.
+	- Move any in-memory workflow state to persisted checkpoint state keyed by `thread_id`.
+	- Ensure stateless API container behavior: no workflow progress stored in process memory.
+	- Add migration/bootstrap script for checkpoint backend initialization.
+	- Add operational runbook notes for restore/replay semantics in docs.
+	Validation checklist:
+	- Integration test: pause workflow on instance A, resume on instance B with identical outcome.
+	- Integration test: process restart does not lose in-progress workflow state.
+	- Smoke test: checkpoint backend unavailable produces actionable health/status error.
+
+- [ ] AGT-25: Asynchronous task queue for long-running work
+	Implementation checklist:
+	- Add async execution layer (Celery or Dramatiq) for workflow runs initiated by API.
+	- Expose API pattern: `POST /run` returns `task_id` immediately; `GET /status/{task_id}` returns progress and terminal state.
+	- Ensure worker uses same checkpointer and idempotency guardrails as synchronous path.
+	- Add cancellation/retry policy with bounded retries and structured error mapping.
+	- Add UI polling/subscription integration contract for progress updates.
+	Validation checklist:
+	- Integration test: API returns immediately while worker continues processing in background.
+	- Integration test: status endpoint transitions through queued/running/completed/failed states deterministically.
+	- Integration test: worker retry does not duplicate writes after approval.
+
+- [ ] AGT-26: Cloud-agnostic IaC modules
+	Implementation checklist:
+	- Create IaC modules for compute, persistence, queue, and networking with environment overlays.
+	- Define non-local secret injection contract (managed secret store) and remove local secret assumptions from deployment path.
+	- Add CI/CD pipeline job to plan/apply infrastructure and deploy backend/worker artifacts.
+	- Add minimal staging environment template that exercises checkpoint + queue + API path.
+	- Add rollback and drift-detection procedures.
+	Validation checklist:
+	- CI job produces reproducible plan output and applies in staging.
+	- Post-deploy smoke verifies health/run/resume/status endpoints plus worker connectivity.
+	- Security check confirms secrets are injected at runtime and never committed or baked into images.
+
 ## Runnable Examples Per Milestone
 
 - [ ] M1 example: [examples/m1_foundation_demo.py](../examples/m1_foundation_demo.py)
 - [x] M2 example: [examples/m2_retrieval_demo.py](../examples/m2_retrieval_demo.py)
+- [x] M2.6 example: [examples/m2_6_fallback_demo.py](../examples/m2_6_fallback_demo.py)
 - [ ] M3 example: [examples/m3_write_correctness_demo.py](../examples/m3_write_correctness_demo.py)
 - [ ] M4 example: [examples/m4_approval_flow_demo.py](../examples/m4_approval_flow_demo.py)
 - [ ] M5 example: [examples/m5_hardening_demo.py](../examples/m5_hardening_demo.py)
@@ -363,6 +433,7 @@ Each new client lives in its own file under `src/agt/tools/`, returns `list[Norm
 - [ ] Add provider health/probe command and startup diagnostics for enabled providers
 - [ ] Add model registry config (provider, model, timeout, retries, temperature) with strict validation
 - [ ] Add fallback chain policy (primary, secondary, fail-fast) with explicit audit logging
+- [x] Implement AGT-8 feature-flagged fallback retrieval path and unified dedup across primary/fallback providers
 - [x] Add strict config validation tests for missing/invalid secrets
 - [x] Implement live Zotero preflight capability check on startup
 - [x] Add trace/span helpers and propagate request/thread IDs through workflow state
@@ -383,6 +454,10 @@ Each new client lives in its own file under `src/agt/tools/`, returns `list[Norm
 - [ ] Add API contract tests for health/run/resume/status payload schemas
 - [ ] Add security checklist section and release gate in documentation
 - [ ] Add plugin-backend contract versioning before ZAP-3 implementation starts
+- [ ] Implement AGT-23 retrieval registry abstraction with provider contract tests
+- [ ] Implement AGT-24 distributed checkpoint backend (Redis/Postgres) and cross-instance resume test
+- [ ] Implement AGT-25 async worker queue and task_id API/status contracts
+- [ ] Implement AGT-26 IaC modules and staging deployment smoke validation
 
 ## Multi-Provider Rollout Checklist
 

@@ -263,6 +263,10 @@ class Settings(BaseSettings):
         default=False,
         validation_alias=AliasChoices("AGT_USE_RERANKER", "USE_RERANKER"),
     )
+    enable_fallback_retrieval: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("AGT_ENABLE_FALLBACK_RETRIEVAL", "ENABLE_FALLBACK_RETRIEVAL"),
+    )
     zotero_rate_limit_per_minute: int = Field(
         default=60,
         ge=1,

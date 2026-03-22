@@ -92,6 +92,26 @@ def test_settings_reject_unknown_init_field() -> None:
         _settings_from({"unknown_field": "x"})
 
 
+def test_settings_fallback_retrieval_flag_defaults_and_aliases(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _clear_required_env(monkeypatch)
+    default_settings = _settings_from({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "12345",
+    })
+    assert default_settings.enable_fallback_retrieval is False
+
+    alias_settings = _settings_from({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "12345",
+        "ENABLE_FALLBACK_RETRIEVAL": True,
+    })
+    assert alias_settings.enable_fallback_retrieval is True
+
+
 def test_get_settings_fails_fast_with_actionable_error(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

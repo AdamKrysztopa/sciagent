@@ -276,3 +276,229 @@ async def test_search_papers_calls_all_parallel_sources(monkeypatch: pytest.Monk
         "base",
     }.issubset(called)
     assert metadata.source_timings
+
+
+@pytest.mark.anyio
+async def test_fallback_disabled_skips_fallback_providers(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "123",
+        "AGT_SUMMARIZATION_USE_LLM": False,
+        "AGT_CORE_API_KEY": "core-secret",
+    })
+
+    called_fallback = {"core": 0}
+
+    class _CoreClient:
+        async def search(self, query: str, *, limit: int) -> list[NormalizedPaper]:
+            _ = query
+            _ = limit
+            called_fallback["core"] += 1
+            return [NormalizedPaper(title="Fallback paper", semantic_score=0.8)]
+
+    def _core_factory(**kwargs: object) -> _CoreClient:
+        _ = kwargs
+        return _CoreClient()
+
+    monkeypatch.setattr(search_module, "get_guardrails", _fake_get_guardrails)
+    monkeypatch.setattr(search_module, "SemanticScholarClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "OpenAlexClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "CrossrefClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "PubMedClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "CoreClient", _core_factory)
+
+    with pytest.raises(SemanticScholarResponseError):
+        await search_module.search_papers(
+            query="test",
+            settings=settings,
+            thread_id="thread-1",
+        )
+
+    assert called_fallback["core"] == 0
+
+
+@pytest.mark.anyio
+async def test_fallback_enabled_fills_results_with_provenance(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "123",
+        "AGT_SUMMARIZATION_USE_LLM": False,
+        "AGT_CORE_API_KEY": "core-secret",
+        "AGT_ENABLE_FALLBACK_RETRIEVAL": True,
+    })
+
+    class _CoreClient:
+        async def search(self, query: str, *, limit: int) -> list[NormalizedPaper]:
+            _ = query
+            _ = limit
+            return [
+                NormalizedPaper(
+                    title="Fallback paper",
+                    semantic_score=0.8,
+                    year=2026,
+                )
+            ]
+
+    def _core_factory(**kwargs: object) -> _CoreClient:
+        _ = kwargs
+        return _CoreClient()
+
+    monkeypatch.setattr(search_module, "get_guardrails", _fake_get_guardrails)
+    monkeypatch.setattr(search_module, "SemanticScholarClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "OpenAlexClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "CrossrefClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "PubMedClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "CoreClient", _core_factory)
+
+    papers, metadata = await search_module.search_papers(
+        query="test",
+        settings=settings,
+        thread_id="thread-1",
+    )
+
+    assert len(papers) == 1
+    assert papers[0].source == "core:fallback"
+    assert "core:fallback" in metadata.sources_used
+
+
+@pytest.mark.anyio
+async def test_fallback_and_primary_duplicates_merge_to_one_row(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "123",
+        "AGT_SUMMARIZATION_USE_LLM": False,
+        "AGT_CORE_API_KEY": "core-secret",
+    })
+
+    primary = [
+        NormalizedPaper(
+            title="Shared DOI paper",
+            doi="10.1000/shared",
+            semantic_score=0.6,
+            year=2025,
+        )
+    ]
+    fallback = [
+        NormalizedPaper(
+            title="Shared DOI paper",
+            doi="10.1000/shared",
+            semantic_score=0.2,
+            year=2024,
+        )
+    ]
+
+    class _CoreClient:
+        async def search(self, query: str, *, limit: int) -> list[NormalizedPaper]:
+            _ = query
+            _ = limit
+            return fallback
+
+    def _core_factory(**kwargs: object) -> _CoreClient:
+        _ = kwargs
+        return _CoreClient()
+
+    monkeypatch.setattr(search_module, "get_guardrails", _fake_get_guardrails)
+    monkeypatch.setattr(search_module, "SemanticScholarClient", _fake_client_factory(primary))
+    monkeypatch.setattr(search_module, "OpenAlexClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "CrossrefClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "PubMedClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "CoreClient", _core_factory)
+
+    papers, _ = await search_module.search_papers(
+        query="test",
+        settings=settings,
+        thread_id="thread-1",
+        fallback_mode="force",
+    )
+
+    assert len(papers) == 1
+    assert papers[0].title == "Shared DOI paper"
+    assert papers[0].index == 0
+
+
+@pytest.mark.anyio
+async def test_mixed_primary_fallback_order_and_indices_are_deterministic(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "123",
+        "AGT_SUMMARIZATION_USE_LLM": False,
+        "AGT_CORE_API_KEY": "core-secret",
+        "AGT_ENABLE_FALLBACK_RETRIEVAL": True,
+    })
+
+    primary = [
+        NormalizedPaper(
+            title="Primary older paper",
+            year=2018,
+            semantic_score=0.2,
+            citation_count=1,
+        )
+    ]
+    fallback = [
+        NormalizedPaper(
+            title="Fallback newer paper",
+            year=2026,
+            semantic_score=0.7,
+            citation_count=30,
+        ),
+        NormalizedPaper(
+            title="Fallback second paper",
+            year=2025,
+            semantic_score=0.6,
+            citation_count=20,
+        ),
+    ]
+
+    class _CoreClient:
+        async def search(self, query: str, *, limit: int) -> list[NormalizedPaper]:
+            _ = query
+            _ = limit
+            return fallback
+
+    def _core_factory(**kwargs: object) -> _CoreClient:
+        _ = kwargs
+        return _CoreClient()
+
+    monkeypatch.setattr(search_module, "get_guardrails", _fake_get_guardrails)
+    monkeypatch.setattr(search_module, "SemanticScholarClient", _fake_client_factory(primary))
+    monkeypatch.setattr(search_module, "OpenAlexClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "CrossrefClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "PubMedClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "CoreClient", _core_factory)
+
+    papers, metadata = await search_module.search_papers(
+        query="test",
+        limit=3,
+        settings=settings,
+        thread_id="thread-1",
+    )
+
+    assert [paper.index for paper in papers] == [0, 1, 2]
+    assert papers[0].title == "Fallback newer paper"
+    assert papers[1].title == "Fallback second paper"
+    assert papers[2].title == "Primary older paper"
+    assert "core:fallback" in metadata.sources_used

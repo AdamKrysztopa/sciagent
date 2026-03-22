@@ -6,6 +6,7 @@ This folder tracks one runnable example per milestone (`M1` to `M6`).
 
 - M1 (planned): `source .venv/bin/activate && python examples/m1_foundation_demo.py`
 - M2 (implemented): `source .venv/bin/activate && python examples/m2_retrieval_demo.py --query "retrieval augmented generation"`
+- M2.6 (implemented): `source .venv/bin/activate && python examples/m2_6_fallback_demo.py --query "retrieval augmented generation in 2026" --fallback-mode auto`
 - M3 (planned): `source .venv/bin/activate && python examples/m3_write_correctness_demo.py`
 - M4 (planned): `source .venv/bin/activate && python examples/m4_approval_flow_demo.py`
 - M5 (planned): `source .venv/bin/activate && python examples/m5_hardening_demo.py`
