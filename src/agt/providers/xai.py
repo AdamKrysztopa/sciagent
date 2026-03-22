@@ -17,10 +17,16 @@ from tenacity import (
 
 from agt.config import RuntimeConfig
 from agt.guardrails import current_thread_id, get_guardrails
-from agt.providers.protocol import LLMProvider
+from agt.providers.protocol import (
+    LLMProvider,
+    ProviderRateLimitError,
+    ProviderResponseError,
+    ProviderTimeoutError,
+)
 
 ModelFactory = Callable[..., Any]
 ModelContent = str | list[object] | object
+HTTP_RATE_LIMIT_STATUS = 429
 
 
 @dataclass(slots=True)
@@ -91,46 +97,19 @@ class _HTTPXAIModel:
         )
 
     def invoke(self, prompt: str) -> _ModelResponse:
-        for attempt in Retrying(
-            stop=stop_after_attempt(self.max_retries + 1),
-            wait=wait_exponential(multiplier=1, min=1, max=8),
-            retry=retry_if_exception_type((
-                httpx.TimeoutException,
-                httpx.NetworkError,
-                httpx.HTTPStatusError,
-            )),
-            reraise=True,
-        ):
-            with attempt, httpx.Client(timeout=self.timeout, base_url=self._base_url) as client:
-                response = client.post(
-                    "/chat/completions",
-                    headers=self._headers(),
-                    json=self._payload(prompt),
-                )
-                response.raise_for_status()
-                data = response.json()
-                if not isinstance(data, dict):
-                    raise RuntimeError("xAI response payload must be a JSON object")
-                return self._parse_response(cast(dict[str, Any], data))
-
-        raise RuntimeError("xAI request failed after retries")
-
-    async def ainvoke(self, prompt: str) -> _ModelResponse:
-        async for attempt in AsyncRetrying(
-            stop=stop_after_attempt(self.max_retries + 1),
-            wait=wait_exponential(multiplier=1, min=1, max=8),
-            retry=retry_if_exception_type((
-                httpx.TimeoutException,
-                httpx.NetworkError,
-                httpx.HTTPStatusError,
-            )),
-            reraise=True,
-        ):
-            with attempt:
-                async with httpx.AsyncClient(
-                    timeout=self.timeout, base_url=self._base_url
-                ) as client:
-                    response = await client.post(
+        try:
+            for attempt in Retrying(
+                stop=stop_after_attempt(self.max_retries + 1),
+                wait=wait_exponential(multiplier=1, min=1, max=8),
+                retry=retry_if_exception_type((
+                    httpx.TimeoutException,
+                    httpx.NetworkError,
+                    httpx.HTTPStatusError,
+                )),
+                reraise=True,
+            ):
+                with attempt, httpx.Client(timeout=self.timeout, base_url=self._base_url) as client:
+                    response = client.post(
                         "/chat/completions",
                         headers=self._headers(),
                         json=self._payload(prompt),
@@ -138,10 +117,57 @@ class _HTTPXAIModel:
                     response.raise_for_status()
                     data = response.json()
                     if not isinstance(data, dict):
-                        raise RuntimeError("xAI response payload must be a JSON object")
+                        raise ProviderResponseError("xAI response payload must be a JSON object")
                     return self._parse_response(cast(dict[str, Any], data))
+        except httpx.TimeoutException as exc:
+            raise ProviderTimeoutError("xAI request timed out") from exc
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code == HTTP_RATE_LIMIT_STATUS:
+                raise ProviderRateLimitError("xAI rate limited") from exc
+            raise ProviderResponseError(f"xAI returned HTTP {exc.response.status_code}") from exc
+        except httpx.NetworkError as exc:
+            raise ProviderTimeoutError("xAI network request failed") from exc
 
-        raise RuntimeError("xAI request failed after retries")
+        raise ProviderResponseError("xAI request failed after retries")
+
+    async def ainvoke(self, prompt: str) -> _ModelResponse:
+        try:
+            async for attempt in AsyncRetrying(
+                stop=stop_after_attempt(self.max_retries + 1),
+                wait=wait_exponential(multiplier=1, min=1, max=8),
+                retry=retry_if_exception_type((
+                    httpx.TimeoutException,
+                    httpx.NetworkError,
+                    httpx.HTTPStatusError,
+                )),
+                reraise=True,
+            ):
+                with attempt:
+                    async with httpx.AsyncClient(
+                        timeout=self.timeout, base_url=self._base_url
+                    ) as client:
+                        response = await client.post(
+                            "/chat/completions",
+                            headers=self._headers(),
+                            json=self._payload(prompt),
+                        )
+                        response.raise_for_status()
+                        data = response.json()
+                        if not isinstance(data, dict):
+                            raise ProviderResponseError(
+                                "xAI response payload must be a JSON object"
+                            )
+                        return self._parse_response(cast(dict[str, Any], data))
+        except httpx.TimeoutException as exc:
+            raise ProviderTimeoutError("xAI request timed out") from exc
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code == HTTP_RATE_LIMIT_STATUS:
+                raise ProviderRateLimitError("xAI rate limited") from exc
+            raise ProviderResponseError(f"xAI returned HTTP {exc.response.status_code}") from exc
+        except httpx.NetworkError as exc:
+            raise ProviderTimeoutError("xAI network request failed") from exc
+
+        raise ProviderResponseError("xAI request failed after retries")
 
     def bind_tools(self, tools: Sequence[Any]) -> _HTTPXAIModel:
         serialized_tools: list[dict[str, Any]] = []

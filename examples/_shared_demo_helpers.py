@@ -53,6 +53,20 @@ def normalize_strict_settings_env() -> None:
     # Settings is strict; keep only modeled key names for xAI.
     os.environ.pop("XAI_API_KEY", None)
 
+    if "AGT_OPENAI_API_KEY" not in os.environ:
+        alias = os.getenv("OPENAI_API_KEY")
+        if alias:
+            os.environ["AGT_OPENAI_API_KEY"] = alias
+
+    if "AGT_ANTHROPIC_API_KEY" not in os.environ:
+        alias = os.getenv("ANTHROPIC_API_KEY")
+        if alias:
+            os.environ["AGT_ANTHROPIC_API_KEY"] = alias
+
+    # Strip plain aliases that can conflict under strict extra='forbid'.
+    os.environ.pop("OPENAI_API_KEY", None)
+    os.environ.pop("ANTHROPIC_API_KEY", None)
+
 
 def try_build_provider(settings: Settings) -> LLMProvider | None:
     """Build an LLM provider only when a non-dummy key is configured."""

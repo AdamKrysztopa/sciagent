@@ -124,3 +124,24 @@ def test_get_settings_fails_fast_with_actionable_error(
     text = str(exc.value)
     assert "Missing required settings" in text
     assert "AGT_ZOTERO_API_KEY" in text or "ZOTERO_API_KEY" in text
+
+
+def test_settings_provider_routing_policy_aliases(monkeypatch: pytest.MonkeyPatch) -> None:
+    _clear_required_env(monkeypatch)
+    settings = _settings_from({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "12345",
+        "AGT_LLM_PROVIDER": "xai",
+        "LLM_FALLBACK_PROVIDER": "openai",
+        "LLM_FAILOVER_ON_TIMEOUT": False,
+        "LLM_FAILOVER_ON_RATE_LIMIT": True,
+        "BACKEND_API_KEY": "backend-secret",
+    })
+
+    assert settings.llm_provider == "xai"
+    assert settings.llm_fallback_provider == "openai"
+    assert settings.llm_failover_on_timeout is False
+    assert settings.llm_failover_on_rate_limit is True
+    assert settings.backend_api_key is not None
+    assert settings.backend_api_key.get_secret_value() == "backend-secret"

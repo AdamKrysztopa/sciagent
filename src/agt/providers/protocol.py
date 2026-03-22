@@ -6,6 +6,22 @@ from collections.abc import Sequence
 from typing import Any, Protocol
 
 
+class ProviderError(RuntimeError):
+    """Base class for provider invocation failures."""
+
+
+class ProviderTimeoutError(ProviderError):
+    """Raised when a provider call times out."""
+
+
+class ProviderRateLimitError(ProviderError):
+    """Raised when a provider responds with rate limiting."""
+
+
+class ProviderResponseError(ProviderError):
+    """Raised when a provider returns an invalid or non-retryable response."""
+
+
 class LLMProvider(Protocol):
     """Provider contract for sync/async invocation and optional tool binding."""
 

@@ -8,6 +8,7 @@ import asyncio
 from _shared_demo_helpers import (
     default_zotero_api_key,
     default_zotero_library_id,
+    normalize_strict_settings_env,
     resolve_env_key,
     resolve_xai_key,
 )
@@ -23,6 +24,7 @@ async def _run(
     approve: bool,
     thread_id: str | None,
 ) -> int:
+    normalize_strict_settings_env()
     settings = Settings.model_validate({
         "AGT_XAI_API_KEY": resolve_xai_key(),
         "AGT_ZOTERO_API_KEY": default_zotero_api_key(),

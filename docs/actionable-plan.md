@@ -354,11 +354,25 @@ M4 validation checklist:
 
 ### M5 (Week 6-8): Production v1 Hardening
 
-- [ ] AGT-16: Resume/retry from checkpoints without duplicate writes
-- [ ] AGT-20: Failure-path and partial-success deterministic test suite
-- [ ] AGT-18: Backend/API separation with health/run/resume/status endpoints
-- [ ] AGT-21: Security hardening and multi-user auth direction documentation
-- [ ] AGT-22: Universal LLM interface routing with provider selection policy
+- [x] AGT-16: Resume/retry from checkpoints without duplicate writes
+- [x] AGT-20: Failure-path and partial-success deterministic test suite
+- [x] AGT-18: Backend/API separation with health/run/resume/status endpoints
+- [x] AGT-21: Security hardening and multi-user auth direction documentation
+- [x] AGT-22: Universal LLM interface routing with provider selection policy
+
+M5 completion notes:
+- [x] Resume/retry semantics hardened in `src/agt/graph/workflow.py` via `resume_workflow()` and completed-checkpoint no-op logic to avoid duplicate write attempts.
+- [x] Deterministic failure-path handling added in `src/agt/graph/workflow.py` so write-step exceptions return stable retry-safe `WriteResult` payloads instead of uncaught runtime errors.
+- [x] Backend/API separation delivered in `src/agt/api/app.py` with `GET /health`, `POST /run`, `POST /resume`, and `GET /status/{run_id}` endpoints.
+- [x] Security hardening applied to backend endpoints using optional API key auth (`AGT_BACKEND_API_KEY`) and owner/thread isolation with `X-AGT-Client-ID`.
+- [x] Provider routing policy extended in `src/agt/providers/router.py` with timeout/rate-limit failover controls and optional fallback provider settings.
+
+M5 validation checklist:
+- [x] Added API endpoint tests in `tests/test_api.py` (auth guard, run/resume/status flow, owner isolation).
+- [x] Added resume/idempotency and deterministic failure tests in `tests/test_workflow.py`.
+- [x] Added provider failover routing tests in `tests/test_providers.py`.
+- [x] Added routing-policy settings coverage in `tests/test_config.py`.
+- [x] Updated runnable M5 demo in `examples/m5_hardening_demo.py` to show thread isolation, resume reuse, and backend capability probes.
 
 ### M6 (Parallel Track): Zotero Native Add-on
 

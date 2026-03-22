@@ -7,6 +7,7 @@ import pytest
 from agt.config import RuntimeConfig, Settings
 from agt.providers import router
 from agt.providers import xai as xai_module
+from agt.providers.protocol import ProviderRateLimitError
 from agt.providers.router import build_provider
 from agt.providers.xai import XAIProvider
 
@@ -114,3 +115,105 @@ def test_router_builds_xai_provider(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(router, "XAIProvider", _build_stub)
 
     assert build_provider(settings) is built
+
+
+def test_router_fails_over_on_rate_limit(monkeypatch: pytest.MonkeyPatch) -> None:
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "12345",
+        "AGT_LLM_PROVIDER": "xai",
+        "AGT_LLM_FALLBACK_PROVIDER": "openai",
+    })
+
+    class _Primary:
+        def invoke(self, prompt: str) -> str:
+            _ = prompt
+            raise ProviderRateLimitError("rate limited")
+
+        async def ainvoke(self, prompt: str) -> str:
+            _ = prompt
+            raise ProviderRateLimitError("rate limited")
+
+        def bind_tools(self, tools: list[object]) -> _Primary:
+            _ = tools
+            return self
+
+    class _Fallback:
+        def invoke(self, prompt: str) -> str:
+            return f"fallback:{prompt}"
+
+        async def ainvoke(self, prompt: str) -> str:
+            return f"fallback:{prompt}"
+
+        def bind_tools(self, tools: list[object]) -> _Fallback:
+            _ = tools
+            return self
+
+    _ = monkeypatch
+    original_xai = router.get_provider_builder("xai")
+    original_openai = router.get_provider_builder("openai")
+    router.register_provider_builder("xai", lambda _settings: _Primary())
+    router.register_provider_builder("openai", lambda _settings: _Fallback())
+    try:
+        provider = build_provider(settings)
+        assert provider.invoke("hello") == "fallback:hello"
+    finally:
+        if original_xai is not None:
+            router.register_provider_builder("xai", original_xai)
+        if original_openai is None:
+            router.unregister_provider_builder("openai")
+        else:
+            router.register_provider_builder("openai", original_openai)
+
+
+def test_router_skips_failover_when_disabled(monkeypatch: pytest.MonkeyPatch) -> None:
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "12345",
+        "AGT_LLM_PROVIDER": "xai",
+        "AGT_LLM_FALLBACK_PROVIDER": "openai",
+        "AGT_LLM_FAILOVER_ON_RATE_LIMIT": False,
+    })
+
+    class _Primary:
+        def invoke(self, prompt: str) -> str:
+            _ = prompt
+            raise ProviderRateLimitError("rate limited")
+
+        async def ainvoke(self, prompt: str) -> str:
+            _ = prompt
+            raise ProviderRateLimitError("rate limited")
+
+        def bind_tools(self, tools: list[object]) -> _Primary:
+            _ = tools
+            return self
+
+    class _Fallback:
+        def invoke(self, prompt: str) -> str:
+            return f"fallback:{prompt}"
+
+        async def ainvoke(self, prompt: str) -> str:
+            return f"fallback:{prompt}"
+
+        def bind_tools(self, tools: list[object]) -> _Fallback:
+            _ = tools
+            return self
+
+    _ = monkeypatch
+    original_xai = router.get_provider_builder("xai")
+    original_openai = router.get_provider_builder("openai")
+    router.register_provider_builder("xai", lambda _settings: _Primary())
+    router.register_provider_builder("openai", lambda _settings: _Fallback())
+    try:
+        provider = build_provider(settings)
+        with pytest.raises(ProviderRateLimitError):
+            provider.invoke("hello")
+    finally:
+        if original_xai is not None:
+            router.register_provider_builder("xai", original_xai)
+        if original_openai is None:
+            router.unregister_provider_builder("openai")
+        else:
+            router.register_provider_builder("openai", original_openai)

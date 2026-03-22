@@ -207,3 +207,22 @@ You now have:
   - `AGT_ENV` + `AGT_ENV_OVERRIDES` for environment-specific overrides
 - Current default implementation is xAI via `src/agt/providers/xai.py`.
 - OpenAI/Anthropic/Groq adapters should implement the same protocol and be added only in the router, with no workflow-level changes.
+
+## M5 Provider Routing Policy (AGT-22)
+
+- Primary provider selection remains config-driven via `AGT_LLM_PROVIDER`.
+- Optional fallback provider can be configured via `AGT_LLM_FALLBACK_PROVIDER`.
+- Failover policy is explicit and independently toggled:
+  - `AGT_LLM_FAILOVER_ON_TIMEOUT=true|false`
+  - `AGT_LLM_FAILOVER_ON_RATE_LIMIT=true|false`
+- Failover is applied only for timeout and rate-limit failures; non-retryable provider errors are surfaced directly.
+
+## M5 Backend Security Direction (AGT-21)
+
+- Backend endpoints can require an API key with `AGT_BACKEND_API_KEY`; requests must include `X-AGT-API-Key`.
+- Run ownership isolation uses `X-AGT-Client-ID` and is enforced for `/resume` and `/status/{run_id}`.
+- Current mode is single-tenant with strong thread-owner separation.
+- Multi-user delegated-auth direction for production v2:
+  - Replace static backend key with per-user bearer tokens from an external IdP.
+  - Bind `run_id` ownership to token subject claims instead of header-provided client IDs.
+  - Keep `thread_id` and `request_id` as audit primitives, never as authorization primitives.

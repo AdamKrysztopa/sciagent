@@ -46,6 +46,11 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("AGT_ZOTERO_API_KEY", "ZOTERO_API_KEY"),
         description="Zotero API key",
     )
+    backend_api_key: SecretStr | None = Field(
+        default=None,
+        validation_alias=AliasChoices("AGT_BACKEND_API_KEY", "BACKEND_API_KEY"),
+        description="Optional API key required by backend HTTP endpoints.",
+    )
     zotero_library_id: str = Field(
         ...,
         min_length=1,
@@ -96,6 +101,21 @@ class Settings(BaseSettings):
     llm_provider: LLMProviderName = Field(
         default="xai",
         validation_alias=AliasChoices("AGT_LLM_PROVIDER", "LLM_PROVIDER"),
+    )
+    llm_fallback_provider: LLMProviderName | None = Field(
+        default=None,
+        validation_alias=AliasChoices("AGT_LLM_FALLBACK_PROVIDER", "LLM_FALLBACK_PROVIDER"),
+    )
+    llm_failover_on_timeout: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("AGT_LLM_FAILOVER_ON_TIMEOUT", "LLM_FAILOVER_ON_TIMEOUT"),
+    )
+    llm_failover_on_rate_limit: bool = Field(
+        default=True,
+        validation_alias=AliasChoices(
+            "AGT_LLM_FAILOVER_ON_RATE_LIMIT",
+            "LLM_FAILOVER_ON_RATE_LIMIT",
+        ),
     )
     model_name: str = Field(
         default="grok-4", validation_alias=AliasChoices("AGT_MODEL_NAME", "MODEL_NAME")

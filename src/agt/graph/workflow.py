@@ -8,7 +8,7 @@ import structlog
 
 from agt.config import Settings, configure_logging, get_settings
 from agt.guardrails import configure_guardrails, thread_context
-from agt.models import AgentState, NormalizedPaper
+from agt.models import AgentState, CollectionResult, ItemWriteOutcome, NormalizedPaper, WriteResult
 from agt.observability import TraceContext, serialize_spans, trace_step
 from agt.providers.router import build_provider
 from agt.tools.search_papers import search_papers
@@ -153,19 +153,57 @@ async def finalize_approval(
                 collection_name=effective_collection,
             )
 
-        if approved and selected_papers:
+        if (
+            approved
+            and checkpoint["phase"] == "completed"
+            and checkpoint["write_result"] is not None
+        ):
+            logger.info("write_retry_skipped", reason="already_completed")
+            write_result = checkpoint["write_result"]
+        elif approved and selected_papers:
             with trace_step(
                 trace,
                 "zotero_write",
                 collection_name=effective_collection,
                 selected_count=len(selected_papers),
             ):
-                result = await upsert_papers(
-                    collection_name=effective_collection,
-                    papers=selected_papers,
-                    settings=active_settings,
-                )
-                write_result = result.model_dump()
+                try:
+                    result = await upsert_papers(
+                        collection_name=effective_collection,
+                        papers=selected_papers,
+                        settings=active_settings,
+                    )
+                    write_result = result.model_dump()
+                except Exception as exc:
+                    logger.error(
+                        "zotero_write_failed",
+                        error=str(exc),
+                        selected_count=len(selected_papers),
+                    )
+                    failed_outcomes = [
+                        ItemWriteOutcome(
+                            index=idx,
+                            title=paper.title,
+                            status="failed",
+                            reason=f"write_error:{type(exc).__name__}",
+                            retry_safe=True,
+                        )
+                        for idx, paper in zip(normalized_selected, selected_papers, strict=False)
+                    ]
+                    write_result = WriteResult(
+                        created=0,
+                        unchanged=0,
+                        failed=len(failed_outcomes),
+                        collection=CollectionResult(
+                            key="unresolved",
+                            name=effective_collection,
+                            reused=False,
+                        ),
+                        outcomes=failed_outcomes,
+                        retry_safe_failures=len(failed_outcomes),
+                    ).model_dump()
+                    final_phase = "completed"
+                    final_decision = "approved"
 
         logger.info(
             "workflow_complete",
@@ -192,6 +230,39 @@ async def finalize_approval(
         "write_result": write_result,
         "search_metadata": checkpoint["search_metadata"],
     }
+
+
+async def resume_workflow(
+    checkpoint: AgentState,
+    *,
+    approved: bool,
+    collection_name: str | None = None,
+    selected_indices: list[int] | None = None,
+    settings: Settings | None = None,
+) -> AgentState:
+    """Resume from a checkpoint with deterministic retry semantics."""
+
+    if checkpoint["phase"] == "completed" and checkpoint["write_result"] is not None:
+        return {
+            **checkpoint,
+            "messages": checkpoint["messages"]
+            + ["Resume requested after completion; state reused."],
+        }
+
+    if checkpoint["phase"] == "rejected":
+        return {
+            **checkpoint,
+            "messages": checkpoint["messages"]
+            + ["Resume requested after rejection; state reused."],
+        }
+
+    return await finalize_approval(
+        checkpoint,
+        approved=approved,
+        collection_name=collection_name,
+        selected_indices=selected_indices,
+        settings=settings,
+    )
 
 
 async def run_workflow(

@@ -20,6 +20,7 @@ uv run pre-commit install
 ```bash
 uv run streamlit run src/agt/ui/app.py
 uv run python -m agt.graph.cli
+uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000
 ```
 
 ## Quality
@@ -37,6 +38,7 @@ uv run pytest -q --vcr-record=none
 src/agt/config.py      # Typed settings and secret redaction helpers
 src/agt/models.py      # Core normalized data models and workflow state
 src/agt/graph/         # Workflow graph and CLI entrypoint
+src/agt/api/           # FastAPI backend (health/run/resume/status)
 src/agt/tools/         # External tool adapters (search + zotero)
 src/agt/ui/app.py      # Streamlit prototype UI
 ```
