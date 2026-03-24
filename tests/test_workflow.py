@@ -1,0 +1,515 @@
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+
+import pytest
+
+from agt.graph import workflow
+from agt.models import CollectionResult, NormalizedPaper, SearchMetadata, WriteResult
+from agt.zotero.preflight import PreflightResult
+
+_SELECTED_COUNT = 2
+_RETRY_EXPECTED_CALLS = 2
+
+
+@dataclass(slots=True)
+class _FakeRuntime:
+    provider: str = "xai"
+    model_name: str = "grok-4"
+    timeout_seconds: int = 30
+    retries: int = 3
+    temperature: float = 0.2
+
+
+@dataclass(slots=True)
+class _FakeSettings:
+    log_level: str = "INFO"
+    runtime: _FakeRuntime = field(default_factory=_FakeRuntime)
+    semantic_scholar_rate_limit_per_minute: int = 100
+    openalex_rate_limit_per_minute: int = 100
+    crossref_rate_limit_per_minute: int = 80
+    pubmed_rate_limit_per_minute: int = 100
+    europe_pmc_rate_limit_per_minute: int = 100
+    core_rate_limit_per_minute: int = 60
+    arxiv_rate_limit_per_minute: int = 20
+    opencitations_rate_limit_per_minute: int = 60
+    base_rate_limit_per_minute: int = 40
+    dimensions_rate_limit_per_minute: int = 40
+    google_scholar_rate_limit_per_minute: int = 20
+    zotero_rate_limit_per_minute: int = 60
+    llm_rate_limit_per_minute: int = 120
+    workflow_max_cost_usd: float = 0.5
+    summarization_use_llm: bool = False
+    summarization_max_sentences: int = 4
+
+
+def _fake_get_settings() -> _FakeSettings:
+    return _FakeSettings()
+
+
+def _fake_configure_logging(level: str) -> None:
+    _ = level
+
+
+def _fake_build_provider(settings: object) -> object:
+    _ = settings
+    return object()
+
+
+def _fake_preflight_ok(settings: object) -> PreflightResult:
+    _ = settings
+    return PreflightResult(
+        ok=True,
+        message="ok",
+        can_read=True,
+        can_write=True,
+        key_valid=True,
+    )
+
+
+def _fake_preflight_fail(settings: object) -> PreflightResult:
+    _ = settings
+    return PreflightResult(
+        ok=False,
+        message="missing write scope",
+        can_read=True,
+        can_write=False,
+        key_valid=True,
+    )
+
+
+@pytest.mark.anyio
+async def test_workflow_contains_ids_preflight_and_spans(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def fake_search(
+        query: str,
+        limit: int = 10,
+        *,
+        settings: object | None = None,
+        thread_id: str | None = None,
+    ) -> tuple[list[NormalizedPaper], SearchMetadata]:
+        _ = limit
+        _ = settings
+        _ = thread_id
+        return (
+            [NormalizedPaper(title=f"result:{query}")],
+            SearchMetadata(original_query=query, regex_query=query),
+        )
+
+    async def fake_upsert(
+        collection_name: str,
+        papers: list[NormalizedPaper],
+        *,
+        settings: object | None = None,
+    ):
+        _ = collection_name
+        _ = papers
+        _ = settings
+        return WriteResult(
+            created=1,
+            unchanged=0,
+            failed=0,
+            collection=CollectionResult(key="C123", name="Inbox", reused=True),
+            retry_safe_failures=0,
+        )
+
+    monkeypatch.setattr(workflow, "get_settings", _fake_get_settings)
+    monkeypatch.setattr(workflow, "configure_logging", _fake_configure_logging)
+    monkeypatch.setattr(workflow, "build_provider", _fake_build_provider)
+    monkeypatch.setattr(workflow, "run_zotero_preflight", _fake_preflight_ok)
+    monkeypatch.setattr(workflow, "search_papers", fake_search)
+    monkeypatch.setattr(workflow, "upsert_papers", fake_upsert)
+
+    state = await workflow.run_workflow(
+        query="test query",
+        collection_name="Inbox",
+        approved=True,
+        thread_id="thread-1",
+    )
+
+    assert state["thread_id"] == "thread-1"
+    assert state["request_id"]
+    assert state["phase"] == "completed"
+    assert state["decision"] == "approved"
+    assert state["preflight"]["ok"] is True
+    assert state["selected_indices"] == [0]
+    assert len(state["papers"]) == 1
+    assert isinstance(state["papers"][0], dict)
+    span_names = [span["name"] for span in state["trace_spans"]]
+    assert "provider_init" in span_names
+    assert "zotero_preflight" in span_names
+    assert "search" in span_names
+    assert "summarize" in span_names
+    assert "approval_checkpoint" in span_names
+    assert "approval_decision" in span_names
+    assert "zotero_write" in span_names
+    write_result = state["write_result"]
+    assert isinstance(write_result, dict)
+    assert write_result["created"] == 1
+    assert write_result["unchanged"] == 0
+    assert write_result["failed"] == 0
+    assert isinstance(write_result["collection"], dict)
+    assert write_result["collection"]["key"] == "C123"
+    assert state["search_metadata"] is not None
+
+
+@pytest.mark.anyio
+async def test_workflow_fails_fast_when_preflight_fails(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(workflow, "get_settings", _fake_get_settings)
+    monkeypatch.setattr(workflow, "configure_logging", _fake_configure_logging)
+    monkeypatch.setattr(workflow, "build_provider", _fake_build_provider)
+    monkeypatch.setattr(workflow, "run_zotero_preflight", _fake_preflight_fail)
+
+    with pytest.raises(RuntimeError, match="missing write scope"):
+        await workflow.run_workflow(query="q", collection_name="Inbox", approved=False)
+
+
+@pytest.mark.anyio
+async def test_finalize_reject_skips_write(monkeypatch: pytest.MonkeyPatch) -> None:
+    async def fake_search(
+        query: str,
+        limit: int = 10,
+        *,
+        settings: object | None = None,
+        thread_id: str | None = None,
+    ) -> tuple[list[NormalizedPaper], SearchMetadata]:
+        _ = query
+        _ = limit
+        _ = settings
+        _ = thread_id
+        return (
+            [NormalizedPaper(title="paper-1"), NormalizedPaper(title="paper-2")],
+            SearchMetadata(original_query="q", regex_query="q"),
+        )
+
+    async def fail_upsert(
+        collection_name: str,
+        papers: list[NormalizedPaper],
+        *,
+        settings: object | None = None,
+    ):
+        _ = collection_name
+        _ = papers
+        _ = settings
+        raise AssertionError("upsert must not be called when rejected")
+
+    monkeypatch.setattr(workflow, "get_settings", _fake_get_settings)
+    monkeypatch.setattr(workflow, "configure_logging", _fake_configure_logging)
+    monkeypatch.setattr(workflow, "build_provider", _fake_build_provider)
+    monkeypatch.setattr(workflow, "run_zotero_preflight", _fake_preflight_ok)
+    monkeypatch.setattr(workflow, "search_papers", fake_search)
+    monkeypatch.setattr(workflow, "upsert_papers", fail_upsert)
+
+    checkpoint = await workflow.run_search_phase(
+        query="q",
+        collection_name="Inbox",
+        thread_id="thread-x",
+    )
+    rejected = await workflow.finalize_approval(
+        checkpoint,
+        approved=False,
+        selected_indices=[0],
+    )
+
+    assert rejected["thread_id"] == "thread-x"
+    assert rejected["phase"] == "rejected"
+    assert rejected["decision"] == "rejected"
+    assert rejected["approved"] is False
+    assert rejected["write_result"] is None
+    assert rejected["selected_indices"] == [0]
+
+
+@pytest.mark.anyio
+async def test_finalize_approval_supports_selection_and_collection_rename(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_search(
+        query: str,
+        limit: int = 10,
+        *,
+        settings: object | None = None,
+        thread_id: str | None = None,
+    ) -> tuple[list[NormalizedPaper], SearchMetadata]:
+        _ = query
+        _ = limit
+        _ = settings
+        _ = thread_id
+        return (
+            [
+                NormalizedPaper(title="paper-1"),
+                NormalizedPaper(title="paper-2"),
+                NormalizedPaper(title="paper-3"),
+            ],
+            SearchMetadata(original_query="q", regex_query="q"),
+        )
+
+    call_args: dict[str, object] = {}
+
+    async def fake_upsert(
+        collection_name: str,
+        papers: list[NormalizedPaper],
+        *,
+        settings: object | None = None,
+    ) -> WriteResult:
+        _ = settings
+        call_args["collection_name"] = collection_name
+        call_args["paper_titles"] = [paper.title for paper in papers]
+        return WriteResult(
+            created=len(papers),
+            unchanged=0,
+            failed=0,
+            collection=CollectionResult(key="C55", name=collection_name, reused=False),
+            retry_safe_failures=0,
+        )
+
+    monkeypatch.setattr(workflow, "get_settings", _fake_get_settings)
+    monkeypatch.setattr(workflow, "configure_logging", _fake_configure_logging)
+    monkeypatch.setattr(workflow, "build_provider", _fake_build_provider)
+    monkeypatch.setattr(workflow, "run_zotero_preflight", _fake_preflight_ok)
+    monkeypatch.setattr(workflow, "search_papers", fake_search)
+    monkeypatch.setattr(workflow, "upsert_papers", fake_upsert)
+
+    checkpoint = await workflow.run_search_phase(query="q", collection_name="Inbox")
+    approved = await workflow.finalize_approval(
+        checkpoint,
+        approved=True,
+        collection_name="Renamed Collection",
+        selected_indices=[1, 2],
+    )
+
+    assert call_args["collection_name"] == "Renamed Collection"
+    assert call_args["paper_titles"] == ["paper-2", "paper-3"]
+    assert approved["phase"] == "completed"
+    assert approved["decision"] == "approved"
+    assert approved["approved"] is True
+    assert approved["selected_indices"] == [1, 2]
+    assert isinstance(approved["write_result"], dict)
+    assert approved["write_result"]["created"] == _SELECTED_COUNT
+
+
+@pytest.mark.anyio
+async def test_resume_completed_checkpoint_reuses_state_without_write(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_search(
+        query: str,
+        limit: int = 10,
+        *,
+        settings: object | None = None,
+        thread_id: str | None = None,
+    ) -> tuple[list[NormalizedPaper], SearchMetadata]:
+        _ = query
+        _ = limit
+        _ = settings
+        _ = thread_id
+        return (
+            [NormalizedPaper(title="paper-1")],
+            SearchMetadata(original_query="q", regex_query="q"),
+        )
+
+    write_calls = 0
+
+    async def fake_upsert(
+        collection_name: str,
+        papers: list[NormalizedPaper],
+        *,
+        settings: object | None = None,
+    ) -> WriteResult:
+        nonlocal write_calls
+        _ = collection_name
+        _ = papers
+        _ = settings
+        write_calls += 1
+        return WriteResult(
+            created=1,
+            unchanged=0,
+            failed=0,
+            collection=CollectionResult(key="C1", name="Inbox", reused=False),
+            retry_safe_failures=0,
+        )
+
+    monkeypatch.setattr(workflow, "get_settings", _fake_get_settings)
+    monkeypatch.setattr(workflow, "configure_logging", _fake_configure_logging)
+    monkeypatch.setattr(workflow, "build_provider", _fake_build_provider)
+    monkeypatch.setattr(workflow, "run_zotero_preflight", _fake_preflight_ok)
+    monkeypatch.setattr(workflow, "search_papers", fake_search)
+    monkeypatch.setattr(workflow, "upsert_papers", fake_upsert)
+
+    checkpoint = await workflow.run_search_phase(query="q", collection_name="Inbox")
+    completed = await workflow.finalize_approval(checkpoint, approved=True)
+    resumed = await workflow.resume_workflow(completed, approved=True)
+
+    assert write_calls == 1
+    assert resumed["phase"] == "completed"
+    assert resumed["write_result"] == completed["write_result"]
+    assert resumed["messages"][-1].startswith("Resume requested after completion")
+
+
+@pytest.mark.anyio
+async def test_finalize_write_error_returns_deterministic_retry_safe_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_search(
+        query: str,
+        limit: int = 10,
+        *,
+        settings: object | None = None,
+        thread_id: str | None = None,
+    ) -> tuple[list[NormalizedPaper], SearchMetadata]:
+        _ = query
+        _ = limit
+        _ = settings
+        _ = thread_id
+        return (
+            [NormalizedPaper(title="paper-1")],
+            SearchMetadata(original_query="q", regex_query="q"),
+        )
+
+    async def fail_upsert(
+        collection_name: str,
+        papers: list[NormalizedPaper],
+        *,
+        settings: object | None = None,
+    ) -> WriteResult:
+        _ = collection_name
+        _ = papers
+        _ = settings
+        raise workflow.ZoteroWriteError("zotero unavailable")
+
+    monkeypatch.setattr(workflow, "get_settings", _fake_get_settings)
+    monkeypatch.setattr(workflow, "configure_logging", _fake_configure_logging)
+    monkeypatch.setattr(workflow, "build_provider", _fake_build_provider)
+    monkeypatch.setattr(workflow, "run_zotero_preflight", _fake_preflight_ok)
+    monkeypatch.setattr(workflow, "search_papers", fake_search)
+    monkeypatch.setattr(workflow, "upsert_papers", fail_upsert)
+
+    checkpoint = await workflow.run_search_phase(query="q", collection_name="Inbox")
+    completed = await workflow.finalize_approval(checkpoint, approved=True)
+
+    assert completed["phase"] == "failed"
+    assert completed["decision"] == "approved"
+    assert isinstance(completed["write_result"], dict)
+    assert completed["write_result"]["failed"] == 1
+    assert completed["write_result"]["retry_safe_failures"] == 1
+
+
+@pytest.mark.anyio
+async def test_finalize_partial_write_failure_keeps_completed_phase(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_search(
+        query: str,
+        limit: int = 10,
+        *,
+        settings: object | None = None,
+        thread_id: str | None = None,
+    ) -> tuple[list[NormalizedPaper], SearchMetadata]:
+        _ = query
+        _ = limit
+        _ = settings
+        _ = thread_id
+        return (
+            [NormalizedPaper(title="paper-1"), NormalizedPaper(title="paper-2")],
+            SearchMetadata(original_query="q", regex_query="q"),
+        )
+
+    async def partially_failing_upsert(
+        collection_name: str,
+        papers: list[NormalizedPaper],
+        *,
+        settings: object | None = None,
+    ) -> WriteResult:
+        _ = collection_name
+        _ = settings
+        return WriteResult(
+            created=1,
+            unchanged=0,
+            failed=1,
+            collection=CollectionResult(key="C1", name="Inbox", reused=False),
+            outcomes=[
+                workflow.ItemWriteOutcome(index=0, title=papers[0].title, status="created"),
+                workflow.ItemWriteOutcome(
+                    index=1,
+                    title=papers[1].title,
+                    status="failed",
+                    reason="temporary_error",
+                    retry_safe=True,
+                ),
+            ],
+            retry_safe_failures=1,
+        )
+
+    monkeypatch.setattr(workflow, "get_settings", _fake_get_settings)
+    monkeypatch.setattr(workflow, "configure_logging", _fake_configure_logging)
+    monkeypatch.setattr(workflow, "build_provider", _fake_build_provider)
+    monkeypatch.setattr(workflow, "run_zotero_preflight", _fake_preflight_ok)
+    monkeypatch.setattr(workflow, "search_papers", fake_search)
+    monkeypatch.setattr(workflow, "upsert_papers", partially_failing_upsert)
+
+    checkpoint = await workflow.run_search_phase(query="q", collection_name="Inbox")
+    completed = await workflow.finalize_approval(checkpoint, approved=True)
+
+    assert completed["phase"] == "completed"
+    assert completed["decision"] == "approved"
+    assert isinstance(completed["write_result"], dict)
+    assert completed["write_result"]["created"] == 1
+    assert completed["write_result"]["failed"] == 1
+
+
+@pytest.mark.anyio
+async def test_resume_after_failed_write_retries_and_can_complete(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fake_search(
+        query: str,
+        limit: int = 10,
+        *,
+        settings: object | None = None,
+        thread_id: str | None = None,
+    ) -> tuple[list[NormalizedPaper], SearchMetadata]:
+        _ = query
+        _ = limit
+        _ = settings
+        _ = thread_id
+        return (
+            [NormalizedPaper(title="paper-1")],
+            SearchMetadata(original_query="q", regex_query="q"),
+        )
+
+    call_count = 0
+
+    async def flaky_upsert(
+        collection_name: str,
+        papers: list[NormalizedPaper],
+        *,
+        settings: object | None = None,
+    ) -> WriteResult:
+        nonlocal call_count
+        _ = collection_name
+        _ = papers
+        _ = settings
+        call_count += 1
+        if call_count == 1:
+            raise RuntimeError("zotero unavailable")
+        return WriteResult(
+            created=1,
+            unchanged=0,
+            failed=0,
+            collection=CollectionResult(key="C1", name="Inbox", reused=False),
+            retry_safe_failures=0,
+        )
+
+    monkeypatch.setattr(workflow, "get_settings", _fake_get_settings)
+    monkeypatch.setattr(workflow, "configure_logging", _fake_configure_logging)
+    monkeypatch.setattr(workflow, "build_provider", _fake_build_provider)
+    monkeypatch.setattr(workflow, "run_zotero_preflight", _fake_preflight_ok)
+    monkeypatch.setattr(workflow, "search_papers", fake_search)
+    monkeypatch.setattr(workflow, "upsert_papers", flaky_upsert)
+
+    checkpoint = await workflow.run_search_phase(query="q", collection_name="Inbox")
+    failed_once = await workflow.finalize_approval(checkpoint, approved=True)
+    retried = await workflow.resume_workflow(failed_once, approved=True)
+
+    assert call_count == _RETRY_EXPECTED_CALLS
+    assert failed_once["phase"] == "failed"
+    assert retried["phase"] == "completed"
+    assert retried["decision"] == "approved"

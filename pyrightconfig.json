@@ -1,0 +1,10 @@
+{
+  "pythonVersion": "3.14",
+  "typeCheckingMode": "strict",
+  "reportMissingImports": true,
+  "reportUnusedImport": true,
+  "include": [
+    "src",
+    "tests"
+  ]
+}
