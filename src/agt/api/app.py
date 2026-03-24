@@ -183,6 +183,8 @@ def create_app() -> FastAPI:
         next_status: Literal["awaiting_approval", "completed", "rejected", "failed"]
         if resumed["phase"] == "completed":
             next_status = "completed"
+        elif resumed["phase"] == "failed":
+            next_status = "failed"
         elif resumed["phase"] == "rejected":
             next_status = "rejected"
         else:

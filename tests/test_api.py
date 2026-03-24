@@ -152,3 +152,89 @@ def test_run_resume_status_flow_with_owner_isolation(monkeypatch: pytest.MonkeyP
         assert payload["state"]["decision"] == "approved"
 
     app.dependency_overrides.clear()
+
+
+def test_resume_failed_phase_maps_to_failed_status(monkeypatch: pytest.MonkeyPatch) -> None:
+    app = create_app()
+
+    def fake_get_settings() -> _Settings:
+        return _Settings()
+
+    async def fake_search_phase(
+        query: str,
+        collection_name: str,
+        thread_id: str | None = None,
+        settings: object | None = None,
+    ) -> dict[str, object]:
+        _ = query
+        _ = collection_name
+        _ = settings
+        return {
+            "request_id": "req-1",
+            "thread_id": thread_id or "thread-1",
+            "messages": ["search complete"],
+            "papers": [],
+            "collection_name": "Inbox",
+            "approved": False,
+            "decision": "pending",
+            "phase": "awaiting_approval",
+            "selected_indices": [],
+            "preflight": {"ok": True},
+            "trace_spans": [],
+            "write_result": None,
+            "search_metadata": {"mode": "regex"},
+        }
+
+    async def fake_resume(
+        checkpoint: dict[str, object],
+        *,
+        approved: bool,
+        collection_name: str | None = None,
+        selected_indices: list[int] | None = None,
+        settings: object | None = None,
+    ) -> dict[str, object]:
+        _ = approved
+        _ = collection_name
+        _ = selected_indices
+        _ = settings
+        return {
+            **checkpoint,
+            "phase": "failed",
+            "decision": "approved",
+            "approved": True,
+            "write_result": {"created": 0, "unchanged": 0, "failed": 1},
+        }
+
+    monkeypatch.setattr(api_module, "run_search_phase", fake_search_phase)
+    monkeypatch.setattr(api_module, "resume_workflow", fake_resume)
+    app.dependency_overrides[get_settings] = fake_get_settings
+
+    with TestClient(app) as client:
+        headers = {
+            "X-AGT-API-Key": "backend-key",
+            "X-AGT-Client-ID": "owner-a",
+        }
+
+        run_response = client.post(
+            "/run",
+            headers=headers,
+            json={"query": "q", "collection_name": "Inbox", "thread_id": "thread-a"},
+        )
+        assert run_response.status_code == HTTP_OK
+        run_id = run_response.json()["run_id"]
+
+        resume_response = client.post(
+            "/resume",
+            headers=headers,
+            json={"run_id": run_id, "approved": True},
+        )
+        assert resume_response.status_code == HTTP_OK
+        assert resume_response.json()["status"] == "failed"
+
+        status_response = client.get(f"/status/{run_id}", headers=headers)
+        assert status_response.status_code == HTTP_OK
+        payload = status_response.json()
+        assert payload["status"] == "failed"
+        assert payload["state"]["phase"] == "failed"
+
+    app.dependency_overrides.clear()

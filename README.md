@@ -4,7 +4,7 @@ SciAgent is a typed Python foundation for natural-language paper search and safe
 
 ## Prerequisites
 
-- Python 3.14 recommended (3.13+ supported)
+- Python 3.14 recommended (3.13 and 3.14 supported)
 - `uv` package manager
 
 ## Bootstrap
@@ -31,6 +31,15 @@ uv run ruff format --check .
 uv run pyright
 uv run pytest -q --vcr-record=none
 ```
+
+## CI Checks
+
+GitHub Actions runs the same quality gates on Python 3.13 and 3.14:
+
+- `ruff check .`
+- `ruff format --check .`
+- `pyright`
+- `pytest -q --vcr-record=none`
 
 ## Structure
 

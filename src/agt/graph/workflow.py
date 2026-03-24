@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+import httpx
 import structlog
 
 from agt.config import Settings, configure_logging, get_settings
@@ -13,7 +14,7 @@ from agt.observability import TraceContext, serialize_spans, trace_step
 from agt.providers.router import build_provider
 from agt.tools.search_papers import search_papers
 from agt.tools.summarize import summarize_papers
-from agt.tools.zotero_upsert import upsert_papers
+from agt.tools.zotero_upsert import ZoteroWriteError, upsert_papers
 from agt.zotero.preflight import run_zotero_preflight
 
 
@@ -43,6 +44,39 @@ def _logger(trace: TraceContext) -> structlog.typing.FilteringBoundLogger:
     return structlog.get_logger("agt.workflow").bind(
         request_id=trace.request_id,
         thread_id=trace.thread_id,
+    )
+
+
+def _build_write_failure_result(
+    *,
+    selected_papers: list[NormalizedPaper],
+    selected_indices: list[int],
+    collection_name: str,
+    reason: str,
+    retry_safe: bool,
+) -> WriteResult:
+    failed_outcomes = [
+        ItemWriteOutcome(
+            index=idx,
+            title=paper.title,
+            status="failed",
+            reason=reason,
+            retry_safe=retry_safe,
+        )
+        for idx, paper in zip(selected_indices, selected_papers, strict=False)
+    ]
+    retry_safe_failures = len(failed_outcomes) if retry_safe else 0
+    return WriteResult(
+        created=0,
+        unchanged=0,
+        failed=len(failed_outcomes),
+        collection=CollectionResult(
+            key="unresolved",
+            name=collection_name,
+            reused=False,
+        ),
+        outcomes=failed_outcomes,
+        retry_safe_failures=retry_safe_failures,
     )
 
 
@@ -136,9 +170,9 @@ async def finalize_approval(
     selected_papers, normalized_selected = _select_papers(papers, selected_indices)
 
     write_result: dict[str, Any] | None = None
-    final_phase: Literal["search_complete", "awaiting_approval", "completed", "rejected"] = (
-        "rejected"
-    )
+    final_phase: Literal[
+        "search_complete", "awaiting_approval", "completed", "rejected", "failed"
+    ] = "rejected"
     final_decision: Literal["approved", "rejected", "pending"] = "rejected"
     if approved:
         final_phase = "completed"
@@ -174,36 +208,54 @@ async def finalize_approval(
                         settings=active_settings,
                     )
                     write_result = result.model_dump()
-                except Exception as exc:
+                    write_attempted = result.created + result.unchanged + result.failed
+                    if write_attempted > 0 and result.failed == write_attempted:
+                        final_phase = "failed"
+                        logger.warning(
+                            "zotero_write_all_failed",
+                            failed=result.failed,
+                            created=result.created,
+                            unchanged=result.unchanged,
+                            retry_safe_failures=result.retry_safe_failures,
+                        )
+                    elif result.failed > 0:
+                        logger.warning(
+                            "zotero_write_partial_failure",
+                            failed=result.failed,
+                            created=result.created,
+                            unchanged=result.unchanged,
+                            retry_safe_failures=result.retry_safe_failures,
+                        )
+                except (ZoteroWriteError, httpx.HTTPError) as exc:
                     logger.error(
                         "zotero_write_failed",
                         error=str(exc),
+                        error_type=type(exc).__name__,
                         selected_count=len(selected_papers),
                     )
-                    failed_outcomes = [
-                        ItemWriteOutcome(
-                            index=idx,
-                            title=paper.title,
-                            status="failed",
-                            reason=f"write_error:{type(exc).__name__}",
-                            retry_safe=True,
-                        )
-                        for idx, paper in zip(normalized_selected, selected_papers, strict=False)
-                    ]
-                    write_result = WriteResult(
-                        created=0,
-                        unchanged=0,
-                        failed=len(failed_outcomes),
-                        collection=CollectionResult(
-                            key="unresolved",
-                            name=effective_collection,
-                            reused=False,
-                        ),
-                        outcomes=failed_outcomes,
-                        retry_safe_failures=len(failed_outcomes),
+                    write_result = _build_write_failure_result(
+                        selected_papers=selected_papers,
+                        selected_indices=normalized_selected,
+                        collection_name=effective_collection,
+                        reason=f"write_error:{type(exc).__name__}",
+                        retry_safe=True,
                     ).model_dump()
-                    final_phase = "completed"
-                    final_decision = "approved"
+                    final_phase = "failed"
+                except Exception as exc:
+                    logger.error(
+                        "zotero_write_unexpected_failure",
+                        error=str(exc),
+                        error_type=type(exc).__name__,
+                        selected_count=len(selected_papers),
+                    )
+                    write_result = _build_write_failure_result(
+                        selected_papers=selected_papers,
+                        selected_indices=normalized_selected,
+                        collection_name=effective_collection,
+                        reason=f"write_unexpected_error:{type(exc).__name__}",
+                        retry_safe=False,
+                    ).model_dump()
+                    final_phase = "failed"
 
         logger.info(
             "workflow_complete",
@@ -212,9 +264,12 @@ async def finalize_approval(
         )
 
     combined_spans = checkpoint["trace_spans"] + serialize_spans(trace.spans)
-    merged_messages = checkpoint["messages"] + [
-        "Approval accepted; write executed." if approved else "Approval rejected; write skipped."
-    ]
+    summary_message = "Approval rejected; write skipped."
+    if approved and final_phase == "failed":
+        summary_message = "Approval accepted; write failed."
+    elif approved:
+        summary_message = "Approval accepted; write executed."
+    merged_messages = checkpoint["messages"] + [summary_message]
     return {
         "request_id": checkpoint["request_id"],
         "thread_id": checkpoint["thread_id"],

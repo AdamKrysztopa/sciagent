@@ -15,7 +15,7 @@
 | **M2.6** Fallback Retrieval | **Done** | AGT-8 |
 | **M3** Write Correctness | **Done** | AGT-9, AGT-10, AGT-11, AGT-12 |
 | **M4** Approval Workflow & MVP | **Done** | AGT-14, AGT-15, AGT-17, AGT-19 |
-| **M5** Production Hardening | **Done** | AGT-16, AGT-18, AGT-20, AGT-21*, AGT-22* |
+| **M5** Production Hardening | **Done** | AGT-16, AGT-18, AGT-20*, AGT-21*, AGT-22* |
 | **M6** Zotero Native Add-on | **Not started** | ZAP-0 through ZAP-11 |
 | **M7** Pluggability & Infrastructure | **Not started** | AGT-23, AGT-24, AGT-25, AGT-26 |
 
@@ -25,27 +25,44 @@
 
 ## Stories With Gaps (Marked Complete but Incomplete)
 
+### AGT-20 — Edge-Case and Failure-Path Tests (Partial)
+
+**What's done:** Broad failure-path coverage exists and retry-safe write outcomes are modeled.
+
+**What's missing:**
+
+- [ ] Workflow/API terminal status must not report `completed` when all Zotero writes fail
+- [ ] Add tests for full write failure, partial write failure, and retry-after-failure semantics
+- [ ] Replace broad exception swallowing in retrieval/write orchestration with typed failures and structured metadata where feasible
+
+**Effort:** 1d
+
 ### AGT-21 — Security Hardening (Partial)
 
 **What's done:** Secret redaction in logs, API key guard on backend endpoints, client ID owner isolation.
 
 **What's missing:**
+
 - [ ] Security checklist document for pre-production review
 - [ ] Future multi-user delegated-auth path documented (OAuth2/OIDC direction)
+- [ ] Require authentication outside explicit local-dev mode instead of silently allowing anonymous access
+- [ ] Reject missing `X-AGT-Client-ID` outside local-dev mode, or derive ownership from authenticated claims
 
-**Effort:** 0.5d (documentation only, no code changes)
+**Effort:** 1d (docs + small API hardening changes)
 
 ### AGT-22 — Universal LLM Interface (Partial)
 
 **What's done:** `RoutedProvider` with failover, pluggable builder registry, xAI adapter.
 
 **What's missing:**
+
 - [ ] OpenAI adapter implementing `LLMProvider` protocol
 - [ ] Anthropic adapter implementing `LLMProvider` protocol
 - [ ] Groq adapter implementing `LLMProvider` protocol (optional)
+- [ ] Startup/preflight validation so configured but unimplemented providers fail before first request
 - [ ] Shared contract test suite validating all adapters
 
-**Effort:** 2d (each adapter ~0.5d + shared test suite)
+**Effort:** 2.5d (adapters + startup validation + shared contract test suite)
 
 ---
 
@@ -63,8 +80,10 @@ Current state: `_RetrievalProvider` dataclass and `_build_retrieval_registry()` 
 - [ ] Create `src/agt/tools/retrieval_registry.py` with provider registration and lookup
 - [ ] Refactor each client (Semantic Scholar, OpenAlex, Crossref, PubMed, etc.) to implement the Protocol
 - [ ] Simplify `search_papers.py` to iterate over registry entries
+- [ ] Split `search_papers.py` orchestration into stage modules during the registry extraction (`query normalization`, `rewrite`, `federation`, `enrichment`, `ranking`, `metadata assembly`)
 - [ ] Add contract tests: new provider requires zero orchestrator edits
 - [ ] Add federated merge test across registered providers
+- [ ] Define cache boundaries and invalidation rules for normalized retrieval results if backend caching is added later
 
 ### AGT-24 — Durable Distributed Checkpointing
 
@@ -75,10 +94,12 @@ Current state: `_RetrievalProvider` dataclass and `_build_retrieval_registry()` 
 - [ ] Add Redis or Postgres LangGraph checkpointer backend
 - [ ] Add `AGT_CHECKPOINT_BACKEND` and `AGT_CHECKPOINT_URL` settings fields
 - [ ] Migrate workflow state from in-memory to persisted checkpoint store
+- [ ] Add a temporary in-process concurrency guard if the in-memory store remains available for local-dev fallback
 - [ ] Add migration/bootstrap script for checkpoint backend initialization
 - [ ] Integration test: pause on instance A, resume on instance B
 - [ ] Integration test: process restart preserves in-progress workflow state
 - [ ] Smoke test: checkpoint backend unavailable produces actionable error
+- [ ] Replay test: approval resume semantics stay idempotent across persisted checkpoints
 
 ### AGT-25 — Asynchronous Task Queue
 
@@ -100,6 +121,8 @@ Current state: `_RetrievalProvider` dataclass and `_build_retrieval_registry()` 
 **Effort:** 2d
 
 - [ ] Create IaC modules (Terraform/Pulumi) for compute, persistence, queue
+- [ ] Separate local-dev deployment from production deployment topology (dedicated backend/UI images or services)
+- [ ] Add container hardening baseline: non-root runtime, healthchecks, explicit environment profiles
 - [ ] Define managed secret injection contract
 - [ ] Add CI/CD pipeline for plan/apply/deploy
 - [ ] Add staging environment template
@@ -124,6 +147,8 @@ Current state: `_RetrievalProvider` dataclass and `_build_retrieval_registry()` 
 
 **Overall status:** Not started (zero TypeScript/React files exist).
 **Backend readiness:** All required API endpoints are available (`/health`, `/run`, `/resume`, `/status/{run_id}`).
+
+**Contract note:** Older planning text in `docs/zotero.md` still mentions `/search` and `/run-workflow`; the implemented backend contract for add-on planning is `/run`, `/resume`, and `/status/{run_id}`.
 
 ### Phase 1: Plugin Foundation (ZAP-0, ZAP-1, ZAP-2) — ~2d
 
@@ -179,24 +204,26 @@ Current state: `_RetrievalProvider` dataclass and `_build_retrieval_registry()` 
 
 ### P0 — Do First
 
-1. **AGT-21 docs** — Write security checklist and auth direction document (0.5d)
-2. **AGT-24** — Distributed checkpointing with Redis/Postgres (1.5d)
-3. **ZAP-0 + ZAP-1** — Plugin skeleton and dev environment (1d)
+1. **AGT-20 follow-up** — Truthful terminal status + typed failure handling/tests (1d)
+2. **AGT-21 hardening** — Security checklist, auth defaults, delegated-auth direction (1d)
+3. **AGT-24** — Distributed checkpointing with Redis/Postgres (1.5d)
+4. **ZAP-0 + ZAP-1** — Plugin skeleton and dev environment (1d)
 
 ### P1 — Do Next
 
-4. **AGT-22 adapters** — OpenAI and Anthropic provider adapters (1.5d)
-5. **ZAP-2** — Backend connection layer from plugin (0.5d)
-6. **AGT-23** — Retrieval registry Protocol extraction (2d)
-7. **ZAP-3 + ZAP-4 + ZAP-5** — Full sidebar UI (3.5d)
-8. **AGT-13** — PDF attachment pipeline (2d)
-9. **AGT-25** — Async task queue (2d)
+1. **AGT-22 adapters** — OpenAI and Anthropic provider adapters + startup validation (2.5d)
+2. **ZAP-2** — Backend connection layer from plugin (0.5d)
+3. **AGT-23** — Retrieval registry Protocol extraction (2d)
+4. **AGT-20 CI gates** — Coverage, resilience, and replay checks in CI (1d)
+5. **ZAP-3 + ZAP-4 + ZAP-5** — Full sidebar UI (3.5d)
+6. **AGT-13** — PDF attachment pipeline (2d)
+7. **AGT-25** — Async task queue (2d)
 
 ### P2 — Ship When Ready
 
-10. **ZAP-6 + ZAP-7 + ZAP-8** — Native Zotero writes (3d)
-11. **ZAP-9 + ZAP-10 + ZAP-11** — Preferences, error handling, release (3d)
-12. **AGT-26** — Cloud IaC (2d)
+1. **ZAP-6 + ZAP-7 + ZAP-8** — Native Zotero writes (3d)
+2. **ZAP-9 + ZAP-10 + ZAP-11** — Preferences, error handling, release (3d)
+3. **AGT-26** — Cloud IaC + production deployment split (2d)
 
 ---
 
@@ -226,11 +253,11 @@ Current state: `_RetrievalProvider` dataclass and `_build_retrieval_registry()` 
 
 | Gate | Required Stories | Met? |
 |------|-----------------|------|
-| ZAP-1 foundation | AGT-0, AGT-1, AGT-2, AGT-4, AGT-18 | **Yes** |
-| ZAP-2 sidebar UX | AGT-5, AGT-6, AGT-7, AGT-15, AGT-27 | **Yes** |
-| ZAP-3 native writes | AGT-10, AGT-11, AGT-12, AGT-14, AGT-16 | **Yes** |
-| ZAP-3 PDF | AGT-13 | **No** — AGT-13 not started |
-| ZAP-4 release | AGT-19, AGT-20, AGT-21 | **Partial** — AGT-21 docs incomplete |
+| Plugin foundation (ZAP-0 to ZAP-2) | AGT-0, AGT-1, AGT-2, AGT-4, AGT-18 | **Yes** |
+| Sidebar UX (ZAP-3 to ZAP-5) | AGT-5, AGT-6, AGT-7, AGT-15, AGT-27 | **Yes** |
+| Native writes (ZAP-6 to ZAP-8) | AGT-10, AGT-11, AGT-12, AGT-14, AGT-16 | **Yes** |
+| PDF attachment (ZAP-8) | AGT-13 | **No** — AGT-13 not started |
+| Release readiness (ZAP-9 to ZAP-11) | AGT-19, AGT-20, AGT-21 | **Partial** — AGT-20/21 follow-up work remains |
 
 ---
 

@@ -86,7 +86,7 @@ class AgentState(TypedDict):
     collection_name: str | None
     approved: bool
     decision: Literal["approved", "rejected", "pending"]
-    phase: Literal["search_complete", "awaiting_approval", "completed", "rejected"]
+    phase: Literal["search_complete", "awaiting_approval", "completed", "rejected", "failed"]
     selected_indices: list[int]
     preflight: dict[str, Any]
     trace_spans: list[dict[str, Any]]

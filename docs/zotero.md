@@ -1,11 +1,11 @@
-# Zotero Add-on Development Plan (AGT Native Plugin)  
+# Zotero Add-on Development Plan (AGT Native Plugin)
 **Assuming Core Backend (AGT-1 through AGT-8) is 100% complete**
 
-**Goal:** Turn the existing Python LangGraph + FastAPI backend into a **seamless native sidebar inside Zotero 7+**.  
+**Goal:** Turn the existing Python LangGraph + FastAPI backend into a **seamless native sidebar inside Zotero 7+**.
 No more browser tab. One-click “Search Papers” in Zotero → natural language → approve → items appear instantly in your library (idempotent, with PDF attach if enabled).
 
-**Scope:** Pure Zotero plugin (TypeScript + WebExtension manifest).  
-**Leverages:** Already-built backend APIs (`/search`, `/run-workflow`, `/resume`, `/status`).  
+**Scope:** Pure Zotero plugin (TypeScript + WebExtension manifest).
+**Leverages:** Already-built backend APIs (`/health`, `/run`, `/resume`, `/status/{run_id}`).
 **Target Release:** Q2 2026 (as promised in marketing).
 
 ---
@@ -74,7 +74,7 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
 - Estimate: 1d
 - Acceptance Criteria:
   - Input box + “Search” button (or Enter).
-  - Calls backend `/search` → renders card list with stable indices, summaries, checkboxes.
+  - Calls backend `/run` → renders the returned candidate list with stable indices, summaries, and checkboxes while the workflow waits for approval.
   - “Recent” boost and dedup already handled by backend.
 
 ## Story: ZAP-5 — Approval & Collection UI
@@ -188,6 +188,6 @@ Want me to generate:
 - Full React sidebar component skeleton
 - Or the GitHub Actions build workflow?
 
-Just say the word and we start coding the add-on tomorrow.  
+Just say the word and we start coding the add-on tomorrow.
 
 AGT is about to live **inside** Zotero. Let’s make it happen. 🚀

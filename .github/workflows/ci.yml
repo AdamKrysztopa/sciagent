@@ -1,35 +1,42 @@
 name: CI
 
 on:
-    push:
-        branches: ["**"]
-    pull_request:
+  push:
+    branches: ["**"]
+  pull_request:
 
 jobs:
-    quality:
-        name: Lint, Type, Test
-        runs-on: ubuntu-latest
+  quality:
+    name: Quality (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.13", "3.14"]
 
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-            - name: Setup Python
-              uses: actions/setup-python@v5
-              with:
-                  python-version: "3.14"
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
 
-            - name: Setup uv
-              uses: astral-sh/setup-uv@v5
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
 
-            - name: Sync dependencies
-              run: uv sync --all-groups
+      - name: Sync dependencies
+        run: uv sync --all-groups
 
-            - name: Ruff check
-              run: uv run ruff check .
+      - name: Ruff check
+        run: uv run ruff check .
 
-            - name: Pyright
-              run: uv run pyright
+      - name: Ruff format check
+        run: uv run ruff format --check .
 
-            - name: Pytest
-              run: uv run pytest -q --vcr-record=none
+      - name: Pyright
+        run: uv run pyright
+
+      - name: Pytest (failure-path + integration)
+        run: uv run pytest -q --vcr-record=none
