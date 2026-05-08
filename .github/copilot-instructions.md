@@ -24,7 +24,7 @@ Global execution policy (highest priority for this repository):
 
 Agent routing and research rules:
 
-1. Use `sciagent-orchestrator` when the user asks who should act, requests agent selection, or gives mixed-domain work that needs explicit sequencing.
+1. Use `sciagent-orchestrator` when the user asks who should act, requests agent selection, gives mixed-domain work that needs explicit sequencing, or asks for end-to-end task delivery from idea to verified done. The orchestrator acts as a seasoned product manager and scrum master with 20 years of development experience — it decomposes tasks, screens for risks, routes to specialists, enforces stage gates, and never writes code itself.
 2. Use `core-planner` for backlog mapping, acceptance checks, and story sequencing against `docs/core.md`.
 3. Use `python-backend-engineer` for modern Python backend implementation and review across `src/agt/**`, `tests/**`, FastAPI, LangGraph, provider adapters, retrieval, ranking, workflow, Zotero write paths, performance, strict typing, and failure handling.
 4. Use `settings-bootstrap` for environment, Python 3.14 policy, `uv`, quality tooling, CI, Docker, and reproducibility work tied to `docs/settings.md`.
