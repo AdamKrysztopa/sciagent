@@ -3,6 +3,9 @@
 **Generated:** 2026-03-24
 **Purpose:** Canonical priority map tying reviewer findings to existing story IDs in `docs/core.md` and the current backlog in `docs/next-steps.md`.
 
+> For live status and the next item to implement, use [docs/actionable-plan.md](actionable-plan.md).
+> This file is the priority policy, not the day-to-day tracker.
+
 ## Scope
 
 This file converts the reviewer recommendations in [docs/reviewer/sciagent-review-fixes.md](docs/reviewer/sciagent-review-fixes.md) and [docs/reviewer/sciagent-review-improvements.md](docs/reviewer/sciagent-review-improvements.md) into an implementation order that preserves the dependency chain from [docs/core.md](docs/core.md).

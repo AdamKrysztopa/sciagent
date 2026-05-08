@@ -3,6 +3,9 @@
 **Generated:** 2026-03-22
 **Baseline:** All quality gates clean — ruff 0 errors, pyright 0 errors, 132 tests passing.
 
+> Live execution status, done / not done tracking, and the default next implementation target now live in [docs/actionable-plan.md](actionable-plan.md).
+> Treat this file as a supporting backlog view, not the primary tracker.
+
 ---
 
 ## Completion Summary

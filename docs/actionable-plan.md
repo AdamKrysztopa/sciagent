@@ -1,9 +1,52 @@
 # SciAgent Prioritized Action Plan
 
 > **Finalization audit completed: 2026-03-22** — All quality gates clean (ruff 0, pyright 0, 132 tests passing).
-> See [docs/next-steps.md](next-steps.md) for remaining work and [docs/manual.md](manual.md) for configuration & usage.
+> This is the canonical execution tracker for live status, overall progress, and the next implementation target.
+> Update done / not done state here first.
+> See [docs/manual.md](manual.md) for configuration & usage.
 
 This document is synthesized from [docs/core.md](docs/core.md), [docs/settings.md](docs/settings.md), and [docs/zotero.md](docs/zotero.md) using role-specific subagent prioritization.
+
+## Execution Tracker
+
+### Current Status
+
+- Current focus: M2.7 — Discovery Quality, Keyless Baseline, and Filters
+- Current next implementation target: AGT-28 — Search plan and deterministic filter contract
+- Next after AGT-28: AGT-29 — Keyless-first retrieval quality benchmark
+- Next after AGT-29: ZAP-4A — Shared filter review/edit contract for Streamlit, REST API, and Zotero add-on
+
+### Done Milestones
+
+- [x] M1 — Foundation and Observability
+- [x] M2 — Retrieval and Ranking Core
+- [x] M2.5 — Retrieval Quality & Coverage Improvements
+- [x] M2.6 — Optional Recommendation and Fallback Retrieval
+- [x] M3 — Write Correctness and Idempotency
+- [x] M4 — Approval-Gated Workflow and MVP Demo
+- [x] M5 — Production v1 Hardening
+
+### Not Done Milestones
+
+- [ ] M2.7 — Discovery Quality, Keyless Baseline, and Filters
+- [ ] M6 — Zotero Native Add-on
+- [ ] M7 — Pluggability and Elastic Infrastructure
+
+### Next Items In Order
+
+- [ ] AGT-28 — Search plan and deterministic filter contract
+- [ ] AGT-29 — Keyless-first retrieval quality benchmark
+- [ ] ZAP-4A — Shared filter review/edit contract
+- [ ] AGT-20 follow-up — truthful terminal write-failure status and tests
+- [ ] AGT-21 follow-up — security checklist and auth hardening
+- [ ] AGT-24 — durable distributed checkpointing
+
+### Tracker Rules
+
+1. Update status here first whenever a story or milestone changes.
+2. Treat the first unchecked item in `Next Items In Order` as the default next implementation target.
+3. Keep acceptance criteria and dependency details in [docs/core.md](docs/core.md), [docs/settings.md](docs/settings.md), and [docs/zotero.md](docs/zotero.md); keep live execution state here.
+4. If another planning doc disagrees with this file about status or next work, this file wins.
 
 ## Planning Rules
 
