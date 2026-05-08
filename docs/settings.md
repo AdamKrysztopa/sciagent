@@ -15,7 +15,7 @@ This document is **copy-paste ready**. Follow the steps in order and you will ha
 | **Project Mgmt**       | `uv`                                        | latest (via curl)         | Replaces poetry/pip + venv in one binary |
 | **Agent Framework**    | `langgraph`                                 | `>=0.2.0`                 | Stateful graphs + native checkpoints |
 | **LLM**                | Native xAI REST adapter (`httpx`)           | latest                    | Pydantic v2-only runtime path (no langchain bridge) |
-| **Academic Search**    | `semanticscholar`                           | latest                    | Natural-language + rich metadata |
+| **Academic Search**    | Keyless-first federation (`httpx` clients for OpenAlex, Crossref, Semantic Scholar, PubMed, Europe PMC, arXiv, BASE, OpenCitations) | latest | Strong default discovery without search-engine API keys; keyed sources are opt-in enrichment |
 | **Zotero**             | `pyzotero`                                  | latest                    | Full v3 Web API (create, upsert, attachments) |
 | **Settings**           | `pydantic-settings`                         | `>=2.6`                   | Typed, validated, secret-redacted config |
 | **UI**                 | `streamlit`                                 | `>=1.40`                  | Instant chat + fragments for approval buttons |

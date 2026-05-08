@@ -1,5 +1,5 @@
 # Zotero Add-on Development Plan (AGT Native Plugin)
-**Assuming Core Backend (AGT-1 through AGT-8) is 100% complete**
+**Assuming Core Backend (AGT-1 through AGT-8) is complete, with AGT-28 required before filterable sidebar work**
 
 **Goal:** Turn the existing Python LangGraph + FastAPI backend into a **seamless native sidebar inside Zotero 7+**.
 No more browser tab. One-click “Search Papers” in Zotero → natural language → approve → items appear instantly in your library (idempotent, with PDF attach if enabled).
@@ -53,9 +53,9 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
 # Epic: ZAP-2 — Native Sidebar UI
 - Type: Epic
 - Priority: P0
-- Estimate: 3.5d
+- Estimate: 4.25d
 - Dependencies: ZAP-1
-- Goal: Beautiful, Zotero-native chat experience (no browser).
+- Goal: Zotero-native search, filter review, and approval experience (no browser).
 
 ## Story: ZAP-3 — Sidebar Registration & Layout
 - Type: Story
@@ -74,8 +74,22 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
 - Estimate: 1d
 - Acceptance Criteria:
   - Input box + “Search” button (or Enter).
+  - Shows parsed search-plan filters returned by the backend: year min/max, date range, source set, open-access preference, citation threshold, document type, include terms, and exclude terms.
   - Calls backend `/run` → renders the returned candidate list with stable indices, summaries, and checkboxes while the workflow waits for approval.
   - “Recent” boost and dedup already handled by backend.
+
+## Story: ZAP-4A — Filter Review & Edit Surface
+- Type: Story
+- Parent: ZAP-2
+- Priority: P0
+- Estimate: 0.75d
+- Dependencies: ZAP-4, Core backend AGT-28
+- Acceptance Criteria:
+  - User can inspect and edit deterministic filters before accepting a result set.
+  - Filter controls include year min/max, date range, source toggles, open-access preference, citation threshold, document type, include terms, and exclude terms.
+  - UI distinguishes hard filters from soft preferences and warns when a source cannot enforce a filter server-side.
+  - Edited filters are sent as structured payload to the backend instead of being re-encoded only as natural language.
+  - Candidate list displays which sources were used, skipped, or unavailable because optional search-engine API keys were not configured.
 
 ## Story: ZAP-5 — Approval & Collection UI
 - Type: Story
@@ -138,6 +152,8 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
 - Estimate: 0.75d
 - Acceptance Criteria:
   - Zotero Tools → Add-ons → AGT Preferences (backend URL, API key, PDF toggle).
+  - Preferences include default keyless source policy and opt-in toggles for keyed/paid search sources exposed by the backend.
+  - Preferences include saved filter defaults for recent-only searches, open-access preference, and source inclusion/exclusion.
 
 ## Story: ZAP-10 — Error Handling & Offline Mode
 - Type: Story
@@ -161,11 +177,12 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
 # Release: AGT Zotero Add-on MVP
 - Type: Release
 - Priority: P0
-- Estimate: 11.5d total
-- Dependencies: All ZAP-1 to ZAP-4 stories
+- Estimate: 12.25d total
+- Dependencies: All ZAP-1 to ZAP-4 stories plus ZAP-4A
 - Acceptance Criteria:
   - Sidebar appears in Zotero.
-  - Full natural-language search → approve → items in library (idempotent).
+  - Full natural-language search → inspect/edit deterministic filters → approve → items in library (idempotent).
+  - Default paper discovery works with the backend's keyless/easy-access source policy; optional search-engine API keys are enrichment only.
   - Works with local or self-hosted backend.
   - One-click install via .xpi.
   - Matches the exact 38-second demo from marketing speech.
@@ -181,7 +198,7 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
 1. `npx create-zotero-plugin` (or clone template) — done in 5 minutes.
 2. First story (ZAP-0) gives you a working empty sidebar today.
 
-This plan is **completely decoupled** from the Python core — you can ship the add-on independently while the backend runs locally or in the cloud.
+The plugin scaffold is decoupled from Python implementation work, but filterable search UX depends on the backend exposing AGT-28 search-plan metadata.
 
 Want me to generate:
 - The exact `manifest.json` + `bootstrap.js` starter

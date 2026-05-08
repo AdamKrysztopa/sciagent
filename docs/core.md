@@ -67,31 +67,37 @@
 # Epic: AGT-2 — Academic retrieval and ranking
 - Type: Epic
 - Priority: P0
-- Estimate: 6d
+- Estimate: 8.5d
 - Dependencies: AGT-1 — Platform foundation
-- Goal: Retrieve relevant papers and normalize them into one stable internal model.
+- Goal: Retrieve relevant papers through a keyless-first federated discovery layer, enforce deterministic query constraints, and normalize everything into one stable internal model.
 
-## Story: AGT-5 — Semantic Scholar client wrapper
+## Story: AGT-5 — Keyless-first academic retrieval baseline
 - Type: Story
 - Parent: AGT-2 — Academic retrieval and ranking
 - Priority: P0
-- Estimate: 1d
+- Estimate: 1.5d
 - Dependencies: AGT-1
 - Acceptance Criteria:
-  - Wrapper returns only `NormalizedPaper` Pydantic objects.
+  - Default retrieval works without search-engine API keys using open/easy-access sources first: OpenAlex, Crossref, Semantic Scholar no-key mode, PubMed, Europe PMC, arXiv, BASE, and OpenCitations enrichment where available.
+  - Search-engine services that require keys or paid accounts, including CORE, Dimensions, and SerpAPI/Google Scholar, are opt-in enrichment or fallback sources only.
+  - Missing optional search-engine keys never block startup, never fail a normal search, and are reported as skipped source metadata.
+  - Every source wrapper returns only `NormalizedPaper` Pydantic objects.
   - Requested fields are explicit and minimal.
-  - Timeout, retry, and malformed-response handling fully covered.
+  - Timeout, retry, rate-limit, and malformed-response handling are covered per source.
 
-## Story: AGT-6 — Ranking, filtering, and deduplication
+## Story: AGT-6 — Deterministic constraints, ranking, and deduplication
 - Type: Story
 - Parent: AGT-2 — Academic retrieval and ranking
 - Priority: P0
 - Estimate: 1.5d
 - Dependencies: AGT-5
 - Acceptance Criteria:
+  - Natural-language constraints are parsed into a deterministic structure before source queries run.
+  - Supported hard filters include minimum year, maximum year, date ranges, include terms, exclude terms, open-access preference, citation thresholds, source allowlist/blocklist, and document type where source metadata supports it.
+  - Hard filters are pushed down to source APIs when supported and re-applied after merge/dedup.
+  - LLM query rewriting may improve topic terms but cannot remove, weaken, or reinterpret hard filters.
   - Duplicate results collapsed before display using DOI + title hash.
-  - “Recent papers” queries apply year-aware ranking with explicit formula:  
-    `score = semantic_score * 0.7 + (2026 - year) * -0.3 + (open_access ? 0.2 : 0)`.
+  - “Recent papers” queries apply year-aware ranking with an explicit formula that uses the current calendar year dynamically rather than a hardcoded year.
   - Missing fields do not break output.
   - Output always contains stable result indices (0-based).
 
@@ -100,22 +106,52 @@
 - Parent: AGT-2 — Academic retrieval and ranking
 - Priority: P0
 - Estimate: 1d
-- Dependencies: AGT-5, AGT-6, AGT-3
+- Dependencies: AGT-5, AGT-6, AGT-28, AGT-3
 - Acceptance Criteria:
   - Presentation uses only internal `NormalizedPaper` models.
   - Each result has stable index and source label.
+  - Presentation shows the deterministic search plan and filters that produced the result set.
+  - Result summaries cannot hide hard-filter violations; filtered-out papers are excluded before summarization.
   - Summary generation bounded and deterministic (LLM call limited to 3–4 sentences).
 
-## Story: AGT-8 — Optional recommendation and fallback retrieval
+## Story: AGT-8 — Optional API-key and fallback retrieval
 - Type: Story
 - Parent: AGT-2 — Academic retrieval and ranking
-- Priority: P2
+- Priority: P1
 - Estimate: 2d
 - Dependencies: AGT-5, AGT-6, AGT-23
 - Acceptance Criteria:
-  - Fallback is feature-flagged.
+  - Fallback is feature-flagged and disabled by default.
+  - Optional search-engine key sources are used only when configured and explicitly enabled by settings or request policy.
+  - Default quality targets must be achievable without CORE, Dimensions, SerpAPI, or any other paid/search-key provider.
   - Source provenance preserved in every `NormalizedPaper`.
   - Cross-source duplicates merged correctly via unified registry.
+
+## Story: AGT-28 — Search plan and deterministic filter contract
+- Type: Story
+- Parent: AGT-2 — Academic retrieval and ranking
+- Priority: P0
+- Estimate: 1.5d
+- Dependencies: AGT-5, AGT-6
+- Acceptance Criteria:
+  - Every query produces a typed `SearchPlan` before retrieval with `original_query`, `topic_query`, `rewritten_queries`, `hard_filters`, `soft_preferences`, `source_policy`, and `source_capabilities`.
+  - Example query `time-series forecasting methods selection based on the data itself, not older than 2024` maps to topic terms about method/model selection from data characteristics and a hard `min_year=2024` filter.
+  - `SearchPlan` is returned through CLI/API/UI metadata so users can inspect what the system actually searched and filtered.
+  - The execution layer records which filters were pushed down per source and which were enforced after merge.
+  - Tests prove that no result violating a hard year or exclusion filter survives ranking.
+
+## Story: AGT-29 — Retrieval quality benchmark against standalone LLM search
+- Type: Story
+- Parent: AGT-2 — Academic retrieval and ranking
+- Priority: P0
+- Estimate: 1d
+- Dependencies: AGT-28
+- Acceptance Criteria:
+  - Curated evaluation panel covers at least 20 realistic research requests across AI, time-series, biomedicine, social science, and interdisciplinary topics.
+  - Panel includes freshness and hard-filter cases, including papers not older than 2024 and source-specific domains such as arXiv-heavy CS and PubMed-heavy biomedical queries.
+  - For each query, record expected must-find papers, acceptable alternate papers, constraint compliance, freshness, source coverage, and ranking quality.
+  - Compare SciAgent results against a manually reviewed standalone LLM/web-search baseline and require SciAgent to match or exceed the baseline on constraint compliance and must-find recall before release promotion.
+  - Benchmark output is deterministic, versioned, and runnable without paid/search-engine API keys; optional keyed sources may be reported separately as enrichment.
 
 # Epic: AGT-3 — Zotero write pipeline
 - Type: Epic
@@ -305,7 +341,8 @@
 - Estimate: 0.5d
 - Dependencies: AGT-5, AGT-3
 - Acceptance Criteria:
-  - Semantic Scholar (100 req/min), Zotero (60 req/min), and LLM rate limits enforced via `tenacity` + token bucket per thread_id.
+  - Default keyless retrieval source limits, optional keyed search-source limits, Zotero limits, and LLM limits are enforced via `tenacity` + token bucket per thread_id.
+  - Optional paid/keyed search providers have independent quotas and can be disabled without affecting keyless search.
   - Cost guard (max $0.50 per workflow) configurable.
   - Backoff and user-friendly “try again later” messages.
 
@@ -338,6 +375,8 @@
   - Adding new provider requires only one interface implementation.
   - All map into same `NormalizedPaper` model.
   - Federated queries merge via shared dedup logic.
+  - Registry records each source capability: requires API key, default enabled, supports year pushdown, supports open-access filtering, supports full text/snippets, supports citations, rate-limit policy, and failure behavior.
+  - Default registry order prioritizes no-key/easy-access sources over keyed or paid search engines.
 
 # Epic: AGT-8 — Elastic infrastructure and scaling
 - Type: Epic
@@ -382,10 +421,12 @@
 # Release: MVP
 - Type: Release
 - Priority: P0
-- Estimate: 11d (optimized from original 13.5d)
-- Dependencies: AGT-0–AGT-3, AGT-5–AGT-7, AGT-9–AGT-11, AGT-14–AGT-15, AGT-17, AGT-19, AGT-27
+- Estimate: 13.5d
+- Dependencies: AGT-0–AGT-3, AGT-5–AGT-7, AGT-9–AGT-11, AGT-14–AGT-15, AGT-17, AGT-19, AGT-27–AGT-29
 - Acceptance Criteria:
   - User can search papers in natural language.
+  - Default search works without search-engine API keys beyond the configured LLM provider and Zotero credentials.
+  - Natural-language constraints are visible as deterministic filters, including year constraints such as `year >= 2024`.
   - User can review shortlisted papers before any write occurs.
   - User can approve creation or reuse of a Zotero collection.
   - Selected items added idempotently (DOI protection).
@@ -410,7 +451,7 @@
 - Dependencies: AGT-22, AGT-23, AGT-24, AGT-25
 - Acceptance Criteria:
   - LLM provider swappable by configuration.
-  - Retrieval providers pluggable and federated.
+  - Retrieval providers pluggable, federated, capability-described, and keyless-first by default.
   - Workflow state persists across containers.
   - Long-running execution handled asynchronously.
 

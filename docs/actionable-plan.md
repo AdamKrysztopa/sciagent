@@ -12,6 +12,8 @@ This document is synthesized from [docs/core.md](docs/core.md), [docs/settings.m
 3. Keep reproducibility and deterministic CI behavior as mandatory constraints.
 4. Use checklist execution and story IDs in every PR.
 5. Treat multi-provider LLM support as a core requirement because provider keys are already present in local environment.
+6. Treat search-engine API keys as optional enrichment only; default paper discovery must be strong with keyless/easy-access sources.
+7. Treat deterministic query filters as a product contract. LLM query rewriting may improve topic phrasing but must not weaken hard filters.
 
 ## Already Completed (Audit)
 
@@ -84,9 +86,10 @@ flowchart LR
 
 ## Critical Path
 
-1. AGT-0 -> AGT-1 -> AGT-5 -> AGT-6 -> AGT-7 -> AGT-14 -> AGT-15 -> AGT-17 -> AGT-19 -> AGT-20 -> AGT-18 -> AGT-21
+1. AGT-0 -> AGT-1 -> AGT-5 -> AGT-6 -> AGT-28 -> AGT-29 -> AGT-7 -> AGT-14 -> AGT-15 -> AGT-17 -> AGT-19 -> AGT-20 -> AGT-18 -> AGT-21
 2. Parallel release-gate branch: AGT-2 -> AGT-9 + AGT-10 -> AGT-11
 3. Risk gate: AGT-11 must be complete before shipping any approve-to-write flow.
+4. Discovery-quality gate: AGT-28 and AGT-29 must be complete before claiming retrieval is competitive with standalone LLM web search.
 
 ## Milestone Plan
 
@@ -146,7 +149,7 @@ Root cause: keyword extraction polluted API queries with constraint words (e.g. 
 | trending 2026 timeseries (typo) | 0 | Expected: "trandign" misspelling prevents API match |
 | RAG 2026 community perception | 1 | Same RAG survey (only 2026 paper matching constraints) |
 
-**Known limitation**: The pipeline does not correct spelling errors in queries. A future enhancement could add fuzzy keyword matching or LLM-based query rewriting.
+**Historical limitation**: Early retrieval did not correct spelling errors in queries. Later M2.5 work adds optional spell checking; M2.7 now focuses on making hard filters explicit and auditable.
 
 #### M2 LLM-Enhanced Semantic Search (Completed)
 
@@ -165,7 +168,7 @@ Solution: LLM-powered query rewriting, semantic validation, and iterative refine
 
 **Architecture flow:**
 1. User query → LLM rewrite → optimized academic search query + topic
-2. Multi-source search (Semantic Scholar + OpenAlex + Crossref) with optimized query
+2. Keyless-first multi-source search with optimized query: Semantic Scholar no-key mode, OpenAlex, Crossref, PubMed, Europe PMC, arXiv, BASE, and OpenCitations enrichment where available
 3. Rank + constraint filter
 4. LLM validation → if irrelevant, retry with LLM-suggested alternative query
 5. Regex keyword fallback if LLM unavailable or all LLM paths fail
@@ -202,15 +205,16 @@ Status: **Completed** — P0 through P3 actions implemented, validated, and CI-c
 
 #### Current M2 audit baseline (what exists)
 
-- 5 search engines: Semantic Scholar, OpenAlex, Crossref, PubMed, Europe PMC.
+- Default keyless/easy-access sources: Semantic Scholar no-key mode, OpenAlex, Crossref, PubMed, Europe PMC, arXiv, BASE, and OpenCitations enrichment.
+- Optional keyed/paid enrichment sources: CORE, Dimensions, and Google Scholar/SerpAPI when configured.
 - Regex constraint parser (year, citations, OA, quality flags, ~70 stopwords).
 - LLM query rewriter with one validation-retry loop.
 - Ranking formula: `0.45×semantic + 0.30×citations + 0.10×influential + 0.12×recency + 0.05×abstract_bonus + 0.03×oa_bonus`.
-- No pagination (single page per source). No spelling correction.
+- Search metadata and timing exist, but AGT-28 still needs to formalize a single typed `SearchPlan` that API, Streamlit, and Zotero can share.
 - Crossref returns `semantic_score=0.0` and `open_access=False` always.
 - OpenAlex returns no abstract. Semantic Scholar has optional abstract.
 - `exclude_keywords` enforcement implemented. Date-range windows implemented.
-- Citation thresholds still hardcoded, over-fetch cap 30, dynamic current year scoring enabled.
+- Dynamic current year scoring enabled; M2.7 adds release-gate checks for freshness and hard-filter compliance.
 - 70 passing tests, including dedicated OpenAlex and Crossref client suites.
 
 ---
@@ -316,6 +320,32 @@ Each new client lives in its own file under `src/agt/tools/`, returns `list[Norm
 	M2.6 completion notes:
 	- New runnable demo: `examples/m2_6_fallback_demo.py` (supports `--fallback-mode auto|force|off`).
 	- CI validated clean after implementation: `uv run ruff check .`, `uv run pyright`, `uv run pytest -q`.
+
+### M2.7 (Week 3): Discovery Quality, Keyless Baseline, and Filters
+
+- [ ] AGT-28: Search plan and deterministic filter contract
+	Implementation checklist:
+	- [ ] Add a typed `SearchPlan` model that separates topic terms, hard filters, soft preferences, source policy, and rewrite metadata.
+	- [ ] Parse examples like `not older than 2024` into hard filters such as `min_year=2024` before LLM rewriting.
+	- [ ] Keep LLM rewrite output subordinate to deterministic filters: the model can rewrite `time-series forecasting method selection based on data itself`, but it cannot drop `year >= 2024`.
+	- [ ] Push down year/source/document filters where source APIs support them and post-filter every merged result.
+	- [ ] Return search-plan metadata to CLI/API/Streamlit and the future Zotero add-on.
+	Validation checklist:
+	- [ ] Unit test: `not older than 2024` maps to `min_year=2024`.
+	- [ ] Unit test: LLM rewrite cannot loosen a hard filter.
+	- [ ] Integration test: no ranked result older than the requested minimum year survives.
+	- [ ] API contract test: `/run` exposes search-plan metadata at the approval checkpoint.
+
+- [ ] AGT-29: Keyless-first retrieval quality benchmark
+	Implementation checklist:
+	- [ ] Create a benchmark panel of at least 20 research requests with expected papers, freshness constraints, and domain-specific source expectations.
+	- [ ] Run the panel with keyless/easy-access sources only: OpenAlex, Crossref, Semantic Scholar no-key mode, PubMed, Europe PMC, arXiv, BASE, and OpenCitations enrichment.
+	- [ ] Report CORE, Dimensions, SerpAPI/Google Scholar, or other keyed sources only as optional enrichment, never as the baseline pass condition.
+	- [ ] Compare results against a manually reviewed standalone LLM/web-search baseline and record misses.
+	Validation checklist:
+	- [ ] Benchmark output includes must-find recall, top-5 relevance, freshness compliance, hard-filter compliance, duplicate rate, and source coverage.
+	- [ ] Benchmark includes the time-series forecasting method-selection query with `year >= 2024`.
+	- [ ] Release gate fails if default keyless retrieval misses too many must-find papers or returns hard-filter violations.
 
 ### M3 (Week 3-4): Write Correctness and Idempotency
 
@@ -455,8 +485,9 @@ M5 validation checklist:
 
 ### M2 Real-Search Rule
 
-- M2 validation must use live Semantic Scholar + OpenAlex + Crossref results (no fixture or mock fallback).
-- If live APIs are rate-limited, treat it as a test-environment issue and retry later; do not switch to mock data.
+- M2/M2.7 validation must use live keyless/easy-access sources for the default baseline: OpenAlex, Crossref, Semantic Scholar no-key mode, PubMed, Europe PMC, arXiv, BASE, and OpenCitations enrichment where available.
+- Paid or search-key providers such as CORE, Dimensions, and SerpAPI/Google Scholar may be measured as enrichment, but they must not be required for the default pass condition.
+- If live APIs are rate-limited, treat it as a test-environment issue and retry later; do not switch to mock data for release-quality retrieval claims.
 
 ### M2 Validation Queries (Required — Verified)
 
@@ -467,6 +498,9 @@ M5 validation checklist:
 
 ## Immediate Backlog (Checkbox-Ready)
 
+- [ ] Implement AGT-28 search-plan model with deterministic hard filters and API/UI metadata
+- [ ] Implement AGT-29 keyless-first retrieval benchmark against standalone LLM/web-search baseline
+- [ ] Define ZAP-4A filter payload shared by Streamlit, REST API, and Zotero add-on
 - [x] Add provider protocol package and baseline xAI adapter implementation
 - [ ] Add OpenAI adapter implementing the same LLMProvider contract
 - [ ] Add Anthropic adapter implementing the same LLMProvider contract

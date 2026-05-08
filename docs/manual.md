@@ -284,12 +284,13 @@ SciAgent searches across multiple academic databases simultaneously and merges r
 
 | Source | Coverage | Notes |
 |--------|----------|-------|
-| **Semantic Scholar** | 200M+ papers | Primary source, rich metadata |
+| **Semantic Scholar** | 200M+ papers | No-key mode by default; optional key raises rate limits |
 | **OpenAlex** | 250M+ works | Open bibliographic data |
 | **Crossref** | 130M+ records | DOI metadata, publisher data |
 | **PubMed** | 36M+ biomedical | NCBI E-Utilities |
 | **Europe PMC** | 43M+ life sciences | Open access indicator |
 | **arXiv** | 2.4M+ preprints | Physics, CS, math, etc. |
+| **BASE** | 400M+ records | Open academic search index |
 | **OpenCitations** | Citation enrichment | Adds citation counts |
 
 ### Require API Key
@@ -302,19 +303,35 @@ SciAgent searches across multiple academic databases simultaneously and merges r
 
 ### How Search Works
 
-1. Your natural-language query is rewritten by the LLM into optimized academic search terms
-2. All available sources are queried in parallel
-3. Results are deduplicated (DOI + arXiv ID + title hash)
-4. Papers are ranked by a multi-factor formula: semantic relevance (45%), citations (30%), influential citations (10%), recency (12%), abstract quality (5%), open access (3%)
-5. Constraints are applied (year filters, citation thresholds, exclude terms)
-6. LLM validates result relevance and retries with improved query if needed
+1. The query is parsed into a deterministic search plan: topic terms, hard filters, soft preferences, and source policy
+2. The LLM may rewrite topic wording for better academic search coverage, but it cannot remove or loosen hard filters
+3. Keyless/easy-access sources are queried in parallel by default; keyed search sources are optional enrichment
+4. Results are deduplicated (DOI + arXiv ID + title hash)
+5. Hard filters are applied before ranking, including year filters, date ranges, citation thresholds, source filters, and exclude terms
+6. Papers are ranked by a multi-factor formula: semantic relevance (45%), citations (30%), influential citations (10%), recency (12%), abstract quality (5%), open access (3%)
+7. LLM validates result relevance and retries with improved topic wording if needed
+
+### Deterministic Search Filters
+
+SciAgent treats filters as structured constraints, not just semantic hints. For example:
+
+| Query phrase | Parsed filter |
+|--------------|---------------|
+| `not older than 2024` | `min_year = 2024` |
+| `between 2022 and 2024` | `min_year = 2022`, `max_year = 2024` |
+| `not about healthcare` | `exclude_terms = ["healthcare"]` |
+| `open access only` | `open_access = true` |
+| `most cited` | `min_citations` from configured threshold |
+
+The app and Zotero add-on should show these filters as editable controls before approval so users can verify exactly what will be searched and written.
 
 ### Query Examples
 
 | Natural Language Query | What Happens |
 |----------------------|--------------|
 | `"retrieval augmented generation"` | Direct keyword search across all sources |
-| `"most cited 2020+ timeseries papers"` | Extracts year≥2020 constraint, citation filter, searches "timeseries" |
+| `"most cited 2020+ timeseries papers"` | Extracts `year >= 2020`, citation filter, searches "timeseries" |
+| `"time-series forecasting methods selection based on the data itself, not older than 2024"` | Extracts `min_year = 2024`, searches method/model selection from data characteristics |
 | `"RAG techniques not about healthcare"` | Searches "RAG", excludes papers mentioning "healthcare" |
 | `"deep RL robotics between 2022 and 2024"` | Year range 2022–2024, keywords "deep reinforcement learning robotics" |
 | `"nutrition in sport"` | LLM rewrites to "sports nutrition" for better API coverage |

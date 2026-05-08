@@ -13,10 +13,11 @@
 | **M2** Retrieval & Ranking | **Done** | AGT-5, AGT-6, AGT-7, AGT-27 |
 | **M2.5** Retrieval Quality | **Done** | 12 sources, constraint parsing, metadata |
 | **M2.6** Fallback Retrieval | **Done** | AGT-8 |
+| **M2.7** Discovery Quality & Filters | **Not started** | AGT-28, AGT-29, ZAP-4A |
 | **M3** Write Correctness | **Done** | AGT-9, AGT-10, AGT-11, AGT-12 |
 | **M4** Approval Workflow & MVP | **Done** | AGT-14, AGT-15, AGT-17, AGT-19 |
 | **M5** Production Hardening | **Done** | AGT-16, AGT-18, AGT-20*, AGT-21*, AGT-22* |
-| **M6** Zotero Native Add-on | **Not started** | ZAP-0 through ZAP-11 |
+| **M6** Zotero Native Add-on | **Not started** | ZAP-0 through ZAP-11 plus ZAP-4A |
 | **M7** Pluggability & Infrastructure | **Not started** | AGT-23, AGT-24, AGT-25, AGT-26 |
 
 \* = partial gaps noted below.
@@ -63,6 +64,53 @@
 - [ ] Shared contract test suite validating all adapters
 
 **Effort:** 2.5d (adapters + startup validation + shared contract test suite)
+
+---
+
+## Discovery Quality Horizon (M2.7)
+
+**Goal:** Make SciAgent's paper discovery feel at least as strong as using Claude, ChatGPT, or Gemini with web search, while keeping the retrieval layer deterministic, inspectable, and usable without paid/search-engine API keys.
+
+**Product principle:** LLMs are welcome for query rewriting, semantic validation, summarization, and reasoning. Search-engine API keys are not required for the default experience. The default source policy is keyless-first; paid/keyed sources are enrichment only.
+
+### AGT-28 — Search Plan and Deterministic Filter Contract
+
+**Priority:** P0
+**Dependencies:** AGT-5, AGT-6
+**Effort:** 1.5d
+
+- [ ] Add a typed `SearchPlan` model that separates topic terms from deterministic hard filters and soft preferences
+- [ ] Parse freshness constraints such as `not older than 2024`, `since 2024`, `after 2023`, `between 2022 and 2024` into explicit year filters
+- [ ] Preserve hard filters through LLM query rewriting so model output can refine topic wording but cannot loosen constraints
+- [ ] Push filters down to source APIs when available, especially publication year and source/document type filters
+- [ ] Re-apply hard filters after merge/dedup/ranking and fail tests if violating papers survive
+- [ ] Return the search plan and applied filter metadata through CLI/API/UI responses
+- [ ] Add regression coverage for the query: `time-series forecasting methods selection based on the data itself, not older than 2024`
+
+### AGT-29 — Keyless-First Retrieval Quality Benchmark
+
+**Priority:** P0
+**Dependencies:** AGT-28
+**Effort:** 1d
+
+- [ ] Define a curated evaluation panel with at least 20 real research requests across domains
+- [ ] For each request, record must-find papers, acceptable alternates, expected constraints, and source expectations
+- [ ] Run the panel using only no-key/easy-access sources: OpenAlex, Crossref, Semantic Scholar no-key mode, PubMed, Europe PMC, arXiv, BASE, and OpenCitations enrichment
+- [ ] Compare against a manually reviewed standalone LLM/web-search baseline and record where SciAgent misses papers a user would reasonably expect
+- [ ] Track deterministic metrics: must-find recall, constraint compliance, freshness compliance, duplicate rate, source coverage, and top-5 relevance
+- [ ] Report optional keyed sources separately so CORE, Dimensions, SerpAPI, or similar providers never mask weak default retrieval
+
+### ZAP-4A — Filter Review and Edit UI
+
+**Priority:** P0 for the add-on UX
+**Dependencies:** AGT-28, ZAP-3, ZAP-4
+**Effort:** 0.75d
+
+- [ ] Render parsed filters as editable controls before or alongside the result list
+- [ ] Include year min/max, date range, source set, open-access preference, citation threshold, document type, include terms, and exclude terms
+- [ ] Let users run, clear, or lock filters before approval
+- [ ] Send the edited filter payload back to the backend instead of relying only on natural-language text
+- [ ] Display source/skipped-source metadata so users understand whether optional API-key sources were used
 
 ---
 
@@ -147,8 +195,9 @@ Current state: `_RetrievalProvider` dataclass and `_build_retrieval_registry()` 
 
 **Overall status:** Not started (zero TypeScript/React files exist).
 **Backend readiness:** All required API endpoints are available (`/health`, `/run`, `/resume`, `/status/{run_id}`).
+**Discovery readiness:** Filterable sidebar work depends on AGT-28 search-plan metadata.
 
-**Contract note:** Older planning text in `docs/zotero.md` still mentions `/search` and `/run-workflow`; the implemented backend contract for add-on planning is `/run`, `/resume`, and `/status/{run_id}`.
+**Contract note:** The implemented backend contract for add-on planning is `/health`, `/run`, `/resume`, and `/status/{run_id}`. Filterable search additionally needs AGT-28 search-plan metadata.
 
 ### Phase 1: Plugin Foundation (ZAP-0, ZAP-1, ZAP-2) — ~2d
 
@@ -164,7 +213,7 @@ Current state: `_RetrievalProvider` dataclass and `_build_retrieval_registry()` 
 | ZAP-2 | `fetch` wrapper with auth (API key from `Zotero.Prefs`) | Not started |
 | ZAP-2 | Health check on plugin load (green/red status in sidebar) | Not started |
 
-### Phase 2: Native Sidebar UI (ZAP-3, ZAP-4, ZAP-5) — ~3.5d
+### Phase 2: Native Sidebar UI (ZAP-3, ZAP-4, ZAP-4A, ZAP-5) — ~4.25d
 
 | Story | Task | Status |
 |-------|------|--------|
@@ -173,6 +222,8 @@ Current state: `_RetrievalProvider` dataclass and `_build_retrieval_registry()` 
 | ZAP-3 | Chat-like React + Tailwind interface | Not started |
 | ZAP-4 | Input box + Search button → calls `/run` endpoint | Not started |
 | ZAP-4 | Render paper card list with indices, summaries, checkboxes | Not started |
+| ZAP-4A | Render/edit parsed filters: year, source set, OA, citations, type, include/exclude terms | Not started |
+| ZAP-4A | Send structured filter payload to backend and show skipped/optional sources | Not started |
 | ZAP-5 | "Create Collection" field with auto-suggest | Not started |
 | ZAP-5 | Approve / Reject / Edit buttons → calls `/resume` | Not started |
 | ZAP-5 | Progress spinner + per-item green checkmarks | Not started |
@@ -204,10 +255,13 @@ Current state: `_RetrievalProvider` dataclass and `_build_retrieval_registry()` 
 
 ### P0 — Do First
 
-1. **AGT-20 follow-up** — Truthful terminal status + typed failure handling/tests (1d)
-2. **AGT-21 hardening** — Security checklist, auth defaults, delegated-auth direction (1d)
-3. **AGT-24** — Distributed checkpointing with Redis/Postgres (1.5d)
-4. **ZAP-0 + ZAP-1** — Plugin skeleton and dev environment (1d)
+1. **AGT-28** — Search plan and deterministic filter contract (1.5d)
+2. **AGT-29** — Keyless-first retrieval quality benchmark against standalone LLM/web-search baseline (1d)
+3. **ZAP-4A contract** — Define filter review/edit payload before sidebar implementation (0.25d)
+4. **AGT-20 follow-up** — Truthful terminal status + typed failure handling/tests (1d)
+5. **AGT-21 hardening** — Security checklist, auth defaults, delegated-auth direction (1d)
+6. **AGT-24** — Distributed checkpointing with Redis/Postgres (1.5d)
+7. **ZAP-0 + ZAP-1** — Plugin skeleton and dev environment (1d)
 
 ### P1 — Do Next
 
@@ -215,7 +269,7 @@ Current state: `_RetrievalProvider` dataclass and `_build_retrieval_registry()` 
 2. **ZAP-2** — Backend connection layer from plugin (0.5d)
 3. **AGT-23** — Retrieval registry Protocol extraction (2d)
 4. **AGT-20 CI gates** — Coverage, resilience, and replay checks in CI (1d)
-5. **ZAP-3 + ZAP-4 + ZAP-5** — Full sidebar UI (3.5d)
+5. **ZAP-3 + ZAP-4 + ZAP-4A + ZAP-5** — Full sidebar UI with filter review (4.25d)
 6. **AGT-13** — PDF attachment pipeline (2d)
 7. **AGT-25** — Async task queue (2d)
 
@@ -231,6 +285,8 @@ Current state: `_RetrievalProvider` dataclass and `_build_retrieval_registry()` 
 
 | Decision | Options | Impact |
 |----------|---------|--------|
+| **Default retrieval source policy** | Keyless-first only vs. keyless-first plus opt-in keyed enrichment | Keyless-first prevents paid/search-key dependence; opt-in enrichment can improve coverage without hiding baseline gaps |
+| **Filter edit timing** | Before first search vs. after parsed preview vs. both | Before search improves determinism; after preview improves usability; both is best for Zotero sidebar ergonomics |
 | **ZAP write path** | Native `Zotero.*` JS API vs. backend-delegated via `/resume` | Native = faster + offline-capable but duplicates dedup logic in TypeScript; Delegated = simpler plugin but requires backend for all writes |
 | **Checkpoint backend** | Redis vs. Postgres | Redis = faster + simpler; Postgres = durable + query-friendly for analytics |
 | **Task queue** | Celery vs. Dramatiq | Celery = mature ecosystem; Dramatiq = simpler API, fewer deps |
