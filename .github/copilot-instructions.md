@@ -18,18 +18,20 @@ When making or proposing changes:
 
 Global execution policy (highest priority for this repository):
 
-1. Do not use subagents for implementation, planning, or codebase exploration unless the user explicitly requests a specific subagent by name.
+1. Do not use subagents for implementation, planning, or codebase exploration unless the user explicitly requests a specific subagent by name or explicitly asks for agent orchestration/delegation.
 2. Execute work directly in the main coding session using local file and terminal tools.
 3. For milestone examples, prefer real runtime behavior and integration paths over mocked flows.
 
 Agent routing and research rules:
 
-1. Use `core-planner` for backlog mapping, acceptance checks, and story sequencing against `docs/core.md`.
-2. Use `settings-bootstrap` for environment, quality tooling, CI, and reproducibility work tied to `docs/settings.md`.
-3. Use `zotero-addon` for Zotero plugin architecture, backend contract mapping, and native integration work tied to `docs/zotero.md`.
-4. Use `zotero-frontend` for TypeScript, React, WebExtension, sidebar UI, manifest, bootstrap, and hook-heavy add-on implementation work.
-5. For unfamiliar third-party libraries or fast-moving APIs, fetch current documentation through Context7 (`mcp_io`) before coding. Prefer official docs over memory for React, Zotero add-on tooling, LangGraph, and VS Code customization behavior.
-6. Keep agent descriptions keyword-rich so the right specialist is discoverable from the user prompt.
+1. Use `sciagent-orchestrator` when the user asks who should act, requests agent selection, or gives mixed-domain work that needs explicit sequencing.
+2. Use `core-planner` for backlog mapping, acceptance checks, and story sequencing against `docs/core.md`.
+3. Use `python-backend-engineer` for modern Python backend implementation and review across `src/agt/**`, `tests/**`, FastAPI, LangGraph, provider adapters, retrieval, ranking, workflow, Zotero write paths, performance, strict typing, and failure handling.
+4. Use `settings-bootstrap` for environment, Python 3.14 policy, `uv`, quality tooling, CI, Docker, and reproducibility work tied to `docs/settings.md`.
+5. Use `zotero-addon` for Zotero plugin architecture, backend contract mapping, native integration boundaries, and write/approval flow design tied to `docs/zotero.md`.
+6. Use `zotero-frontend` for TypeScript, React, WebExtension, sidebar UI, manifest, bootstrap, typed clients, host adapters, hooks, and add-on frontend tests.
+7. For unfamiliar third-party libraries or fast-moving APIs, fetch current documentation through Context7 (`mcp_io`) before coding. Prefer official docs over memory for React, Zotero add-on tooling, LangGraph, and VS Code customization behavior.
+8. Keep agent descriptions keyword-rich so the right specialist is discoverable from the user prompt.
 
 Frontend and add-on implementation rules:
 
