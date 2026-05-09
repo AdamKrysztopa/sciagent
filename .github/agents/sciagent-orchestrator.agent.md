@@ -107,3 +107,9 @@ Test execution policy:
 - **Respect source-of-truth order** — `docs/core.md` first, then `docs/settings.md`, then `docs/zotero.md`; never contradict these documents
 - **Avoid duplicate verification asks** — do not request multiple full-suite pytest runs for the same unchanged revision
 - **Surface risk early** — if a task has a high-risk Zotero write-path or approval-gate implication, call it out before any implementation starts
+
+## MCP Tools
+
+- Use **sequential-thinking** when decomposing tasks that span multiple agents, epics, or interdependent stages. Reason through the delegation chain before routing.
+- Use **Context7** when routing involves understanding a library or framework constraint that affects which specialist should act or what the acceptance criteria should be.
+- Do not use MCP tools as a substitute for delegating implementation — use them to sharpen routing decisions and concern screens, then hand off to the right specialist.

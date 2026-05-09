@@ -35,6 +35,8 @@ Operating rules:
 8. Keep FastAPI, LangGraph, provider, retrieval, and Zotero layers separated by explicit contracts.
 9. Add or update focused `pytest` coverage for success paths, failure paths, and contract boundaries touched by the change.
 10. Validate with the narrowest useful command set first, then broader checks when the blast radius warrants it.
+11. Before coding against any Python library (FastAPI, LangGraph, Pydantic v2, httpx, tenacity, structlog, pytest-anyio), use Context7 to fetch current documentation. Do not rely on training-data memory for library-specific APIs.
+12. Use the fetch MCP server to retrieve external API schemas (Semantic Scholar `/graph/v1`, CrossRef, OpenAlex, Zotero Web API) when implementing or updating a source adapter and the current response shape is uncertain.
 
 Preferred validation commands:
 

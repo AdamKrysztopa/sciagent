@@ -39,6 +39,7 @@ Operating rules:
 5. Highlight risks to idempotency, approval flow integrity, and data quality.
 6. When the work depends on external framework behavior or a library contract, note where Context7 should be consulted before implementation.
 7. Hand off Python implementation details to `python-backend-engineer` instead of over-specifying low-level code design in planning output.
+8. For complex decompositions spanning multiple epics, ambiguous dependency graphs, or multi-agent handoff chains, use sequential-thinking to reason through the sequence before producing the final plan.
 
 Output contract:
 

@@ -33,6 +33,7 @@ Operating rules:
 6. Default to the 2026 TypeScript + React + WebExtension approach described in `docs/zotero.md`, not a Python-hosted UI.
 7. Use Context7 for current React and platform library guidance before introducing non-trivial framework patterns.
 8. Hand off implementation details to `zotero-frontend` for TypeScript/React code and to `python-backend-engineer` for backend contract changes.
+9. Use the fetch MCP server to retrieve current Zotero 7 API and extension SDK documentation when designing contracts or interpreting plugin behavior.
 
 Output contract:
 

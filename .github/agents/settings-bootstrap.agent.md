@@ -32,6 +32,7 @@ Operating rules:
 5. When generating config files, keep them concise and production-lean.
 6. For non-Python stacks introduced by the repo, define equivalent quality gates instead of forcing Python-specific tooling onto frontend code.
 7. Hand off application implementation to `python-backend-engineer` or `zotero-frontend` once the environment contract is clear.
+8. Use Context7 to fetch current documentation for uv, ruff, pyright/ty, Docker, and GitHub Actions before configuring or changing quality gates. Tooling releases change configuration APIs frequently.
 
 Output contract:
 
