@@ -6,11 +6,14 @@ import json
 import logging
 from dataclasses import dataclass
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal, cast
 
 import structlog
 from pydantic import AliasChoices, BaseModel, Field, SecretStr, ValidationError, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+_ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
 
 LLMProviderName = Literal["xai", "openai", "anthropic", "groq"]
 LibraryType = Literal["user", "group"]
@@ -34,15 +37,15 @@ def _empty_env_overrides() -> dict[RuntimeEnvironment, RuntimeConfig]:
 class Settings(BaseSettings):
     """Application settings loaded from environment variables with strict validation."""
 
-    model_config = SettingsConfigDict(env_file=".env", env_prefix="AGT_", extra="forbid")
+    model_config = SettingsConfigDict(env_file=_ENV_FILE, env_prefix="AGT_", extra="forbid")
 
-    xai_api_key: SecretStr = Field(
-        ...,
+    xai_api_key: SecretStr | None = Field(
+        default=None,
         validation_alias=AliasChoices("AGT_XAI_API_KEY", "XAI_API_KEY"),
         description="xAI API key",
     )
-    zotero_api_key: SecretStr = Field(
-        ...,
+    zotero_api_key: SecretStr | None = Field(
+        default=None,
         validation_alias=AliasChoices("AGT_ZOTERO_API_KEY", "ZOTERO_API_KEY"),
         description="Zotero API key",
     )
@@ -51,15 +54,20 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("AGT_BACKEND_API_KEY", "BACKEND_API_KEY"),
         description="Optional API key required by backend HTTP endpoints.",
     )
-    zotero_library_id: str = Field(
-        ...,
-        min_length=1,
+    zotero_library_id: str | None = Field(
+        default=None,
         validation_alias=AliasChoices("AGT_ZOTERO_LIBRARY_ID", "ZOTERO_LIBRARY_ID"),
         description="Zotero library id",
     )
     zotero_library_type: LibraryType = Field(
         default="user",
         validation_alias=AliasChoices("AGT_ZOTERO_LIBRARY_TYPE", "ZOTERO_LIBRARY_TYPE"),
+    )
+    zotero_collection_name: str = Field(
+        default="SciAgent",
+        min_length=1,
+        validation_alias=AliasChoices("AGT_ZOTERO_COLLECTION_NAME", "ZOTERO_COLLECTION_NAME"),
+        description="Default Zotero collection where papers are saved.",
     )
     semantic_scholar_api_key: SecretStr | None = Field(
         default=None,

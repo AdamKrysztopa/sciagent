@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any, Literal, cast
 
 from fastapi import Depends, FastAPI, Header, HTTPException, status
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, Field, model_validator
 
 from agt.config import Settings, get_settings
@@ -20,7 +21,7 @@ API_CONTRACT_VERSION = "2026-05"
 
 class RunRequest(BaseModel):
     query: str = Field(min_length=1)
-    collection_name: str = Field(min_length=1)
+    collection_name: str | None = Field(default=None, min_length=1)
     thread_id: str | None = None
     filter_edit: FilterEditContract | None = None
 
@@ -103,6 +104,10 @@ def create_app() -> FastAPI:
     app = FastAPI(title="SciAgent API", version="0.1.0")
     store = _RunStore()
 
+    @app.get("/", include_in_schema=False)
+    async def _root() -> RedirectResponse:  # pyright: ignore[reportUnusedFunction]
+        return RedirectResponse(url="/docs")
+
     @app.get("/health")
     async def _health(  # pyright: ignore[reportUnusedFunction]
         _: None = Depends(_require_backend_key),
@@ -125,18 +130,19 @@ def create_app() -> FastAPI:
         settings: Settings = Depends(get_settings),
         client_id: str = Depends(_client_id_header),
     ) -> RunAcceptedResponse:
+        collection_name = payload.collection_name or settings.zotero_collection_name
         try:
             if payload.filter_edit is None:
                 state = await run_search_phase(
                     query=payload.query,
-                    collection_name=payload.collection_name,
+                    collection_name=collection_name,
                     thread_id=payload.thread_id,
                     settings=settings,
                 )
             else:
                 state = await run_search_phase(
                     query=payload.query,
-                    collection_name=payload.collection_name,
+                    collection_name=collection_name,
                     thread_id=payload.thread_id,
                     settings=settings,
                     filter_edit=payload.filter_edit,

@@ -1,6 +1,6 @@
 {
   "name": "sciagent-zotero-addon",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "SciAgent native Zotero 9 add-on scaffold and MVP UI",
   "type": "module",

@@ -61,6 +61,8 @@ class RoutedProvider(LLMProvider):
 
 
 def _build_xai(settings: Settings) -> LLMProvider:
+    if settings.xai_api_key is None:
+        raise RuntimeError("AGT_XAI_API_KEY is required when AGT_LLM_PROVIDER=xai")
     return XAIProvider(
         runtime=settings.runtime,
         api_key=settings.xai_api_key.get_secret_value(),

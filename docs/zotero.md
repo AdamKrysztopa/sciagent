@@ -43,7 +43,7 @@ No more browser tab. One-click "Search Papers" in Zotero → natural language �
   - Extension proxy file for loading from source.
   - `npm run build` → `.xpi` auto-generated.
   - Repo quality gate validates `npm run lint`, `npm run build`, `npm run typecheck`, and `npm run test` against `zotero-addon/` in CI.
-  - Zotero debug output + JS console connected.
+  - Zotero debug output + JS console connected: Tools → Developer → Error Console (`Cmd+Shift+Z` / `Ctrl+Shift+Z`) for bootstrap errors, chrome registration failures, and runtime exceptions.
   - `zotero-types` package installed for full autocomplete.
 
 ## Story: ZAP-2 — Backend Connection Layer

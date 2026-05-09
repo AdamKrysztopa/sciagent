@@ -206,6 +206,7 @@ async def _resolve_collection(
     collection_name: str,
     parent_collection_name: str | None,
 ) -> CollectionResult:
+    assert settings.zotero_api_key is not None, "Zotero API key required"
     headers = {"Zotero-API-Key": settings.zotero_api_key.get_secret_value()}
     prefix = _library_prefix(settings)
     list_resp = await client.get(f"{prefix}/collections", headers=headers, params={"limit": 200})
@@ -263,6 +264,7 @@ async def _fetch_existing_signatures(
     settings: Settings,
     collection_key: str,
 ) -> tuple[set[str], set[str]]:
+    assert settings.zotero_api_key is not None, "Zotero API key required"
     headers = {"Zotero-API-Key": settings.zotero_api_key.get_secret_value()}
     prefix = _library_prefix(settings)
     response = await client.get(
@@ -449,6 +451,7 @@ async def _upsert_with_client(
         collection_key=collection.key,
     )
 
+    assert settings.zotero_api_key is not None, "Zotero API key required"
     create_request = _CreateItemRequest(
         endpoint=f"{_library_prefix(settings)}/items",
         headers={"Zotero-API-Key": settings.zotero_api_key.get_secret_value()},

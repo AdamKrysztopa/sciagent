@@ -32,6 +32,7 @@ function createMockZotero(): ZoteroGlobal {
     Prefs: prefs,
     debug: () => undefined,
     getMainWindows: () => [],
+    logError: () => undefined,
   };
 }
 

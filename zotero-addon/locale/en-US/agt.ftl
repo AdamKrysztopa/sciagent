@@ -1,5 +1,7 @@
 agt-item-pane-header = SciAgent
 
+agt-tools-menu-label = SciAgent
+
 agt-preferences-pane-name = SciAgent
 agt-preferences-connection-heading = Connection
 agt-preferences-backend-url-label = Backend URL

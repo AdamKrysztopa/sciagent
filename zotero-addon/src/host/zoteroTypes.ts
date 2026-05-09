@@ -47,6 +47,9 @@ export interface ZoteroWindow extends Window {
   MozXULElement?: {
     insertFTLIfNeeded(href: string): void;
   };
+  document: Document & {
+    createXULElement(tagName: string): Element;
+  };
 }
 
 export interface ZoteroGlobal {
@@ -55,8 +58,24 @@ export interface ZoteroGlobal {
   Prefs: ZoteroPrefs;
   debug(message: string): void;
   getMainWindows(): ZoteroWindow[];
+  logError(error: unknown): void;
+}
+
+export interface WindowMediator {
+  addListener(listener: object): void;
+  removeListener(listener: object): void;
+}
+
+export interface PromptService {
+  alert(parent: Window | null, dialogTitle: string, text: string): void;
+}
+
+export interface ServicesGlobal {
+  prompt: PromptService;
+  wm: WindowMediator;
 }
 
 declare global {
   const Zotero: ZoteroGlobal;
+  const Services: ServicesGlobal;
 }

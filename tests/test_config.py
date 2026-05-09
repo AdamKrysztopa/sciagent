@@ -57,6 +57,7 @@ def test_settings_accept_plain_aliases(monkeypatch: pytest.MonkeyPatch) -> None:
         "ZOTERO_API_KEY": "zot-secret",
         "ZOTERO_LIBRARY_ID": "12345",
     })
+    assert settings.xai_api_key is not None
     assert settings.xai_api_key.get_secret_value() == "xai-secret"
     assert settings.zotero_library_id == "12345"
 
