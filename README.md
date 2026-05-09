@@ -16,6 +16,23 @@ cp .env.example .env
 uv run pre-commit install
 ```
 
+## Docs Authoring
+
+This workspace ships a modern Markdown workflow for docs work:
+
+- autosave after a short delay in this workspace
+- Markdown format-on-save via the recommended formatter extension
+- advanced preview and Mermaid support through recommended VS Code extensions
+- MCP browser automation via the workspace Puppeteer server for docs QA
+- a full docs-site build from `docs/*.md` via MkDocs Material
+
+Useful commands:
+
+```bash
+uv run mkdocs serve -a 127.0.0.1:8001
+uv run mkdocs build --strict
+```
+
 ## Run
 
 ```bash
@@ -44,6 +61,7 @@ cd ..
 
 # Docs and agent instructions
 npx --yes markdownlint-cli2 "README.md" "docs/**/*.md" "examples/**/*.md" ".github/**/*.md" "zotero-addon/README.md"
+uv run mkdocs build --strict
 ```
 
 ## CI Checks
@@ -52,7 +70,7 @@ GitHub Actions runs three quality jobs:
 
 - Python quality on 3.13 and 3.14: `ruff check .`, `ruff format --check .`, `pyright`, `pytest -q --vcr-record=none`
 - Zotero add-on quality in `zotero-addon/`: `npm ci`, `npm run lint`, `npm run build`, `npm run typecheck`, `npm run test`
-- Docs quality: `markdownlint-cli2` over repo-authored Markdown using the root config
+- Docs quality: `markdownlint-cli2` plus `uv run mkdocs build --strict`
 
 Local `pre-commit` remains intentionally lightweight and Python-only.
 

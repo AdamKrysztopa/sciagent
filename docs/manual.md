@@ -20,14 +20,14 @@
 
 ## Prerequisites
 
-| Requirement | Version | Notes |
-|-------------|---------|-------|
-| Python | >= 3.13 (recommended: 3.14) | Free-threaded GIL optional support |
-| `uv` | latest | Package manager ([install](https://astral.sh/uv)) |
-| Node.js | >= 20 | Required only for the Zotero add-on package in `zotero-addon/` |
-| Zotero | 7.x | Required for the native add-on scaffold and item-pane integration |
-| Zotero account | — | With API key and library ID |
-| xAI API key | — | Default LLM provider (or OpenAI/Anthropic) |
+| Requirement    | Version                     | Notes                                                             |
+| -------------- | --------------------------- | ----------------------------------------------------------------- |
+| Python         | >= 3.13 (recommended: 3.14) | Free-threaded GIL optional support                                |
+| `uv`           | latest                      | Package manager ([install](https://astral.sh/uv))                 |
+| Node.js        | >= 20                       | Required only for the Zotero add-on package in `zotero-addon/`    |
+| Zotero         | 7.x                         | Required for the native add-on scaffold and item-pane integration |
+| Zotero account | —                           | With API key and library ID                                       |
+| xAI API key    | —                           | Default LLM provider (or OpenAI/Anthropic)                        |
 
 ---
 
@@ -64,6 +64,15 @@ This produces:
 - `zotero-addon/build/xpi/` — staged unpacked add-on contents
 - `zotero-addon/build/sciagent-zotero-addon.xpi` — installable unsigned package for local/manual use
 
+### Optional: build the docs site from Markdown
+
+```bash
+uv run mkdocs serve -a 127.0.0.1:8001
+uv run mkdocs build --strict
+```
+
+The workspace includes Markdown authoring helpers in `.vscode/`, including autosave, preview-oriented extensions, reusable tasks, and an MCP browser server for docs QA.
+
 ---
 
 ## Configuration
@@ -74,53 +83,53 @@ All configuration is loaded from environment variables via `pydantic-settings`. 
 
 These **must** be set — the application will fail fast with an actionable error if they are missing.
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `AGT_XAI_API_KEY` | xAI (Grok) API key | `xai-abc123...` |
-| `AGT_ZOTERO_API_KEY` | Zotero API key ([get one here](https://www.zotero.org/settings/keys)) | `AbCdEf12345...` |
-| `AGT_ZOTERO_LIBRARY_ID` | Your Zotero library ID (numeric) | `12345678` |
+| Variable                | Description                                                           | Example          |
+| ----------------------- | --------------------------------------------------------------------- | ---------------- |
+| `AGT_XAI_API_KEY`       | xAI (Grok) API key                                                    | `xai-abc123...`  |
+| `AGT_ZOTERO_API_KEY`    | Zotero API key ([get one here](https://www.zotero.org/settings/keys)) | `AbCdEf12345...` |
+| `AGT_ZOTERO_LIBRARY_ID` | Your Zotero library ID (numeric)                                      | `12345678`       |
 
 ### Optional Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `AGT_ZOTERO_LIBRARY_TYPE` | `user` | `user` or `group` |
-| `AGT_LLM_PROVIDER` | `xai` | LLM provider: `xai`, `openai`, `anthropic`, `groq` |
-| `AGT_MODEL_NAME` | `grok-4` | Model name for the selected provider |
-| `AGT_TIMEOUT_SECONDS` | `30` | LLM call timeout (1–300) |
-| `AGT_RETRIES` | `3` | LLM retry count (0–10) |
-| `AGT_TEMPERATURE` | `0.2` | LLM sampling temperature (0.0–2.0) |
-| `AGT_LOG_LEVEL` | `INFO` | Logging level |
-| `AGT_ENV` | `local` | Runtime environment: `local`, `staging`, `production` |
+| Variable                  | Default  | Description                                           |
+| ------------------------- | -------- | ----------------------------------------------------- |
+| `AGT_ZOTERO_LIBRARY_TYPE` | `user`   | `user` or `group`                                     |
+| `AGT_LLM_PROVIDER`        | `xai`    | LLM provider: `xai`, `openai`, `anthropic`, `groq`    |
+| `AGT_MODEL_NAME`          | `grok-4` | Model name for the selected provider                  |
+| `AGT_TIMEOUT_SECONDS`     | `30`     | LLM call timeout (1–300)                              |
+| `AGT_RETRIES`             | `3`      | LLM retry count (0–10)                                |
+| `AGT_TEMPERATURE`         | `0.2`    | LLM sampling temperature (0.0–2.0)                    |
+| `AGT_LOG_LEVEL`           | `INFO`   | Logging level                                         |
+| `AGT_ENV`                 | `local`  | Runtime environment: `local`, `staging`, `production` |
 
 ### Optional API Keys (Enhance Retrieval)
 
 These keys are **optional** but improve retrieval coverage and rate limits.
 
-| Variable | Service | Free? |
-|----------|---------|-------|
-| `AGT_SEMANTIC_SCHOLAR_API_KEY` | Semantic Scholar (higher rate limits) | Yes |
-| `AGT_NCBI_API_KEY` | PubMed / NCBI E-Utilities | Yes |
-| `AGT_CORE_API_KEY` | CORE aggregator | Yes (with registration) |
-| `AGT_SERPAPI_KEY` | Google Scholar via SerpAPI | Paid |
-| `AGT_DIMENSIONS_KEY` | Dimensions.ai | Paid |
-| `AGT_OPENAI_API_KEY` | OpenAI (if using as alternative LLM) | Paid |
-| `AGT_ANTHROPIC_API_KEY` | Anthropic (if using as alternative LLM) | Paid |
-| `AGT_GROQ_API_KEY` | Groq (if using as alternative LLM) | Free tier available |
+| Variable                       | Service                                 | Free?                   |
+| ------------------------------ | --------------------------------------- | ----------------------- |
+| `AGT_SEMANTIC_SCHOLAR_API_KEY` | Semantic Scholar (higher rate limits)   | Yes                     |
+| `AGT_NCBI_API_KEY`             | PubMed / NCBI E-Utilities               | Yes                     |
+| `AGT_CORE_API_KEY`             | CORE aggregator                         | Yes (with registration) |
+| `AGT_SERPAPI_KEY`              | Google Scholar via SerpAPI              | Paid                    |
+| `AGT_DIMENSIONS_KEY`           | Dimensions.ai                           | Paid                    |
+| `AGT_OPENAI_API_KEY`           | OpenAI (if using as alternative LLM)    | Paid                    |
+| `AGT_ANTHROPIC_API_KEY`        | Anthropic (if using as alternative LLM) | Paid                    |
+| `AGT_GROQ_API_KEY`             | Groq (if using as alternative LLM)      | Free tier available     |
 
 ### Backend Security
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `AGT_BACKEND_API_KEY` | None | If set, all API endpoints require `X-AGT-API-Key` header |
+| Variable              | Default | Description                                              |
+| --------------------- | ------- | -------------------------------------------------------- |
+| `AGT_BACKEND_API_KEY` | None    | If set, all API endpoints require `X-AGT-API-Key` header |
 
 ### LLM Provider Routing
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `AGT_LLM_FALLBACK_PROVIDER` | None | Fallback provider on primary failure (e.g. `openai`) |
-| `AGT_LLM_FAILOVER_ON_TIMEOUT` | `true` | Switch to fallback on timeout |
-| `AGT_LLM_FAILOVER_ON_RATE_LIMIT` | `true` | Switch to fallback on rate limit |
+| Variable                         | Default | Description                                          |
+| -------------------------------- | ------- | ---------------------------------------------------- |
+| `AGT_LLM_FALLBACK_PROVIDER`      | None    | Fallback provider on primary failure (e.g. `openai`) |
+| `AGT_LLM_FAILOVER_ON_TIMEOUT`    | `true`  | Switch to fallback on timeout                        |
+| `AGT_LLM_FAILOVER_ON_RATE_LIMIT` | `true`  | Switch to fallback on rate limit                     |
 
 ### Example `.env` File
 
@@ -209,39 +218,39 @@ The API is designed for programmatic access and as the backend for the Zotero ad
 
 1. Start the backend API:
 
-  ```bash
-  uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000
-  ```
+```bash
+uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000
+```
 
 1. Build the add-on package:
 
-  ```bash
-  cd zotero-addon
-  npm ci
-  npm run build
-  ```
+```bash
+cd zotero-addon
+npm ci
+npm run build
+```
 
 1. Install the generated XPI in Zotero 7:
 
-  - Open Zotero
-  - Open the add-ons/plugins manager
-  - Choose `Install Add-on From File...`
-  - Select `zotero-addon/build/sciagent-zotero-addon.xpi`
+- Open Zotero
+- Open the add-ons/plugins manager
+- Choose `Install Add-on From File...`
+- Select `zotero-addon/build/sciagent-zotero-addon.xpi`
 
 1. Configure the add-on preferences:
 
-  - Backend URL
-  - API key for `X-AGT-API-Key`
-  - Client ID for `X-AGT-Client-ID`
-  - PDF toggle placeholder (stored now, not yet acted on by the backend contract)
+- Backend URL
+- API key for `X-AGT-API-Key`
+- Client ID for `X-AGT-Client-ID`
+- PDF toggle placeholder (stored now, not yet acted on by the backend contract)
 
 1. Use the native SciAgent pane:
 
-  - Open the SciAgent section in the Zotero item pane
-  - Enter a query and target collection name
-  - Run the first search to let the backend produce a typed search plan
-  - Review or edit the parsed filter contract shown in the pane
-  - Re-run with edits if needed, select results, then approve or reject
+- Open the SciAgent section in the Zotero item pane
+- Enter a query and target collection name
+- Run the first search to let the backend produce a typed search plan
+- Review or edit the parsed filter contract shown in the pane
+- Re-run with edits if needed, select results, then approve or reject
 
 Current M6 contract notes:
 
@@ -349,24 +358,24 @@ SciAgent searches across multiple academic databases simultaneously and merges r
 
 ### Always Available (No Key Required)
 
-| Source | Coverage | Notes |
-|--------|----------|-------|
-| **Semantic Scholar** | 200M+ papers | No-key mode by default; optional key raises rate limits |
-| **OpenAlex** | 250M+ works | Open bibliographic data |
-| **Crossref** | 130M+ records | DOI metadata, publisher data |
-| **PubMed** | 36M+ biomedical | NCBI E-Utilities |
-| **Europe PMC** | 43M+ life sciences | Open access indicator |
-| **arXiv** | 2.4M+ preprints | Physics, CS, math, etc. |
-| **BASE** | 400M+ records | Open academic search index |
-| **OpenCitations** | Citation enrichment | Adds citation counts |
+| Source               | Coverage            | Notes                                                   |
+| -------------------- | ------------------- | ------------------------------------------------------- |
+| **Semantic Scholar** | 200M+ papers        | No-key mode by default; optional key raises rate limits |
+| **OpenAlex**         | 250M+ works         | Open bibliographic data                                 |
+| **Crossref**         | 130M+ records       | DOI metadata, publisher data                            |
+| **PubMed**           | 36M+ biomedical     | NCBI E-Utilities                                        |
+| **Europe PMC**       | 43M+ life sciences  | Open access indicator                                   |
+| **arXiv**            | 2.4M+ preprints     | Physics, CS, math, etc.                                 |
+| **BASE**             | 400M+ records       | Open academic search index                              |
+| **OpenCitations**    | Citation enrichment | Adds citation counts                                    |
 
 ### Require API Key
 
-| Source | Key Variable | Notes |
-|--------|-------------|-------|
-| **CORE** | `AGT_CORE_API_KEY` | Full-text aggregator |
-| **Dimensions** | `AGT_DIMENSIONS_KEY` | Comprehensive metadata |
-| **Google Scholar** | `AGT_SERPAPI_KEY` | Via SerpAPI (experimental) |
+| Source             | Key Variable         | Notes                      |
+| ------------------ | -------------------- | -------------------------- |
+| **CORE**           | `AGT_CORE_API_KEY`   | Full-text aggregator       |
+| **Dimensions**     | `AGT_DIMENSIONS_KEY` | Comprehensive metadata     |
+| **Google Scholar** | `AGT_SERPAPI_KEY`    | Via SerpAPI (experimental) |
 
 ### How Search Works
 
@@ -382,26 +391,26 @@ SciAgent searches across multiple academic databases simultaneously and merges r
 
 SciAgent treats filters as structured constraints, not just semantic hints. For example:
 
-| Query phrase | Parsed filter |
-|--------------|---------------|
-| `not older than 2024` | `min_year = 2024` |
-| `between 2022 and 2024` | `min_year = 2022`, `max_year = 2024` |
-| `not about healthcare` | `exclude_terms = ["healthcare"]` |
-| `open access only` | `open_access = true` |
-| `most cited` | `min_citations` from configured threshold |
+| Query phrase            | Parsed filter                             |
+| ----------------------- | ----------------------------------------- |
+| `not older than 2024`   | `min_year = 2024`                         |
+| `between 2022 and 2024` | `min_year = 2022`, `max_year = 2024`      |
+| `not about healthcare`  | `exclude_terms = ["healthcare"]`          |
+| `open access only`      | `open_access = true`                      |
+| `most cited`            | `min_citations` from configured threshold |
 
 The app and Zotero add-on should show these filters as editable controls before approval so users can verify exactly what will be searched and written.
 
 ### Query Examples
 
-| Natural Language Query | What Happens |
-|----------------------|--------------|
-| `"retrieval augmented generation"` | Direct keyword search across all sources |
-| `"most cited 2020+ timeseries papers"` | Extracts `year >= 2020`, citation filter, searches "timeseries" |
+| Natural Language Query                                                                      | What Happens                                                                          |
+| ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `"retrieval augmented generation"`                                                          | Direct keyword search across all sources                                              |
+| `"most cited 2020+ timeseries papers"`                                                      | Extracts `year >= 2020`, citation filter, searches "timeseries"                       |
 | `"time-series forecasting methods selection based on the data itself, not older than 2024"` | Extracts `min_year = 2024`, searches method/model selection from data characteristics |
-| `"RAG techniques not about healthcare"` | Searches "RAG", excludes papers mentioning "healthcare" |
-| `"deep RL robotics between 2022 and 2024"` | Year range 2022–2024, keywords "deep reinforcement learning robotics" |
-| `"nutrition in sport"` | LLM rewrites to "sports nutrition" for better API coverage |
+| `"RAG techniques not about healthcare"`                                                     | Searches "RAG", excludes papers mentioning "healthcare"                               |
+| `"deep RL robotics between 2022 and 2024"`                                                  | Year range 2022–2024, keywords "deep reinforcement learning robotics"                 |
+| `"nutrition in sport"`                                                                      | LLM rewrites to "sports nutrition" for better API coverage                            |
 
 ---
 
@@ -411,47 +420,47 @@ The app and Zotero add-on should show these filters as editable controls before 
 
 Each retrieval source has a configurable rate limit (requests per minute per thread):
 
-| Variable | Default |
-|----------|---------|
-| `AGT_SEMANTIC_SCHOLAR_RATE_LIMIT_PER_MINUTE` | 100 |
-| `AGT_OPENALEX_RATE_LIMIT_PER_MINUTE` | 100 |
-| `AGT_CROSSREF_RATE_LIMIT_PER_MINUTE` | 80 |
-| `AGT_PUBMED_RATE_LIMIT_PER_MINUTE` | 100 |
-| `AGT_EUROPE_PMC_RATE_LIMIT_PER_MINUTE` | 100 |
-| `AGT_CORE_RATE_LIMIT_PER_MINUTE` | 60 |
-| `AGT_ARXIV_RATE_LIMIT_PER_MINUTE` | 20 |
-| `AGT_OPENCITATIONS_RATE_LIMIT_PER_MINUTE` | 60 |
-| `AGT_ZOTERO_RATE_LIMIT_PER_MINUTE` | 60 |
-| `AGT_LLM_RATE_LIMIT_PER_MINUTE` | 120 |
+| Variable                                     | Default |
+| -------------------------------------------- | ------- |
+| `AGT_SEMANTIC_SCHOLAR_RATE_LIMIT_PER_MINUTE` | 100     |
+| `AGT_OPENALEX_RATE_LIMIT_PER_MINUTE`         | 100     |
+| `AGT_CROSSREF_RATE_LIMIT_PER_MINUTE`         | 80      |
+| `AGT_PUBMED_RATE_LIMIT_PER_MINUTE`           | 100     |
+| `AGT_EUROPE_PMC_RATE_LIMIT_PER_MINUTE`       | 100     |
+| `AGT_CORE_RATE_LIMIT_PER_MINUTE`             | 60      |
+| `AGT_ARXIV_RATE_LIMIT_PER_MINUTE`            | 20      |
+| `AGT_OPENCITATIONS_RATE_LIMIT_PER_MINUTE`    | 60      |
+| `AGT_ZOTERO_RATE_LIMIT_PER_MINUTE`           | 60      |
+| `AGT_LLM_RATE_LIMIT_PER_MINUTE`              | 120     |
 
 ### Cost Guardrails
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `AGT_WORKFLOW_MAX_COST_USD` | `0.50` | Maximum LLM spend per workflow run |
-| `AGT_XAI_INPUT_COST_PER_1K_TOKENS_USD` | `0.005` | Cost tracking for xAI input tokens |
+| Variable                                | Default | Description                         |
+| --------------------------------------- | ------- | ----------------------------------- |
+| `AGT_WORKFLOW_MAX_COST_USD`             | `0.50`  | Maximum LLM spend per workflow run  |
+| `AGT_XAI_INPUT_COST_PER_1K_TOKENS_USD`  | `0.005` | Cost tracking for xAI input tokens  |
 | `AGT_XAI_OUTPUT_COST_PER_1K_TOKENS_USD` | `0.015` | Cost tracking for xAI output tokens |
 
 ### Feature Flags
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `AGT_ENABLE_FALLBACK_RETRIEVAL` | `false` | Enable fallback sources when primary returns few results |
-| `AGT_USE_KEYBERT` | `false` | Use KeyBERT for keyword extraction (requires `keybert` package) |
-| `AGT_USE_SPELL_CHECK` | `false` | Enable spell checking on queries (requires `pyspellchecker`) |
-| `AGT_USE_RERANKER` | `false` | Use cross-encoder reranker (requires `sentence-transformers`) |
-| `AGT_SUMMARIZATION_USE_LLM` | `true` | Use LLM for paper summaries (false = deterministic truncation) |
+| Variable                        | Default | Description                                                     |
+| ------------------------------- | ------- | --------------------------------------------------------------- |
+| `AGT_ENABLE_FALLBACK_RETRIEVAL` | `false` | Enable fallback sources when primary returns few results        |
+| `AGT_USE_KEYBERT`               | `false` | Use KeyBERT for keyword extraction (requires `keybert` package) |
+| `AGT_USE_SPELL_CHECK`           | `false` | Enable spell checking on queries (requires `pyspellchecker`)    |
+| `AGT_USE_RERANKER`              | `false` | Use cross-encoder reranker (requires `sentence-transformers`)   |
+| `AGT_SUMMARIZATION_USE_LLM`     | `true`  | Use LLM for paper summaries (false = deterministic truncation)  |
 
 ### Search Tuning
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `AGT_SEMANTIC_SCHOLAR_LIMIT` | `10` | Max results per source per query |
-| `AGT_SEARCH_MAX_PAGES` | `1` | Number of result pages to fetch per source (1–5) |
-| `AGT_CITATION_THRESHOLD_MOST_CITED` | `10` | Min citations for "most cited" filter |
-| `AGT_CITATION_THRESHOLD_GAME_CHANGERS` | `20` | Min citations for "game changers" filter |
-| `AGT_CITATION_THRESHOLD_TRENDING` | `5` | Min citations for "trending" filter |
-| `AGT_SUMMARIZATION_MAX_SENTENCES` | `4` | Summary length (3–4 sentences) |
+| Variable                               | Default | Description                                      |
+| -------------------------------------- | ------- | ------------------------------------------------ |
+| `AGT_SEMANTIC_SCHOLAR_LIMIT`           | `10`    | Max results per source per query                 |
+| `AGT_SEARCH_MAX_PAGES`                 | `1`     | Number of result pages to fetch per source (1–5) |
+| `AGT_CITATION_THRESHOLD_MOST_CITED`    | `10`    | Min citations for "most cited" filter            |
+| `AGT_CITATION_THRESHOLD_GAME_CHANGERS` | `20`    | Min citations for "game changers" filter         |
+| `AGT_CITATION_THRESHOLD_TRENDING`      | `5`     | Min citations for "trending" filter              |
+| `AGT_SUMMARIZATION_MAX_SENTENCES`      | `4`     | Summary length (3–4 sentences)                   |
 
 ### Per-Environment Overrides
 
@@ -492,6 +501,7 @@ For personal libraries, your library ID is your Zotero user ID (visible at `http
 ### Rate Limit Errors
 
 If you see `RateLimitExceededError`, the system has hit the configured per-source rate limit. Options:
+
 - Wait a moment and retry
 - Increase the relevant `*_RATE_LIMIT_PER_MINUTE` variable
 - Add API keys for rate-limited services (e.g. `AGT_SEMANTIC_SCHOLAR_API_KEY`)
@@ -506,7 +516,6 @@ If you see `RateLimitExceededError`, the system has hit the configured per-sourc
 # Python backend
 uv run ruff check .
 uv run ruff format --check .
-uv run pyright
 uv run pyright
 uv run pytest -q --vcr-record=none
 ```
@@ -525,6 +534,7 @@ cd ..
 ```bash
 # Docs and agent instructions
 npx --yes markdownlint-cli2 "README.md" "docs/**/*.md" "examples/**/*.md" ".github/**/*.md" "zotero-addon/README.md"
+uv run mkdocs build --strict
 ```
 
 `pre-commit` stays intentionally lightweight and Python-only.
