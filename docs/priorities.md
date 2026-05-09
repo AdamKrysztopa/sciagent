@@ -8,7 +8,7 @@
 
 ## Scope
 
-This file converts the reviewer recommendations in [docs/reviewer/sciagent-review-fixes.md](docs/reviewer/sciagent-review-fixes.md) and [docs/reviewer/sciagent-review-improvements.md](docs/reviewer/sciagent-review-improvements.md) into an implementation order that preserves the dependency chain from [docs/core.md](docs/core.md).
+This file converts the reviewer recommendations in `docs/reviewer/sciagent-review-fixes.md` and `docs/reviewer/sciagent-review-improvements.md` into an implementation order that preserves the dependency chain from [core.md](core.md).
 
 Recommended interpretation for ambiguous items:
 
@@ -21,42 +21,42 @@ Recommended interpretation for ambiguous items:
 
 ## Priority Order
 
-| Lane | Story | Work Slice | Why Now | Canonical Backlog | Reviewer Source |
-| ---- | ----- | ---------- | ------- | ----------------- | --------------- |
-| P0 | AGT-28 | Search plan model, deterministic filter extraction, filter pushdown/post-filter enforcement | Prevents LLM semantic search from ignoring hard constraints such as `year >= 2024` | [docs/next-steps.md](docs/next-steps.md) | User discovery-quality request |
-| P0 | AGT-29 | Keyless-first retrieval quality benchmark against standalone LLM/web-search baseline | Ensures SciAgent is not worse than asking a standalone LLM with web search | [docs/next-steps.md](docs/next-steps.md) | User discovery-quality request |
-| P0 | ZAP-4A | Filter review/edit contract for app and Zotero add-on | Users need visible filters and toggles, not only a chat box | [docs/zotero.md](docs/zotero.md) | User discovery-quality request |
-| P0 | AGT-20 | Truthful terminal write-failure status, typed failure handling, failure-path tests | Current workflow can report success-like completion for failed writes | [docs/next-steps.md](docs/next-steps.md#L28) | [docs/reviewer/sciagent-review-fixes.md](docs/reviewer/sciagent-review-fixes.md) |
-| P0 | AGT-21 | Security checklist, non-anonymous auth defaults, delegated-auth direction | Current backend defaults are still local-safe rather than production-safe | [docs/next-steps.md](docs/next-steps.md#L40) | [docs/reviewer/sciagent-review-fixes.md](docs/reviewer/sciagent-review-fixes.md) |
-| P0 | AGT-24 | Durable distributed checkpointing and replay-safe resume behavior | Process-local state blocks restart safety and multi-instance deployment | [docs/next-steps.md](docs/next-steps.md#L87) | [docs/reviewer/sciagent-review-fixes.md](docs/reviewer/sciagent-review-fixes.md) |
-| P0 | ZAP-0, ZAP-1 | Add-on skeleton and hot-reload dev environment | Plugin work can start once backend contract is pinned | [docs/next-steps.md](docs/next-steps.md#L199) | [docs/zotero.md](docs/zotero.md#L13) |
-| P1 | AGT-22 | OpenAI and Anthropic adapters, startup validation, provider contract tests | Provider abstraction exists; usefulness is capped by missing adapters | [docs/next-steps.md](docs/next-steps.md#L53) | [docs/reviewer/sciagent-review-improvements.md](docs/reviewer/sciagent-review-improvements.md) |
-| P1 | AGT-23 | Retrieval protocol/registry extraction and `search_papers.py` stage split | Main retrieval orchestrator is the highest maintenance hotspot | [docs/next-steps.md](docs/next-steps.md#L72) | [docs/reviewer/sciagent-review-improvements.md](docs/reviewer/sciagent-review-improvements.md) |
-| P1 | AGT-20 | Coverage, replay, contract, and resilience checks in CI | The next gain is stronger guarantees, not more surface area | [docs/next-steps.md](docs/next-steps.md#L28) | [docs/reviewer/sciagent-review-improvements.md](docs/reviewer/sciagent-review-improvements.md) |
-| P1 | ZAP-2, ZAP-3, ZAP-4, ZAP-5 | Add-on backend connection layer and approval UI | Backend APIs are sufficient for sidebar UX work | [docs/next-steps.md](docs/next-steps.md#L151) | [docs/zotero.md](docs/zotero.md#L42) |
-| P1 | AGT-13 | PDF attachment pipeline | Blocks ZAP-8 and keeps write-path feature scope incomplete | [docs/next-steps.md](docs/next-steps.md#L120) | [docs/core.md](docs/core.md#L168) |
-| P1 | AGT-25 | Async task queue | Needed after durable checkpointing for long-running production workloads | [docs/next-steps.md](docs/next-steps.md#L101) | [docs/reviewer/sciagent-review-improvements.md](docs/reviewer/sciagent-review-improvements.md#L111) |
-| P2 | ZAP-6, ZAP-7, ZAP-8 | Native Zotero writes | Requires a settled write-path decision and AGT-13 for PDF completeness | [docs/next-steps.md](docs/next-steps.md#L181) | [docs/next-steps.md](docs/next-steps.md#L175) |
-| P2 | ZAP-9, ZAP-10, ZAP-11 | Preferences, fallback UX, release packaging | Release polish should follow backend hardening and plugin UX completion | [docs/next-steps.md](docs/next-steps.md#L188) | [docs/zotero.md](docs/zotero.md#L127) |
-| P2 | AGT-26 | Production deployment split, container hardening, IaC | Reviewer deployment concerns fit best here, after queue and checkpoint work land | [docs/next-steps.md](docs/next-steps.md#L111) | [docs/reviewer/sciagent-review-improvements.md](docs/reviewer/sciagent-review-improvements.md) |
+| Lane | Story                      | Work Slice                                                                                  | Why Now                                                                            | Canonical Backlog              | Reviewer Source                                 |
+| ---- | -------------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------ | ----------------------------------------------- |
+| P0   | AGT-28                     | Search plan model, deterministic filter extraction, filter pushdown/post-filter enforcement | Prevents LLM semantic search from ignoring hard constraints such as `year >= 2024` | [next-steps.md](next-steps.md) | User discovery-quality request                  |
+| P0   | AGT-29                     | Keyless-first retrieval quality benchmark against standalone LLM/web-search baseline        | Ensures SciAgent is not worse than asking a standalone LLM with web search         | [next-steps.md](next-steps.md) | User discovery-quality request                  |
+| P0   | ZAP-4A                     | Filter review/edit contract for app and Zotero add-on                                       | Users need visible filters and toggles, not only a chat box                        | [zotero.md](zotero.md)         | User discovery-quality request                  |
+| P0   | AGT-20                     | Truthful terminal write-failure status, typed failure handling, failure-path tests          | Current workflow can report success-like completion for failed writes              | [next-steps.md](next-steps.md) | `docs/reviewer/sciagent-review-fixes.md`        |
+| P0   | AGT-21                     | Security checklist, non-anonymous auth defaults, delegated-auth direction                   | Current backend defaults are still local-safe rather than production-safe          | [next-steps.md](next-steps.md) | `docs/reviewer/sciagent-review-fixes.md`        |
+| P0   | AGT-24                     | Durable distributed checkpointing and replay-safe resume behavior                           | Process-local state blocks restart safety and multi-instance deployment            | [next-steps.md](next-steps.md) | `docs/reviewer/sciagent-review-fixes.md`        |
+| P0   | ZAP-0, ZAP-1               | Add-on skeleton and hot-reload dev environment                                              | Plugin work can start once backend contract is pinned                              | [next-steps.md](next-steps.md) | [zotero.md](zotero.md)                          |
+| P1   | AGT-22                     | OpenAI and Anthropic adapters, startup validation, provider contract tests                  | Provider abstraction exists; usefulness is capped by missing adapters              | [next-steps.md](next-steps.md) | `docs/reviewer/sciagent-review-improvements.md` |
+| P1   | AGT-23                     | Retrieval protocol/registry extraction and `search_papers.py` stage split                   | Main retrieval orchestrator is the highest maintenance hotspot                     | [next-steps.md](next-steps.md) | `docs/reviewer/sciagent-review-improvements.md` |
+| P1   | AGT-20                     | Coverage, replay, contract, and resilience checks in CI                                     | The next gain is stronger guarantees, not more surface area                        | [next-steps.md](next-steps.md) | `docs/reviewer/sciagent-review-improvements.md` |
+| P1   | ZAP-2, ZAP-3, ZAP-4, ZAP-5 | Add-on backend connection layer and approval UI                                             | Backend APIs are sufficient for sidebar UX work                                    | [next-steps.md](next-steps.md) | [zotero.md](zotero.md)                          |
+| P1   | AGT-13                     | PDF attachment pipeline                                                                     | Blocks ZAP-8 and keeps write-path feature scope incomplete                         | [next-steps.md](next-steps.md) | [core.md](core.md)                              |
+| P1   | AGT-25                     | Async task queue                                                                            | Needed after durable checkpointing for long-running production workloads           | [next-steps.md](next-steps.md) | `docs/reviewer/sciagent-review-improvements.md` |
+| P2   | ZAP-6, ZAP-7, ZAP-8        | Native Zotero writes                                                                        | Requires a settled write-path decision and AGT-13 for PDF completeness             | [next-steps.md](next-steps.md) | [next-steps.md](next-steps.md)                  |
+| P2   | ZAP-9, ZAP-10, ZAP-11      | Preferences, fallback UX, release packaging                                                 | Release polish should follow backend hardening and plugin UX completion            | [next-steps.md](next-steps.md) | [zotero.md](zotero.md)                          |
+| P2   | AGT-26                     | Production deployment split, container hardening, IaC                                       | Reviewer deployment concerns fit best here, after queue and checkpoint work land   | [next-steps.md](next-steps.md) | `docs/reviewer/sciagent-review-improvements.md` |
 
 ## Reviewer Mapping
 
-| Reviewer Item | Recommended Story Mapping | Status in Backlog | Notes |
-| ------------- | ------------------------- | ----------------- | ----- |
-| Durable checkpoint store | AGT-24 | Explicit | Root production blocker |
-| Truthful write-failure terminal state | AGT-20 | Explicit | Needed before broader use |
-| Broad exception swallowing in retrieval/write flow | AGT-20 | Explicit | Tighten failure categories while preserving user-facing fallbacks |
-| Auth defaults and owner isolation hardening | AGT-21 | Explicit | Current anonymous fallback should become local-dev-only |
-| CI support claim vs Python 3.13 reality | AGT-20 | Explicit | Either add a 3.13 matrix or narrow README claim |
-| Unsupported provider fails too late | AGT-22 | Explicit | Add startup/preflight validation |
-| Temporary in-process concurrency guard | AGT-24 | Explicit | Interim only, not a substitute for persistence |
-| Retrieval provider protocol and registry | AGT-23 | Explicit | Already called out in backlog |
-| Split `search_papers.py` into stages | AGT-23 | Explicit | Added as part of registry extraction |
-| Multi-provider completion | AGT-22 | Explicit | OpenAI/Anthropic first, Groq optional |
-| Coverage, contract, resilience gates | AGT-20 plus AGT-22/23/24 | Explicit | CI additions should follow the canonical story boundary |
-| Separate local-dev from production deployment | AGT-26 | Explicit | Treat as infra/deploy concern, not a reopened AGT-18 |
-| Search/result caching | AGT-23 | Deferred | Alternative: split later into a dedicated performance story if scope grows |
+| Reviewer Item                                      | Recommended Story Mapping | Status in Backlog | Notes                                                                      |
+| -------------------------------------------------- | ------------------------- | ----------------- | -------------------------------------------------------------------------- |
+| Durable checkpoint store                           | AGT-24                    | Explicit          | Root production blocker                                                    |
+| Truthful write-failure terminal state              | AGT-20                    | Explicit          | Needed before broader use                                                  |
+| Broad exception swallowing in retrieval/write flow | AGT-20                    | Explicit          | Tighten failure categories while preserving user-facing fallbacks          |
+| Auth defaults and owner isolation hardening        | AGT-21                    | Explicit          | Current anonymous fallback should become local-dev-only                    |
+| CI support claim vs Python 3.13 reality            | AGT-20                    | Explicit          | Either add a 3.13 matrix or narrow README claim                            |
+| Unsupported provider fails too late                | AGT-22                    | Explicit          | Add startup/preflight validation                                           |
+| Temporary in-process concurrency guard             | AGT-24                    | Explicit          | Interim only, not a substitute for persistence                             |
+| Retrieval provider protocol and registry           | AGT-23                    | Explicit          | Already called out in backlog                                              |
+| Split `search_papers.py` into stages               | AGT-23                    | Explicit          | Added as part of registry extraction                                       |
+| Multi-provider completion                          | AGT-22                    | Explicit          | OpenAI/Anthropic first, Groq optional                                      |
+| Coverage, contract, resilience gates               | AGT-20 plus AGT-22/23/24  | Explicit          | CI additions should follow the canonical story boundary                    |
+| Separate local-dev from production deployment      | AGT-26                    | Explicit          | Treat as infra/deploy concern, not a reopened AGT-18                       |
+| Search/result caching                              | AGT-23                    | Deferred          | Alternative: split later into a dedicated performance story if scope grows |
 
 ## Implementation Steps
 
@@ -85,5 +85,5 @@ Recommended interpretation for ambiguous items:
 - Search quality can look good if optional keyed sources are enabled, while the default product remains weak; AGT-29 must report keyless baseline and keyed enrichment separately.
 - LLM query rewriting can improve recall but must never be the source of truth for hard filters; AGT-28 must preserve an auditable deterministic filter model.
 - The backend caching recommendation is intentionally folded into AGT-23 for now; if it expands beyond retrieval-result caching, create a dedicated performance story instead of overloading AGT-23.
-- Native Zotero writes remain an architecture decision, not just an implementation task; see [docs/next-steps.md](docs/next-steps.md#L178).
+- Native Zotero writes remain an architecture decision, not just an implementation task; see [next-steps.md](next-steps.md).
 - The README/CI Python-version mismatch is still unresolved implementation work, not just a documentation nit.
