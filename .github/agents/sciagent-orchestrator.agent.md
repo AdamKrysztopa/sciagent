@@ -61,14 +61,14 @@ Zotero integration
 
 Quality gate
   python-backend-engineer: Python lint, format, type-check, and focused/full pytest as appropriate
-  zotero-frontend:         add-on build, typecheck, and tests when `zotero-addon/` or add-on tooling changes
+  zotero-frontend:         add-on lint, build, typecheck, and tests when `zotero-addon/` or add-on tooling changes
   settings-bootstrap:      docs markdownlint and CI / quality tooling validation when docs or pipeline config change
 ```
 
 ## Stage Gate — confirm before advancing
 
 - [ ] Python gate passes: `uv run ruff check .`, `uv run ty check` (or `uv run pyright`), `uv run pytest -q -ra`
-- [ ] Zotero add-on gate passes when add-on files or tooling changed: `cd zotero-addon && npm ci && npm run build && npm run typecheck && npm run test`
+- [ ] Zotero add-on gate passes when add-on files or tooling changed: `cd zotero-addon && npm ci && npm run lint && npm run build && npm run typecheck && npm run test`
 - [ ] Docs gate passes when Markdown or agent/instruction docs changed: `npx --yes markdownlint-cli2 "README.md" "docs/**/*.md" "examples/**/*.md" ".github/**/*.md" "zotero-addon/README.md"`
 - [ ] All stage outputs exist and are non-empty
 - [ ] Any identified risks are either resolved or explicitly accepted with a rationale

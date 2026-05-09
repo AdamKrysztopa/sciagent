@@ -1,0 +1,38 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.3.11/schema.json",
+  "files": {
+    "includes": [
+      "bootstrap.js",
+      "prefs.js",
+      "scripts/**/*.mjs",
+      "src/**/*.ts",
+      "src/**/*.tsx",
+      "vitest.config.ts"
+    ],
+    "ignoreUnknown": true
+  },
+  "formatter": {
+    "enabled": false
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true
+    }
+  },
+  "javascript": {
+    "globals": ["pref", "Services", "Zotero"]
+  },
+  "overrides": [
+    {
+      "includes": ["bootstrap.js"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedVariables": "off"
+          }
+        }
+      }
+    }
+  ]
+}

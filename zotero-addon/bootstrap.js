@@ -6,7 +6,7 @@ function resolveRootURI(data) {
   if (data.rootURI) {
     return data.rootURI;
   }
-  if (data.resourceURI && data.resourceURI.spec) {
+  if (data.resourceURI?.spec) {
     return data.resourceURI.spec;
   }
   throw new Error("SciAgent bootstrap data did not contain a rootURI");
@@ -19,7 +19,7 @@ function getRuntime(data) {
 
   var runtimeScope = {};
   var rootURI = resolveRootURI(data);
-  Services.scriptloader.loadSubScript(rootURI + "chrome/content/bootstrap-runtime.js", runtimeScope);
+  Services.scriptloader.loadSubScript(`${rootURI}chrome/content/bootstrap-runtime.js`, runtimeScope);
   sciAgentRuntime = runtimeScope.SciAgentBootstrapRuntime;
   if (!sciAgentRuntime) {
     throw new Error("SciAgent bootstrap runtime failed to initialize");

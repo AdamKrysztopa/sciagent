@@ -232,6 +232,7 @@
   - No global `last_search_results` style state.
   - Concurrent sessions cannot cross-contaminate (thread_id isolation).
   - Full state serializable and checkpoint-safe, including:
+
     ```python
     class AgentState(TypedDict):
         messages: Annotated[list, add_messages]

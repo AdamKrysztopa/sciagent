@@ -62,6 +62,9 @@ jobs:
       - name: Install add-on dependencies
         run: npm ci
 
+      - name: Lint add-on
+        run: npm run lint
+
       - name: Build add-on
         run: npm run build
 

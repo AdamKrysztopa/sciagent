@@ -48,13 +48,14 @@ cp .env.example .env
 uv run pre-commit install
 ```
 
-### Optional: build the Zotero add-on package
+### Optional: validate and build the Zotero add-on package
 
 The repository now includes a top-level Zotero 7 add-on scaffold in `zotero-addon/`.
 
 ```bash
 cd zotero-addon
 npm ci
+npm run lint
 npm run build
 ```
 
@@ -514,6 +515,7 @@ uv run pytest -q --vcr-record=none
 # Zotero add-on
 cd zotero-addon
 npm ci
+npm run lint
 npm run build
 npm run typecheck
 npm run test

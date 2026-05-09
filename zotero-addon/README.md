@@ -10,11 +10,12 @@ This package contains the SciAgent M6 native Zotero 7 add-on scaffold and MVP UI
 - All writes remain server-side through `POST /resume`
 - Filter edits are sent through the existing backend `FilterEditContract`
 
-## Build
+## Build And Validate
 
 ```bash
 cd zotero-addon
 npm ci
+npm run lint
 npm run build
 ```
 

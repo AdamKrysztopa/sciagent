@@ -36,6 +36,7 @@ uv run pytest -q --vcr-record=none
 # Zotero add-on
 cd zotero-addon
 npm ci
+npm run lint
 npm run build
 npm run typecheck
 npm run test
@@ -50,7 +51,7 @@ npx --yes markdownlint-cli2 "README.md" "docs/**/*.md" "examples/**/*.md" ".gith
 GitHub Actions runs three quality jobs:
 
 - Python quality on 3.13 and 3.14: `ruff check .`, `ruff format --check .`, `pyright`, `pytest -q --vcr-record=none`
-- Zotero add-on quality in `zotero-addon/`: `npm ci`, `npm run build`, `npm run typecheck`, `npm run test`
+- Zotero add-on quality in `zotero-addon/`: `npm ci`, `npm run lint`, `npm run build`, `npm run typecheck`, `npm run test`
 - Docs quality: `markdownlint-cli2` over repo-authored Markdown using the root config
 
 Local `pre-commit` remains intentionally lightweight and Python-only.

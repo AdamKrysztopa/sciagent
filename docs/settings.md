@@ -3,7 +3,7 @@
 **Target:** Zero-to-MVP in <30 minutes for a solo dev or small team.
 **Python requirement:** `>= 3.13` (recommended: **3.14** – released Oct 2025, fully stable in March 2026).
 **Package manager:** `uv` (Astral) – 10–20× faster than pip/poetry.
-**Quality tooling:** Python uses `ruff` + `pyright`; the Zotero add-on uses its real `npm` build/typecheck/test scripts; docs and agent instructions use `markdownlint-cli2`.
+**Quality tooling:** Python uses `ruff` + `pyright`; the Zotero add-on uses its real `npm` lint/build/typecheck/test scripts; docs and agent instructions use `markdownlint-cli2`.
 
 This document is **copy-paste ready**. Follow the steps in order and you will have a clean, production-grade repo with the exact stack from the AGT epics.
 
@@ -24,7 +24,7 @@ This document is **copy-paste ready**. Follow the steps in order and you will ha
 | **Lint / Format**      | `ruff`                                      | latest                    | One tool for formatting + linting (replaces black/flake8/isort) |
 | **Type Checking**      | `pyright`                                   | latest                    | Fastest “ty” checker – works perfectly with ruff |
 | **Testing**            | `pytest` + `responses` + `vcrpy`            | latest                    | E2E + mocked external calls |
-| **Add-on QA**          | `npm` scripts in `zotero-addon/`            | Node `>=20`               | Real package validation via `build`, `typecheck`, and `test` |
+| **Add-on QA**          | `npm` scripts in `zotero-addon/`            | Node `>=20`               | Real package validation via `lint`, `build`, `typecheck`, and `test` |
 | **Docs QA**            | `markdownlint-cli2`                         | `npx`                     | Pragmatic Markdown linting for docs and agent instructions |
 | **Pre-commit**         | `pre-commit`                                | latest                    | Fast local hooks for Python; add-on and docs gates stay explicit/CI-driven |
 | **Extras**             | `tenacity`, `python-dotenv`, `redis` (later) | latest                 | Rate guards, checkpoints |
@@ -90,6 +90,7 @@ agt-zotero-agent/
 ## 4. Essential Config Files (copy-paste)
 
 **`ruff.toml`** (modern 2026 defaults)
+
 ```toml
 target-version = "py314"
 line-length = 100
@@ -102,6 +103,7 @@ preview = true
 ```
 
 **`pyrightconfig.json`**
+
 ```json
 {
   "pythonVersion": "3.14",
@@ -112,6 +114,7 @@ preview = true
 ```
 
 **`.pre-commit-config.yaml`** (keep local hooks fast and Python-only)
+
 ```yaml
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
@@ -126,6 +129,7 @@ repos:
 ```
 
 Install hooks:
+
 ```bash
 uv run pre-commit install
 ```
@@ -148,6 +152,7 @@ Run the Zotero add-on gate against the real package in `zotero-addon/`:
 ```bash
 cd zotero-addon
 npm ci
+npm run lint
 npm run build
 npm run typecheck
 npm run test
@@ -225,7 +230,7 @@ You now have:
 - Secrets must never appear in logs; all structured and plain logs are redacted.
 - CI and local execution should use the same explicit repo gates:
   - Python backend: `uv run ruff check .`, `uv run ruff format --check .`, `uv run pyright`, `uv run pytest -q --vcr-record=none`
-  - Zotero add-on: `cd zotero-addon && npm ci && npm run build && npm run typecheck && npm run test`
+  - Zotero add-on: `cd zotero-addon && npm ci && npm run lint && npm run build && npm run typecheck && npm run test`
   - Docs and agent instructions: `npx --yes markdownlint-cli2 "README.md" "docs/**/*.md" "examples/**/*.md" ".github/**/*.md" "zotero-addon/README.md"`
 - `pre-commit` remains a fast local subset of the Python gate rather than the full repo gate.
 

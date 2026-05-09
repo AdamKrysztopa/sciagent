@@ -20,7 +20,7 @@ Repo quality contract:
 
 1. Treat quality as repo-wide, not Python-only.
 2. Python changes must keep `uv run ruff check .`, `uv run ruff format --check .`, `uv run pyright`, and `uv run pytest -q --vcr-record=none` green.
-3. Zotero add-on changes must keep `npm run build`, `npm run typecheck`, and `npm run test` green in `zotero-addon/`.
+3. Zotero add-on changes must keep `npm run lint`, `npm run build`, `npm run typecheck`, and `npm run test` green in `zotero-addon/`.
 4. Markdown docs and agent/instruction changes must keep the repo markdownlint gate green via `npx --yes markdownlint-cli2 "README.md" "docs/**/*.md" "examples/**/*.md" ".github/**/*.md" "zotero-addon/README.md"`.
 5. Keep local `pre-commit` practical; do not add heavyweight Node build/test hooks there unless the user explicitly asks for that tradeoff.
 

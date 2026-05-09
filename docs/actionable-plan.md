@@ -179,6 +179,7 @@ Root cause: keyword extraction polluted API queries with constraint words (e.g. 
 - [x] CI gates re-validated: `ruff` 0 errors, `pyright` 0 errors, `pytest` 34/34 pass.
 
 **Validation results** (7 queries tested):
+
 | Query | Results | Quality |
 |-------|---------|---------|
 | most cited 2020+ timeseries | 5 | Anomaly detection, XAI survey, conditional GAN, outlier detection, Pyleoclim |
