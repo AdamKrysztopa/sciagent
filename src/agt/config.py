@@ -168,7 +168,7 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("AGT_SUMMARIZATION_USE_LLM", "SUMMARIZATION_USE_LLM"),
     )
     semantic_scholar_rate_limit_per_minute: int = Field(
-        default=100,
+        default=55,
         ge=1,
         validation_alias=AliasChoices(
             "AGT_SEMANTIC_SCHOLAR_RATE_LIMIT_PER_MINUTE", "SEMANTIC_SCHOLAR_RATE_LIMIT_PER_MINUTE"

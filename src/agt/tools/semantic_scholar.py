@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import asyncio
 import re
+import time
 from typing import Any, cast
 
 import httpx
@@ -46,6 +48,9 @@ class SemanticScholarClient:
         "score,citationCount,influentialCitationCount"
     )
 
+    # Semantic Scholar free-tier: 1 request/second.  Keeping some margin.
+    _MIN_REQUEST_INTERVAL: float = 1.1
+
     def __init__(
         self,
         *,
@@ -58,6 +63,9 @@ class SemanticScholarClient:
         self._timeout_seconds = timeout_seconds
         self._retries = retries
         self._base_url = base_url.rstrip("/")
+        # Serialize concurrent calls so the free-tier 1 req/sec limit is respected.
+        self._semaphore: asyncio.Semaphore = asyncio.Semaphore(1)
+        self._last_request_at: float = 0.0
 
     async def search(  # noqa: PLR0912
         self,
@@ -140,36 +148,43 @@ class SemanticScholarClient:
         params: dict[str, str],
         headers: dict[str, str],
     ) -> dict[str, Any]:
-        url = f"{self._base_url}{path}"
-        async for attempt in AsyncRetrying(
-            stop=stop_after_attempt(self._retries + 1),
-            wait=wait_exponential(multiplier=1, min=1, max=8),
-            retry=retry_if_exception_type((
-                httpx.TimeoutException,
-                httpx.NetworkError,
-            )),
-            reraise=True,
-        ):
-            with attempt:
-                async with httpx.AsyncClient(timeout=self._timeout_seconds) as client:
-                    response = await client.get(url, params=params, headers=headers)
-                    # Raise immediately on 400 (bad query) without retrying.
-                    if response.status_code == _SS_BAD_REQUEST_STATUS:
-                        raise SemanticScholarResponseError(
-                            f"Semantic Scholar 400 Bad Request for query={params.get('query')!r}"
-                        )
-                    # 429 / 5xx → raise_for_status → HTTPStatusError; tenacity won't
-                    # retry those (only TimeoutException / NetworkError), so they
-                    # surface as failures that the outer catch in _fetch_one_source handles.
-                    response.raise_for_status()
-                    payload = response.json()
-                    if not isinstance(payload, dict):
-                        raise SemanticScholarResponseError(
-                            "Semantic Scholar payload must be a JSON object"
-                        )
-                    return cast(dict[str, Any], payload)
+        async with self._semaphore:
+            # Enforce minimum inter-request gap (free tier: 1 req/sec).
+            elapsed = time.monotonic() - self._last_request_at
+            if elapsed < self._MIN_REQUEST_INTERVAL:
+                await asyncio.sleep(self._MIN_REQUEST_INTERVAL - elapsed)
 
-        raise SemanticScholarResponseError("Semantic Scholar request failed")
+            url = f"{self._base_url}{path}"
+            async for attempt in AsyncRetrying(
+                stop=stop_after_attempt(self._retries + 1),
+                wait=wait_exponential(multiplier=1, min=1, max=8),
+                retry=retry_if_exception_type((
+                    httpx.TimeoutException,
+                    httpx.NetworkError,
+                )),
+                reraise=True,
+            ):
+                with attempt:
+                    async with httpx.AsyncClient(timeout=self._timeout_seconds) as client:
+                        response = await client.get(url, params=params, headers=headers)
+                        # Raise immediately on 400 (bad query) without retrying.
+                        if response.status_code == _SS_BAD_REQUEST_STATUS:
+                            raise SemanticScholarResponseError(
+                                f"Semantic Scholar 400 Bad Request for query={params.get('query')!r}"
+                            )
+                        # 429 / 5xx → raise_for_status → HTTPStatusError; tenacity won't
+                        # retry those (only TimeoutException / NetworkError), so they
+                        # surface as failures that the outer catch in _fetch_one_source handles.
+                        response.raise_for_status()
+                        payload = response.json()
+                        if not isinstance(payload, dict):
+                            raise SemanticScholarResponseError(
+                                "Semantic Scholar payload must be a JSON object"
+                            )
+                        self._last_request_at = time.monotonic()
+                        return cast(dict[str, Any], payload)
+
+            raise SemanticScholarResponseError("Semantic Scholar request failed")
 
     @staticmethod
     def _normalize_item(item: dict[str, Any]) -> NormalizedPaper | None:
