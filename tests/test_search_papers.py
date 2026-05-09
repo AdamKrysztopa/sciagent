@@ -8,7 +8,7 @@ from typing import Any
 import pytest
 
 from agt.config import Settings
-from agt.models import NormalizedPaper
+from agt.models import FilterEditContract, NormalizedPaper
 from agt.tools import search_papers as search_module
 from agt.tools.semantic_scholar import SemanticScholarResponseError
 
@@ -260,7 +260,7 @@ async def test_search_papers_calls_all_parallel_sources(monkeypatch: pytest.Monk
     monkeypatch.setattr(search_module, "BaseSearchClient", _factory("base"))
 
     papers, metadata = await search_module.search_papers(
-        query="test",
+        query="papers",
         settings=settings,
         thread_id="thread-1",
     )
@@ -363,7 +363,7 @@ async def test_fallback_enabled_fills_results_with_provenance(
     monkeypatch.setattr(search_module, "CoreClient", _core_factory)
 
     papers, metadata = await search_module.search_papers(
-        query="test",
+        query="papers",
         settings=settings,
         thread_id="thread-1",
     )
@@ -423,7 +423,7 @@ async def test_fallback_and_primary_duplicates_merge_to_one_row(
     monkeypatch.setattr(search_module, "CoreClient", _core_factory)
 
     papers, _ = await search_module.search_papers(
-        query="test",
+        query="papers",
         settings=settings,
         thread_id="thread-1",
         fallback_mode="force",
@@ -491,7 +491,7 @@ async def test_mixed_primary_fallback_order_and_indices_are_deterministic(
     monkeypatch.setattr(search_module, "CoreClient", _core_factory)
 
     papers, metadata = await search_module.search_papers(
-        query="test",
+        query="papers",
         limit=3,
         settings=settings,
         thread_id="thread-1",
@@ -502,3 +502,453 @@ async def test_mixed_primary_fallback_order_and_indices_are_deterministic(
     assert papers[1].title == "Fallback second paper"
     assert papers[2].title == "Primary older paper"
     assert "core:fallback" in metadata.sources_used
+
+
+# ---------------------------------------------------------------------------
+# AGT-28 — SearchPlan and deterministic filter contract tests
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.anyio
+async def test_search_plan_produced_with_hard_filters(monkeypatch: pytest.MonkeyPatch) -> None:
+    """SearchPlan is built before retrieval and captures hard year filter."""
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "123",
+        "AGT_SUMMARIZATION_USE_LLM": False,
+    })
+    papers = [
+        NormalizedPaper(title="Time series forecasting survey", year=2024, semantic_score=0.5),
+        NormalizedPaper(title="Time series forecasting classic", year=2019, semantic_score=0.9),
+    ]
+
+    monkeypatch.setattr(search_module, "get_guardrails", _fake_get_guardrails)
+    monkeypatch.setattr(search_module, "SemanticScholarClient", _fake_client_factory(papers))
+    monkeypatch.setattr(search_module, "OpenAlexClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "CrossrefClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "PubMedClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+
+    _, metadata = await search_module.search_papers(
+        query="time-series forecasting not older than 2024",
+        settings=settings,
+        thread_id="t1",
+    )
+
+    plan = metadata.search_plan
+    assert plan is not None
+    assert plan.original_query == "time-series forecasting not older than 2024"
+    assert plan.hard_filters.min_year == 2024
+    assert plan.hard_filters.min_year is not None
+
+
+@pytest.mark.anyio
+async def test_hard_year_filter_no_violation_survives_ranking(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """No paper violating a hard min_year filter survives after ranking (AGT-28 AC)."""
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "123",
+        "AGT_SUMMARIZATION_USE_LLM": False,
+    })
+    papers = [
+        NormalizedPaper(title="Machine learning advances 2024", year=2024, semantic_score=0.4),
+        NormalizedPaper(title="Machine learning survey 2025", year=2025, semantic_score=0.6),
+        NormalizedPaper(title="Machine learning classic 2020", year=2020, semantic_score=0.99),
+        NormalizedPaper(title="Machine learning old 2019", year=2019, semantic_score=0.95),
+    ]
+
+    monkeypatch.setattr(search_module, "get_guardrails", _fake_get_guardrails)
+    monkeypatch.setattr(search_module, "SemanticScholarClient", _fake_client_factory(papers))
+    monkeypatch.setattr(search_module, "OpenAlexClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "CrossrefClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "PubMedClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+
+    ranked, metadata = await search_module.search_papers(
+        query="machine learning not older than 2024",
+        settings=settings,
+        thread_id="t2",
+    )
+
+    for paper in ranked:
+        assert paper.year is not None and paper.year >= 2024, (
+            f"Paper '{paper.title}' (year={paper.year}) violated hard min_year=2024"
+        )
+    assert metadata.search_plan is not None
+    assert metadata.search_plan.hard_filters.min_year == 2024
+    assert "year_min" in metadata.search_plan.filters_enforced_post_merge
+
+
+@pytest.mark.anyio
+async def test_hard_exclusion_filter_no_violation_survives(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Papers matching an exclusion keyword must be removed before ranking (AGT-28 AC)."""
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "123",
+        "AGT_SUMMARIZATION_USE_LLM": False,
+    })
+    papers = [
+        NormalizedPaper(
+            title="Transformers for NLP",
+            abstract="attention is all you need deep learning",
+            year=2023,
+            semantic_score=0.8,
+        ),
+        NormalizedPaper(
+            title="CNN image classification not transformers",
+            abstract="convolutional neural network vision detection",
+            year=2023,
+            semantic_score=0.5,
+        ),
+    ]
+
+    monkeypatch.setattr(search_module, "get_guardrails", _fake_get_guardrails)
+    monkeypatch.setattr(search_module, "SemanticScholarClient", _fake_client_factory(papers))
+    monkeypatch.setattr(search_module, "OpenAlexClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "CrossrefClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "PubMedClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+
+    ranked, metadata = await search_module.search_papers(
+        query="deep learning but not transformers",
+        settings=settings,
+        thread_id="t3",
+    )
+
+    for paper in ranked:
+        text = f"{paper.title} {paper.abstract or ''}".lower()
+        assert "transformers" not in text, (
+            f"Paper '{paper.title}' matched exclusion keyword 'transformers'"
+        )
+    assert metadata.search_plan is not None
+    assert "transformers" in metadata.search_plan.hard_filters.exclude_keywords
+
+
+@pytest.mark.anyio
+async def test_search_plan_source_policy_lists_all_primary_sources(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """SearchPlan.source_policy lists all 7 primary sources (AGT-28 AC)."""
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "123",
+        "AGT_SUMMARIZATION_USE_LLM": False,
+    })
+
+    monkeypatch.setattr(search_module, "get_guardrails", _fake_get_guardrails)
+    monkeypatch.setattr(
+        search_module,
+        "SemanticScholarClient",
+        _fake_client_factory([
+            NormalizedPaper(title="Graph neural network survey", year=2025, semantic_score=0.5)
+        ]),
+    )
+    monkeypatch.setattr(search_module, "OpenAlexClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "CrossrefClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "PubMedClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+
+    _, metadata = await search_module.search_papers(
+        query="graph neural networks",
+        settings=settings,
+        thread_id="t4",
+    )
+
+    plan = metadata.search_plan
+    assert plan is not None
+    primary_names = {sc.name for sc in plan.source_policy if sc.tier == "primary"}
+    assert primary_names == {
+        "semantic_scholar",
+        "openalex",
+        "crossref",
+        "pubmed",
+        "europe_pmc",
+        "arxiv",
+        "base",
+    }
+
+
+@pytest.mark.anyio
+async def test_search_plan_year_push_down_recorded_for_semantic_scholar(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """SearchPlan records year_min push-down for semantic_scholar and openalex (AGT-28 AC)."""
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "123",
+        "AGT_SUMMARIZATION_USE_LLM": False,
+    })
+
+    monkeypatch.setattr(search_module, "get_guardrails", _fake_get_guardrails)
+    monkeypatch.setattr(
+        search_module,
+        "SemanticScholarClient",
+        _fake_client_factory([
+            NormalizedPaper(title="Causal inference methods", year=2025, semantic_score=0.5)
+        ]),
+    )
+    monkeypatch.setattr(search_module, "OpenAlexClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "CrossrefClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "PubMedClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+
+    _, metadata = await search_module.search_papers(
+        query="causal inference since 2022",
+        settings=settings,
+        thread_id="t5",
+    )
+
+    plan = metadata.search_plan
+    assert plan is not None
+    assert "year_min" in plan.filters_pushed_down.get("semantic_scholar", [])
+    assert "year_min" in plan.filters_pushed_down.get("openalex", [])
+    assert "year_min" in plan.filters_enforced_post_merge
+
+
+@pytest.mark.anyio
+async def test_search_plan_rewritten_queries_captured(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """SearchPlan.rewritten_queries includes at least the primary retrieval query (AGT-28 AC)."""
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "123",
+        "AGT_SUMMARIZATION_USE_LLM": False,
+    })
+
+    monkeypatch.setattr(search_module, "get_guardrails", _fake_get_guardrails)
+    monkeypatch.setattr(
+        search_module,
+        "SemanticScholarClient",
+        _fake_client_factory([
+            NormalizedPaper(
+                title="Time series forecasting method selection", year=2024, semantic_score=0.6
+            )
+        ]),
+    )
+    monkeypatch.setattr(search_module, "OpenAlexClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "CrossrefClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "PubMedClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+
+    _, metadata = await search_module.search_papers(
+        query="method selection time-series forecasting based on data characteristics not older than 2024",
+        settings=settings,
+        thread_id="t6",
+    )
+
+    plan = metadata.search_plan
+    assert plan is not None
+    assert len(plan.rewritten_queries) >= 1
+    # The topic_query should be non-empty
+    assert plan.topic_query
+
+
+@pytest.mark.anyio
+async def test_search_papers_filters_provider_scored_off_topic_results(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "123",
+        "AGT_SUMMARIZATION_USE_LLM": False,
+    })
+
+    relevant = [
+        NormalizedPaper(
+            title="Feature-based time-series forecasting method selection",
+            abstract="We study automatic model selection for time series forecasting tasks.",
+            year=2025,
+            citation_count=12,
+            open_access=True,
+            semantic_score=18.0,
+        )
+    ]
+    off_topic = [
+        NormalizedPaper(
+            title="Global fertility in 204 countries and territories, 1950-2021, with forecasts to 2100",
+            abstract="Population forecasting trends across world regions.",
+            year=2024,
+            citation_count=545,
+            open_access=True,
+            semantic_score=28.0,
+        )
+    ]
+
+    monkeypatch.setattr(search_module, "get_guardrails", _fake_get_guardrails)
+    monkeypatch.setattr(search_module, "SemanticScholarClient", _fake_client_factory(relevant))
+    monkeypatch.setattr(search_module, "OpenAlexClient", _fake_client_factory(off_topic))
+    monkeypatch.setattr(search_module, "CrossrefClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "PubMedClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+
+    papers, metadata = await search_module.search_papers(
+        query="time-series forecasting method selection based on the tineseries data itself, not older than 2024",
+        settings=settings,
+        thread_id="thread-off-topic",
+    )
+
+    assert [paper.title for paper in papers] == [
+        "Feature-based time-series forecasting method selection"
+    ]
+    assert metadata.search_plan is not None
+    assert "topic_relevance" in metadata.search_plan.filters_enforced_post_merge
+
+
+@pytest.mark.anyio
+async def test_search_papers_reports_progress_stages(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "123",
+        "AGT_SUMMARIZATION_USE_LLM": False,
+    })
+    messages: list[str] = []
+
+    monkeypatch.setattr(search_module, "get_guardrails", _fake_get_guardrails)
+    monkeypatch.setattr(
+        search_module,
+        "SemanticScholarClient",
+        _fake_client_factory([
+            NormalizedPaper(
+                title="Time series forecasting survey",
+                abstract="A survey of time series forecasting methods.",
+                year=2025,
+                semantic_score=0.7,
+            )
+        ]),
+    )
+    monkeypatch.setattr(search_module, "OpenAlexClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "CrossrefClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "PubMedClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+
+    papers, _ = await search_module.search_papers(
+        query="time series forecasting",
+        settings=settings,
+        thread_id="thread-progress",
+        progress=messages.append,
+    )
+
+    assert papers
+    assert messages == [
+        "retrieving primary sources",
+        "enriching citations",
+        "reranking and filtering merged results",
+    ]
+
+
+@pytest.mark.anyio
+async def test_search_papers_applies_filter_edit_to_constraints_and_plan(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "123",
+        "AGT_SUMMARIZATION_USE_LLM": False,
+    })
+
+    papers = [
+        NormalizedPaper(
+            title="Graph neural retrieval methods",
+            abstract="Graph neural networks for document retrieval.",
+            year=2026,
+            semantic_score=0.8,
+        ),
+        NormalizedPaper(
+            title="Graph neural classic methods",
+            abstract="Graph neural networks for older benchmarks.",
+            year=2024,
+            semantic_score=0.7,
+        ),
+    ]
+    captured_queries: list[str] = []
+
+    class _CapturingClient:
+        async def search(
+            self,
+            query: str,
+            *,
+            limit: int,
+            year_min: int | None = None,
+            year_max: int | None = None,
+            max_pages: int = 1,
+            categories: list[str] | None = None,
+        ) -> list[NormalizedPaper]:
+            _ = limit
+            _ = year_min
+            _ = year_max
+            _ = max_pages
+            _ = categories
+            captured_queries.append(query)
+            return papers
+
+    def _capturing_factory(**kwargs: object) -> _CapturingClient:
+        _ = kwargs
+        return _CapturingClient()
+
+    monkeypatch.setattr(search_module, "get_guardrails", _fake_get_guardrails)
+    monkeypatch.setattr(search_module, "SemanticScholarClient", _capturing_factory)
+    monkeypatch.setattr(search_module, "OpenAlexClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "CrossrefClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "PubMedClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+
+    filter_edit = FilterEditContract.model_validate({
+        "original_query": "transformers after 2020",
+        "hard_filters": {
+            "min_year": 2025,
+            "include_keywords": ["graph", "neural"],
+        },
+        "result_limit": 1,
+    })
+
+    ranked, metadata = await search_module.search_papers(
+        query="transformers after 2020",
+        settings=settings,
+        thread_id="thread-filter-edit",
+        filter_edit=filter_edit,
+    )
+
+    assert captured_queries
+    assert captured_queries[0] == "graph neural"
+    assert [paper.title for paper in ranked] == ["Graph neural retrieval methods"]
+    assert len(ranked) == 1
+    plan = metadata.search_plan
+    assert plan is not None
+    assert plan.original_query == "transformers after 2020"
+    assert plan.hard_filters.min_year == 2025
+    assert plan.hard_filters.include_keywords == ["graph", "neural"]
+    assert metadata.total_after_filter == 1

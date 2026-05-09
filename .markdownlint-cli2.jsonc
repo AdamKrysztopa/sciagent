@@ -1,0 +1,19 @@
+{
+  "config": {
+    "default": true,
+
+    // Existing long-form and backlog docs still rely on repeated H1-style
+    // section markers, compact metadata lists under headings, hard-tab-indented
+    // Zotero install steps, long lines, and relaxed heading, code fence
+    // language, and table-alignment conventions.
+    "MD007": false,
+    "MD010": false,
+    "MD013": false,
+    "MD022": false,
+    "MD025": false,
+    "MD032": false,
+    "MD036": false,
+    "MD040": false,
+    "MD060": false
+  }
+}

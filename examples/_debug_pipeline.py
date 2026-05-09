@@ -12,6 +12,7 @@ os.environ.setdefault("AGT_SUMMARIZATION_USE_LLM", "false")
 
 from agt.config import Settings
 from agt.guardrails import configure_guardrails
+from agt.models import NormalizedPaper
 from agt.tools.crossref import CrossrefClient
 from agt.tools.openalex import OpenAlexClient
 from agt.tools.query_constraints import apply_query_constraints, parse_query_constraints
@@ -37,7 +38,7 @@ async def main() -> None:
     print(f"min_year={constraints.year.min_year}, min_cit={constraints.citations.min_citations}")
     print(f"keywords={constraints.keywords.include_keywords}")
 
-    results = []
+    results: list[NormalizedPaper] = []
     oa = OpenAlexClient(timeout_seconds=15, retries=2)
     cr = CrossrefClient(timeout_seconds=15, retries=2)
     try:

@@ -30,8 +30,8 @@ class PreflightResult:
 
 def _get_write_capability(payload: dict[str, Any], library_type: str) -> bool:
     access = payload.get("access", {})
-    library_access = access.get("library", {})
-    section = library_access.get(library_type, {})
+    library = access.get("library", {})
+    section = library.get(library_type, {})
     return bool(section.get("write"))
 
 
@@ -41,12 +41,53 @@ def _library_probe_path(settings: Settings) -> str:
     return f"/users/{settings.zotero_library_id}/collections?limit=1"
 
 
+def _validate_zotero_settings(settings: Settings) -> PreflightResult | None:
+    """Return error PreflightResult if settings are invalid or incomplete, None if valid."""
+    missing = [
+        name
+        for name, val in [
+            ("AGT_ZOTERO_API_KEY", settings.zotero_api_key),
+            ("AGT_ZOTERO_LIBRARY_ID", settings.zotero_library_id),
+        ]
+        if val is None
+    ]
+    if missing:
+        return PreflightResult(
+            ok=False,
+            message=f"Missing required Zotero settings: {', '.join(missing)}",
+            can_read=False,
+            can_write=False,
+            key_valid=False,
+        )
+
+    assert settings.zotero_api_key is not None
+    api_key = settings.zotero_api_key.get_secret_value()
+    try:
+        api_key.encode("ascii")
+    except UnicodeEncodeError:
+        return PreflightResult(
+            ok=False,
+            message="AGT_ZOTERO_API_KEY contains non-ASCII characters — check for lookalike Unicode letters in the key",
+            can_read=False,
+            can_write=False,
+            key_valid=False,
+        )
+    return None
+
+
 def run_zotero_preflight(settings: Settings, client: httpx.Client | None = None) -> PreflightResult:
     """Verify Zotero key validity and target-library read/write capability."""
+    validation_error = _validate_zotero_settings(settings)
+    if validation_error is not None:
+        return validation_error
+
+    assert settings.zotero_api_key is not None
+    assert settings.zotero_library_id is not None
+    api_key = settings.zotero_api_key.get_secret_value()
 
     owns_client = client is None
     api_client = client or httpx.Client(base_url=ZOTERO_API_BASE, timeout=settings.timeout_seconds)
-    headers = {"Zotero-API-Key": settings.zotero_api_key.get_secret_value()}
+    headers = {"Zotero-API-Key": api_key}
 
     try:
         key_resp = api_client.get("/keys/current", headers=headers)

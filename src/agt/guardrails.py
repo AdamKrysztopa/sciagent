@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import threading
 import time
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass, field
@@ -223,7 +223,7 @@ def current_thread_id() -> str:
 
 
 @contextmanager
-def thread_context(thread_id: str) -> Iterator[None]:
+def thread_context(thread_id: str) -> Generator[None]:
     """Set current workflow thread_id for guardrail-aware calls."""
 
     token = _thread_id_context.set(thread_id)

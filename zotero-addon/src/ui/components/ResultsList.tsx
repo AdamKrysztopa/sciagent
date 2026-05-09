@@ -1,0 +1,68 @@
+import type { NormalizedPaper } from "../../shared/contracts";
+import { getPaperIndex } from "../../shared/contracts";
+
+interface ResultsListProps {
+  disabled: boolean;
+  onToggle(index: number): void;
+  papers: NormalizedPaper[];
+  selectedIndices: number[];
+}
+
+export function ResultsList({ disabled, onToggle, papers, selectedIndices }: ResultsListProps) {
+  if (papers.length === 0) {
+    return (
+      <section className="agt-card agt-card--soft">
+        <div className="agt-section-heading">
+          <h2>Results</h2>
+        </div>
+        <p className="agt-empty-state">No candidate list loaded yet.</p>
+      </section>
+    );
+  }
+
+  const selected = new Set(selectedIndices);
+
+  return (
+    <section className="agt-card">
+      <div className="agt-section-heading">
+        <h2>Results</h2>
+        <span className="agt-pill agt-pill--muted">{papers.length} papers</span>
+      </div>
+      <div className="agt-result-list">
+        {papers.map((paper, fallbackIndex) => {
+          const paperIndex = getPaperIndex(paper, fallbackIndex);
+          return (
+            <article className="agt-result-card" key={paperIndex}>
+              <div className="agt-result-header">
+                <label className="agt-checkbox-row">
+                  <input
+                    checked={selected.has(paperIndex)}
+                    disabled={disabled}
+                    onChange={() => onToggle(paperIndex)}
+                    type="checkbox"
+                  />
+                  <span className="agt-result-title">
+                    {paperIndex}. {paper.title}
+                  </span>
+                </label>
+                <span className="agt-pill agt-pill--muted">{paper.source}</span>
+              </div>
+              <div className="agt-result-meta">
+                <span>Year: {paper.year ?? "n/a"}</span>
+                <span>Citations: {paper.citation_count}</span>
+                <span>Score: {paper.score.toFixed(2)}</span>
+                <span>Open access: {paper.open_access ? "yes" : "no"}</span>
+              </div>
+              {paper.summary !== null ? <p className="agt-result-summary">{paper.summary}</p> : null}
+              {paper.url !== null ? (
+                <a href={paper.url} rel="noreferrer" target="_blank">
+                  Open paper
+                </a>
+              ) : null}
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}

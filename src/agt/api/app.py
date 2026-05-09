@@ -6,18 +6,32 @@ from dataclasses import dataclass
 from typing import Any, Literal, cast
 
 from fastapi import Depends, FastAPI, Header, HTTPException, status
-from pydantic import BaseModel, Field
+from fastapi.responses import RedirectResponse
+from pydantic import BaseModel, Field, model_validator
 
 from agt.config import Settings, get_settings
 from agt.graph.workflow import resume_workflow, run_search_phase
-from agt.models import AgentState
+from agt.models import AgentState, FilterEditContract
 from agt.zotero.preflight import run_zotero_preflight
+
+# Backend contract version exposed via /health for client compatibility checks.
+# Format: YYYY-MM for stable monthly revision windows.
+API_CONTRACT_VERSION = "2026-05"
 
 
 class RunRequest(BaseModel):
     query: str = Field(min_length=1)
-    collection_name: str = Field(min_length=1)
+    collection_name: str | None = Field(default=None, min_length=1)
     thread_id: str | None = None
+    filter_edit: FilterEditContract | None = None
+
+    @model_validator(mode="after")
+    def validate_filter_edit_query(self) -> RunRequest:
+        if self.filter_edit is None:
+            return self
+        if self.filter_edit.original_query.strip() != self.query.strip():
+            raise ValueError("filter_edit.original_query must match query")
+        return self
 
 
 class ResumeRequest(BaseModel):
@@ -90,6 +104,10 @@ def create_app() -> FastAPI:
     app = FastAPI(title="SciAgent API", version="0.1.0")
     store = _RunStore()
 
+    @app.get("/", include_in_schema=False)
+    async def _root() -> RedirectResponse:  # pyright: ignore[reportUnusedFunction]
+        return RedirectResponse(url="/docs")
+
     @app.get("/health")
     async def _health(  # pyright: ignore[reportUnusedFunction]
         _: None = Depends(_require_backend_key),
@@ -102,6 +120,7 @@ def create_app() -> FastAPI:
             "preflight": preflight.to_dict(),
             "provider": settings.llm_provider,
             "fallback_provider": settings.llm_fallback_provider,
+            "api_contract_version": API_CONTRACT_VERSION,
         }
 
     @app.post("/run", response_model=RunAcceptedResponse)
@@ -111,13 +130,23 @@ def create_app() -> FastAPI:
         settings: Settings = Depends(get_settings),
         client_id: str = Depends(_client_id_header),
     ) -> RunAcceptedResponse:
+        collection_name = payload.collection_name or settings.zotero_collection_name
         try:
-            state = await run_search_phase(
-                query=payload.query,
-                collection_name=payload.collection_name,
-                thread_id=payload.thread_id,
-                settings=settings,
-            )
+            if payload.filter_edit is None:
+                state = await run_search_phase(
+                    query=payload.query,
+                    collection_name=collection_name,
+                    thread_id=payload.thread_id,
+                    settings=settings,
+                )
+            else:
+                state = await run_search_phase(
+                    query=payload.query,
+                    collection_name=collection_name,
+                    thread_id=payload.thread_id,
+                    settings=settings,
+                    filter_edit=payload.filter_edit,
+                )
         except RuntimeError as exc:
             run_id = payload.thread_id or "pending-run"
             store.put(

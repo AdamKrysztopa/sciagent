@@ -57,6 +57,7 @@ def test_settings_accept_plain_aliases(monkeypatch: pytest.MonkeyPatch) -> None:
         "ZOTERO_API_KEY": "zot-secret",
         "ZOTERO_LIBRARY_ID": "12345",
     })
+    assert settings.xai_api_key is not None
     assert settings.xai_api_key.get_secret_value() == "xai-secret"
     assert settings.zotero_library_id == "12345"
 
@@ -117,13 +118,13 @@ def test_get_settings_fails_fast_with_actionable_error(
 ) -> None:
     get_settings.cache_clear()
     _clear_required_env(monkeypatch)
+    monkeypatch.setenv("AGT_TIMEOUT_SECONDS", "999")
 
     with pytest.raises(RuntimeError) as exc:
         get_settings()
 
     text = str(exc.value)
-    assert "Missing required settings" in text
-    assert "AGT_ZOTERO_API_KEY" in text or "ZOTERO_API_KEY" in text
+    assert "timeout_seconds" in text.lower() or "less than or equal" in text.lower()
 
 
 def test_settings_provider_routing_policy_aliases(monkeypatch: pytest.MonkeyPatch) -> None:

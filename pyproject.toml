@@ -36,6 +36,8 @@ rerank = [
 
 [dependency-groups]
 dev = [
+  "mkdocs>=1.6.0",
+  "mkdocs-material>=9.5.0",
   "pre-commit",
   "pyright",
   "pytest",

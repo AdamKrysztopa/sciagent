@@ -5,6 +5,8 @@ from __future__ import annotations
 from agt.config import Settings
 from agt.models import NormalizedPaper
 from agt.tools.query_constraints import (
+    KeywordConstraint,
+    SearchConstraintSpec,
     apply_query_constraints,
     parse_query_constraints,
     strip_constraints,
@@ -19,7 +21,7 @@ _EXPECTED_MIN_YEAR_2024 = 2024
 _EXPECTED_MIN_YEAR_2021 = 2021
 _EXPECTED_MAX_YEAR_2023 = 2023
 _EXPECTED_MIN_CITATIONS_MOST_CITED = 10
-_EXPECTED_FILTER_COUNT = 2
+_EXPECTED_FILTER_COUNT = 1
 
 
 def test_parse_query_constraints_extracts_year_citation_and_flags() -> None:
@@ -41,7 +43,9 @@ def test_parse_year_and_newer_pattern() -> None:
     )
     assert constraints.year.min_year == _EXPECTED_MIN_YEAR_2020
     assert constraints.citations.min_citations >= _EXPECTED_MIN_CITATIONS_MOST_CITED  # "most cited"
-    assert "timeseries" in constraints.keywords.include_keywords
+    # "timeseries" is expanded to "time series" before keyword extraction
+    assert "time" in constraints.keywords.include_keywords
+    assert "series" in constraints.keywords.include_keywords
     # constraint words must not leak into keywords
     assert "cited" not in constraints.keywords.include_keywords
     assert "newer" not in constraints.keywords.include_keywords
@@ -59,6 +63,7 @@ def test_strip_constraints_removes_year_and_limit_phrases() -> None:
     cleaned = strip_constraints("the most cited 2020 and newer timeseries papers - list 5")
     assert "2020" not in cleaned
     assert "list" not in cleaned.lower().split()
+    # "timeseries" is NOT expanded by strip_constraints (expansion is a separate step)
     assert "timeseries" in cleaned.lower()
 
 
@@ -137,14 +142,14 @@ def test_apply_query_constraints_filters_by_year_citations_open_access_and_keywo
         NormalizedPaper(
             title="Graph learning classic",
             abstract="Foundational article",
-            year=2020,
+            year=2020,  # violates min_year 2023 → excluded
             citation_count=200,
             open_access=True,
             semantic_score=0.9,
         ),
         NormalizedPaper(
             title="Vision transformers",
-            abstract="Image model survey",
+            abstract="Image model survey",  # no "graph"/"learning" → topic gate
             year=2024,
             citation_count=30,
             open_access=True,
@@ -155,18 +160,20 @@ def test_apply_query_constraints_filters_by_year_citations_open_access_and_keywo
             abstract="Non OA source",
             year=2025,
             citation_count=30,
-            open_access=False,
+            open_access=False,  # violates open_access → excluded
             semantic_score=0.8,
         ),
     ]
 
     filtered = apply_query_constraints(papers, constraints)
 
-    # Keyword matching is delegated to API-level search; post-filtering
-    # only applies year, citation, and open-access constraints.
+    # After the stricter topic gate:
+    # "Graph learning classic" is dropped by the year filter.
+    # "Graph learning review" is dropped by the OA filter.
+    # "Vision transformers" is dropped because it has no graph/learning topic match.
+    # "Graph learning advances" passes all filters.
     assert len(filtered) == _EXPECTED_FILTER_COUNT
     assert filtered[0].title == "Graph learning advances"
-    assert filtered[1].title == "Vision transformers"
 
 
 def test_apply_query_constraints_filters_excluded_keywords_in_title_and_abstract() -> None:
@@ -210,8 +217,10 @@ def test_apply_query_constraints_filters_excluded_keywords_in_title_and_abstract
 def test_exclude_keywords_matches_diacritics_and_unicode_text() -> None:
     constraints = parse_query_constraints("energy metabolism excluding naïve", default_limit=10)
     papers = [
-        NormalizedPaper(title="A naïve approach", abstract=None),
-        NormalizedPaper(title="Robust approach", abstract="no exclusion keyword"),
+        NormalizedPaper(title="A naïve approach", abstract="Energy metabolism overview"),
+        NormalizedPaper(
+            title="Robust approach", abstract="Energy metabolism without exclusion keyword"
+        ),
     ]
     filtered = apply_query_constraints(papers, constraints)
     assert len(filtered) == 1
@@ -257,3 +266,105 @@ def test_configurable_trending_threshold() -> None:
         settings=settings,
     )
     assert constraints.citations.min_citations == 9
+
+
+def test_topic_gate_blocks_off_topic_highly_cited_paper() -> None:
+    """Post-merge topic gate drops highly cited papers with no topic evidence.
+
+    This prevents highly-cited but unrelated papers (e.g. a Chemistry textbook)
+    from ranking above on-topic papers.
+    """
+    constraints = parse_query_constraints(
+        "time series forecasting methods",
+        default_limit=10,
+    )
+    # include_keywords should contain 'time', 'series', 'forecasting'
+    assert "time" in constraints.keywords.include_keywords
+
+    papers = [
+        NormalizedPaper(
+            title="Inorganic Chemistry: Principles of Structure and Reactivity",
+            abstract="A comprehensive textbook on inorganic chemistry.",
+            year=2024,
+            citation_count=2395,
+            open_access=True,
+            semantic_score=0.0,
+        ),
+        NormalizedPaper(
+            title="Time series forecasting with neural networks",
+            abstract="We propose a deep learning method for forecasting.",
+            year=2024,
+            citation_count=5,
+            open_access=True,
+            semantic_score=0.0,
+        ),
+    ]
+
+    filtered = apply_query_constraints(papers, constraints)
+
+    assert len(filtered) == 1
+    assert filtered[0].title == "Time series forecasting with neural networks"
+
+
+def test_topic_gate_is_lenient_abstract_only_match_passes() -> None:
+    """A paper whose title does not contain the keyword but whose abstract does should pass."""
+    constraints = parse_query_constraints(
+        "time series forecasting",
+        default_limit=10,
+    )
+
+    paper = NormalizedPaper(
+        title="A Deep Learning Approach",
+        abstract="We evaluate time series prediction accuracy across benchmarks.",
+        year=2024,
+        semantic_score=0.0,
+        citation_count=1,
+    )
+
+    filtered = apply_query_constraints([paper], constraints)
+    assert len(filtered) == 1
+
+
+def test_topic_gate_blocks_provider_scored_weak_single_keyword_match() -> None:
+    constraints = parse_query_constraints(
+        "time-series forecasting method selection based on the tineseries data itself",
+        default_limit=10,
+    )
+
+    papers = [
+        NormalizedPaper(
+            title="Global fertility in 204 countries and territories, 1950-2021, with forecasts to 2100",
+            abstract="Population forecasting trends across world regions.",
+            year=2024,
+            citation_count=545,
+            open_access=True,
+            semantic_score=28.0,
+        ),
+        NormalizedPaper(
+            title="Feature-based time-series forecasting method selection",
+            abstract="We study automatic model selection for time series forecasting tasks.",
+            year=2025,
+            citation_count=12,
+            open_access=True,
+            semantic_score=18.0,
+        ),
+    ]
+
+    filtered = apply_query_constraints(papers, constraints)
+
+    assert len(filtered) == 1
+    assert filtered[0].title == "Feature-based time-series forecasting method selection"
+
+
+def test_topic_gate_inactive_when_no_include_keywords() -> None:
+    """When the query has no parseable include keywords, the gate must not block any paper."""
+    constraints = SearchConstraintSpec(
+        raw_query="papers",
+        result_limit=10,
+        keywords=KeywordConstraint(include_keywords=[], exclude_keywords=[]),
+    )
+    papers = [
+        NormalizedPaper(title="Completely unrelated paper", year=2024, semantic_score=0.0),
+    ]
+    filtered = apply_query_constraints(papers, constraints)
+    assert len(filtered) == 1

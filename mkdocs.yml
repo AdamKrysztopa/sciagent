@@ -1,0 +1,40 @@
+site_name: SciAgent Docs
+site_description: SciAgent documentation site built from Markdown sources in the repository.
+docs_dir: docs
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.sections
+    - navigation.expand
+    - content.code.copy
+plugins:
+  - search
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+nav:
+  - Overview:
+      - Home: index.md
+  - Planning:
+      - Core Roadmap: core.md
+      - Action Plan: actionable-plan.md
+      - Priorities: priorities.md
+      - Next Steps: next-steps.md
+  - Manuals:
+      - Configuration & Usage: manual.md
+      - Deployment & Hosting: deployment.md
+  - Reference:
+      - REST API: api.md
+      - Settings: settings.md
+      - Zotero Add-on: zotero.md

@@ -12,6 +12,28 @@ from agt.providers.router import build_provider
 _DUMMY_XAI_KEY = "xai-local"
 
 
+def _resolve_dotenv_key(*names: str) -> str | None:
+    env_path = Path(".env")
+    if not env_path.exists():
+        return None
+
+    values: dict[str, str] = {}
+    for line in env_path.read_text().splitlines():
+        stripped = line.strip()
+        if stripped.startswith("#") or "=" not in stripped:
+            continue
+        name, _, value = stripped.partition("=")
+        normalized_name = name.strip()
+        if normalized_name in names and normalized_name not in values:
+            values[normalized_name] = value.strip().strip("\"'")
+
+    for name in names:
+        value = values.get(name)
+        if value:
+            return value
+    return None
+
+
 def resolve_env_key(*names: str) -> str | None:
     """Return the first non-empty environment value from candidate names."""
 
@@ -19,27 +41,13 @@ def resolve_env_key(*names: str) -> str | None:
         value = os.getenv(name)
         if value:
             return value
-    return None
+    return _resolve_dotenv_key(*names)
 
 
 def resolve_xai_key() -> str:
     """Resolve xAI API key from environment variables or local .env."""
 
-    key = resolve_env_key("AGT_XAI_API_KEY", "XAI_API_KEY")
-    if key:
-        return key
-
-    env_path = Path(".env")
-    if env_path.exists():
-        for line in env_path.read_text().splitlines():
-            stripped = line.strip()
-            if stripped.startswith("#") or "=" not in stripped:
-                continue
-            name, _, value = stripped.partition("=")
-            if name.strip() in {"AGT_XAI_API_KEY", "XAI_API_KEY"}:
-                return value.strip().strip("\"'")
-
-    return _DUMMY_XAI_KEY
+    return resolve_env_key("AGT_XAI_API_KEY", "XAI_API_KEY") or _DUMMY_XAI_KEY
 
 
 def normalize_strict_settings_env() -> None:

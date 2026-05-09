@@ -6,8 +6,8 @@ on:
   pull_request:
 
 jobs:
-  quality:
-    name: Quality (py${{ matrix.python-version }})
+  python-quality:
+    name: Python Quality (py${{ matrix.python-version }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -40,3 +40,66 @@ jobs:
 
       - name: Pytest (failure-path + integration)
         run: uv run pytest -q --vcr-record=none
+
+  zotero-addon-quality:
+    name: Zotero Add-on Quality
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: zotero-addon
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: zotero-addon/package-lock.json
+
+      - name: Install add-on dependencies
+        run: npm ci
+
+      - name: Lint add-on
+        run: npm run lint
+
+      - name: Build add-on
+        run: npm run build
+
+      - name: Typecheck add-on
+        run: npm run typecheck
+
+      - name: Test add-on
+        run: npm run test
+
+  docs-quality:
+    name: Docs Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Sync dependencies
+        run: uv sync --all-groups
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Markdown lint
+        run: npx --yes markdownlint-cli2 "README.md" "docs/**/*.md" "examples/**/*.md" ".github/**/*.md" "zotero-addon/README.md"
+
+      - name: Build docs site
+        run: uv run mkdocs build --strict

@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<vbox
+  id="agt-preferences-root"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  onload="window.SciAgentPreferencesPane && window.SciAgentPreferencesPane.init();"
+>
+  <linkset>
+    <html:link rel="localization" href="agt/agt.ftl" />
+  </linkset>
+
+  <groupbox id="agt-preferences-connection">
+    <label>
+      <html:h2 data-l10n-id="agt-preferences-connection-heading" />
+    </label>
+    <description data-l10n-id="agt-preferences-secrets-note" />
+    <html:div class="agt-pref-grid">
+      <html:label for="agt-backend-url" data-l10n-id="agt-preferences-backend-url-label" />
+      <html:input id="agt-backend-url" type="url" preference="extensions.agt.backendURL" />
+
+      <html:label for="agt-api-key" data-l10n-id="agt-preferences-api-key-label" />
+      <html:input id="agt-api-key" type="password" preference="extensions.agt.apiKey" />
+
+      <html:label for="agt-client-id" data-l10n-id="agt-preferences-client-id-label" />
+      <html:input id="agt-client-id" type="text" preference="extensions.agt.clientID" />
+    </html:div>
+  </groupbox>
+
+  <groupbox id="agt-preferences-search-defaults">
+    <label>
+      <html:h2 data-l10n-id="agt-preferences-search-defaults-heading" />
+    </label>
+    <html:div class="agt-pref-grid">
+      <html:label for="agt-default-collection" data-l10n-id="agt-preferences-default-collection-label" />
+      <html:input id="agt-default-collection" type="text" preference="extensions.agt.defaultCollection" />
+
+      <html:label for="agt-default-min-year" data-l10n-id="agt-preferences-min-year-label" />
+      <html:input id="agt-default-min-year" type="number" min="1900" max="2100" preference="extensions.agt.defaultMinYear" />
+
+      <html:label for="agt-default-max-year" data-l10n-id="agt-preferences-max-year-label" />
+      <html:input id="agt-default-max-year" type="number" min="1900" max="2100" preference="extensions.agt.defaultMaxYear" />
+
+      <html:label for="agt-default-min-citations" data-l10n-id="agt-preferences-min-citations-label" />
+      <html:input id="agt-default-min-citations" type="number" min="0" preference="extensions.agt.defaultMinCitations" />
+    </html:div>
+    <html:div class="agt-pref-checkbox-row">
+      <html:input
+        id="agt-default-oa-only"
+        type="checkbox"
+        preference="extensions.agt.defaultOpenAccessOnly"
+      />
+      <html:label for="agt-default-oa-only" data-l10n-id="agt-preferences-oa-only-label" />
+    </html:div>
+  </groupbox>
+
+  <groupbox id="agt-preferences-pdf">
+    <label>
+      <html:h2 data-l10n-id="agt-preferences-pdf-heading" />
+    </label>
+    <html:div class="agt-pref-checkbox-row">
+      <html:input
+        id="agt-enable-pdf-imports"
+        type="checkbox"
+        preference="extensions.agt.enablePDFImports"
+      />
+      <html:label for="agt-enable-pdf-imports" data-l10n-id="agt-preferences-pdf-toggle-label" />
+    </html:div>
+    <description data-l10n-id="agt-preferences-pdf-note" />
+  </groupbox>
+
+  <groupbox id="agt-preferences-runtime">
+    <label>
+      <html:h2 data-l10n-id="agt-preferences-runtime-heading" />
+    </label>
+    <description data-l10n-id="agt-preferences-runtime-note" />
+  </groupbox>
+</vbox>

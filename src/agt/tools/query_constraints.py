@@ -11,6 +11,17 @@ from agt.models import NormalizedPaper
 
 _TOKEN_RE = re.compile(r"[^\W\d_][\w-]{2,}", re.UNICODE)
 _YEAR_RE = re.compile(r"\b(?:19|20)\d{2}\b")
+_TOPIC_TEXT_SEPARATOR_RE = re.compile(r"[\s_/:.-]+")
+_TOPIC_GATE_STRICT_MIN_MATCHES = 2
+_TOPIC_GATE_STRICT_KEYWORD_COUNT = 3
+
+# Compound-word normalisations applied before keyword extraction.
+# Maps a single-token spelling to a canonical multi-token expansion so that
+# "timeseries" and "time-series" both produce the tokens "time series".
+_COMPOUND_EXPANSIONS: list[tuple[re.Pattern[str], str]] = [
+    (re.compile(r"\btimeseries\b", re.IGNORECASE), "time series"),
+    (re.compile(r"\btime-series\b", re.IGNORECASE), "time series"),
+]
 _BETWEEN_YEAR_RE = re.compile(r"between\s+((?:19|20)\d{2})\s+and\s+((?:19|20)\d{2})")
 _FROM_TO_YEAR_RE = re.compile(r"from\s+((?:19|20)\d{2})\s+to\s+((?:19|20)\d{2})")
 
@@ -136,6 +147,36 @@ _STOPWORDS = {
 }
 
 
+# Words too generic to discriminate topic relevance in the post-merge gate.
+# These supplement _STOPWORDS specifically for the topic-gate check so that
+# phrases like "based on the data itself" do not let off-topic papers pass.
+_TOPIC_GATE_STOPWORDS: frozenset[str] = frozenset({
+    "data",
+    "based",
+    "itself",
+    "approach",
+    "analysis",
+    "framework",
+    "frameworks",
+    "method",
+    "methods",
+    "model",
+    "models",
+    "using",
+    "propose",
+    "proposed",
+    "novel",
+    "new",
+    "selection",
+    "selections",
+    "system",
+    "systems",
+    "task",
+    "tasks",
+    "study",
+})
+
+
 class YearConstraint(BaseModel):
     min_year: int | None = Field(default=None, ge=1900, le=2100)
     max_year: int | None = Field(default=None, ge=1900, le=2100)
@@ -197,8 +238,16 @@ def strip_constraints(query: str) -> str:
     return re.sub(r"\s{2,}", " ", text).strip()
 
 
+def _expand_compounds(query: str) -> str:
+    """Expand compound spellings (e.g. 'timeseries' -> 'time series') before tokenisation."""
+    text = query
+    for pattern, replacement in _COMPOUND_EXPANSIONS:
+        text = pattern.sub(replacement, text)
+    return text
+
+
 def _extract_keywords(query: str) -> list[str]:
-    cleaned = strip_constraints(query)
+    cleaned = strip_constraints(_expand_compounds(query))
     keywords: list[str] = []
     for token in _TOKEN_RE.findall(cleaned.lower()):
         if token in _STOPWORDS:
@@ -342,11 +391,74 @@ def parse_query_constraints(  # noqa: PLR0912, PLR0915
     )
 
 
+def _topic_gate_keywords(constraints: SearchConstraintSpec) -> list[str]:
+    keywords: list[str] = []
+    for keyword in constraints.keywords.include_keywords:
+        if keyword in _TOPIC_GATE_STOPWORDS:
+            continue
+        if keyword not in keywords:
+            keywords.append(keyword)
+    return keywords
+
+
+def _topic_gate_phrases(raw_query: str) -> list[str]:
+    cleaned = strip_constraints(_expand_compounds(raw_query)).lower()
+    tokens = [
+        token
+        for token in _TOKEN_RE.findall(cleaned)
+        if token not in _STOPWORDS and token not in _TOPIC_GATE_STOPWORDS and not token.isdigit()
+    ]
+
+    phrases: list[str] = []
+    for size in (3, 2):
+        if len(tokens) < size:
+            continue
+        for index in range(len(tokens) - size + 1):
+            phrase = " ".join(tokens[index : index + size])
+            if phrase not in phrases:
+                phrases.append(phrase)
+    return phrases[:6]
+
+
+def _normalize_topic_text(text: str) -> str:
+    normalized = _expand_compounds(text.lower())
+    normalized = _TOPIC_TEXT_SEPARATOR_RE.sub(" ", normalized)
+    return re.sub(r"\s{2,}", " ", normalized).strip()
+
+
+def _minimum_topic_matches(keywords: list[str]) -> int:
+    if len(keywords) >= _TOPIC_GATE_STRICT_KEYWORD_COUNT:
+        return _TOPIC_GATE_STRICT_MIN_MATCHES
+    return 1
+
+
+def _passes_topic_gate(
+    text: str,
+    *,
+    keywords: list[str],
+    phrases: list[str],
+    min_keyword_matches: int,
+) -> bool:
+    if not keywords:
+        return True
+
+    normalized_text = _normalize_topic_text(text)
+    if any(phrase in normalized_text for phrase in phrases):
+        return True
+
+    match_count = sum(1 for keyword in keywords if keyword in normalized_text)
+    return match_count >= min_keyword_matches
+
+
 def apply_query_constraints(
     papers: list[NormalizedPaper],
     constraints: SearchConstraintSpec,
 ) -> list[NormalizedPaper]:
     """Filter ranked papers using validated query constraints."""
+
+    topic_keywords = _topic_gate_keywords(constraints)
+    topic_phrases = _topic_gate_phrases(constraints.raw_query) if topic_keywords else []
+    min_topic_matches = _minimum_topic_matches(topic_keywords)
 
     filtered: list[NormalizedPaper] = []
     for paper in papers:
@@ -376,10 +488,20 @@ def apply_query_constraints(
         if paper.semantic_score < constraints.quality.min_semantic_score:
             continue
 
+        text = f"{paper.title} {paper.abstract or ''}"
+
         if constraints.keywords.exclude_keywords:
-            text = f"{paper.title} {paper.abstract or ''}".lower()
-            if any(keyword in text for keyword in constraints.keywords.exclude_keywords):
+            lowered_text = text.lower()
+            if any(keyword in lowered_text for keyword in constraints.keywords.exclude_keywords):
                 continue
+
+        if topic_keywords and not _passes_topic_gate(
+            text,
+            keywords=topic_keywords,
+            phrases=topic_phrases,
+            min_keyword_matches=min_topic_matches,
+        ):
+            continue
 
         filtered.append(paper)
 

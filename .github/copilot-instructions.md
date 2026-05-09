@@ -16,20 +16,30 @@ When making or proposing changes:
 6. Preserve idempotency and approval gates for any Zotero write path.
 7. Build and validate real implementations by default; do not ship mockup-only or stub-only feature code unless the user explicitly asks for a mock/demo.
 
+Repo quality contract:
+
+1. Treat quality as repo-wide, not Python-only.
+2. Python changes must keep `uv run ruff check .`, `uv run ruff format --check .`, `uv run pyright`, and `uv run pytest -q --vcr-record=none` green.
+3. Zotero add-on changes must keep `npm run lint`, `npm run build`, `npm run typecheck`, and `npm run test` green in `zotero-addon/`.
+4. Markdown docs and agent/instruction changes must keep the repo docs gate green via `npx --yes markdownlint-cli2 "README.md" "docs/**/*.md" "examples/**/*.md" ".github/**/*.md" "zotero-addon/README.md"` and `uv run mkdocs build --strict`.
+5. Keep local `pre-commit` practical; do not add heavyweight Node build/test hooks there unless the user explicitly asks for that tradeoff.
+
 Global execution policy (highest priority for this repository):
 
-1. Do not use subagents for implementation, planning, or codebase exploration unless the user explicitly requests a specific subagent by name.
+1. Do not use subagents for implementation, planning, or codebase exploration unless the user explicitly requests a specific subagent by name or explicitly asks for agent orchestration/delegation.
 2. Execute work directly in the main coding session using local file and terminal tools.
 3. For milestone examples, prefer real runtime behavior and integration paths over mocked flows.
 
 Agent routing and research rules:
 
-1. Use `core-planner` for backlog mapping, acceptance checks, and story sequencing against `docs/core.md`.
-2. Use `settings-bootstrap` for environment, quality tooling, CI, and reproducibility work tied to `docs/settings.md`.
-3. Use `zotero-addon` for Zotero plugin architecture, backend contract mapping, and native integration work tied to `docs/zotero.md`.
-4. Use `zotero-frontend` for TypeScript, React, WebExtension, sidebar UI, manifest, bootstrap, and hook-heavy add-on implementation work.
-5. For unfamiliar third-party libraries or fast-moving APIs, fetch current documentation through Context7 (`mcp_io`) before coding. Prefer official docs over memory for React, Zotero add-on tooling, LangGraph, and VS Code customization behavior.
-6. Keep agent descriptions keyword-rich so the right specialist is discoverable from the user prompt.
+1. Use `sciagent-orchestrator` when the user asks who should act, requests agent selection, gives mixed-domain work that needs explicit sequencing, or asks for end-to-end task delivery from idea to verified done. The orchestrator acts as a seasoned product manager and scrum master with 20 years of development experience — it decomposes tasks, screens for risks, routes to specialists, enforces stage gates, and never writes code itself.
+2. Use `core-planner` for backlog mapping, acceptance checks, and story sequencing against `docs/core.md`.
+3. Use `python-backend-engineer` for modern Python backend implementation and review across `src/agt/**`, `tests/**`, FastAPI, LangGraph, provider adapters, retrieval, ranking, workflow, Zotero write paths, performance, strict typing, and failure handling.
+4. Use `settings-bootstrap` for environment, Python 3.14 policy, `uv`, quality tooling, CI, Docker, and reproducibility work tied to `docs/settings.md`.
+5. Use `zotero-addon` for Zotero plugin architecture, backend contract mapping, native integration boundaries, and write/approval flow design tied to `docs/zotero.md`.
+6. Use `zotero-frontend` for TypeScript, React, WebExtension, sidebar UI, manifest, bootstrap, typed clients, host adapters, hooks, and add-on frontend tests and quality commands.
+7. For unfamiliar third-party libraries or fast-moving APIs, fetch current documentation through Context7 (`mcp_io`) before coding. Prefer official docs over memory for React, Zotero add-on tooling, LangGraph, and VS Code customization behavior.
+8. Keep agent descriptions keyword-rich so the right specialist is discoverable from the user prompt.
 
 Frontend and add-on implementation rules:
 

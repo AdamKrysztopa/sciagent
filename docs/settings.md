@@ -3,29 +3,32 @@
 **Target:** Zero-to-MVP in <30 minutes for a solo dev or small team.
 **Python requirement:** `>= 3.13` (recommended: **3.14** – released Oct 2025, fully stable in March 2026).
 **Package manager:** `uv` (Astral) – 10–20× faster than pip/poetry.
-**Lint / Format / Type-check:** `ruff` + `pyright` (the modern “ty” stack – blazing fast, zero config bloat).
+**Quality tooling:** Python uses `ruff` + `pyright`; the Zotero add-on uses its real `npm` lint/build/typecheck/test scripts; docs and agent instructions use `markdownlint-cli2` plus a MkDocs Material site build.
 
 This document is **copy-paste ready**. Follow the steps in order and you will have a clean, production-grade repo with the exact stack from the AGT epics.
 
 ## 1. Core Stack Summary
 
-| Layer                  | Tool / Library                              | Version Pin (uv)          | Reason |
-|------------------------|---------------------------------------------|---------------------------|--------|
-| **Runtime**            | Python                                      | `>=3.13` (use 3.14)       | Free-threaded GIL optional + better error messages |
-| **Project Mgmt**       | `uv`                                        | latest (via curl)         | Replaces poetry/pip + venv in one binary |
-| **Agent Framework**    | `langgraph`                                 | `>=0.2.0`                 | Stateful graphs + native checkpoints |
-| **LLM**                | Native xAI REST adapter (`httpx`)           | latest                    | Pydantic v2-only runtime path (no langchain bridge) |
-| **Academic Search**    | `semanticscholar`                           | latest                    | Natural-language + rich metadata |
-| **Zotero**             | `pyzotero`                                  | latest                    | Full v3 Web API (create, upsert, attachments) |
-| **Settings**           | `pydantic-settings`                         | `>=2.6`                   | Typed, validated, secret-redacted config |
-| **UI**                 | `streamlit`                                 | `>=1.40`                  | Instant chat + fragments for approval buttons |
-| **Async / HTTP**       | `httpx` + `anyio`                           | latest                    | PDF downloads, rate-limit backoff |
-| **Logging / Tracing**  | `structlog` + `langsmith` (optional)        | latest                    | Structured logs + full LangGraph traces |
-| **Lint / Format**      | `ruff`                                      | latest                    | One tool for formatting + linting (replaces black/flake8/isort) |
-| **Type Checking**      | `pyright`                                   | latest                    | Fastest “ty” checker – works perfectly with ruff |
-| **Testing**            | `pytest` + `responses` + `vcrpy`            | latest                    | E2E + mocked external calls |
-| **Pre-commit**         | `pre-commit`                                | latest                    | Hooks for ruff + pyright |
-| **Extras**             | `tenacity`, `python-dotenv`, `redis` (later) | latest                 | Rate guards, checkpoints |
+| Layer                 | Tool / Library                                                                                                                      | Version Pin (uv)    | Reason                                                                                       |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------- | -------------------------------------------------------------------------------------------- |
+| **Runtime**           | Python                                                                                                                              | `>=3.13` (use 3.14) | Free-threaded GIL optional + better error messages                                           |
+| **Project Mgmt**      | `uv`                                                                                                                                | latest (via curl)   | Replaces poetry/pip + venv in one binary                                                     |
+| **Agent Framework**   | `langgraph`                                                                                                                         | `>=0.2.0`           | Stateful graphs + native checkpoints                                                         |
+| **LLM**               | Native xAI REST adapter (`httpx`)                                                                                                   | latest              | Pydantic v2-only runtime path (no langchain bridge)                                          |
+| **Academic Search**   | Keyless-first federation (`httpx` clients for OpenAlex, Crossref, Semantic Scholar, PubMed, Europe PMC, arXiv, BASE, OpenCitations) | latest              | Strong default discovery without search-engine API keys; keyed sources are opt-in enrichment |
+| **Zotero**            | `pyzotero`                                                                                                                          | latest              | Full v3 Web API (create, upsert, attachments)                                                |
+| **Settings**          | `pydantic-settings`                                                                                                                 | `>=2.6`             | Typed, validated, secret-redacted config                                                     |
+| **UI**                | `streamlit`                                                                                                                         | `>=1.40`            | Instant chat + fragments for approval buttons                                                |
+| **Async / HTTP**      | `httpx` + `anyio`                                                                                                                   | latest              | PDF downloads, rate-limit backoff                                                            |
+| **Logging / Tracing** | `structlog` + `langsmith` (optional)                                                                                                | latest              | Structured logs + full LangGraph traces                                                      |
+| **Lint / Format**     | `ruff`                                                                                                                              | latest              | One tool for formatting + linting (replaces black/flake8/isort)                              |
+| **Type Checking**     | `pyright`                                                                                                                           | latest              | Fastest “ty” checker – works perfectly with ruff                                             |
+| **Testing**           | `pytest` + `responses` + `vcrpy`                                                                                                    | latest              | E2E + mocked external calls                                                                  |
+| **Add-on QA**         | `npm` scripts in `zotero-addon/`                                                                                                    | Node `>=20`         | Real package validation via `lint`, `build`, `typecheck`, and `test`                         |
+| **Docs QA**           | `markdownlint-cli2`                                                                                                                 | `npx`               | Pragmatic Markdown linting for docs and agent instructions                                   |
+| **Docs Build**        | `mkdocs-material`                                                                                                                   | latest              | Build a full navigable docs site directly from `docs/*.md`                                   |
+| **Pre-commit**        | `pre-commit`                                                                                                                        | latest              | Fast local hooks for Python; add-on and docs gates stay explicit/CI-driven                   |
+| **Extras**            | `tenacity`, `python-dotenv`, `redis` (later)                                                                                        | latest              | Rate guards, checkpoints                                                                     |
 
 **Total dependencies for MVP:** ~18 packages (kept deliberately small).
 
@@ -56,7 +59,7 @@ uv add \
     pre-commit
 
 # 4. Add dev tools
-uv add --dev ruff pyright pre-commit pytest
+uv add --dev ruff pyright pre-commit pytest mkdocs mkdocs-material
 
 # 5. Create virtual env & lockfile (uv does this automatically)
 uv sync
@@ -88,6 +91,7 @@ agt-zotero-agent/
 ## 4. Essential Config Files (copy-paste)
 
 **`ruff.toml`** (modern 2026 defaults)
+
 ```toml
 target-version = "py314"
 line-length = 100
@@ -100,6 +104,7 @@ preview = true
 ```
 
 **`pyrightconfig.json`**
+
 ```json
 {
   "pythonVersion": "3.14",
@@ -109,7 +114,8 @@ preview = true
 }
 ```
 
-**`.pre-commit-config.yaml`**
+**`.pre-commit-config.yaml`** (keep local hooks fast and Python-only)
+
 ```yaml
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
@@ -124,9 +130,52 @@ repos:
 ```
 
 Install hooks:
+
 ```bash
 uv run pre-commit install
 ```
+
+## 5A. Repo Quality Gate
+
+SciAgent now treats quality as a repo-wide contract, not a Python-only contract.
+
+Run the backend gate:
+
+```bash
+uv run ruff check .
+uv run ruff format --check .
+uv run pyright
+uv run pytest -q --vcr-record=none
+```
+
+Run the Zotero add-on gate against the real package in `zotero-addon/`:
+
+```bash
+cd zotero-addon
+npm ci
+npm run lint
+npm run build
+npm run typecheck
+npm run test
+```
+
+Run the docs and agent-instructions gate:
+
+```bash
+npx --yes markdownlint-cli2 "README.md" "docs/**/*.md" "examples/**/*.md" ".github/**/*.md" "zotero-addon/README.md"
+uv run mkdocs build --strict
+```
+
+Local `pre-commit` intentionally stays lightweight and Python-only. The full add-on and docs gates are documented commands and CI jobs rather than per-commit hooks.
+
+## 5B. Modern Markdown Workspace
+
+The workspace includes a Markdown-first authoring setup in `.vscode/`:
+
+- autosave after a short delay so Markdown linting and preview refresh quickly
+- recommended extensions for Prettier, Markdown Preview Enhanced, Mermaid rendering, Markdown All in One, and markdownlint
+- tasks for `Docs: Lint`, `Docs: Build`, `Docs: Serve`, and `Docs: Full Check`
+- MCP browser automation via the workspace Puppeteer server for validating the generated docs site
 
 ## 5. Quick Run Commands (after bootstrap)
 
@@ -178,6 +227,7 @@ CMD ["uv", "run", "streamlit", "run", "src/agt/ui/app.py", "--server.port=8501"]
 4. Paste the LangGraph skeleton from earlier responses → you have a running agent.
 
 You now have:
+
 - The exact stack from all AGT epics
 - Modern tooling (uv + ruff + pyright)
 - Zero-config start
@@ -190,9 +240,11 @@ You now have:
 - Runtime configuration must be loaded through `pydantic-settings` only.
 - Startup must fail fast when required settings are missing or invalid.
 - Secrets must never appear in logs; all structured and plain logs are redacted.
-- CI and local execution should run through `uv` with identical commands:
-  - `uv run ruff check`
-  - `uv run pytest -q`
+- CI and local execution should use the same explicit repo gates:
+  - Python backend: `uv run ruff check .`, `uv run ruff format --check .`, `uv run pyright`, `uv run pytest -q --vcr-record=none`
+  - Zotero add-on: `cd zotero-addon && npm ci && npm run lint && npm run build && npm run typecheck && npm run test`
+  - Docs and agent instructions: `npx --yes markdownlint-cli2 "README.md" "docs/**/*.md" "examples/**/*.md" ".github/**/*.md" "zotero-addon/README.md"` and `uv run mkdocs build --strict`
+- `pre-commit` remains a fast local subset of the Python gate rather than the full repo gate.
 
 ## Provider Swap Contract
 

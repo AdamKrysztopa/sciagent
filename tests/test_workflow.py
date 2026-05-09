@@ -5,11 +5,18 @@ from dataclasses import dataclass, field
 import pytest
 
 from agt.graph import workflow
-from agt.models import CollectionResult, NormalizedPaper, SearchMetadata, WriteResult
+from agt.models import (
+    CollectionResult,
+    FilterEditContract,
+    NormalizedPaper,
+    SearchMetadata,
+    WriteResult,
+)
 from agt.zotero.preflight import PreflightResult
 
 _SELECTED_COUNT = 2
 _RETRY_EXPECTED_CALLS = 2
+_FILTER_EDIT_RESULT_LIMIT = 3
 
 
 @dataclass(slots=True)
@@ -284,6 +291,56 @@ async def test_finalize_approval_supports_selection_and_collection_rename(
     assert approved["selected_indices"] == [1, 2]
     assert isinstance(approved["write_result"], dict)
     assert approved["write_result"]["created"] == _SELECTED_COUNT
+
+
+@pytest.mark.anyio
+async def test_run_search_phase_forwards_filter_edit_to_search(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, object] = {}
+
+    async def fake_search(
+        query: str,
+        limit: int = 10,
+        *,
+        settings: object | None = None,
+        thread_id: str | None = None,
+        filter_edit: FilterEditContract | None = None,
+    ) -> tuple[list[NormalizedPaper], SearchMetadata]:
+        captured["query"] = query
+        captured["limit"] = limit
+        captured["settings"] = settings
+        captured["thread_id"] = thread_id
+        captured["filter_edit"] = filter_edit
+        return (
+            [NormalizedPaper(title="paper-1")],
+            SearchMetadata(original_query=query, regex_query=query),
+        )
+
+    monkeypatch.setattr(workflow, "get_settings", _fake_get_settings)
+    monkeypatch.setattr(workflow, "configure_logging", _fake_configure_logging)
+    monkeypatch.setattr(workflow, "build_provider", _fake_build_provider)
+    monkeypatch.setattr(workflow, "run_zotero_preflight", _fake_preflight_ok)
+    monkeypatch.setattr(workflow, "search_papers", fake_search)
+
+    filter_edit = FilterEditContract.model_validate({
+        "original_query": "graph neural networks",
+        "hard_filters": {"min_year": 2024, "include_keywords": ["graph", "neural"]},
+        "result_limit": 3,
+    })
+
+    state = await workflow.run_search_phase(
+        query="graph neural networks",
+        collection_name="Inbox",
+        thread_id="thread-filter-edit",
+        filter_edit=filter_edit,
+    )
+
+    assert state["phase"] == "awaiting_approval"
+    assert captured["query"] == "graph neural networks"
+    assert captured["limit"] == _FILTER_EDIT_RESULT_LIMIT
+    assert captured["thread_id"] == "thread-filter-edit"
+    assert captured["filter_edit"] == filter_edit
 
 
 @pytest.mark.anyio
