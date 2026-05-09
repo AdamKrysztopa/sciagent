@@ -54,6 +54,8 @@ _OVER_FETCH_MULTIPLIER = 3
 _MAX_FETCH_LIMIT = 30
 _WAIT_TOKEN_TIMEOUT_SECONDS = 1.5
 
+ProgressReporter = Callable[[str], None]
+
 
 @dataclass(slots=True)
 class _SourceFetchResult:
@@ -70,6 +72,11 @@ class _RetrievalProvider:
     tier: Literal["primary", "fallback"]
     enabled: bool
     fetcher: Callable[[], Awaitable[list[NormalizedPaper]]]
+
+
+def _emit_progress(progress: ProgressReporter | None, message: str) -> None:
+    if progress is not None:
+        progress(message)
 
 
 async def _fetch_one_source(
@@ -329,12 +336,14 @@ async def _fetch_query_with_optional_fallback(
     fallback_mode: Literal["auto", "force", "off"],
     capped_limit: int,
     corrected_query: str,
+    progress: ProgressReporter | None = None,
 ) -> tuple[list[NormalizedPaper], list[str], list[str], dict[str, float]]:
     results: list[NormalizedPaper] = []
     failures: list[str] = []
     sources_used: list[str] = []
     timings: dict[str, float] = {}
 
+    _emit_progress(progress, "retrieving primary sources")
     primary_results, primary_failures, primary_sources, primary_timings = await _fetch_from_sources(
         query,
         fetch_limit,
@@ -369,6 +378,7 @@ async def _fetch_query_with_optional_fallback(
             should_fetch_fallback = len(primary_filtered) < capped_limit
 
     if should_fetch_fallback:
+        _emit_progress(progress, "retrieving fallback sources")
         (
             fallback_results,
             fallback_failures,
@@ -613,6 +623,8 @@ def _build_search_plan(  # noqa: PLR0912
         enforced_post_merge.append("min_semantic_score")
     if constraints.keywords.exclude_keywords:
         enforced_post_merge.append("exclude_keywords")
+    if constraints.keywords.include_keywords:
+        enforced_post_merge.append("topic_relevance")
 
     return SearchPlan(
         original_query=original_query,
@@ -634,6 +646,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
     thread_id: str | None = None,
     provider: LLMProvider | None = None,
     fallback_mode: Literal["auto", "force", "off"] | None = None,
+    progress: ProgressReporter | None = None,
 ) -> tuple[list[NormalizedPaper], SearchMetadata]:
     """Search multiple academic sources and return ranked normalized papers + metadata."""
 
@@ -676,6 +689,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
 
     if provider is not None:
         try:
+            _emit_progress(progress, "rewriting query with LLM")
             rewritten = await rewrite_query(corrected_query, provider)
             retrieval_query = rewritten.search_query
             topic = rewritten.topic
@@ -724,12 +738,14 @@ async def search_papers(  # noqa: PLR0912, PLR0915
         effective_fallback_mode,
         capped_limit,
         corrected_query,
+        progress,
     )
     _merge_telemetry(failures, sources_used, timings)
 
     if rewritten and rewritten.synonyms:
         synonym_query = rewritten.synonyms[0]
         if synonym_query and synonym_query != retrieval_query:
+            _emit_progress(progress, "retrieving synonym expansion")
             (
                 synonym_results,
                 synonym_failures,
@@ -745,14 +761,17 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                 effective_fallback_mode,
                 capped_limit,
                 corrected_query,
+                progress,
             )
             results.extend(synonym_results)
             _merge_telemetry(synonym_failures, synonym_sources, synonym_timings)
 
     if results:
+        _emit_progress(progress, "enriching citations")
         results = await _enrich_citations(
             results, settings=active_settings, thread_id=active_thread
         )
+        _emit_progress(progress, "reranking and filtering merged results")
         filtered = _rank_and_filter(
             results,
             constraints,
@@ -766,6 +785,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                 validation = await validate_results(corrected_query, topic, filtered, provider)
                 if not validation.is_relevant and validation.suggested_query:
                     retry_count += 1
+                    _emit_progress(progress, "retrying with relevance-guided query")
                     (
                         retry_results,
                         retry_failures,
@@ -781,14 +801,17 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                         effective_fallback_mode,
                         capped_limit,
                         corrected_query,
+                        progress,
                     )
                     _merge_telemetry(retry_failures, retry_sources, retry_timings)
                     if retry_results:
+                        _emit_progress(progress, "enriching citations")
                         retry_results = await _enrich_citations(
                             retry_results,
                             settings=active_settings,
                             thread_id=active_thread,
                         )
+                        _emit_progress(progress, "reranking and filtering merged results")
                         retry_filtered = _rank_and_filter(
                             retry_results,
                             constraints,
@@ -818,6 +841,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
             return filtered, metadata
 
     if retrieval_query != regex_query:
+        _emit_progress(progress, "retrying with deterministic keyword query")
         (
             fallback_results,
             fallback_failures,
@@ -833,14 +857,17 @@ async def search_papers(  # noqa: PLR0912, PLR0915
             effective_fallback_mode,
             capped_limit,
             corrected_query,
+            progress,
         )
         _merge_telemetry(fallback_failures, fallback_sources, fallback_timings)
         if fallback_results:
+            _emit_progress(progress, "enriching citations")
             fallback_results = await _enrich_citations(
                 fallback_results,
                 settings=active_settings,
                 thread_id=active_thread,
             )
+            _emit_progress(progress, "reranking and filtering merged results")
             filtered = _rank_and_filter(
                 fallback_results,
                 constraints,

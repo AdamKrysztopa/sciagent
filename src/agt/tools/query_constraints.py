@@ -11,6 +11,9 @@ from agt.models import NormalizedPaper
 
 _TOKEN_RE = re.compile(r"[^\W\d_][\w-]{2,}", re.UNICODE)
 _YEAR_RE = re.compile(r"\b(?:19|20)\d{2}\b")
+_TOPIC_TEXT_SEPARATOR_RE = re.compile(r"[\s_/:.-]+")
+_TOPIC_GATE_STRICT_MIN_MATCHES = 2
+_TOPIC_GATE_STRICT_KEYWORD_COUNT = 3
 
 # Compound-word normalisations applied before keyword extraction.
 # Maps a single-token spelling to a canonical multi-token expansion so that
@@ -152,11 +155,24 @@ _TOPIC_GATE_STOPWORDS: frozenset[str] = frozenset({
     "based",
     "itself",
     "approach",
+    "analysis",
+    "framework",
+    "frameworks",
+    "method",
+    "methods",
+    "model",
+    "models",
     "using",
     "propose",
     "proposed",
     "novel",
     "new",
+    "selection",
+    "selections",
+    "system",
+    "systems",
+    "task",
+    "tasks",
     "study",
 })
 
@@ -375,11 +391,74 @@ def parse_query_constraints(  # noqa: PLR0912, PLR0915
     )
 
 
+def _topic_gate_keywords(constraints: SearchConstraintSpec) -> list[str]:
+    keywords: list[str] = []
+    for keyword in constraints.keywords.include_keywords:
+        if keyword in _TOPIC_GATE_STOPWORDS:
+            continue
+        if keyword not in keywords:
+            keywords.append(keyword)
+    return keywords
+
+
+def _topic_gate_phrases(raw_query: str) -> list[str]:
+    cleaned = strip_constraints(_expand_compounds(raw_query)).lower()
+    tokens = [
+        token
+        for token in _TOKEN_RE.findall(cleaned)
+        if token not in _STOPWORDS and token not in _TOPIC_GATE_STOPWORDS and not token.isdigit()
+    ]
+
+    phrases: list[str] = []
+    for size in (3, 2):
+        if len(tokens) < size:
+            continue
+        for index in range(len(tokens) - size + 1):
+            phrase = " ".join(tokens[index : index + size])
+            if phrase not in phrases:
+                phrases.append(phrase)
+    return phrases[:6]
+
+
+def _normalize_topic_text(text: str) -> str:
+    normalized = _expand_compounds(text.lower())
+    normalized = _TOPIC_TEXT_SEPARATOR_RE.sub(" ", normalized)
+    return re.sub(r"\s{2,}", " ", normalized).strip()
+
+
+def _minimum_topic_matches(keywords: list[str]) -> int:
+    if len(keywords) >= _TOPIC_GATE_STRICT_KEYWORD_COUNT:
+        return _TOPIC_GATE_STRICT_MIN_MATCHES
+    return 1
+
+
+def _passes_topic_gate(
+    text: str,
+    *,
+    keywords: list[str],
+    phrases: list[str],
+    min_keyword_matches: int,
+) -> bool:
+    if not keywords:
+        return True
+
+    normalized_text = _normalize_topic_text(text)
+    if any(phrase in normalized_text for phrase in phrases):
+        return True
+
+    match_count = sum(1 for keyword in keywords if keyword in normalized_text)
+    return match_count >= min_keyword_matches
+
+
 def apply_query_constraints(
     papers: list[NormalizedPaper],
     constraints: SearchConstraintSpec,
 ) -> list[NormalizedPaper]:
     """Filter ranked papers using validated query constraints."""
+
+    topic_keywords = _topic_gate_keywords(constraints)
+    topic_phrases = _topic_gate_phrases(constraints.raw_query) if topic_keywords else []
+    min_topic_matches = _minimum_topic_matches(topic_keywords)
 
     filtered: list[NormalizedPaper] = []
     for paper in papers:
@@ -409,31 +488,20 @@ def apply_query_constraints(
         if paper.semantic_score < constraints.quality.min_semantic_score:
             continue
 
+        text = f"{paper.title} {paper.abstract or ''}"
+
         if constraints.keywords.exclude_keywords:
-            text = f"{paper.title} {paper.abstract or ''}".lower()
-            if any(keyword in text for keyword in constraints.keywords.exclude_keywords):
+            lowered_text = text.lower()
+            if any(keyword in lowered_text for keyword in constraints.keywords.exclude_keywords):
                 continue
 
-        # Topic gate: only applies to papers without a native relevance signal
-        # (semantic_score == 0.0) that do have citation data (citation_count > 0).
-        # This prevents highly-cited but off-topic papers from CrossRef/BASE/
-        # Europe PMC passing when those sources don't provide relevance scoring.
-        # Papers with no citations or with an API-supplied semantic score are
-        # intentionally left unaffected.
-        if (
-            constraints.keywords.include_keywords
-            and paper.semantic_score == 0.0
-            and paper.citation_count > 0
+        if topic_keywords and not _passes_topic_gate(
+            text,
+            keywords=topic_keywords,
+            phrases=topic_phrases,
+            min_keyword_matches=min_topic_matches,
         ):
-            text = f"{paper.title} {paper.abstract or ''}".lower()
-            # Use only discriminative keywords (strip generic academic words).
-            discriminative = [
-                kw
-                for kw in constraints.keywords.include_keywords
-                if kw not in _TOPIC_GATE_STOPWORDS
-            ]
-            if discriminative and not any(kw in text for kw in discriminative):
-                continue
+            continue
 
         filtered.append(paper)
 

@@ -84,6 +84,7 @@ async def test_semantic_scholar_search_passes_year_range_params(
 
     assert papers == []
     assert captured["year"] == "2022-2025"
+    assert "score" not in captured["fields"].split(",")
 
 
 @pytest.mark.anyio

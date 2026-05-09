@@ -260,7 +260,7 @@ async def test_search_papers_calls_all_parallel_sources(monkeypatch: pytest.Monk
     monkeypatch.setattr(search_module, "BaseSearchClient", _factory("base"))
 
     papers, metadata = await search_module.search_papers(
-        query="test",
+        query="papers",
         settings=settings,
         thread_id="thread-1",
     )
@@ -363,7 +363,7 @@ async def test_fallback_enabled_fills_results_with_provenance(
     monkeypatch.setattr(search_module, "CoreClient", _core_factory)
 
     papers, metadata = await search_module.search_papers(
-        query="test",
+        query="papers",
         settings=settings,
         thread_id="thread-1",
     )
@@ -423,7 +423,7 @@ async def test_fallback_and_primary_duplicates_merge_to_one_row(
     monkeypatch.setattr(search_module, "CoreClient", _core_factory)
 
     papers, _ = await search_module.search_papers(
-        query="test",
+        query="papers",
         settings=settings,
         thread_id="thread-1",
         fallback_mode="force",
@@ -491,7 +491,7 @@ async def test_mixed_primary_fallback_order_and_indices_are_deterministic(
     monkeypatch.setattr(search_module, "CoreClient", _core_factory)
 
     papers, metadata = await search_module.search_papers(
-        query="test",
+        query="papers",
         limit=3,
         settings=settings,
         thread_id="thread-1",
@@ -764,3 +764,104 @@ async def test_search_plan_rewritten_queries_captured(
     assert len(plan.rewritten_queries) >= 1
     # The topic_query should be non-empty
     assert plan.topic_query
+
+
+@pytest.mark.anyio
+async def test_search_papers_filters_provider_scored_off_topic_results(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "123",
+        "AGT_SUMMARIZATION_USE_LLM": False,
+    })
+
+    relevant = [
+        NormalizedPaper(
+            title="Feature-based time-series forecasting method selection",
+            abstract="We study automatic model selection for time series forecasting tasks.",
+            year=2025,
+            citation_count=12,
+            open_access=True,
+            semantic_score=18.0,
+        )
+    ]
+    off_topic = [
+        NormalizedPaper(
+            title="Global fertility in 204 countries and territories, 1950-2021, with forecasts to 2100",
+            abstract="Population forecasting trends across world regions.",
+            year=2024,
+            citation_count=545,
+            open_access=True,
+            semantic_score=28.0,
+        )
+    ]
+
+    monkeypatch.setattr(search_module, "get_guardrails", _fake_get_guardrails)
+    monkeypatch.setattr(search_module, "SemanticScholarClient", _fake_client_factory(relevant))
+    monkeypatch.setattr(search_module, "OpenAlexClient", _fake_client_factory(off_topic))
+    monkeypatch.setattr(search_module, "CrossrefClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "PubMedClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+
+    papers, metadata = await search_module.search_papers(
+        query="time-series forecasting method selection based on the tineseries data itself, not older than 2024",
+        settings=settings,
+        thread_id="thread-off-topic",
+    )
+
+    assert [paper.title for paper in papers] == [
+        "Feature-based time-series forecasting method selection"
+    ]
+    assert metadata.search_plan is not None
+    assert "topic_relevance" in metadata.search_plan.filters_enforced_post_merge
+
+
+@pytest.mark.anyio
+async def test_search_papers_reports_progress_stages(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "123",
+        "AGT_SUMMARIZATION_USE_LLM": False,
+    })
+    messages: list[str] = []
+
+    monkeypatch.setattr(search_module, "get_guardrails", _fake_get_guardrails)
+    monkeypatch.setattr(
+        search_module,
+        "SemanticScholarClient",
+        _fake_client_factory([
+            NormalizedPaper(
+                title="Time series forecasting survey",
+                abstract="A survey of time series forecasting methods.",
+                year=2025,
+                semantic_score=0.7,
+            )
+        ]),
+    )
+    monkeypatch.setattr(search_module, "OpenAlexClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "CrossrefClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "PubMedClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+
+    papers, _ = await search_module.search_papers(
+        query="time series forecasting",
+        settings=settings,
+        thread_id="thread-progress",
+        progress=messages.append,
+    )
+
+    assert papers
+    assert messages == [
+        "retrieving primary sources",
+        "enriching citations",
+        "reranking and filtering merged results",
+    ]

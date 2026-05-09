@@ -57,6 +57,8 @@ import argparse
 import asyncio
 import json
 import sys
+import time
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -178,6 +180,21 @@ def _build_query(args: argparse.Namespace) -> str:
     return ", ".join(parts)
 
 
+def _build_progress_reporter() -> Callable[[str], None]:
+    started_at = time.monotonic()
+    last_message = ""
+
+    def _report(message: str) -> None:
+        nonlocal last_message
+        if message == last_message:
+            return
+        elapsed = time.monotonic() - started_at
+        print(f"  [{elapsed:5.1f}s] {message}", flush=True)
+        last_message = message
+
+    return _report
+
+
 def _print_plan(plan: SearchPlan) -> None:
     width = 70
     print("\n" + "─" * width)
@@ -253,7 +270,7 @@ def _build_json_output(
     }
 
 
-async def _run(args: argparse.Namespace) -> int:
+async def run_with_args(args: argparse.Namespace) -> int:
     normalize_strict_settings_env()
     settings = Settings.model_validate({
         "AGT_XAI_API_KEY": resolve_xai_key(),
@@ -273,6 +290,7 @@ async def _run(args: argparse.Namespace) -> int:
     extra_includes = [t.strip() for t in args.must_include.split(",") if t.strip()]
 
     provider = None if args.no_llm else try_build_provider(settings)
+    progress = _build_progress_reporter()
 
     print(f"\nquery: {query}")
     print(f"mode : {'no-llm' if provider is None else 'llm-rewrite'}  limit={limit}")
@@ -284,6 +302,7 @@ async def _run(args: argparse.Namespace) -> int:
             settings=settings,
             thread_id="search-cli",
             provider=provider,
+            progress=progress,
         )
 
     # Apply extra must-include gate on top of any existing topic filtering.
@@ -320,7 +339,7 @@ async def _run(args: argparse.Namespace) -> int:
 
 def main() -> None:
     args = _build_parser().parse_args()
-    sys.exit(asyncio.run(_run(args)))
+    sys.exit(asyncio.run(run_with_args(args)))
 
 
 if __name__ == "__main__":

@@ -45,7 +45,7 @@ class SemanticScholarClient:
 
     _fields = (
         "title,year,abstract,url,isOpenAccess,authors,externalIds,"
-        "score,citationCount,influentialCitationCount"
+        "citationCount,influentialCitationCount"
     )
 
     # Semantic Scholar free-tier: 1 request/second.  Keeping some margin.
