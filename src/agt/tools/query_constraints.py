@@ -11,6 +11,14 @@ from agt.models import NormalizedPaper
 
 _TOKEN_RE = re.compile(r"[^\W\d_][\w-]{2,}", re.UNICODE)
 _YEAR_RE = re.compile(r"\b(?:19|20)\d{2}\b")
+
+# Compound-word normalisations applied before keyword extraction.
+# Maps a single-token spelling to a canonical multi-token expansion so that
+# "timeseries" and "time-series" both produce the tokens "time series".
+_COMPOUND_EXPANSIONS: list[tuple[re.Pattern[str], str]] = [
+    (re.compile(r"\btimeseries\b", re.IGNORECASE), "time series"),
+    (re.compile(r"\btime-series\b", re.IGNORECASE), "time series"),
+]
 _BETWEEN_YEAR_RE = re.compile(r"between\s+((?:19|20)\d{2})\s+and\s+((?:19|20)\d{2})")
 _FROM_TO_YEAR_RE = re.compile(r"from\s+((?:19|20)\d{2})\s+to\s+((?:19|20)\d{2})")
 
@@ -136,6 +144,23 @@ _STOPWORDS = {
 }
 
 
+# Words too generic to discriminate topic relevance in the post-merge gate.
+# These supplement _STOPWORDS specifically for the topic-gate check so that
+# phrases like "based on the data itself" do not let off-topic papers pass.
+_TOPIC_GATE_STOPWORDS: frozenset[str] = frozenset({
+    "data",
+    "based",
+    "itself",
+    "approach",
+    "using",
+    "propose",
+    "proposed",
+    "novel",
+    "new",
+    "study",
+})
+
+
 class YearConstraint(BaseModel):
     min_year: int | None = Field(default=None, ge=1900, le=2100)
     max_year: int | None = Field(default=None, ge=1900, le=2100)
@@ -197,8 +222,16 @@ def strip_constraints(query: str) -> str:
     return re.sub(r"\s{2,}", " ", text).strip()
 
 
+def _expand_compounds(query: str) -> str:
+    """Expand compound spellings (e.g. 'timeseries' -> 'time series') before tokenisation."""
+    text = query
+    for pattern, replacement in _COMPOUND_EXPANSIONS:
+        text = pattern.sub(replacement, text)
+    return text
+
+
 def _extract_keywords(query: str) -> list[str]:
-    cleaned = strip_constraints(query)
+    cleaned = strip_constraints(_expand_compounds(query))
     keywords: list[str] = []
     for token in _TOKEN_RE.findall(cleaned.lower()):
         if token in _STOPWORDS:
@@ -379,6 +412,27 @@ def apply_query_constraints(
         if constraints.keywords.exclude_keywords:
             text = f"{paper.title} {paper.abstract or ''}".lower()
             if any(keyword in text for keyword in constraints.keywords.exclude_keywords):
+                continue
+
+        # Topic gate: only applies to papers without a native relevance signal
+        # (semantic_score == 0.0) that do have citation data (citation_count > 0).
+        # This prevents highly-cited but off-topic papers from CrossRef/BASE/
+        # Europe PMC passing when those sources don't provide relevance scoring.
+        # Papers with no citations or with an API-supplied semantic score are
+        # intentionally left unaffected.
+        if (
+            constraints.keywords.include_keywords
+            and paper.semantic_score == 0.0
+            and paper.citation_count > 0
+        ):
+            text = f"{paper.title} {paper.abstract or ''}".lower()
+            # Use only discriminative keywords (strip generic academic words).
+            discriminative = [
+                kw
+                for kw in constraints.keywords.include_keywords
+                if kw not in _TOPIC_GATE_STOPWORDS
+            ]
+            if discriminative and not any(kw in text for kw in discriminative):
                 continue
 
         filtered.append(paper)

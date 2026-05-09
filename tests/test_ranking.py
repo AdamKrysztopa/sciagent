@@ -4,7 +4,13 @@ import pytest
 
 from agt.models import NormalizedPaper
 from agt.tools import ranking as ranking_module
-from agt.tools.ranking import compute_rank_score, rank_and_index_papers
+from agt.tools.ranking import (
+    WEIGHTS_CITATION,
+    WEIGHTS_DEFAULT,
+    WEIGHTS_RECENCY,
+    compute_rank_score,
+    rank_and_index_papers,
+)
 
 EXPECTED_DEDUP_COUNT = 2
 EXPECTED_ARXIV_DEDUP_COUNT = 1
@@ -138,3 +144,155 @@ def test_ranking_preserves_diacritics_in_authors() -> None:
     ]
     ranked = rank_and_index_papers(papers)
     assert len(ranked) == 2
+
+
+# ---------------------------------------------------------------------------
+# Keyword-relevance fallback and dynamic-weights tests
+# ---------------------------------------------------------------------------
+
+
+def test_keyword_relevance_beats_high_citation_irrelevant_paper() -> None:
+    """A highly-cited off-topic paper must not outrank an on-topic paper when
+    query_terms are supplied and neither paper has a semantic score.
+
+    Reproduces the 'Inorganic Chemistry textbook' bug where citation count
+    dominated results from sources without native relevance scoring.
+    """
+    on_topic = NormalizedPaper(
+        title="Time series forecasting methods",
+        abstract="We survey forecasting methods for time series selection.",
+        year=2024,
+        semantic_score=0.0,
+        citation_count=5,
+        open_access=True,
+    )
+    off_topic = NormalizedPaper(
+        title="Inorganic Chemistry: Principles of Structure",
+        abstract="A comprehensive textbook on inorganic chemistry.",
+        year=2024,
+        semantic_score=0.0,
+        citation_count=2395,
+        open_access=True,
+    )
+
+    ranked = rank_and_index_papers(
+        [off_topic, on_topic],
+        query_terms=["time", "series", "forecasting"],
+    )
+
+    assert ranked[0].title == "Time series forecasting methods", (
+        "On-topic paper should rank first when query_terms are used as relevance fallback"
+    )
+
+
+def test_keyword_relevance_zero_when_no_terms() -> None:
+    """Without query_terms the fallback is inactive; citation count may dominate."""
+    on_topic = NormalizedPaper(
+        title="Time series forecasting",
+        year=2024,
+        semantic_score=0.0,
+        citation_count=5,
+    )
+    off_topic = NormalizedPaper(
+        title="Unrelated high-citation paper",
+        year=2024,
+        semantic_score=0.0,
+        citation_count=2000,
+    )
+
+    ranked = rank_and_index_papers([off_topic, on_topic])
+    # Without query_terms the fallback is off; citation wins here.
+    assert ranked[0].title == "Unrelated high-citation paper"
+
+
+def test_recency_weights_boost_fresh_papers_over_old_high_citation() -> None:
+    """WEIGHTS_RECENCY should surface a fresh low-citation paper over an old classic."""
+    fresh = NormalizedPaper(
+        title="New method 2025",
+        year=2025,
+        semantic_score=0.0,
+        citation_count=2,
+    )
+    classic = NormalizedPaper(
+        title="Classic method 2010",
+        year=2010,
+        semantic_score=0.0,
+        citation_count=500,
+    )
+
+    ranked_default = rank_and_index_papers([classic, fresh], current_year=2026)
+    ranked_recency = rank_and_index_papers(
+        [classic, fresh], current_year=2026, weights=WEIGHTS_RECENCY
+    )
+
+    # Default weights: classic wins on citation signal.
+    assert ranked_default[0].title == "Classic method 2010"
+    # Recency weights: fresh paper wins.
+    assert ranked_recency[0].title == "New method 2025"
+
+
+def test_citation_weights_prefer_highly_cited_over_recent() -> None:
+    """WEIGHTS_CITATION should surface a highly-cited older paper over a brand-new one."""
+    fresh = NormalizedPaper(
+        title="Brand new 2026",
+        year=2026,
+        semantic_score=0.5,
+        citation_count=1,
+    )
+    classic = NormalizedPaper(
+        title="Seminal work 2015",
+        year=2015,
+        semantic_score=0.5,
+        citation_count=800,
+    )
+
+    ranked = rank_and_index_papers([fresh, classic], current_year=2026, weights=WEIGHTS_CITATION)
+    assert ranked[0].title == "Seminal work 2015"
+
+
+def test_compute_rank_score_uses_keyword_fallback_when_semantic_zero() -> None:
+    """compute_rank_score with query_terms uses keyword overlap when semantic_score=0."""
+    paper = NormalizedPaper(
+        title="Time series forecasting survey",
+        abstract="We review time series prediction methods.",
+        year=2024,
+        semantic_score=0.0,
+        citation_count=10,
+    )
+    score_with_terms = compute_rank_score(
+        paper,
+        current_year=2026,
+        query_terms=["time", "series", "forecasting"],
+    )
+    score_without_terms = compute_rank_score(paper, current_year=2026)
+
+    assert score_with_terms > score_without_terms, (
+        "Keyword relevance fallback should increase score over pure citation ranking"
+    )
+
+
+def test_compute_rank_score_ignores_fallback_when_semantic_nonzero() -> None:
+    """When semantic_score > 0 the keyword fallback must not be applied."""
+    paper = NormalizedPaper(
+        title="Completely unrelated paper",
+        abstract="Nothing about forecasting here.",
+        year=2024,
+        semantic_score=0.9,  # already has relevance signal
+        citation_count=0,
+    )
+    score_with_terms = compute_rank_score(
+        paper,
+        current_year=2026,
+        query_terms=["time", "series", "forecasting"],
+    )
+    score_without_terms = compute_rank_score(paper, current_year=2026)
+
+    # Scores should be identical: fallback is inactive when semantic_score > 0.
+    assert abs(score_with_terms - score_without_terms) < 1e-9
+
+
+def test_weights_presets_sum_to_approximately_one() -> None:
+    """All weight fields (excl. bonuses) of the presets should sum ≤ 1.0."""
+    for preset in (WEIGHTS_DEFAULT, WEIGHTS_RECENCY, WEIGHTS_CITATION):
+        core_sum = preset.semantic + preset.citation + preset.influential + preset.recency
+        assert core_sum <= 1.0 + 1e-9, f"Core weights sum > 1.0 for {preset}"

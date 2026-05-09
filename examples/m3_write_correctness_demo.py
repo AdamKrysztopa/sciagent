@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
-from typing import Any
+from typing import Any, cast
 
 import httpx
 
@@ -91,10 +91,10 @@ def _build_demo_transport() -> httpx.MockTransport:
 
             key = f"I{item_counter}"
             item_counter += 1
-            collection_keys = payload.get("collections") or []
+            collection_keys = cast(list[str], payload.get("collections") or [])
             target_collection = collection_keys[0] if collection_keys else ""
             collection = find_collection(target_collection)
-            creators = payload.get("creators") or []
+            creators = cast(list[dict[str, Any]], payload.get("creators") or [])
             items_by_collection.setdefault(target_collection, []).append({
                 "key": key,
                 "data": {

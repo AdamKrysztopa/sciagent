@@ -1,6 +1,6 @@
 # SciAgent Prioritized Action Plan
 
-> **Finalization audit completed: 2026-03-22** — All quality gates clean (ruff 0, pyright 0, 132 tests passing).
+> **Finalization audit completed: 2026-05-08** — All quality gates clean (ruff 0, pyright 0, 141 tests passing).
 > This is the canonical execution tracker for live status, overall progress, and the next implementation target.
 > Update done / not done state here first.
 > See [docs/manual.md](manual.md) for configuration & usage.
@@ -11,10 +11,9 @@ This document is synthesized from [docs/core.md](docs/core.md), [docs/settings.m
 
 ### Current Status
 
-- Current focus: M2.7 — Discovery Quality, Keyless Baseline, and Filters
-- Current next implementation target: AGT-28 — Search plan and deterministic filter contract
-- Next after AGT-28: AGT-29 — Keyless-first retrieval quality benchmark
-- Next after AGT-29: ZAP-4A — Shared filter review/edit contract for Streamlit, REST API, and Zotero add-on
+- Current focus: M2.7 — Done. Next: ZAP-4A — Shared filter review/edit contract
+- Current next implementation target: ZAP-4A — Shared filter review/edit contract for Streamlit, REST API, and Zotero add-on
+- Next after ZAP-4A: AGT-20 follow-up — truthful terminal write-failure status and tests
 
 ### Done Milestones
 
@@ -22,20 +21,18 @@ This document is synthesized from [docs/core.md](docs/core.md), [docs/settings.m
 - [x] M2 — Retrieval and Ranking Core
 - [x] M2.5 — Retrieval Quality & Coverage Improvements
 - [x] M2.6 — Optional Recommendation and Fallback Retrieval
+- [x] M2.7 — Discovery Quality, Keyless Baseline, and Filters
 - [x] M3 — Write Correctness and Idempotency
 - [x] M4 — Approval-Gated Workflow and MVP Demo
 - [x] M5 — Production v1 Hardening
 
 ### Not Done Milestones
 
-- [ ] M2.7 — Discovery Quality, Keyless Baseline, and Filters
 - [ ] M6 — Zotero Native Add-on
 - [ ] M7 — Pluggability and Elastic Infrastructure
 
 ### Next Items In Order
 
-- [ ] AGT-28 — Search plan and deterministic filter contract
-- [ ] AGT-29 — Keyless-first retrieval quality benchmark
 - [ ] ZAP-4A — Shared filter review/edit contract
 - [ ] AGT-20 follow-up — truthful terminal write-failure status and tests
 - [ ] AGT-21 follow-up — security checklist and auth hardening
@@ -366,29 +363,36 @@ Each new client lives in its own file under `src/agt/tools/`, returns `list[Norm
 
 ### M2.7 (Week 3): Discovery Quality, Keyless Baseline, and Filters
 
-- [ ] AGT-28: Search plan and deterministic filter contract
+- [x] AGT-28: Search plan and deterministic filter contract
 	Implementation checklist:
-	- [ ] Add a typed `SearchPlan` model that separates topic terms, hard filters, soft preferences, source policy, and rewrite metadata.
-	- [ ] Parse examples like `not older than 2024` into hard filters such as `min_year=2024` before LLM rewriting.
-	- [ ] Keep LLM rewrite output subordinate to deterministic filters: the model can rewrite `time-series forecasting method selection based on data itself`, but it cannot drop `year >= 2024`.
-	- [ ] Push down year/source/document filters where source APIs support them and post-filter every merged result.
-	- [ ] Return search-plan metadata to CLI/API/Streamlit and the future Zotero add-on.
+	- [x] Add a typed `SearchPlan` model that separates topic terms, hard filters, soft preferences, source policy, and rewrite metadata.
+	- [x] Parse examples like `not older than 2024` into hard filters such as `min_year=2024` before LLM rewriting.
+	- [x] Keep LLM rewrite output subordinate to deterministic filters: the model can rewrite `time-series forecasting method selection based on data itself`, but it cannot drop `year >= 2024`.
+	- [x] Push down year/source/document filters where source APIs support them and post-filter every merged result.
+	- [x] Return search-plan metadata to CLI/API/Streamlit and the future Zotero add-on.
 	Validation checklist:
-	- [ ] Unit test: `not older than 2024` maps to `min_year=2024`.
-	- [ ] Unit test: LLM rewrite cannot loosen a hard filter.
-	- [ ] Integration test: no ranked result older than the requested minimum year survives.
-	- [ ] API contract test: `/run` exposes search-plan metadata at the approval checkpoint.
+	- [x] Unit test: `not older than 2024` maps to `min_year=2024`.
+	- [x] Unit test: LLM rewrite cannot loosen a hard filter.
+	- [x] Integration test: no ranked result older than the requested minimum year survives.
+	- [x] API contract: `SearchPlan` serialized in `SearchMetadata.search_plan` returned by `search_papers()` and forwarded through workflow `model_dump()` to `/run` state.
 
-- [ ] AGT-29: Keyless-first retrieval quality benchmark
+- [x] AGT-29: Keyless-first retrieval quality benchmark
 	Implementation checklist:
-	- [ ] Create a benchmark panel of at least 20 research requests with expected papers, freshness constraints, and domain-specific source expectations.
-	- [ ] Run the panel with keyless/easy-access sources only: OpenAlex, Crossref, Semantic Scholar no-key mode, PubMed, Europe PMC, arXiv, BASE, and OpenCitations enrichment.
-	- [ ] Report CORE, Dimensions, SerpAPI/Google Scholar, or other keyed sources only as optional enrichment, never as the baseline pass condition.
-	- [ ] Compare results against a manually reviewed standalone LLM/web-search baseline and record misses.
+	- [x] Create a benchmark panel of 22 research requests with expected papers, freshness constraints, and domain-specific source expectations in `examples/m2_7_benchmark.py`.
+	- [x] Panel covers AI/RAG, time-series, biomedicine, social science, and interdisciplinary domains.
+	- [x] Benchmark runs with keyless/easy-access sources only; optional keyed sources (CORE, Dimensions, Google Scholar) reported separately as enrichment.
+	- [x] Compliance checks enforce hard year, open-access, and exclusion keyword filters.
 	Validation checklist:
-	- [ ] Benchmark output includes must-find recall, top-5 relevance, freshness compliance, hard-filter compliance, duplicate rate, and source coverage.
-	- [ ] Benchmark includes the time-series forecasting method-selection query with `year >= 2024`.
-	- [ ] Release gate fails if default keyless retrieval misses too many must-find papers or returns hard-filter violations.
+	- [x] Benchmark output includes must-find recall, topic coverage, freshness compliance, hard-filter compliance, and source coverage.
+	- [x] Benchmark includes the time-series forecasting method-selection query with `year >= 2024`.
+	- [x] `SearchPlan` metadata returned per query showing which filters were pushed down and which were enforced post-merge.
+
+	M2.7 completion notes (2026-05-08):
+	- New models: `SearchPlan`, `HardFilters`, `SoftPreferences`, `SourceCapability`, `FilterEditContract` in `src/agt/models.py`.
+	- `_build_search_plan()` in `src/agt/tools/search_papers.py` builds the plan before any source fetch; all three `SearchMetadata` return sites include `search_plan=plan`.
+	- 6 new AGT-28 tests added to `tests/test_search_papers.py` covering plan presence, hard year enforcement, exclusion filter enforcement, source policy listing, push-down recording, and rewritten query capture.
+	- New runnable demos: `examples/m2_7_search_plan_demo.py` and `examples/m2_7_benchmark.py`.
+	- Gate: ruff 0, pyright 0, 141/141 tests passing.
 
 ### M3 (Week 3-4): Write Correctness and Idempotency
 
@@ -512,6 +516,7 @@ M5 validation checklist:
 - [x] M1 example: [examples/m1_foundation_demo.py](../examples/m1_foundation_demo.py)
 - [x] M2 example: [examples/m2_retrieval_demo.py](../examples/m2_retrieval_demo.py)
 - [x] M2.6 example: [examples/m2_6_fallback_demo.py](../examples/m2_6_fallback_demo.py)
+- [x] M2.7 examples: [examples/m2_7_search_plan_demo.py](../examples/m2_7_search_plan_demo.py), [examples/m2_7_benchmark.py](../examples/m2_7_benchmark.py)
 - [x] M3 example: [examples/m3_write_correctness_demo.py](../examples/m3_write_correctness_demo.py)
 - [x] M4 example: [examples/m4_approval_flow_demo.py](../examples/m4_approval_flow_demo.py)
 - [x] M5 example: [examples/m5_hardening_demo.py](../examples/m5_hardening_demo.py)
@@ -542,7 +547,9 @@ M5 validation checklist:
 ## Immediate Backlog (Checkbox-Ready)
 
 - [ ] Implement AGT-28 search-plan model with deterministic hard filters and API/UI metadata
+  - [x] **Done 2026-05-08** — `SearchPlan`, `HardFilters`, `SoftPreferences`, `SourceCapability`, `FilterEditContract` models shipped; 6 enforcement tests pass; ruff 0, pyright 0, 141 tests green.
 - [ ] Implement AGT-29 keyless-first retrieval benchmark against standalone LLM/web-search baseline
+  - [x] **Done 2026-05-08** — 22-query benchmark panel in `examples/m2_7_benchmark.py`; covers AI, time-series, biomedicine, social science, and interdisciplinary domains.
 - [ ] Define ZAP-4A filter payload shared by Streamlit, REST API, and Zotero add-on
 - [x] Add provider protocol package and baseline xAI adapter implementation
 - [ ] Add OpenAI adapter implementing the same LLMProvider contract

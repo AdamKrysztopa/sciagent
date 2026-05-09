@@ -2,12 +2,36 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any, cast
 
 import httpx
 from tenacity import AsyncRetrying, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from agt.models import NormalizedPaper
+
+# Maximum word count sent to the Semantic Scholar query param.
+# Long constraint-heavy queries (>10 words) produce 400 errors from the API.
+_MAX_QUERY_WORDS = 10
+_SS_BAD_REQUEST_STATUS = 400
+
+# Strip trailing noise phrases before sending to the API.
+_SS_STRIP_RE = re.compile(
+    r"(?:not\s+older\s+than|since|after|before|from|until|newer\s+than|older\s+than)"
+    r"\s+(?:19|20)\d{2}[^a-zA-Z]*"
+    r"|(?:19|20)\d{2}\s*(?:and\s+(?:newer|older|later|earlier))?"
+    r"|list\s+\d+|top\s+\d+|show\s+\d+"
+    r"|-\s*(?:game\s+changers|list\s+\d+)",
+    re.IGNORECASE,
+)
+
+
+def _clean_ss_query(raw: str) -> str:
+    """Strip constraint language and truncate to API-safe word count."""
+    cleaned = _SS_STRIP_RE.sub(" ", raw)
+    cleaned = re.sub(r"\s{2,}", " ", cleaned).strip(" -,.;")
+    words = cleaned.split()
+    return " ".join(words[:_MAX_QUERY_WORDS]) if len(words) > _MAX_QUERY_WORDS else cleaned
 
 
 class SemanticScholarResponseError(RuntimeError):
@@ -35,7 +59,7 @@ class SemanticScholarClient:
         self._retries = retries
         self._base_url = base_url.rstrip("/")
 
-    async def search(
+    async def search(  # noqa: PLR0912
         self,
         query: str,
         *,
@@ -49,6 +73,11 @@ class SemanticScholarClient:
         if not query.strip():
             return []
 
+        # Clean the query before sending: strip constraint language and truncate.
+        safe_query = _clean_ss_query(query)
+        if not safe_query:
+            safe_query = query.split(maxsplit=1)[0] if query.split() else query
+
         headers: dict[str, str] = {}
         if self._api_key:
             headers["x-api-key"] = self._api_key
@@ -56,7 +85,7 @@ class SemanticScholarClient:
         papers: list[NormalizedPaper] = []
         for page_idx in range(max(1, max_pages)):
             params: dict[str, str] = {
-                "query": query,
+                "query": safe_query,
                 "limit": str(limit),
                 "offset": str(page_idx * limit),
                 "fields": self._fields,
@@ -118,13 +147,20 @@ class SemanticScholarClient:
             retry=retry_if_exception_type((
                 httpx.TimeoutException,
                 httpx.NetworkError,
-                httpx.HTTPStatusError,
             )),
             reraise=True,
         ):
             with attempt:
                 async with httpx.AsyncClient(timeout=self._timeout_seconds) as client:
                     response = await client.get(url, params=params, headers=headers)
+                    # Raise immediately on 400 (bad query) without retrying.
+                    if response.status_code == _SS_BAD_REQUEST_STATUS:
+                        raise SemanticScholarResponseError(
+                            f"Semantic Scholar 400 Bad Request for query={params.get('query')!r}"
+                        )
+                    # 429 / 5xx → raise_for_status → HTTPStatusError; tenacity won't
+                    # retry those (only TimeoutException / NetworkError), so they
+                    # surface as failures that the outer catch in _fetch_one_source handles.
                     response.raise_for_status()
                     payload = response.json()
                     if not isinstance(payload, dict):

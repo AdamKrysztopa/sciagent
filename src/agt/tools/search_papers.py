@@ -12,7 +12,14 @@ from typing import Literal
 
 from agt.config import Settings, get_settings
 from agt.guardrails import current_thread_id, get_guardrails
-from agt.models import NormalizedPaper, SearchMetadata
+from agt.models import (
+    HardFilters,
+    NormalizedPaper,
+    SearchMetadata,
+    SearchPlan,
+    SoftPreferences,
+    SourceCapability,
+)
 from agt.providers.protocol import LLMProvider
 from agt.tools.arxiv_api import ArxivClient
 from agt.tools.base_search import BaseSearchClient
@@ -31,7 +38,13 @@ from agt.tools.query_constraints import (
     parse_query_constraints,
 )
 from agt.tools.query_rewriter import RewrittenQuery, rewrite_query, validate_results
-from agt.tools.ranking import rank_and_index_papers
+from agt.tools.ranking import (
+    WEIGHTS_CITATION,
+    WEIGHTS_DEFAULT,
+    WEIGHTS_RECENCY,
+    RankingWeights,
+    rank_and_index_papers,
+)
 from agt.tools.reranker import rerank_papers
 from agt.tools.semantic_scholar import SemanticScholarClient, SemanticScholarResponseError
 from agt.tools.spell_check import correct_query
@@ -430,6 +443,23 @@ async def _enrich_citations(
     return enriched
 
 
+def _intent_weights(constraints: SearchConstraintSpec) -> RankingWeights:
+    """Derive ranking weights from parsed query intent.
+
+    - Year constraint active → recency-priority preset (reduces citation dominance
+      so a 2024 Chemistry textbook does not beat a fresh time-series paper).
+    - Citation constraint active → citation-priority preset.
+    - Both active or neither → default balanced weights.
+    """
+    has_year = constraints.year.min_year is not None or constraints.year.max_year is not None
+    has_citation = constraints.citations.min_citations > 0
+    if has_year and not has_citation:
+        return WEIGHTS_RECENCY
+    if has_citation and not has_year:
+        return WEIGHTS_CITATION
+    return WEIGHTS_DEFAULT
+
+
 def _rank_and_filter(
     results: list[NormalizedPaper],
     constraints: SearchConstraintSpec,
@@ -444,7 +474,11 @@ def _rank_and_filter(
     if settings.use_reranker:
         rerank_input = rerank_papers(query=query, papers=results, top_k=len(results))
 
-    ranked = rank_and_index_papers(rerank_input)
+    ranked = rank_and_index_papers(
+        rerank_input,
+        query_terms=constraints.keywords.include_keywords,
+        weights=_intent_weights(constraints),
+    )
     filtered = apply_query_constraints(ranked, constraints)
     for index, paper in enumerate(filtered):
         paper.index = index
@@ -467,6 +501,129 @@ def _build_regex_query(
 
     keyword_query = " ".join(constraints.keywords.include_keywords)
     return keyword_query if len(keyword_query) >= _MIN_KEYWORD_QUERY_LEN else raw_query
+
+
+# Static capability table: which filters each source pushes down to its API.
+_SOURCE_PUSH_DOWN: dict[str, list[str]] = {
+    "semantic_scholar": ["year_min", "year_max"],
+    "openalex": ["year_min"],
+    "crossref": [],
+    "pubmed": [],
+    "europe_pmc": [],
+    "arxiv": [],
+    "base": [],
+    "core": [],
+    "dimensions": [],
+    "google_scholar": [],
+}
+
+_SOURCE_SUPPORTS_YEAR: frozenset[str] = frozenset({"semantic_scholar", "openalex"})
+_SOURCE_SUPPORTS_OA: frozenset[str] = frozenset()
+
+
+def _build_search_plan(  # noqa: PLR0912
+    original_query: str,
+    topic_query: str,
+    rewritten_queries: list[str],
+    constraints: SearchConstraintSpec,
+    settings: Settings,
+    rewritten: RewrittenQuery | None,
+) -> SearchPlan:
+    """Build a typed SearchPlan before retrieval begins (AGT-28)."""
+
+    hard_filters = HardFilters(
+        min_year=constraints.year.min_year,
+        max_year=constraints.year.max_year,
+        min_citations=constraints.citations.min_citations,
+        max_citations=constraints.citations.max_citations,
+        open_access_only=constraints.quality.open_access_only,
+        include_keywords=list(constraints.keywords.include_keywords),
+        exclude_keywords=list(constraints.keywords.exclude_keywords),
+    )
+    soft_preferences = SoftPreferences(
+        require_positive_community_perception=constraints.quality.require_positive_community_perception,
+        min_semantic_score=constraints.quality.min_semantic_score,
+    )
+
+    # Primary sources are always present; optional keyed sources appear when configured.
+    primary_names: list[str] = [
+        "semantic_scholar",
+        "openalex",
+        "crossref",
+        "pubmed",
+        "europe_pmc",
+        "arxiv",
+        "base",
+    ]
+    fallback_names: list[str] = []
+    if settings.core_api_key is not None:
+        fallback_names.append("core")
+    if settings.dimensions_key is not None:
+        fallback_names.append("dimensions")
+    if settings.serpapi_key is not None:
+        fallback_names.append("google_scholar")
+
+    source_policy: list[SourceCapability] = []
+    for name in primary_names:
+        source_policy.append(
+            SourceCapability(
+                name=name,
+                tier="primary",
+                enabled=True,
+                supports_year_filter=name in _SOURCE_SUPPORTS_YEAR,
+                supports_open_access_filter=name in _SOURCE_SUPPORTS_OA,
+            )
+        )
+    for name in fallback_names:
+        source_policy.append(
+            SourceCapability(
+                name=name,
+                tier="fallback",
+                enabled=True,
+                supports_year_filter=name in _SOURCE_SUPPORTS_YEAR,
+                supports_open_access_filter=name in _SOURCE_SUPPORTS_OA,
+            )
+        )
+
+    # Determine which filters were pushed down per source.
+    active_push_down: dict[str, list[str]] = {}
+    for name in [*primary_names, *fallback_names]:
+        pushed: list[str] = []
+        for filter_name in _SOURCE_PUSH_DOWN.get(name, []):
+            if (filter_name == "year_min" and constraints.year.min_year is not None) or (
+                filter_name == "year_max" and constraints.year.max_year is not None
+            ):
+                pushed.append(filter_name)
+        if pushed:
+            active_push_down[name] = pushed
+
+    # Post-merge filters are all hard filters not pushed down at the source level.
+    enforced_post_merge: list[str] = []
+    if constraints.year.min_year is not None:
+        enforced_post_merge.append("year_min")
+    if constraints.year.max_year is not None:
+        enforced_post_merge.append("year_max")
+    if constraints.citations.min_citations > 0:
+        enforced_post_merge.append("min_citations")
+    if constraints.citations.max_citations is not None:
+        enforced_post_merge.append("max_citations")
+    if constraints.quality.open_access_only:
+        enforced_post_merge.append("open_access_only")
+    if constraints.quality.min_semantic_score > 0.0:
+        enforced_post_merge.append("min_semantic_score")
+    if constraints.keywords.exclude_keywords:
+        enforced_post_merge.append("exclude_keywords")
+
+    return SearchPlan(
+        original_query=original_query,
+        topic_query=topic_query,
+        rewritten_queries=rewritten_queries,
+        hard_filters=hard_filters,
+        soft_preferences=soft_preferences,
+        source_policy=source_policy,
+        filters_pushed_down=active_push_down,
+        filters_enforced_post_merge=enforced_post_merge,
+    )
 
 
 async def search_papers(  # noqa: PLR0912, PLR0915
@@ -509,7 +666,10 @@ async def search_papers(  # noqa: PLR0912, PLR0915
     fetch_limit = min(capped_limit * _OVER_FETCH_MULTIPLIER, _MAX_FETCH_LIMIT)
 
     regex_query = _build_regex_query(constraints, corrected_query, active_settings)
-    retrieval_query = corrected_query
+    # In no-LLM mode use the cleaned keyword query for retrieval so that constraint
+    # language ("most cited", "list 5", "and newer") never pollutes API requests.
+    # When an LLM is available its rewritten query takes precedence.
+    retrieval_query = regex_query
     topic = ""
     mode: str = "regex"
     rewritten: RewrittenQuery | None = None
@@ -521,8 +681,21 @@ async def search_papers(  # noqa: PLR0912, PLR0915
             topic = rewritten.topic
             mode = "llm_rewrite"
         except Exception:
-            retrieval_query = corrected_query
+            retrieval_query = regex_query
             topic = ""
+
+    # Build the typed SearchPlan now that we have all query derivations (AGT-28).
+    _rewritten_queries: list[str] = [retrieval_query]
+    if rewritten and rewritten.synonyms:
+        _rewritten_queries.extend(s for s in rewritten.synonyms if s and s != retrieval_query)
+    plan = _build_search_plan(
+        original_query=query,
+        topic_query=topic or corrected_query,
+        rewritten_queries=_rewritten_queries,
+        constraints=constraints,
+        settings=active_settings,
+        rewritten=rewritten,
+    )
 
     all_failures: list[str] = []
     all_sources_used: list[str] = []
@@ -640,6 +813,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                 total_fetched=len(results),
                 total_after_filter=len(filtered),
                 source_timings=all_timings,
+                search_plan=plan,
             )
             return filtered, metadata
 
@@ -686,6 +860,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                     total_fetched=len(fallback_results),
                     total_after_filter=len(filtered),
                     source_timings=all_timings,
+                    search_plan=plan,
                 )
                 return filtered, metadata
         if not results:
@@ -706,5 +881,6 @@ async def search_papers(  # noqa: PLR0912, PLR0915
         total_fetched=len(results),
         total_after_filter=0,
         source_timings=all_timings,
+        search_plan=plan,
     )
     return [], metadata
