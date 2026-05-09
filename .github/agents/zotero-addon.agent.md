@@ -1,6 +1,6 @@
 ---
 name: zotero-addon
-description: "Use when: designing Zotero 7 add-on architecture, backend contracts, native integration boundaries, approval flows, TypeScript/React/WebExtension sidebar structure, manifest/bootstrap direction, or docs/zotero.md milestones."
+description: "Use when: designing Zotero 9 add-on architecture, backend contracts, native integration boundaries, approval flows, TypeScript/React/WebExtension sidebar structure, manifest/bootstrap direction, or docs/zotero.md milestones."
 argument-hint: "Describe the Zotero add-on feature, user flow, or backend contract and this agent will map the plugin architecture."
 tools: [read, search, agent, web, todo]
 handoffs:
@@ -33,7 +33,7 @@ Operating rules:
 6. Default to the 2026 TypeScript + React + WebExtension approach described in `docs/zotero.md`, not a Python-hosted UI.
 7. Use Context7 for current React and platform library guidance before introducing non-trivial framework patterns.
 8. Hand off implementation details to `zotero-frontend` for TypeScript/React code and to `python-backend-engineer` for backend contract changes.
-9. Use the fetch MCP server to retrieve current Zotero 7 API and extension SDK documentation when designing contracts or interpreting plugin behavior.
+9. Use the fetch MCP server to retrieve current Zotero 9 API and extension SDK documentation when designing contracts or interpreting plugin behavior.
 
 Output contract:
 

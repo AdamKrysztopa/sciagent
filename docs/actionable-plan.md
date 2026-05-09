@@ -11,9 +11,16 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 ### Current Status
 
-- Current focus: M2.7 — Done. Next: ZAP-4A — Shared filter review/edit contract
+- Current focus: M6 — Documentation cleanup and live Zotero 9 validation in progress
 - Current next implementation target: ZAP-4A — Shared filter review/edit contract for Streamlit, REST API, and Zotero add-on
 - Next after ZAP-4A: AGT-20 follow-up — truthful terminal write-failure status and tests
+
+### Recent Progress
+
+- ✅ Docs reorganized: new `docs/api.md`, `docs/deployment.md`, updated `docs/manual.md` with full local run guide
+- ✅ macOS XPI installation instructions added to manual
+- ✅ MkDocs nav restructured into Overview / Planning / Manuals / Reference
+- ✅ README updated with clear doc pointers
 
 ### Done Milestones
 
@@ -477,7 +484,7 @@ M6 partial delivery notes (2026-05-09):
 - [x] Added typed add-on backend client for `GET /health`, `POST /run`, `GET /status/{run_id}`, and `POST /resume`, including `X-AGT-API-Key` and `X-AGT-Client-ID` headers.
 - [x] Added React MVP item-pane UI for health status, query/collection input, parsed filter review/edit, result selection, and approve/reject/write-result rendering.
 - [x] Added Zotero prefs adapter and preference pane surface for backend URL, API key, client ID, and PDF-toggle placeholder.
-- [ ] Validate the scaffold inside a live Zotero 7 runtime.
+- [ ] Validate the scaffold inside a live Zotero 9 runtime.
 - [ ] Add signing/release automation and Zotero directory distribution flow.
 
 ### M7 (Week 8-10): Pluggability and Elastic Infrastructure

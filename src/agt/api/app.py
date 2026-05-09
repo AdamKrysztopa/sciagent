@@ -13,6 +13,10 @@ from agt.graph.workflow import resume_workflow, run_search_phase
 from agt.models import AgentState, FilterEditContract
 from agt.zotero.preflight import run_zotero_preflight
 
+# Backend contract version exposed via /health for client compatibility checks.
+# Format: YYYY-MM for stable monthly revision windows.
+API_CONTRACT_VERSION = "2026-05"
+
 
 class RunRequest(BaseModel):
     query: str = Field(min_length=1)
@@ -111,6 +115,7 @@ def create_app() -> FastAPI:
             "preflight": preflight.to_dict(),
             "provider": settings.llm_provider,
             "fallback_provider": settings.llm_fallback_provider,
+            "api_contract_version": API_CONTRACT_VERSION,
         }
 
     @app.post("/run", response_model=RunAcceptedResponse)

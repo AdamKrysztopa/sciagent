@@ -2,6 +2,15 @@
 
 SciAgent is a typed Python foundation for natural-language paper search and safe, approval-gated Zotero writes.
 
+## Documentation
+
+- **[Configuration & Usage Manual](docs/manual.md)** — Installation, configuration, and local run guide
+- **[REST API Reference](docs/api.md)** — Backend API contract for programmatic access
+- **[Deployment Guide](docs/deployment.md)** — Local, Docker, and future SaaS architecture
+- **[Core Roadmap](docs/core.md)** — Feature backlog and milestone details
+- **[Action Plan](docs/actionable-plan.md)** — Execution tracker and live status
+- **[Settings](docs/settings.md)** — Runtime stack, bootstrap flow, and quality tooling
+
 ## Prerequisites
 
 - Python 3.14 recommended (3.13 and 3.14 supported)

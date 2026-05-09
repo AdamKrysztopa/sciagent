@@ -26,7 +26,7 @@ You decompose tasks, route work to the correct specialist, enforce pipeline sequ
 | `core-planner`            | Backlog mapping, story sequencing, acceptance criteria, and dependency analysis against `docs/core.md`                                                                                                  |
 | `settings-bootstrap`      | Python 3.14 policy, `uv`, `ruff`, `pyright`/`ty`, CI, Docker, reproducibility, and repo-wide quality gates from `docs/settings.md`                                                                      |
 | `python-backend-engineer` | All Python implementation and review: `src/agt/**`, `tests/**`, FastAPI, LangGraph, provider adapters, retrieval, ranking, reranking, Zotero write paths, observability, strict typing, and performance |
-| `zotero-addon`            | Zotero 7 add-on architecture, backend contract design, native integration boundaries, approval/write-path scoping, and `docs/zotero.md` milestone interpretation                                        |
+| `zotero-addon`            | Zotero 9 add-on architecture, backend contract design, native integration boundaries, approval/write-path scoping, and `docs/zotero.md` milestone interpretation                                        |
 | `zotero-frontend`         | TypeScript, React, WebExtension, sidebar UI, hooks, manifest/bootstrap code, typed backend clients, and Zotero host-boundary adapters                                                                   |
 
 ## Routing Rules

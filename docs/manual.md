@@ -9,8 +9,8 @@
 1. [Prerequisites](#prerequisites)
 2. [Installation](#installation)
 3. [Configuration](#configuration)
-4. [Running SciAgent](#running-sciagent)
-5. [API Reference](#api-reference)
+4. [Running Locally: Complete Guide](#running-locally-complete-guide)
+5. [Other Interfaces](#other-interfaces)
 6. [Retrieval Sources](#retrieval-sources)
 7. [Advanced Configuration](#advanced-configuration)
 8. [Troubleshooting](#troubleshooting)
@@ -25,7 +25,7 @@
 | Python         | >= 3.13 (recommended: 3.14) | Free-threaded GIL optional support                                |
 | `uv`           | latest                      | Package manager ([install](https://astral.sh/uv))                 |
 | Node.js        | >= 20                       | Required only for the Zotero add-on package in `zotero-addon/`    |
-| Zotero         | 7.x                         | Required for the native add-on scaffold and item-pane integration |
+| Zotero         | 9.x                         | Required for the native add-on scaffold and item-pane integration |
 | Zotero account | —                           | With API key and library ID                                       |
 | xAI API key    | —                           | Default LLM provider (or OpenAI/Anthropic)                        |
 
@@ -50,7 +50,7 @@ uv run pre-commit install
 
 ### Optional: validate and build the Zotero add-on package
 
-The repository now includes a top-level Zotero 7 add-on scaffold in `zotero-addon/`.
+The repository now includes a top-level Zotero 9 add-on scaffold in `zotero-addon/`.
 
 ```bash
 cd zotero-addon
@@ -161,13 +161,230 @@ AGT_OPENAI_API_KEY=sk-your-openai-key
 
 ## Running SciAgent
 
-SciAgent has three interfaces: **CLI**, **Streamlit UI**, and **REST API**.
+SciAgent has four interfaces:
 
-The repository also includes a fourth delivery surface for M6: a native Zotero 7 add-on package that talks to the REST API.
+1. **Command-Line Interface (CLI)** — one-shot search from terminal
+2. **Streamlit UI** — interactive web-based approval interface
+3. **REST API** — programmatic backend for Zotero add-on and custom clients
+4. **Zotero 9 Add-on** — native integration with Zotero desktop client (M6)
+
+---
+
+## Running Locally: Complete Guide
+
+This section walks through the full M6 local development flow: starting the backend, building the add-on, installing it in Zotero 9, and running your first search.
+
+### Step 1: Start the Backend API
+
+The backend must be running before using the Zotero add-on.
+
+```bash
+cd /path/to/sciagent
+
+# Ensure dependencies are installed
+uv sync
+
+# Verify .env file has required keys
+# AGT_XAI_API_KEY, AGT_ZOTERO_API_KEY, AGT_ZOTERO_LIBRARY_ID
+
+# Start the API server
+uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000
+```
+
+**Expected output:**
+
+```text
+INFO:     Started server process [12345]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+```
+
+**Verify health:**
+
+```bash
+curl http://localhost:8000/health
+```
+
+Should return JSON with `"status": "ok"` and Zotero preflight details.
+
+**Common issues:**
+
+- `Missing required field`: Check `.env` has `AGT_XAI_API_KEY`, `AGT_ZOTERO_API_KEY`, and `AGT_ZOTERO_LIBRARY_ID`
+- `Address already in use`: Another process is using port 8000; kill it or use `--port 8001`
+- `Preflight failed`: Zotero API key may be invalid or lack write permissions
+
+---
+
+### Step 2: Build the Zotero Add-on
+
+```bash
+cd zotero-addon
+
+# Install Node.js dependencies (first time only)
+npm ci
+
+# Build the XPI package
+npm run build
+```
+
+**Build outputs:**
+
+- `zotero-addon/build/xpi/` — unpacked add-on contents
+- `zotero-addon/build/sciagent-zotero-addon.xpi` — installable package
+
+**Verify build succeeded:**
+
+```bash
+ls -lh build/sciagent-zotero-addon.xpi
+```
+
+Should show a file around 50-100 KB.
+
+---
+
+### Step 3: Install the Add-on in Zotero 9
+
+**⚠️ Important for macOS users:**
+
+Do **NOT** double-click the XPI file or use "Open With" → Zotero. macOS will attempt to extract it as an archive instead of installing it as an add-on.
+
+**Correct installation method (all platforms):**
+
+1. Open Zotero 9
+2. Go to **Tools → Add-ons** (or **Preferences → Plugins** in some Zotero builds)
+3. Click the gear icon (⚙️) in the top-right
+4. Select **Install Add-on From File...**
+5. Navigate to `sciagent/zotero-addon/build/sciagent-zotero-addon.xpi`
+6. Click **Open**
+
+**Expected result:**
+
+- SciAgent appears in the add-ons list with version `0.1.0`
+- Status shows "Enabled"
+- A restart prompt may appear; restart Zotero if requested
+
+**Troubleshooting:**
+
+- **"The add-on ... could not be installed. It may be incompatible with this version of Zotero."**:
+  1. Rebuild the XPI: `cd zotero-addon && npm run build`
+  2. Verify your Zotero version: **Help → About Zotero**. The add-on requires Zotero 9.0.0 or higher.
+  3. Check the manifest in the XPI: `unzip -p build/sciagent-zotero-addon.xpi manifest.json | grep strict_`
+     - `strict_min_version` should be `"9.0.0"`
+     - `strict_max_version` should be `"9.*"` to accept all Zotero 9.x versions
+  4. If you previously installed an incompatible version, uninstall it completely and restart Zotero before reinstalling
+- **"This add-on could not be installed"** (generic): XPI may be corrupted; rebuild with `npm run build`
+- **"Requires restart"**: Restart Zotero and verify add-on appears in Tools → Add-ons
+- **Add-on not visible after installation**: Check Zotero version is 9.x. Zotero 7 and earlier are not supported.
+
+---
+
+### Step 4: Configure Add-on Preferences
+
+After installation, configure the backend connection:
+
+1. In Zotero, go to **Tools → Add-ons**
+2. Find **SciAgent** in the list
+3. Click the **Preferences** button (or gear icon → Preferences)
+4. Set the following:
+   - **Backend URL**: `http://localhost:8000`
+   - **API Key**: (leave empty if `AGT_BACKEND_API_KEY` is not set; otherwise enter your backend key)
+   - **Client ID**: Any identifier, e.g., `user-1` (used for workflow isolation)
+   - **Include PDFs**: Placeholder toggle (not yet implemented in backend)
+
+5. Click **Save**
+
+**Preferences are stored locally** and persist across Zotero restarts.
+
+---
+
+### Step 5: Run Your First Search
+
+1. In Zotero, open the **SciAgent item pane section**:
+   - The pane should appear in the right sidebar when viewing your library
+   - If not visible, check View → Layout or right-click the item pane header
+
+2. **Backend health indicator** (top of pane):
+   - Should show **green/connected** if backend is running
+   - If red, check backend is running on `http://localhost:8000`
+
+3. **Enter a query**:
+   - Example: `retrieval augmented generation`
+
+4. **Set a collection name**:
+   - Example: `RAG Papers`
+   - The collection will be created if it doesn't exist
+
+5. **Click "Run Search"**
+
+6. **Review parsed filters**:
+   - The backend's search plan appears: year range, exclude terms, source policy, preferences
+   - This is the contract the backend will execute
+
+7. **(Optional) Edit filters**:
+   - Modify year range, add exclude terms, toggle open access, adjust preferences
+   - Click "Re-run with Edits" to execute the modified plan
+
+8. **Review results**:
+   - Papers appear with titles, authors, year, citations, summary
+   - Each paper has a checkbox for selection
+
+9. **Select papers**:
+   - Check/uncheck papers you want to add to Zotero
+   - Default: all papers selected
+
+10. **Approve or Reject**:
+    - **Approve**: Writes selected papers to your Zotero library
+    - **Reject**: Discards results without writing
+
+11. **View write results**:
+    - Each paper shows status: `created`, `unchanged` (already exists), or `failed`
+    - Failed writes include error messages
+
+12. **Verify in Zotero**:
+    - Navigate to the target collection
+    - Papers should appear with full metadata (title, authors, year, DOI, abstract)
+
+---
+
+### Step 6: Smoke Test Checklist
+
+Before marking M6 complete, verify the following in a live Zotero 9 session:
+
+- [ ] Backend starts without errors: `uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000`
+- [ ] Add-on builds cleanly: `npm run build` in `zotero-addon/`
+- [ ] XPI installs via Zotero's add-ons manager (not double-click on macOS)
+- [ ] Add-on appears in Tools → Add-ons with version 0.1.0
+- [ ] Preferences pane opens and saves settings
+- [ ] SciAgent item pane section is visible in Zotero
+- [ ] Backend health indicator shows green/connected
+- [ ] Search query and collection inputs accept text
+- [ ] "Run Search" executes without errors
+- [ ] Parsed filters render correctly (year, exclude terms, sources, preferences)
+- [ ] Filter editor controls allow edits
+- [ ] "Re-run with Edits" re-executes with modified plan
+- [ ] Result list displays with titles, authors, summaries, citations
+- [ ] Selection checkboxes work for individual papers
+- [ ] "Approve" writes selected papers to Zotero collection
+- [ ] Write results render with `created`/`unchanged`/`failed` status
+- [ ] Items appear in target collection with correct metadata
+- [ ] "Reject" discards results without writing
+- [ ] Preferences persist across Zotero restarts
+- [ ] Add-on uninstalls cleanly via Tools → Add-ons
+
+**Current M6 status:**
+
+- ✅ Backend, add-on build, and package quality gates passing
+- ❌ Live Zotero 9 desktop smoke test not yet performed
+- ❌ M6 not marked complete until manual validation passes
+
+---
+
+## Other Interfaces
 
 ### Option 1: Command-Line Interface
 
-Run a single search workflow from the terminal:
+Run a single search workflow from the terminal for quick testing or scripting:
 
 ```bash
 # Basic search (no write — just displays results)
@@ -187,6 +404,10 @@ uv run python -m agt.graph.cli "transformer architectures 2024+" \
 
 **Output:** JSON with full workflow state including papers found, write results, and trace spans.
 
+**Use case:** Batch processing, CI integration, or quick validation without UI.
+
+---
+
 ### Option 2: Streamlit UI (Interactive)
 
 Launch the web-based approval interface:
@@ -204,151 +425,45 @@ Open `http://localhost:8501` in your browser. The UI provides:
 5. **Approve/Reject** — approve writes to Zotero or reject to discard
 6. **Per-item results** — see created/unchanged/failed status for each paper
 
-### Option 3: REST API (Backend)
-
-Start the FastAPI backend server:
-
-```bash
-uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000
-```
-
-The API is designed for programmatic access and as the backend for the Zotero add-on.
-
-### Option 4: Zotero Add-on (M6 MVP)
-
-1. Start the backend API:
-
-```bash
-uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000
-```
-
-1. Build the add-on package:
-
-```bash
-cd zotero-addon
-npm ci
-npm run build
-```
-
-1. Install the generated XPI in Zotero 7:
-
-- Open Zotero
-- Open the add-ons/plugins manager
-- Choose `Install Add-on From File...`
-- Select `zotero-addon/build/sciagent-zotero-addon.xpi`
-
-1. Configure the add-on preferences:
-
-- Backend URL
-- API key for `X-AGT-API-Key`
-- Client ID for `X-AGT-Client-ID`
-- PDF toggle placeholder (stored now, not yet acted on by the backend contract)
-
-1. Use the native SciAgent pane:
-
-- Open the SciAgent section in the Zotero item pane
-- Enter a query and target collection name
-- Run the first search to let the backend produce a typed search plan
-- Review or edit the parsed filter contract shown in the pane
-- Re-run with edits if needed, select results, then approve or reject
-
-Current M6 contract notes:
-
-- The add-on only calls `GET /health`, `POST /run`, `GET /status/{run_id}`, and `POST /resume`.
-- All writes remain backend-owned and backend-executed through `POST /resume`.
-- The filter editor sends the existing `FilterEditContract` payload on re-run.
-- The first search is intentionally unedited so the add-on can display the backend-produced parsed filters from `/status`.
+**Use case:** Interactive exploration and manual review workflow.
 
 ---
 
-## API Reference
+### Option 3: REST API (Programmatic)
 
-All endpoints are available at `http://localhost:8000` by default.
+The FastAPI backend is the foundation for the Zotero add-on and can be used programmatically.
 
-### `GET /health`
-
-Check system health, Zotero connectivity, and provider status.
+**Start the server:**
 
 ```bash
-curl http://localhost:8000/health
+uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000
 ```
 
-**Response:**
+**Endpoints:**
 
-```json
-{
-  "status": "ok",
-  "preflight": {
-    "ok": true,
-    "can_read": true,
-    "can_write": true,
-    "key_valid": true,
-    "message": "Library access verified"
-  },
-  "provider": "xai"
-}
-```
+- `GET /health` — system health and Zotero preflight
+- `POST /run` — start a search workflow
+- `GET /status/{run_id}` — retrieve workflow state
+- `POST /resume` — approve or reject with selection
 
-### `POST /run`
+**Use case:** Custom integrations, automation, or embedding SciAgent in other tools.
 
-Start a search workflow. Returns papers at the approval checkpoint.
+**Full API documentation:** See [API Reference](api.md) for request/response schemas, authentication, and client examples.
 
-```bash
-curl -X POST http://localhost:8000/run \
-  -H "Content-Type: application/json" \
-  -H "X-AGT-API-Key: my-secret-backend-key" \
-  -H "X-AGT-Client-ID: user-1" \
-  -d '{"query": "retrieval augmented generation", "collection_name": "RAG Papers"}'
-```
+---
 
-**Response:**
+## REST API Reference
 
-```json
-{
-  "run_id": "abc-123",
-  "thread_id": "thread-456",
-  "status": "awaiting_approval"
-}
-```
+For detailed API documentation, request/response schemas, authentication, and client examples, see [API Reference](api.md).
 
-### `POST /resume`
+**Quick summary:**
 
-Approve or reject a pending workflow.
+- `GET /health` — system health and Zotero preflight
+- `POST /run` — start a search workflow
+- `GET /status/{run_id}` — retrieve workflow state and papers
+- `POST /resume` — approve or reject with selection
 
-```bash
-# Approve with specific papers selected
-curl -X POST http://localhost:8000/resume \
-  -H "Content-Type: application/json" \
-  -H "X-AGT-API-Key: my-secret-backend-key" \
-  -H "X-AGT-Client-ID: user-1" \
-  -d '{
-    "run_id": "abc-123",
-    "approved": true,
-    "selected_indices": [0, 2, 4],
-    "collection_name": "My RAG Collection"
-  }'
-
-# Reject (no writes)
-curl -X POST http://localhost:8000/resume \
-  -H "Content-Type: application/json" \
-  -H "X-AGT-API-Key: my-secret-backend-key" \
-  -H "X-AGT-Client-ID: user-1" \
-  -d '{"run_id": "abc-123", "approved": false}'
-```
-
-### `GET /status/{run_id}`
-
-Check the current state of a workflow.
-
-```bash
-curl http://localhost:8000/status/abc-123 \
-  -H "X-AGT-API-Key: my-secret-backend-key" \
-  -H "X-AGT-Client-ID: user-1"
-```
-
-### Authentication
-
-If `AGT_BACKEND_API_KEY` is set, all endpoints require the `X-AGT-API-Key` header. Requests are isolated by `X-AGT-Client-ID` — each client can only access their own workflows.
+All endpoints support optional authentication via `X-AGT-API-Key` and `X-AGT-Client-ID` headers.
 
 ---
 
@@ -566,7 +681,7 @@ uv run python examples/m5_hardening_demo.py
 uv run python examples/m6_zotero_addon_demo.py
 ```
 
-The real add-on scaffold lives in `zotero-addon/` and packages a Zotero 7 add-on with:
+The real add-on scaffold lives in `zotero-addon/` and packages a Zotero 9 add-on with:
 
 - `manifest.json` + `bootstrap.js`
 - typed backend client for `/health`, `/run`, `/status/{run_id}`, `/resume`

@@ -2,7 +2,7 @@
   "name": "sciagent-zotero-addon",
   "version": "0.1.0",
   "private": true,
-  "description": "SciAgent native Zotero 7 add-on scaffold and MVP UI",
+  "description": "SciAgent native Zotero 9 add-on scaffold and MVP UI",
   "type": "module",
   "scripts": {
     "clean": "node ./scripts/build.mjs clean",

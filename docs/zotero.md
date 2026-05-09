@@ -1,8 +1,11 @@
 # Zotero Add-on Development Plan (AGT Native Plugin)
+
 **Assuming Core Backend (AGT-1 through AGT-8) is complete, with AGT-28 required before filterable sidebar work**
 
-**Goal:** Turn the existing Python LangGraph + FastAPI backend into a **seamless native sidebar inside Zotero 7+**.
-No more browser tab. One-click “Search Papers” in Zotero → natural language → approve → items appear instantly in your library (idempotent, with PDF attach if enabled).
+**Goal:** Turn the existing Python LangGraph + FastAPI backend into a **seamless native sidebar inside Zotero 9**.
+No more browser tab. One-click "Search Papers" in Zotero → natural language → approve → items appear instantly in your library (idempotent, with PDF attach if enabled).
+
+**Zotero 9 is the supported M6 target; Zotero 7 compatibility is unclaimed and untested.**
 
 **Scope:** Pure Zotero plugin (TypeScript + WebExtension manifest).
 **Leverages:** Already-built backend APIs (`/health`, `/run`, `/resume`, `/status/{run_id}`).
@@ -11,6 +14,7 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
 ---
 
 # Epic: ZAP-1 — Plugin Foundation & Tooling
+
 - Type: Epic
 - Priority: P0
 - Estimate: 2d
@@ -18,6 +22,7 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
 - Goal: Zero-to-working skeleton using official 2026 best practices.
 
 ## Story: ZAP-0 — Zotero Add-on Template Bootstrap
+
 - Type: Story
 - Parent: ZAP-1
 - Priority: P0
@@ -26,9 +31,10 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
   - Clone & configure `windingwind/zotero-addon-template` (latest 2026 version).
   - TypeScript + esbuild + hot-reload enabled.
   - `manifest.json` + `bootstrap.js` generated with correct plugin ID (`agt@yourdomain.org`).
-  - Plugin loads in Zotero 7+ with “AGT” menu item and empty sidebar.
+  - Plugin loads in Zotero 9 with "AGT" menu item and empty sidebar.
 
 ## Story: ZAP-1 — Development Environment & Hot Reload
+
 - Type: Story
 - Parent: ZAP-1
 - Priority: P0
@@ -41,6 +47,7 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
   - `zotero-types` package installed for full autocomplete.
 
 ## Story: ZAP-2 — Backend Connection Layer
+
 - Type: Story
 - Parent: ZAP-1
 - Priority: P0
@@ -52,6 +59,7 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
   - Secrets never stored in plugin (use Zotero.Prefs).
 
 # Epic: ZAP-2 — Native Sidebar UI
+
 - Type: Epic
 - Priority: P0
 - Estimate: 4.25d
@@ -59,16 +67,18 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
 - Goal: Zotero-native search, filter review, and approval experience (no browser).
 
 ## Story: ZAP-3 — Sidebar Registration & Layout
+
 - Type: Story
 - Parent: ZAP-2
 - Priority: P0
 - Estimate: 1d
 - Acceptance Criteria:
-  - Uses Zotero 7+ custom pane API (`Zotero.ItemPaneManager.registerSection` or reader sidebar).
+  - Uses Zotero 9 custom pane API (`Zotero.ItemPaneManager.registerSection` or reader sidebar).
   - Collapsible vertical sidebar with AGT icon.
   - Chat-like interface (React + Tailwind for speed).
 
 ## Story: ZAP-4 — Natural Language Search Flow
+
 - Type: Story
 - Parent: ZAP-2
 - Priority: P0
@@ -80,6 +90,7 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
   - “Recent” boost and dedup already handled by backend.
 
 ## Story: ZAP-4A — Filter Review & Edit Surface
+
 - Type: Story
 - Parent: ZAP-2
 - Priority: P0
@@ -93,6 +104,7 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
   - Candidate list displays which sources were used, skipped, or unavailable because optional search-engine API keys were not configured.
 
 ## Story: ZAP-5 — Approval & Collection UI
+
 - Type: Story
 - Parent: ZAP-2
 - Priority: P0
@@ -104,6 +116,7 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
   - Matches exact UX from marketing demo.
 
 # Epic: ZAP-3 — Zotero Write Integration
+
 - Type: Epic
 - Priority: P0
 - Estimate: 3d
@@ -111,6 +124,7 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
 - Goal: Direct native writes — no pyzotero needed.
 
 ## Story: ZAP-6 — Collection Resolver (Native)
+
 - Type: Story
 - Parent: ZAP-3
 - Priority: P0
@@ -120,6 +134,7 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
   - Parent collection support via Zotero API.
 
 ## Story: ZAP-7 — Idempotent Item Creation
+
 - Type: Story
 - Parent: ZAP-3
 - Priority: P0
@@ -130,6 +145,7 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
   - Partial success reporting back to UI.
 
 ## Story: ZAP-8 — PDF Attachment (Native)
+
 - Type: Story
 - Parent: ZAP-3
 - Priority: P1
@@ -140,6 +156,7 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
   - Feature flag in plugin prefs.
 
 # Epic: ZAP-4 — Polish, Packaging & Distribution
+
 - Type: Epic
 - Priority: P0
 - Estimate: 3d
@@ -147,6 +164,7 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
 - Goal: Ship-ready plugin.
 
 ## Story: ZAP-9 — Preferences Pane & Config
+
 - Type: Story
 - Parent: ZAP-4
 - Priority: P0
@@ -157,6 +175,7 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
   - Preferences include saved filter defaults for recent-only searches, open-access preference, and source inclusion/exclusion.
 
 ## Story: ZAP-10 — Error Handling & Offline Mode
+
 - Type: Story
 - Parent: ZAP-4
 - Priority: P1
@@ -166,6 +185,7 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
   - Local cache of last results.
 
 ## Story: ZAP-11 — Build, Sign & Publish
+
 - Type: Story
 - Parent: ZAP-4
 - Priority: P0
@@ -176,6 +196,7 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
   - Listed on Zotero plugin directory + GitHub Releases.
 
 # Release: AGT Zotero Add-on MVP
+
 - Type: Release
 - Priority: P0
 - Estimate: 12.25d total
@@ -189,6 +210,7 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
   - Matches the exact 38-second demo from marketing speech.
 
 **Tech Stack for Add-on (2026 native)**
+
 - TypeScript + `zotero-addon-template`
 - React 18 + Tailwind (via template)
 - Zotero JS API (`Zotero.*`)
@@ -196,12 +218,14 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
 - esbuild + hot reload
 
 **Next Steps After This Plan**
+
 1. `npx create-zotero-plugin` (or clone template) — done in 5 minutes.
 2. First story (ZAP-0) gives you a working empty sidebar today.
 
 The plugin scaffold is decoupled from Python implementation work, but filterable search UX depends on the backend exposing AGT-28 search-plan metadata.
 
 Want me to generate:
+
 - The exact `manifest.json` + `bootstrap.js` starter
 - Full React sidebar component skeleton
 - Or the GitHub Actions build workflow?

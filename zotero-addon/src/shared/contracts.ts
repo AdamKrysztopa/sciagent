@@ -1,5 +1,7 @@
 export type RunStatus = "awaiting_approval" | "completed" | "rejected" | "failed";
 
+export const REQUIRED_API_CONTRACT_VERSION = "2026-05";
+
 export interface PreflightStatus {
   ok: boolean;
   can_read?: boolean;
@@ -14,6 +16,22 @@ export interface HealthResponse {
   preflight: PreflightStatus;
   provider: string;
   fallback_provider: string | null;
+  api_contract_version?: string;
+}
+
+export type ContractCompatibility = "compatible" | "missing" | "mismatch";
+
+export function validateContractVersion(response: HealthResponse | null): ContractCompatibility {
+  if (response === null) {
+    return "missing";
+  }
+  if (response.api_contract_version === undefined) {
+    return "missing";
+  }
+  if (response.api_contract_version !== REQUIRED_API_CONTRACT_VERSION) {
+    return "mismatch";
+  }
+  return "compatible";
 }
 
 export interface HardFilters {

@@ -58,7 +58,11 @@ def test_health_requires_valid_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
 
         authorized = client.get("/health", headers={"X-AGT-API-Key": "backend-key"})
         assert authorized.status_code == HTTP_OK
-        assert authorized.json()["ok"] is True
+        payload = authorized.json()
+        assert payload["ok"] is True
+        assert "api_contract_version" in payload
+        assert isinstance(payload["api_contract_version"], str)
+        assert len(payload["api_contract_version"]) > 0
 
     app.dependency_overrides.clear()
 

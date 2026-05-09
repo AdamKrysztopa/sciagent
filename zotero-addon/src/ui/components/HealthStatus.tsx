@@ -1,4 +1,8 @@
-import type { HealthResponse } from "../../shared/contracts";
+import {
+  REQUIRED_API_CONTRACT_VERSION,
+  validateContractVersion,
+  type HealthResponse,
+} from "../../shared/contracts";
 
 interface HealthStatusProps {
   busy: boolean;
@@ -40,6 +44,9 @@ function healthLabel(busy: boolean, response: HealthResponse | null, error: stri
 }
 
 export function HealthStatus({ busy, error, onRefresh, response }: HealthStatusProps) {
+  const contractStatus = validateContractVersion(response);
+  const showContractWarning = response !== null && contractStatus !== "compatible";
+
   return (
     <section className="agt-card agt-card--soft">
       <div className="agt-section-heading">
@@ -51,6 +58,13 @@ export function HealthStatus({ busy, error, onRefresh, response }: HealthStatusP
           </button>
         </div>
       </div>
+      {showContractWarning ? (
+        <div className="agt-error">
+          {contractStatus === "missing"
+            ? `Backend contract version missing. Expected ${REQUIRED_API_CONTRACT_VERSION}.`
+            : `Backend contract version mismatch. Expected ${REQUIRED_API_CONTRACT_VERSION}, got ${response.api_contract_version}.`}
+        </div>
+      ) : null}
       {response !== null ? (
         <div className="agt-key-value">
           <span>Provider</span>

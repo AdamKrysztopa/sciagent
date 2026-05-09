@@ -1,27 +1,27 @@
 # SciAgent — Next Steps & Remaining Work
 
-**Generated:** 2026-03-22
-**Baseline:** All quality gates clean — ruff 0 errors, pyright 0 errors, 132 tests passing.
-
-> Live execution status, done / not done tracking, and the default next implementation target now live in [docs/actionable-plan.md](actionable-plan.md).
-> Treat this file as a supporting backlog view, not the primary tracker.
+> **Note:** This document provides a detailed backlog view and implementation guidance.
+> For live execution status, done/not done tracking, and the current implementation target, see **[actionable-plan.md](actionable-plan.md)** — that is the primary tracker.
+>
+> **Generated:** 2026-03-22
+> **Baseline:** All quality gates clean — ruff 0 errors, pyright 0 errors, 132 tests passing.
 
 ---
 
 ## Completion Summary
 
-| Milestone | Status | Stories |
-|-----------|--------|---------|
-| **M1** Foundation & Observability | **Done** | AGT-0, AGT-1, AGT-2, AGT-3, AGT-4 |
-| **M2** Retrieval & Ranking | **Done** | AGT-5, AGT-6, AGT-7, AGT-27 |
-| **M2.5** Retrieval Quality | **Done** | 12 sources, constraint parsing, metadata |
-| **M2.6** Fallback Retrieval | **Done** | AGT-8 |
-| **M2.7** Discovery Quality & Filters | **Not started** | AGT-28, AGT-29, ZAP-4A |
-| **M3** Write Correctness | **Done** | AGT-9, AGT-10, AGT-11, AGT-12 |
-| **M4** Approval Workflow & MVP | **Done** | AGT-14, AGT-15, AGT-17, AGT-19 |
-| **M5** Production Hardening | **Done** | AGT-16, AGT-18, AGT-20*, AGT-21*, AGT-22* |
-| **M6** Zotero Native Add-on | **Not started** | ZAP-0 through ZAP-11 plus ZAP-4A |
-| **M7** Pluggability & Infrastructure | **Not started** | AGT-23, AGT-24, AGT-25, AGT-26 |
+| Milestone                            | Status          | Stories                                    |
+| ------------------------------------ | --------------- | ------------------------------------------ |
+| **M1** Foundation & Observability    | **Done**        | AGT-0, AGT-1, AGT-2, AGT-3, AGT-4          |
+| **M2** Retrieval & Ranking           | **Done**        | AGT-5, AGT-6, AGT-7, AGT-27                |
+| **M2.5** Retrieval Quality           | **Done**        | 12 sources, constraint parsing, metadata   |
+| **M2.6** Fallback Retrieval          | **Done**        | AGT-8                                      |
+| **M2.7** Discovery Quality & Filters | **Not started** | AGT-28, AGT-29, ZAP-4A                     |
+| **M3** Write Correctness             | **Done**        | AGT-9, AGT-10, AGT-11, AGT-12              |
+| **M4** Approval Workflow & MVP       | **Done**        | AGT-14, AGT-15, AGT-17, AGT-19             |
+| **M5** Production Hardening          | **Done**        | AGT-16, AGT-18, AGT-20*, AGT-21*, AGT-22\* |
+| **M6** Zotero Native Add-on          | **Not started** | ZAP-0 through ZAP-11 plus ZAP-4A           |
+| **M7** Pluggability & Infrastructure | **Not started** | AGT-23, AGT-24, AGT-25, AGT-26             |
 
 \* = partial gaps noted below.
 
@@ -204,52 +204,52 @@ Current state: `_RetrievalProvider` dataclass and `_build_retrieval_registry()` 
 
 ### Phase 1: Plugin Foundation (ZAP-0, ZAP-1, ZAP-2) — ~2d
 
-| Story | Task | Status |
-|-------|------|--------|
-| ZAP-0 | Clone `zotero-addon-template`, configure TypeScript + esbuild | Not started |
+| Story | Task                                                                          | Status      |
+| ----- | ----------------------------------------------------------------------------- | ----------- |
+| ZAP-0 | Clone `zotero-addon-template`, configure TypeScript + esbuild                 | Not started |
 | ZAP-0 | Generate `manifest.json` + `bootstrap.js` with plugin ID `agt@yourdomain.org` | Not started |
-| ZAP-0 | Plugin loads in Zotero 7+ with "AGT" menu item and empty sidebar | Not started |
-| ZAP-1 | Extension proxy file for loading from source | Not started |
-| ZAP-1 | `npm run build` → `.xpi` auto-generated | Not started |
-| ZAP-1 | `zotero-types` package installed for full autocomplete | Not started |
-| ZAP-2 | Configurable backend URL (default `http://localhost:8000`) | Not started |
-| ZAP-2 | `fetch` wrapper with auth (API key from `Zotero.Prefs`) | Not started |
-| ZAP-2 | Health check on plugin load (green/red status in sidebar) | Not started |
+| ZAP-0 | Plugin loads in Zotero 9 with "AGT" menu item and empty sidebar               | Not started |
+| ZAP-1 | Extension proxy file for loading from source                                  | Not started |
+| ZAP-1 | `npm run build` → `.xpi` auto-generated                                       | Not started |
+| ZAP-1 | `zotero-types` package installed for full autocomplete                        | Not started |
+| ZAP-2 | Configurable backend URL (default `http://localhost:8000`)                    | Not started |
+| ZAP-2 | `fetch` wrapper with auth (API key from `Zotero.Prefs`)                       | Not started |
+| ZAP-2 | Health check on plugin load (green/red status in sidebar)                     | Not started |
 
 ### Phase 2: Native Sidebar UI (ZAP-3, ZAP-4, ZAP-4A, ZAP-5) — ~4.25d
 
-| Story | Task | Status |
-|-------|------|--------|
-| ZAP-3 | Register custom pane via `Zotero.ItemPaneManager.registerSection` | Not started |
-| ZAP-3 | Collapsible sidebar with AGT icon | Not started |
-| ZAP-3 | Chat-like React + Tailwind interface | Not started |
-| ZAP-4 | Input box + Search button → calls `/run` endpoint | Not started |
-| ZAP-4 | Render paper card list with indices, summaries, checkboxes | Not started |
+| Story  | Task                                                                                     | Status      |
+| ------ | ---------------------------------------------------------------------------------------- | ----------- |
+| ZAP-3  | Register custom pane via `Zotero.ItemPaneManager.registerSection`                        | Not started |
+| ZAP-3  | Collapsible sidebar with AGT icon                                                        | Not started |
+| ZAP-3  | Chat-like React + Tailwind interface                                                     | Not started |
+| ZAP-4  | Input box + Search button → calls `/run` endpoint                                        | Not started |
+| ZAP-4  | Render paper card list with indices, summaries, checkboxes                               | Not started |
 | ZAP-4A | Render/edit parsed filters: year, source set, OA, citations, type, include/exclude terms | Not started |
-| ZAP-4A | Send structured filter payload to backend and show skipped/optional sources | Not started |
-| ZAP-5 | "Create Collection" field with auto-suggest | Not started |
-| ZAP-5 | Approve / Reject / Edit buttons → calls `/resume` | Not started |
-| ZAP-5 | Progress spinner + per-item green checkmarks | Not started |
+| ZAP-4A | Send structured filter payload to backend and show skipped/optional sources              | Not started |
+| ZAP-5  | "Create Collection" field with auto-suggest                                              | Not started |
+| ZAP-5  | Approve / Reject / Edit buttons → calls `/resume`                                        | Not started |
+| ZAP-5  | Progress spinner + per-item green checkmarks                                             | Not started |
 
 ### Phase 3: Zotero Write Integration (ZAP-6, ZAP-7, ZAP-8) — ~3d
 
 **Architecture decision required:** Native Zotero JS writes vs. backend-delegated writes.
 
-| Story | Task | Status |
-|-------|------|--------|
-| ZAP-6 | Collection resolver via `Zotero.Collections` (native) | Not started |
-| ZAP-7 | Idempotent item creation via `Zotero.Items` with DOI + hash dedup | Not started |
+| Story | Task                                                                      | Status      |
+| ----- | ------------------------------------------------------------------------- | ----------- |
+| ZAP-6 | Collection resolver via `Zotero.Collections` (native)                     | Not started |
+| ZAP-7 | Idempotent item creation via `Zotero.Items` with DOI + hash dedup         | Not started |
 | ZAP-8 | PDF attachment via `Zotero.Attachments.importFromURL()` (feature-flagged) | Not started |
 
 ### Phase 4: Polish & Release (ZAP-9, ZAP-10, ZAP-11) — ~3d
 
-| Story | Task | Status |
-|-------|------|--------|
-| ZAP-9 | Preferences pane (backend URL, API key, PDF toggle) | Not started |
-| ZAP-10 | Graceful error fallback messages | Not started |
-| ZAP-10 | Local cache of last search results | Not started |
-| ZAP-11 | `npm run build` → signed `.xpi` | Not started |
-| ZAP-11 | GitHub Actions workflow for auto-release | Not started |
+| Story  | Task                                                | Status      |
+| ------ | --------------------------------------------------- | ----------- |
+| ZAP-9  | Preferences pane (backend URL, API key, PDF toggle) | Not started |
+| ZAP-10 | Graceful error fallback messages                    | Not started |
+| ZAP-10 | Local cache of last search results                  | Not started |
+| ZAP-11 | `npm run build` → signed `.xpi`                     | Not started |
+| ZAP-11 | GitHub Actions workflow for auto-release            | Not started |
 | ZAP-11 | Listed on Zotero plugin directory + GitHub Releases | Not started |
 
 ---
@@ -286,14 +286,14 @@ Current state: `_RetrievalProvider` dataclass and `_build_retrieval_registry()` 
 
 ## Unresolved Decisions
 
-| Decision | Options | Impact |
-|----------|---------|--------|
-| **Default retrieval source policy** | Keyless-first only vs. keyless-first plus opt-in keyed enrichment | Keyless-first prevents paid/search-key dependence; opt-in enrichment can improve coverage without hiding baseline gaps |
-| **Filter edit timing** | Before first search vs. after parsed preview vs. both | Before search improves determinism; after preview improves usability; both is best for Zotero sidebar ergonomics |
-| **ZAP write path** | Native `Zotero.*` JS API vs. backend-delegated via `/resume` | Native = faster + offline-capable but duplicates dedup logic in TypeScript; Delegated = simpler plugin but requires backend for all writes |
-| **Checkpoint backend** | Redis vs. Postgres | Redis = faster + simpler; Postgres = durable + query-friendly for analytics |
-| **Task queue** | Celery vs. Dramatiq | Celery = mature ecosystem; Dramatiq = simpler API, fewer deps |
-| **Provider priority** | OpenAI first vs. Anthropic first | Depends on team key availability and model preferences |
+| Decision                            | Options                                                           | Impact                                                                                                                                     |
+| ----------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Default retrieval source policy** | Keyless-first only vs. keyless-first plus opt-in keyed enrichment | Keyless-first prevents paid/search-key dependence; opt-in enrichment can improve coverage without hiding baseline gaps                     |
+| **Filter edit timing**              | Before first search vs. after parsed preview vs. both             | Before search improves determinism; after preview improves usability; both is best for Zotero sidebar ergonomics                           |
+| **ZAP write path**                  | Native `Zotero.*` JS API vs. backend-delegated via `/resume`      | Native = faster + offline-capable but duplicates dedup logic in TypeScript; Delegated = simpler plugin but requires backend for all writes |
+| **Checkpoint backend**              | Redis vs. Postgres                                                | Redis = faster + simpler; Postgres = durable + query-friendly for analytics                                                                |
+| **Task queue**                      | Celery vs. Dramatiq                                               | Celery = mature ecosystem; Dramatiq = simpler API, fewer deps                                                                              |
+| **Provider priority**               | OpenAI first vs. Anthropic first                                  | Depends on team key availability and model preferences                                                                                     |
 
 ---
 
@@ -310,21 +310,21 @@ Current state: `_RetrievalProvider` dataclass and `_build_retrieval_registry()` 
 
 ## Backend Gates for ZAP Blocks
 
-| Gate | Required Stories | Met? |
-|------|-----------------|------|
-| Plugin foundation (ZAP-0 to ZAP-2) | AGT-0, AGT-1, AGT-2, AGT-4, AGT-18 | **Yes** |
-| Sidebar UX (ZAP-3 to ZAP-5) | AGT-5, AGT-6, AGT-7, AGT-15, AGT-27 | **Yes** |
-| Native writes (ZAP-6 to ZAP-8) | AGT-10, AGT-11, AGT-12, AGT-14, AGT-16 | **Yes** |
-| PDF attachment (ZAP-8) | AGT-13 | **No** — AGT-13 not started |
-| Release readiness (ZAP-9 to ZAP-11) | AGT-19, AGT-20, AGT-21 | **Partial** — AGT-20/21 follow-up work remains |
+| Gate                                | Required Stories                       | Met?                                           |
+| ----------------------------------- | -------------------------------------- | ---------------------------------------------- |
+| Plugin foundation (ZAP-0 to ZAP-2)  | AGT-0, AGT-1, AGT-2, AGT-4, AGT-18     | **Yes**                                        |
+| Sidebar UX (ZAP-3 to ZAP-5)         | AGT-5, AGT-6, AGT-7, AGT-15, AGT-27    | **Yes**                                        |
+| Native writes (ZAP-6 to ZAP-8)      | AGT-10, AGT-11, AGT-12, AGT-14, AGT-16 | **Yes**                                        |
+| PDF attachment (ZAP-8)              | AGT-13                                 | **No** — AGT-13 not started                    |
+| Release readiness (ZAP-9 to ZAP-11) | AGT-19, AGT-20, AGT-21                 | **Partial** — AGT-20/21 follow-up work remains |
 
 ---
 
 ## CI & Quality Status
 
-| Check | Result |
-|-------|--------|
-| `uv run ruff check .` | 0 errors |
-| `uv run pyright` | 0 errors, 0 warnings |
-| `uv run pytest --tb=short` | 132 passed |
-| Test coverage areas | config, preflight, providers, guardrails, all retrieval clients, ranking, summarize, search orchestration, query constraints, query rewriter, zotero upsert, models, workflow, API |
+| Check                      | Result                                                                                                                                                                             |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `uv run ruff check .`      | 0 errors                                                                                                                                                                           |
+| `uv run pyright`           | 0 errors, 0 warnings                                                                                                                                                               |
+| `uv run pytest --tb=short` | 132 passed                                                                                                                                                                         |
+| Test coverage areas        | config, preflight, providers, guardrails, all retrieval clients, ranking, summarize, search orchestration, query constraints, query rewriter, zotero upsert, models, workflow, API |

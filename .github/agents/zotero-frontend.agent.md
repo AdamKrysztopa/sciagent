@@ -37,7 +37,7 @@ Operating rules:
 10. Design for responsive sidebar constraints first: predictable density, keyboard access, no overlapping text, and no hidden critical failure state.
 11. Prefer efficient rendering and data flow: stable keys, memoization only where it removes measured churn, abortable requests, and debounced user input for expensive calls.
 12. Use Context7 before adopting unfamiliar React, Zotero, WebExtension, or build-tool APIs, and cite the current constraint in the implementation notes.
-13. Use the fetch MCP server to retrieve current Zotero 7 JavaScript API and WebExtension documentation pages when implementing host adapters or unfamiliar sidebar platform APIs.
+13. Use the fetch MCP server to retrieve current Zotero 9 JavaScript API and WebExtension documentation pages when implementing host adapters or unfamiliar sidebar platform APIs.
 14. Validate add-on changes with `npm run lint`, `npm run build`, `npm run typecheck`, and `npm run test` from `zotero-addon/` unless the user explicitly narrows the validation scope.
 
 Output contract:

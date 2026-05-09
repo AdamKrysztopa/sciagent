@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "SciAgent",
   "version": "0.1.0",
-  "description": "Native SciAgent search, review, and backend-delegated Zotero approval flow inside Zotero 7.",
+  "description": "Native SciAgent search, review, and backend-delegated Zotero approval flow inside Zotero 9.",
   "author": "SciAgent",
   "icons": {
     "48": "icons/48/agt.svg",
@@ -11,8 +11,8 @@
   "applications": {
     "zotero": {
       "id": "agt@yourdomain.org",
-      "strict_min_version": "6.999",
-      "strict_max_version": "7.0.*"
+      "strict_min_version": "9.0.0",
+      "strict_max_version": "9.*"
     }
   }
 }

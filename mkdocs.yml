@@ -24,11 +24,17 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.superfences
 nav:
-  - Home: index.md
-  - Manual: manual.md
-  - Settings: settings.md
-  - Core Roadmap: core.md
-  - Action Plan: actionable-plan.md
-  - Priorities: priorities.md
-  - Next Steps: next-steps.md
-  - Zotero Add-on: zotero.md
+  - Overview:
+      - Home: index.md
+  - Planning:
+      - Core Roadmap: core.md
+      - Action Plan: actionable-plan.md
+      - Priorities: priorities.md
+      - Next Steps: next-steps.md
+  - Manuals:
+      - Configuration & Usage: manual.md
+      - Deployment & Hosting: deployment.md
+  - Reference:
+      - REST API: api.md
+      - Settings: settings.md
+      - Zotero Add-on: zotero.md
