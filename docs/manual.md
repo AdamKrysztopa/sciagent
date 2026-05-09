@@ -54,7 +54,7 @@ The repository now includes a top-level Zotero 7 add-on scaffold in `zotero-addo
 
 ```bash
 cd zotero-addon
-npm install
+npm ci
 npm run build
 ```
 
@@ -208,39 +208,39 @@ The API is designed for programmatic access and as the backend for the Zotero ad
 
 1. Start the backend API:
 
-```bash
-uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000
-```
+  ```bash
+  uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000
+  ```
 
-2. Build the add-on package:
+1. Build the add-on package:
 
-```bash
-cd zotero-addon
-npm install
-npm run build
-```
+  ```bash
+  cd zotero-addon
+  npm ci
+  npm run build
+  ```
 
-3. Install the generated XPI in Zotero 7:
+1. Install the generated XPI in Zotero 7:
 
-- Open Zotero
-- Open the add-ons/plugins manager
-- Choose `Install Add-on From File...`
-- Select `zotero-addon/build/sciagent-zotero-addon.xpi`
+  - Open Zotero
+  - Open the add-ons/plugins manager
+  - Choose `Install Add-on From File...`
+  - Select `zotero-addon/build/sciagent-zotero-addon.xpi`
 
-4. Configure the add-on preferences:
+1. Configure the add-on preferences:
 
-- Backend URL
-- API key for `X-AGT-API-Key`
-- Client ID for `X-AGT-Client-ID`
-- PDF toggle placeholder (stored now, not yet acted on by the backend contract)
+  - Backend URL
+  - API key for `X-AGT-API-Key`
+  - Client ID for `X-AGT-Client-ID`
+  - PDF toggle placeholder (stored now, not yet acted on by the backend contract)
 
-5. Use the native SciAgent pane:
+1. Use the native SciAgent pane:
 
-- Open the SciAgent section in the Zotero item pane
-- Enter a query and target collection name
-- Run the first search to let the backend produce a typed search plan
-- Review or edit the parsed filter contract shown in the pane
-- Re-run with edits if needed, select results, then approve or reject
+  - Open the SciAgent section in the Zotero item pane
+  - Enter a query and target collection name
+  - Run the first search to let the backend produce a typed search plan
+  - Review or edit the parsed filter contract shown in the pane
+  - Re-run with edits if needed, select results, then approve or reject
 
 Current M6 contract notes:
 
@@ -264,6 +264,7 @@ curl http://localhost:8000/health
 ```
 
 **Response:**
+
 ```json
 {
   "status": "ok",
@@ -291,6 +292,7 @@ curl -X POST http://localhost:8000/run \
 ```
 
 **Response:**
+
 ```json
 {
   "run_id": "abc-123",
@@ -500,27 +502,30 @@ If you see `RateLimitExceededError`, the system has hit the configured per-sourc
 ### Running Quality Checks
 
 ```bash
-# Lint
+# Python backend
 uv run ruff check .
-
-# Format check
 uv run ruff format --check .
-
-# Type check
 uv run pyright
-
-# Tests
-uv run pytest -q
+uv run pyright
+uv run pytest -q --vcr-record=none
 ```
-
-### Running Zotero Add-on Checks
 
 ```bash
+# Zotero add-on
 cd zotero-addon
+npm ci
 npm run build
 npm run typecheck
-npm test
+npm run test
+cd ..
 ```
+
+```bash
+# Docs and agent instructions
+npx --yes markdownlint-cli2 "README.md" "docs/**/*.md" "examples/**/*.md" ".github/**/*.md" "zotero-addon/README.md"
+```
+
+`pre-commit` stays intentionally lightweight and Python-only.
 
 ### Running Examples
 

@@ -1,3 +1,4 @@
+ # Keep local hooks fast; add-on and docs validation run via explicit commands and CI.
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.7

@@ -14,7 +14,7 @@ This package contains the SciAgent M6 native Zotero 7 add-on scaffold and MVP UI
 
 ```bash
 cd zotero-addon
-npm install
+npm ci
 npm run build
 ```
 
@@ -27,9 +27,9 @@ Build outputs:
 
 1. Start the SciAgent backend:
 
-```bash
-uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000
-```
+	```bash
+	uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000
+	```
 
 2. Install the add-on from `build/sciagent-zotero-addon.xpi` using Zotero's add-ons/plugins manager.
 3. Open the SciAgent preferences pane and set backend URL, API key, and client ID.

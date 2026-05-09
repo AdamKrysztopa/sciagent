@@ -36,6 +36,7 @@ No more browser tab. One-click “Search Papers” in Zotero → natural languag
 - Acceptance Criteria:
   - Extension proxy file for loading from source.
   - `npm run build` → `.xpi` auto-generated.
+  - Repo quality gate validates `npm run build`, `npm run typecheck`, and `npm run test` against `zotero-addon/` in CI.
   - Zotero debug output + JS console connected.
   - `zotero-types` package installed for full autocomplete.
 

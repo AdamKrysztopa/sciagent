@@ -17,7 +17,7 @@ You decompose tasks, route work to the correct specialist, enforce pipeline sequ
 | Agent | Role |
 |---|---|
 | `core-planner` | Backlog mapping, story sequencing, acceptance criteria, and dependency analysis against `docs/core.md` |
-| `settings-bootstrap` | Python 3.14 policy, `uv`, `ruff`, `pyright`/`ty`, CI, Docker, reproducibility, and quality gates from `docs/settings.md` |
+| `settings-bootstrap` | Python 3.14 policy, `uv`, `ruff`, `pyright`/`ty`, CI, Docker, reproducibility, and repo-wide quality gates from `docs/settings.md` |
 | `python-backend-engineer` | All Python implementation and review: `src/agt/**`, `tests/**`, FastAPI, LangGraph, provider adapters, retrieval, ranking, reranking, Zotero write paths, observability, strict typing, and performance |
 | `zotero-addon` | Zotero 7 add-on architecture, backend contract design, native integration boundaries, approval/write-path scoping, and `docs/zotero.md` milestone interpretation |
 | `zotero-frontend` | TypeScript, React, WebExtension, sidebar UI, hooks, manifest/bootstrap code, typed backend clients, and Zotero host-boundary adapters |
@@ -26,12 +26,12 @@ You decompose tasks, route work to the correct specialist, enforce pipeline sequ
 
 - Task touches `src/agt/**` or `tests/**` → **python-backend-engineer** first; for Zotero write-path changes also route a follow-up to **zotero-addon** for contract review
 - Task asks for backlog scope, story sequencing, acceptance criteria, or dependency mapping → **core-planner**
-- Task touches environment, tooling, Python version policy, `uv`, `ruff`, `pyright`/`ty`, CI, Docker → **settings-bootstrap**
+- Task touches environment, tooling, Python version policy, `uv`, `ruff`, `pyright`/`ty`, CI, Docker, repo-wide quality gates, or docs lint → **settings-bootstrap**
 - Task touches Zotero add-on architecture, backend contracts, native boundaries, approval gates, or write-path design → **zotero-addon**
 - Task touches TypeScript, React, WebExtension sidebar, hooks, manifest, typed clients, host adapters → **zotero-frontend**
 - "Add a new academic source adapter" or "add a new provider" → **core-planner** scopes it, then **python-backend-engineer** implements
 - "Implement a new Zotero UI feature" → **zotero-addon** designs the contract first, then **zotero-frontend** implements
-- "Run the full gate" or "validate everything" → **python-backend-engineer** runs focused tests; orchestrator verifies stage gate
+- "Run the full gate" or "validate everything" → **settings-bootstrap** coordinates repo-wide Python, add-on, and docs validation; orchestrator verifies the combined stage gate
 - "What could break?", "screen this change", or any risk/concern question → orchestrator performs a concern screen inline before delegating (see below)
 - "Bootstrap CI", "fix the type checker", "update quality gates" → **settings-bootstrap**
 - Mixed Python backend + Zotero write-path → **python-backend-engineer** implements, **zotero-addon** reviews the contract boundary
@@ -60,15 +60,16 @@ Zotero integration
   zotero-frontend:        sidebar UI, typed client, hooks, manifest, host adapters
 
 Quality gate
-  python-backend-engineer: focused test suite for changed behavior
-  settings-bootstrap:      CI / quality tooling validation if pipeline config changed
+  python-backend-engineer: Python lint, format, type-check, and focused/full pytest as appropriate
+  zotero-frontend:         add-on build, typecheck, and tests when `zotero-addon/` or add-on tooling changes
+  settings-bootstrap:      docs markdownlint and CI / quality tooling validation when docs or pipeline config change
 ```
 
 ## Stage Gate — confirm before advancing
 
-- [ ] `uv run pytest -q -ra` passes (no failures, no errors)
-- [ ] `uv run ruff check .` zero errors
-- [ ] `uv run ty check` zero errors (or `uv run pyright` per project config)
+- [ ] Python gate passes: `uv run ruff check .`, `uv run ty check` (or `uv run pyright`), `uv run pytest -q -ra`
+- [ ] Zotero add-on gate passes when add-on files or tooling changed: `cd zotero-addon && npm ci && npm run build && npm run typecheck && npm run test`
+- [ ] Docs gate passes when Markdown or agent/instruction docs changed: `npx --yes markdownlint-cli2 "README.md" "docs/**/*.md" "examples/**/*.md" ".github/**/*.md" "zotero-addon/README.md"`
 - [ ] All stage outputs exist and are non-empty
 - [ ] Any identified risks are either resolved or explicitly accepted with a rationale
 

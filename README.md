@@ -6,6 +6,7 @@ SciAgent is a typed Python foundation for natural-language paper search and safe
 
 - Python 3.14 recommended (3.13 and 3.14 supported)
 - `uv` package manager
+- Node.js 20+ when working on the Zotero add-on or running the full repo quality gate
 
 ## Bootstrap
 
@@ -26,20 +27,33 @@ uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000
 ## Quality
 
 ```bash
+# Python backend
 uv run ruff check .
 uv run ruff format --check .
 uv run pyright
 uv run pytest -q --vcr-record=none
+
+# Zotero add-on
+cd zotero-addon
+npm ci
+npm run build
+npm run typecheck
+npm run test
+cd ..
+
+# Docs and agent instructions
+npx --yes markdownlint-cli2 "README.md" "docs/**/*.md" "examples/**/*.md" ".github/**/*.md" "zotero-addon/README.md"
 ```
 
 ## CI Checks
 
-GitHub Actions runs the same quality gates on Python 3.13 and 3.14:
+GitHub Actions runs three quality jobs:
 
-- `ruff check .`
-- `ruff format --check .`
-- `pyright`
-- `pytest -q --vcr-record=none`
+- Python quality on 3.13 and 3.14: `ruff check .`, `ruff format --check .`, `pyright`, `pytest -q --vcr-record=none`
+- Zotero add-on quality in `zotero-addon/`: `npm ci`, `npm run build`, `npm run typecheck`, `npm run test`
+- Docs quality: `markdownlint-cli2` over repo-authored Markdown using the root config
+
+Local `pre-commit` remains intentionally lightweight and Python-only.
 
 ## Structure
 

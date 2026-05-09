@@ -24,5 +24,7 @@ This folder tracks one runnable example per milestone (`M1` to `M6`).
 
 ## CI Hooks
 
-- Run all hooks exactly as CI expects: `source .venv/bin/activate && ruff check . && ruff format --check . && pyright && pytest -q`
-- Pre-commit equivalent: `source .venv/bin/activate && pre-commit run --all-files`
+- Python quality job: `source .venv/bin/activate && ruff check . && ruff format --check . && pyright && pytest -q --vcr-record=none`
+- Zotero add-on quality job: `cd zotero-addon && npm ci && npm run build && npm run typecheck && npm run test`
+- Docs quality job: `npx --yes markdownlint-cli2 "README.md" "docs/**/*.md" "examples/**/*.md" ".github/**/*.md" "zotero-addon/README.md"`
+- Pre-commit equivalent stays fast and Python-only: `source .venv/bin/activate && pre-commit run --all-files`
