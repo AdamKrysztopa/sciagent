@@ -11,9 +11,9 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 ### Current Status
 
-- Current focus: M6 — Documentation cleanup and live Zotero 9 validation in progress
-- Current next implementation target: ZAP-4A — Shared filter review/edit contract for Streamlit, REST API, and Zotero add-on
-- Next after ZAP-4A: AGT-20 follow-up — truthful terminal write-failure status and tests
+- Current focus: M6.1 — Main-window-first plugin MVP (settings/secrets boundary and backend capability contract before primary UI)
+- Current next implementation target: M6.1-A — Settings panel split, backend auth prefs, and deployment env contract
+- Next after M6.1-A: M6.1-B — Backend capabilities, pre-search filter/source contract, and source-status transparency; then M6.1-C — library-window search workspace
 
 ### Recent Progress
 
@@ -40,7 +40,10 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 ### Next Items In Order
 
-- [ ] ZAP-4A — Shared filter review/edit contract
+- [ ] M6.1-A — Settings panel split, backend auth prefs, and deployment env contract
+- [ ] M6.1-B — Backend capabilities, ZAP-4A pre-search filter/source contract, and source-status transparency
+- [ ] M6.1-C — Library-window search workspace replacing the item-pane-first MVP
+- [ ] M6.1-D — Approval/write flow and PDF attachment status in the main-window surface
 - [ ] AGT-20 follow-up — truthful terminal write-failure status and tests
 - [ ] AGT-21 follow-up — security checklist and auth hardening
 - [ ] AGT-24 — durable distributed checkpointing
@@ -473,10 +476,10 @@ M5 validation checklist:
 
 ### M6 (Parallel Track): Zotero Native Add-on
 
-- [ ] ZAP-0 to ZAP-2: Plugin foundation, hot reload, backend connection layer
-- [ ] ZAP-3 to ZAP-5: Sidebar UX for search and explicit approve/reject/edit actions
-- [ ] ZAP-6 to ZAP-8: Native collection/item writes with idempotency and optional PDF
-- [ ] ZAP-9 to ZAP-11: Preferences, offline/error handling, signing and release automation
+- [ ] ZAP-0 to ZAP-2: Plugin foundation, hot reload, backend connection layer, and capability/settings contract
+- [ ] ZAP-3 to ZAP-5: Main-window or library-pane-first UX with pre-search filters and explicit approve/reject/edit actions
+- [ ] ZAP-6 to ZAP-8: Native collection/item writes with idempotency and optional PDF import flow
+- [ ] ZAP-9 to ZAP-11: Settings and secrets split, offline/error handling, signing and release automation
 
 M6 partial delivery notes (2026-05-09):
 
@@ -484,8 +487,111 @@ M6 partial delivery notes (2026-05-09):
 - [x] Added typed add-on backend client for `GET /health`, `POST /run`, `GET /status/{run_id}`, and `POST /resume`, including `X-AGT-API-Key` and `X-AGT-Client-ID` headers.
 - [x] Added React MVP item-pane UI for health status, query/collection input, parsed filter review/edit, result selection, and approve/reject/write-result rendering.
 - [x] Added Zotero prefs adapter and preference pane surface for backend URL, API key, client ID, and PDF-toggle placeholder.
-- [ ] Validate the scaffold inside a live Zotero 9 runtime.
+- [x] XPI installs without "incompatible" error; bootstrap.js runs; chrome registration succeeds.
+- [x] `window is not defined` crash fixed: esbuild `define: { "window": "globalThis" }` makes React event system safe in Zotero's privileged compartment.
+- [x] FTL timing bug fixed: `insertFTLIfNeeded("agt/agt.ftl")` called before `registerSection` so section header resolves on first render.
+- [x] Tools → SciAgent menu item visible and functional (guidance alert on click).
+- [x] `Uncaught (in promise) undefined` fixed: async Promise rejection from `insertFTLIfNeeded` now caught with `.catch()`.
+- [ ] Current primary UX still over-emphasizes the item pane and does not yet match Zotero's main-window workflow or visual language.
+- [ ] Settings UI does not yet separate connection/auth from saved search defaults, source/search-tool choices, and PDF defaults.
+- [ ] Deterministic filters and source/search-tool filters are not yet captured before semantic search on the initial run.
+- [ ] Source transparency is currently misleading: `skipped` conflates user-disabled, unavailable-because-key-missing, and runtime-skipped states instead of showing one explicit status per source.
+- [ ] Backend capability contract and add-on deployment env surface remain incomplete (`AGT_BACKEND_API_KEY`, optional keyed-source availability, PDF capability/status, and per-source state reasons).
+- [ ] Validate the scaffold inside a live Zotero runtime end-to-end with a real backend.
 - [ ] Add signing/release automation and Zotero directory distribution flow.
+
+### M6.1 — Main-Window-First Plugin MVP
+
+**Scope:** Replace the current item-pane-heavy MVP direction with a Zotero-native main-window workflow. The primary journey must live in the library window, with a settings panel for connection/auth and saved defaults, deterministic filters and source/search-tool selection applied before retrieval, and approval/write actions in the same workspace. Item-details integration, if kept, is secondary and must deep-link into the main-window surface rather than own search state.
+
+**Why this ordering:**
+The scaffold proved the add-on can load, but the current item-pane-first UX does not look or behave like the rest of Zotero. It also postpones filter and source choices until after retrieval, which conflicts with AGT-28's hard-filter contract. M6.1 therefore pulls settings and backend-contract work forward before rebuilding the user-facing surface.
+
+**Sequencing and dependencies:**
+
+1. M6.1-A before M6.1-B: the add-on needs a clear split between local prefs and backend-owned secrets before capability-driven UI is safe.
+2. M6.1-B before M6.1-C: pre-search filters and source/search-tool controls must be part of the initial backend request, not a post-results patch.
+3. M6.1-D depends on AGT-13 for attachment correctness and on the same backend capability contract used by M6.1-B.
+4. The current item-pane MVP can remain as a temporary launcher only; it is not the primary surface for acceptance.
+
+#### M6.1-A — Settings Panel, Secrets Split, and Deployment Env Contract
+
+- [ ] Expand the Zotero preferences surface into two explicit sections:
+  - Connection & Auth: backend URL, backend API key, client ID
+  - Search Defaults & Sources: default collection, deterministic filter defaults, source/search-tool toggles, result limit, PDF default
+- [ ] Preference keys follow `extensions.sciagent.*` and live behind one typed initialization block.
+- [ ] All fields persist via `Zotero.Prefs` with typed defaults and inline validation.
+- [ ] Keep the ownership split explicit in product copy and docs:
+  - Add-on prefs are allowed to store backend URL, backend API key, client ID, and local UX defaults.
+  - Backend provider and search-source secrets remain backend-owned in `.env` and `.env.example`; the add-on must not become the source of truth for OpenAI, xAI, Anthropic, Semantic Scholar, CORE, Dimensions, SerpAPI, or similar backend credentials.
+- [ ] Pull forward a `docs/settings.md` and `.env.example` planning update for add-on deployment fields, including `AGT_BACKEND_API_KEY` and backend-side keyed-source availability.
+
+Acceptance criteria:
+
+- [ ] Settings survive Zotero restart with no component-level hardcoded defaults.
+- [ ] The preferences UI is visibly split between connection/auth and saved search defaults.
+- [ ] No add-on surface asks the user for backend provider or search-source secrets.
+- [ ] The plan explicitly distinguishes add-on prefs from backend `.env` and `.env.example` ownership.
+
+#### M6.1-B — Backend Capabilities, Initial Search Contract, and Source-State Transparency
+
+- [ ] Extend the add-on plan beyond the current `/health` plus post-results `filter_edit` model.
+- [ ] Define a backend capability surface that tells the add-on:
+  - contract version
+  - auth requirement
+  - available sources and search tools
+  - which filters each source can enforce server-side
+  - whether PDF download and attachment are supported
+  - which optional keyed sources are unavailable because the backend is not configured for them
+- [ ] Define initial search request semantics so the first `POST /run` carries structured deterministic filters and source/search-tool selections, not just free text plus later `filter_edit`.
+- [ ] Make “filters applied before semantic search / before results” an explicit contract requirement for year, date, source, document, open-access, include, and exclude filters.
+- [ ] Normalize per-source run metadata so each source appears in exactly one terminal state with a human-readable reason: used, disabled by user, unavailable because backend key/config is missing, skipped by policy or unsupported filter, failed at runtime, or queried with zero candidates.
+- [ ] Keep `docs/api.md` and plugin-backend contract versioning in sync before UI implementation starts.
+
+Acceptance criteria:
+
+- [ ] The first-run request contract can express deterministic filters and source/search-tool selection without encoding them only in natural language.
+- [ ] Backend metadata distinguishes `unavailable_missing_key` from `disabled_by_user`, `skipped`, `failed`, and `used`.
+- [ ] The same source never appears in multiple status buckets for the same run.
+- [ ] Missing optional backend keys/config are listed explicitly for affected sources instead of being folded into generic `skipped` messaging.
+
+#### M6.1-C — Library-Window Search Workspace
+
+- [ ] Primary SciAgent workflow opens from the Zotero main window without requiring an item selection.
+- [ ] Item-details integration, if kept, launches or deep-links into the same main-window workspace rather than owning a separate UI state machine.
+- [ ] Main-window search form includes free-text query, collection target, deterministic pre-search filters, and source/search-tool selection driven by saved defaults and live backend capabilities.
+- [ ] Results surface shows applied filters, source-state summary, candidate list, and approval controls in a layout that matches Zotero's pane conventions better than the current detached card UI.
+
+Acceptance criteria:
+
+- [ ] A user can open SciAgent from Zotero's main window and run a search without first selecting an item.
+- [ ] The UI shows which filters and sources were actually applied on the initial run.
+- [ ] Source-state rendering is grouped into distinct, readable buckets rather than a flat list of ambiguous `used` and `skipped` pills.
+- [ ] The item pane, if still present, behaves only as a secondary entry point.
+
+#### M6.1-D — Approval, Write Outcome, and PDF Attachment Flow
+
+- [ ] Approve/reject/edit actions run in the same main-window workspace as search and review.
+- [ ] Collection override remains available per run without moving ownership away from saved defaults.
+- [ ] PDF attachment is planned as a capability-driven feature with both a saved default and per-run override.
+- [ ] Per-item outcome must distinguish item created/unchanged/failed and attachment imported/unavailable/failed.
+
+Acceptance criteria:
+
+- [ ] Item creation and optional PDF import surface separate outcomes without hiding partial failures.
+- [ ] A missing PDF URL or disabled backend attachment capability is shown explicitly, not implied by a silent skip.
+- [ ] Attachment failure never corrupts the primary item write result.
+
+#### M6.1 Quality Gate
+
+- [ ] `cd zotero-addon && npm run lint && npm run typecheck && npm run test && npm run build` all pass.
+- [ ] Live Zotero smoke test:
+  - [ ] Settings pane persists connection/auth and saved defaults across restart.
+  - [ ] Main-window workspace opens without requiring item selection.
+  - [ ] First search request applies deterministic filters and source/search-tool choices before results are shown.
+  - [ ] Source-state summary separates used, disabled, unavailable-because-key-missing, skipped, failed, and zero-result sources with one terminal state per source.
+  - [ ] Approve writes to Zotero and shows separate item and attachment outcomes.
+- [ ] No `ReferenceError`, `Uncaught (in promise)`, or FTL resource errors in console during normal use.
 
 ### M7 (Week 8-10): Pluggability and Elastic Infrastructure
 
