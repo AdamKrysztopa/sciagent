@@ -6,11 +6,11 @@ from dataclasses import dataclass
 from typing import Any, Literal, cast
 
 from fastapi import Depends, FastAPI, Header, HTTPException, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from agt.config import Settings, get_settings
 from agt.graph.workflow import resume_workflow, run_search_phase
-from agt.models import AgentState
+from agt.models import AgentState, FilterEditContract
 from agt.zotero.preflight import run_zotero_preflight
 
 
@@ -18,6 +18,15 @@ class RunRequest(BaseModel):
     query: str = Field(min_length=1)
     collection_name: str = Field(min_length=1)
     thread_id: str | None = None
+    filter_edit: FilterEditContract | None = None
+
+    @model_validator(mode="after")
+    def validate_filter_edit_query(self) -> RunRequest:
+        if self.filter_edit is None:
+            return self
+        if self.filter_edit.original_query.strip() != self.query.strip():
+            raise ValueError("filter_edit.original_query must match query")
+        return self
 
 
 class ResumeRequest(BaseModel):
@@ -112,12 +121,21 @@ def create_app() -> FastAPI:
         client_id: str = Depends(_client_id_header),
     ) -> RunAcceptedResponse:
         try:
-            state = await run_search_phase(
-                query=payload.query,
-                collection_name=payload.collection_name,
-                thread_id=payload.thread_id,
-                settings=settings,
-            )
+            if payload.filter_edit is None:
+                state = await run_search_phase(
+                    query=payload.query,
+                    collection_name=payload.collection_name,
+                    thread_id=payload.thread_id,
+                    settings=settings,
+                )
+            else:
+                state = await run_search_phase(
+                    query=payload.query,
+                    collection_name=payload.collection_name,
+                    thread_id=payload.thread_id,
+                    settings=settings,
+                    filter_edit=payload.filter_edit,
+                )
         except RuntimeError as exc:
             run_id = payload.thread_id or "pending-run"
             store.put(

@@ -8,7 +8,7 @@ from typing import Any
 import pytest
 
 from agt.config import Settings
-from agt.models import NormalizedPaper
+from agt.models import FilterEditContract, NormalizedPaper
 from agt.tools import search_papers as search_module
 from agt.tools.semantic_scholar import SemanticScholarResponseError
 
@@ -865,3 +865,90 @@ async def test_search_papers_reports_progress_stages(
         "enriching citations",
         "reranking and filtering merged results",
     ]
+
+
+@pytest.mark.anyio
+async def test_search_papers_applies_filter_edit_to_constraints_and_plan(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "123",
+        "AGT_SUMMARIZATION_USE_LLM": False,
+    })
+
+    papers = [
+        NormalizedPaper(
+            title="Graph neural retrieval methods",
+            abstract="Graph neural networks for document retrieval.",
+            year=2026,
+            semantic_score=0.8,
+        ),
+        NormalizedPaper(
+            title="Graph neural classic methods",
+            abstract="Graph neural networks for older benchmarks.",
+            year=2024,
+            semantic_score=0.7,
+        ),
+    ]
+    captured_queries: list[str] = []
+
+    class _CapturingClient:
+        async def search(
+            self,
+            query: str,
+            *,
+            limit: int,
+            year_min: int | None = None,
+            year_max: int | None = None,
+            max_pages: int = 1,
+            categories: list[str] | None = None,
+        ) -> list[NormalizedPaper]:
+            _ = limit
+            _ = year_min
+            _ = year_max
+            _ = max_pages
+            _ = categories
+            captured_queries.append(query)
+            return papers
+
+    def _capturing_factory(**kwargs: object) -> _CapturingClient:
+        _ = kwargs
+        return _CapturingClient()
+
+    monkeypatch.setattr(search_module, "get_guardrails", _fake_get_guardrails)
+    monkeypatch.setattr(search_module, "SemanticScholarClient", _capturing_factory)
+    monkeypatch.setattr(search_module, "OpenAlexClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "CrossrefClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "PubMedClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+
+    filter_edit = FilterEditContract.model_validate({
+        "original_query": "transformers after 2020",
+        "hard_filters": {
+            "min_year": 2025,
+            "include_keywords": ["graph", "neural"],
+        },
+        "result_limit": 1,
+    })
+
+    ranked, metadata = await search_module.search_papers(
+        query="transformers after 2020",
+        settings=settings,
+        thread_id="thread-filter-edit",
+        filter_edit=filter_edit,
+    )
+
+    assert captured_queries
+    assert captured_queries[0] == "graph neural"
+    assert [paper.title for paper in ranked] == ["Graph neural retrieval methods"]
+    assert len(ranked) == 1
+    plan = metadata.search_plan
+    assert plan is not None
+    assert plan.original_query == "transformers after 2020"
+    assert plan.hard_filters.min_year == 2025
+    assert plan.hard_filters.include_keywords == ["graph", "neural"]
+    assert metadata.total_after_filter == 1

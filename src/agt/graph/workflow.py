@@ -9,7 +9,14 @@ import structlog
 
 from agt.config import Settings, configure_logging, get_settings
 from agt.guardrails import configure_guardrails, thread_context
-from agt.models import AgentState, CollectionResult, ItemWriteOutcome, NormalizedPaper, WriteResult
+from agt.models import (
+    AgentState,
+    CollectionResult,
+    FilterEditContract,
+    ItemWriteOutcome,
+    NormalizedPaper,
+    WriteResult,
+)
 from agt.observability import TraceContext, serialize_spans, trace_step
 from agt.providers.router import build_provider
 from agt.tools.search_papers import search_papers
@@ -85,6 +92,7 @@ async def run_search_phase(
     collection_name: str,
     thread_id: str | None = None,
     settings: Settings | None = None,
+    filter_edit: FilterEditContract | None = None,
 ) -> AgentState:
     """Run startup, retrieval, and summarization up to the approval checkpoint."""
 
@@ -114,11 +122,20 @@ async def run_search_phase(
             raise RuntimeError(preflight.message)
 
         with trace_step(trace, "search", query=query):
-            papers, search_metadata = await search_papers(
-                query=query,
-                settings=active_settings,
-                thread_id=trace.thread_id,
-            )
+            if filter_edit is None:
+                papers, search_metadata = await search_papers(
+                    query=query,
+                    settings=active_settings,
+                    thread_id=trace.thread_id,
+                )
+            else:
+                papers, search_metadata = await search_papers(
+                    query=query,
+                    limit=filter_edit.result_limit,
+                    settings=active_settings,
+                    thread_id=trace.thread_id,
+                    filter_edit=filter_edit,
+                )
 
         with trace_step(trace, "summarize", paper_count=len(papers)):
             papers = await summarize_papers(

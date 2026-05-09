@@ -4,26 +4,38 @@ from __future__ import annotations
 
 from typing import Any, Literal, TypedDict, cast
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class HardFilters(BaseModel):
     """Filters that cannot be relaxed or overridden by LLM rewriting."""
 
-    min_year: int | None = None
-    max_year: int | None = None
-    min_citations: int = 0
-    max_citations: int | None = None
+    min_year: int | None = Field(default=None, ge=1900, le=2100)
+    max_year: int | None = Field(default=None, ge=1900, le=2100)
+    min_citations: int = Field(default=0, ge=0)
+    max_citations: int | None = Field(default=None, ge=0)
     open_access_only: bool = False
     include_keywords: list[str] = Field(default_factory=list)
     exclude_keywords: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def validate_ranges(self) -> HardFilters:
+        if (
+            self.min_year is not None
+            and self.max_year is not None
+            and self.min_year > self.max_year
+        ):
+            raise ValueError("min_year must be <= max_year")
+        if self.max_citations is not None and self.min_citations > self.max_citations:
+            raise ValueError("min_citations must be <= max_citations")
+        return self
 
 
 class SoftPreferences(BaseModel):
     """Preferences that influence ranking but do not hard-filter results."""
 
     require_positive_community_perception: bool = False
-    min_semantic_score: float = 0.0
+    min_semantic_score: float = Field(default=0.0, ge=0.0)
 
 
 class SourceCapability(BaseModel):
@@ -57,7 +69,7 @@ class FilterEditContract(BaseModel):
     original_query: str
     hard_filters: HardFilters = Field(default_factory=HardFilters)
     soft_preferences: SoftPreferences = Field(default_factory=SoftPreferences)
-    result_limit: int = 10
+    result_limit: int = Field(default=10, ge=1, le=50)
 
 
 class NormalizedPaper(BaseModel):

@@ -13,6 +13,7 @@ from typing import Literal
 from agt.config import Settings, get_settings
 from agt.guardrails import current_thread_id, get_guardrails
 from agt.models import (
+    FilterEditContract,
     HardFilters,
     NormalizedPaper,
     SearchMetadata,
@@ -33,7 +34,11 @@ from agt.tools.openalex import OpenAlexClient
 from agt.tools.opencitations import OpenCitationsClient
 from agt.tools.pubmed import PubMedClient
 from agt.tools.query_constraints import (
+    CitationConstraint,
+    KeywordConstraint,
+    QualityConstraint,
     SearchConstraintSpec,
+    YearConstraint,
     apply_query_constraints,
     parse_query_constraints,
 )
@@ -513,6 +518,83 @@ def _build_regex_query(
     return keyword_query if len(keyword_query) >= _MIN_KEYWORD_QUERY_LEN else raw_query
 
 
+def _apply_filter_edit(
+    constraints: SearchConstraintSpec,
+    filter_edit: FilterEditContract,
+) -> SearchConstraintSpec:
+    hard_filter_fields = filter_edit.hard_filters.model_fields_set
+    soft_preference_fields = filter_edit.soft_preferences.model_fields_set
+
+    include_keywords = (
+        list(filter_edit.hard_filters.include_keywords)
+        if "include_keywords" in hard_filter_fields
+        else list(constraints.keywords.include_keywords)
+    )
+    exclude_keywords = (
+        list(filter_edit.hard_filters.exclude_keywords)
+        if "exclude_keywords" in hard_filter_fields
+        else list(constraints.keywords.exclude_keywords)
+    )
+
+    raw_query = constraints.raw_query
+    if "include_keywords" in hard_filter_fields:
+        raw_query = " ".join(include_keywords) if include_keywords else filter_edit.original_query
+
+    return SearchConstraintSpec(
+        raw_query=raw_query,
+        result_limit=(
+            filter_edit.result_limit
+            if "result_limit" in filter_edit.model_fields_set
+            else constraints.result_limit
+        ),
+        year=YearConstraint(
+            min_year=(
+                filter_edit.hard_filters.min_year
+                if "min_year" in hard_filter_fields
+                else constraints.year.min_year
+            ),
+            max_year=(
+                filter_edit.hard_filters.max_year
+                if "max_year" in hard_filter_fields
+                else constraints.year.max_year
+            ),
+        ),
+        citations=CitationConstraint(
+            min_citations=(
+                filter_edit.hard_filters.min_citations
+                if "min_citations" in hard_filter_fields
+                else constraints.citations.min_citations
+            ),
+            max_citations=(
+                filter_edit.hard_filters.max_citations
+                if "max_citations" in hard_filter_fields
+                else constraints.citations.max_citations
+            ),
+        ),
+        quality=QualityConstraint(
+            min_semantic_score=(
+                filter_edit.soft_preferences.min_semantic_score
+                if "min_semantic_score" in soft_preference_fields
+                else constraints.quality.min_semantic_score
+            ),
+            open_access_only=(
+                filter_edit.hard_filters.open_access_only
+                if "open_access_only" in hard_filter_fields
+                else constraints.quality.open_access_only
+            ),
+            require_positive_community_perception=(
+                filter_edit.soft_preferences.require_positive_community_perception
+                if "require_positive_community_perception" in soft_preference_fields
+                else constraints.quality.require_positive_community_perception
+            ),
+        ),
+        keywords=KeywordConstraint(
+            include_keywords=include_keywords,
+            exclude_keywords=exclude_keywords,
+        ),
+    )
+
+
 # Static capability table: which filters each source pushes down to its API.
 _SOURCE_PUSH_DOWN: dict[str, list[str]] = {
     "semantic_scholar": ["year_min", "year_max"],
@@ -647,6 +729,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
     provider: LLMProvider | None = None,
     fallback_mode: Literal["auto", "force", "off"] | None = None,
     progress: ProgressReporter | None = None,
+    filter_edit: FilterEditContract | None = None,
 ) -> tuple[list[NormalizedPaper], SearchMetadata]:
     """Search multiple academic sources and return ranked normalized papers + metadata."""
 
@@ -676,6 +759,9 @@ async def search_papers(  # noqa: PLR0912, PLR0915
         default_limit=capped_limit,
         settings=active_settings,
     )
+    if filter_edit is not None:
+        constraints = _apply_filter_edit(constraints, filter_edit)
+        capped_limit = min(constraints.result_limit, active_settings.semantic_scholar_limit)
     fetch_limit = min(capped_limit * _OVER_FETCH_MULTIPLIER, _MAX_FETCH_LIMIT)
 
     regex_query = _build_regex_query(constraints, corrected_query, active_settings)

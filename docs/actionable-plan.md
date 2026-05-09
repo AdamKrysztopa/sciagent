@@ -461,6 +461,14 @@ M5 validation checklist:
 - [ ] ZAP-6 to ZAP-8: Native collection/item writes with idempotency and optional PDF
 - [ ] ZAP-9 to ZAP-11: Preferences, offline/error handling, signing and release automation
 
+M6 partial delivery notes (2026-05-09):
+- [x] Added top-level `zotero-addon/` package with `manifest.json`, `bootstrap.js`, TypeScript/esbuild build pipeline, icons, preference pane assets, and `.xpi` packaging.
+- [x] Added typed add-on backend client for `GET /health`, `POST /run`, `GET /status/{run_id}`, and `POST /resume`, including `X-AGT-API-Key` and `X-AGT-Client-ID` headers.
+- [x] Added React MVP item-pane UI for health status, query/collection input, parsed filter review/edit, result selection, and approve/reject/write-result rendering.
+- [x] Added Zotero prefs adapter and preference pane surface for backend URL, API key, client ID, and PDF-toggle placeholder.
+- [ ] Validate the scaffold inside a live Zotero 7 runtime.
+- [ ] Add signing/release automation and Zotero directory distribution flow.
+
 ### M7 (Week 8-10): Pluggability and Elastic Infrastructure
 
 - [ ] AGT-23: Unified retrieval registry

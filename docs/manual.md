@@ -24,6 +24,8 @@
 |-------------|---------|-------|
 | Python | >= 3.13 (recommended: 3.14) | Free-threaded GIL optional support |
 | `uv` | latest | Package manager ([install](https://astral.sh/uv)) |
+| Node.js | >= 20 | Required only for the Zotero add-on package in `zotero-addon/` |
+| Zotero | 7.x | Required for the native add-on scaffold and item-pane integration |
 | Zotero account | — | With API key and library ID |
 | xAI API key | — | Default LLM provider (or OpenAI/Anthropic) |
 
@@ -45,6 +47,21 @@ cp .env.example .env
 # 4. Install pre-commit hooks (for development)
 uv run pre-commit install
 ```
+
+### Optional: build the Zotero add-on package
+
+The repository now includes a top-level Zotero 7 add-on scaffold in `zotero-addon/`.
+
+```bash
+cd zotero-addon
+npm install
+npm run build
+```
+
+This produces:
+
+- `zotero-addon/build/xpi/` — staged unpacked add-on contents
+- `zotero-addon/build/sciagent-zotero-addon.xpi` — installable unsigned package for local/manual use
 
 ---
 
@@ -136,6 +153,8 @@ AGT_OPENAI_API_KEY=sk-your-openai-key
 
 SciAgent has three interfaces: **CLI**, **Streamlit UI**, and **REST API**.
 
+The repository also includes a fourth delivery surface for M6: a native Zotero 7 add-on package that talks to the REST API.
+
 ### Option 1: Command-Line Interface
 
 Run a single search workflow from the terminal:
@@ -184,6 +203,51 @@ uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000
 ```
 
 The API is designed for programmatic access and as the backend for the Zotero add-on.
+
+### Option 4: Zotero Add-on (M6 MVP)
+
+1. Start the backend API:
+
+```bash
+uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000
+```
+
+2. Build the add-on package:
+
+```bash
+cd zotero-addon
+npm install
+npm run build
+```
+
+3. Install the generated XPI in Zotero 7:
+
+- Open Zotero
+- Open the add-ons/plugins manager
+- Choose `Install Add-on From File...`
+- Select `zotero-addon/build/sciagent-zotero-addon.xpi`
+
+4. Configure the add-on preferences:
+
+- Backend URL
+- API key for `X-AGT-API-Key`
+- Client ID for `X-AGT-Client-ID`
+- PDF toggle placeholder (stored now, not yet acted on by the backend contract)
+
+5. Use the native SciAgent pane:
+
+- Open the SciAgent section in the Zotero item pane
+- Enter a query and target collection name
+- Run the first search to let the backend produce a typed search plan
+- Review or edit the parsed filter contract shown in the pane
+- Re-run with edits if needed, select results, then approve or reject
+
+Current M6 contract notes:
+
+- The add-on only calls `GET /health`, `POST /run`, `GET /status/{run_id}`, and `POST /resume`.
+- All writes remain backend-owned and backend-executed through `POST /resume`.
+- The filter editor sends the existing `FilterEditContract` payload on re-run.
+- The first search is intentionally unedited so the add-on can display the backend-produced parsed filters from `/status`.
 
 ---
 
@@ -449,6 +513,15 @@ uv run pyright
 uv run pytest -q
 ```
 
+### Running Zotero Add-on Checks
+
+```bash
+cd zotero-addon
+npm run build
+npm run typecheck
+npm test
+```
+
 ### Running Examples
 
 Each milestone has a runnable demo:
@@ -475,6 +548,13 @@ uv run python examples/m5_hardening_demo.py
 # M6: Zotero add-on backend contract
 uv run python examples/m6_zotero_addon_demo.py
 ```
+
+The real add-on scaffold lives in `zotero-addon/` and packages a Zotero 7 add-on with:
+
+- `manifest.json` + `bootstrap.js`
+- typed backend client for `/health`, `/run`, `/status/{run_id}`, `/resume`
+- native item-pane section + preference pane registration boundaries
+- React MVP for query, parsed filter review/edit, selection, approval, reject, and result rendering
 
 ### Docker
 

@@ -12,6 +12,9 @@ from agt.config import get_settings
 HTTP_OK = 200
 HTTP_UNAUTHORIZED = 401
 HTTP_FORBIDDEN = 403
+HTTP_UNPROCESSABLE_ENTITY = 422
+FILTER_EDIT_RESULT_LIMIT = 5
+FILTER_EDIT_MIN_YEAR = 2024
 
 
 @dataclass(slots=True)
@@ -236,5 +239,104 @@ def test_resume_failed_phase_maps_to_failed_status(monkeypatch: pytest.MonkeyPat
         payload = status_response.json()
         assert payload["status"] == "failed"
         assert payload["state"]["phase"] == "failed"
+
+    app.dependency_overrides.clear()
+
+
+def test_run_accepts_filter_edit_and_forwards_it(monkeypatch: pytest.MonkeyPatch) -> None:
+    app = create_app()
+
+    def fake_get_settings() -> _Settings:
+        return _Settings()
+
+    captured: dict[str, object] = {}
+
+    async def fake_search_phase(
+        query: str,
+        collection_name: str,
+        thread_id: str | None = None,
+        settings: object | None = None,
+        filter_edit: object | None = None,
+    ) -> dict[str, object]:
+        _ = settings
+        captured["query"] = query
+        captured["collection_name"] = collection_name
+        captured["thread_id"] = thread_id
+        captured["filter_edit"] = filter_edit
+        return {
+            "request_id": "req-2",
+            "thread_id": thread_id or "thread-2",
+            "messages": ["search complete"],
+            "papers": [],
+            "collection_name": collection_name,
+            "approved": False,
+            "decision": "pending",
+            "phase": "awaiting_approval",
+            "selected_indices": [],
+            "preflight": {"ok": True},
+            "trace_spans": [],
+            "write_result": None,
+            "search_metadata": {"mode": "regex"},
+        }
+
+    monkeypatch.setattr(api_module, "run_search_phase", fake_search_phase)
+    app.dependency_overrides[get_settings] = fake_get_settings
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/run",
+            headers={"X-AGT-API-Key": "backend-key", "X-AGT-Client-ID": "owner-a"},
+            json={
+                "query": "graph neural networks",
+                "collection_name": "Inbox",
+                "thread_id": "thread-filter-edit",
+                "filter_edit": {
+                    "original_query": "graph neural networks",
+                    "hard_filters": {
+                        "min_year": FILTER_EDIT_MIN_YEAR,
+                        "include_keywords": ["graph", "neural"],
+                    },
+                    "soft_preferences": {"min_semantic_score": 0.25},
+                    "result_limit": FILTER_EDIT_RESULT_LIMIT,
+                },
+            },
+        )
+
+        assert response.status_code == HTTP_OK
+        assert captured["query"] == "graph neural networks"
+        assert captured["collection_name"] == "Inbox"
+        assert captured["thread_id"] == "thread-filter-edit"
+        filter_edit = captured["filter_edit"]
+        assert filter_edit is not None
+        assert getattr(filter_edit, "result_limit") == FILTER_EDIT_RESULT_LIMIT
+        assert getattr(filter_edit, "hard_filters").min_year == FILTER_EDIT_MIN_YEAR
+        assert getattr(filter_edit, "hard_filters").include_keywords == ["graph", "neural"]
+
+    app.dependency_overrides.clear()
+
+
+def test_run_rejects_filter_edit_query_mismatch(monkeypatch: pytest.MonkeyPatch) -> None:
+    app = create_app()
+
+    def fake_get_settings() -> _Settings:
+        return _Settings()
+
+    app.dependency_overrides[get_settings] = fake_get_settings
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/run",
+            headers={"X-AGT-API-Key": "backend-key", "X-AGT-Client-ID": "owner-a"},
+            json={
+                "query": "graph neural networks",
+                "collection_name": "Inbox",
+                "filter_edit": {
+                    "original_query": "different query",
+                    "hard_filters": {"min_year": 2024},
+                },
+            },
+        )
+
+        assert response.status_code == HTTP_UNPROCESSABLE_ENTITY
 
     app.dependency_overrides.clear()

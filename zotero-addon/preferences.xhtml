@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<vbox
+  id="agt-preferences-root"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  onload="window.SciAgentPreferencesPane && window.SciAgentPreferencesPane.init();"
+>
+  <linkset>
+    <html:link rel="localization" href="agt.ftl" />
+  </linkset>
+
+  <groupbox id="agt-preferences-connection">
+    <label>
+      <html:h2 data-l10n-id="agt-preferences-connection-heading" />
+    </label>
+    <html:div class="agt-pref-grid">
+      <html:label for="agt-backend-url" data-l10n-id="agt-preferences-backend-url-label" />
+      <html:input id="agt-backend-url" type="url" preference="extensions.agt.backendURL" />
+
+      <html:label for="agt-api-key" data-l10n-id="agt-preferences-api-key-label" />
+      <html:input id="agt-api-key" type="password" preference="extensions.agt.apiKey" />
+
+      <html:label for="agt-client-id" data-l10n-id="agt-preferences-client-id-label" />
+      <html:input id="agt-client-id" type="text" preference="extensions.agt.clientID" />
+    </html:div>
+  </groupbox>
+
+  <groupbox id="agt-preferences-pdf">
+    <label>
+      <html:h2 data-l10n-id="agt-preferences-pdf-heading" />
+    </label>
+    <html:div class="agt-pref-checkbox-row">
+      <html:input
+        id="agt-enable-pdf-imports"
+        type="checkbox"
+        preference="extensions.agt.enablePDFImports"
+      />
+      <html:label for="agt-enable-pdf-imports" data-l10n-id="agt-preferences-pdf-toggle-label" />
+    </html:div>
+    <description data-l10n-id="agt-preferences-pdf-note" />
+  </groupbox>
+
+  <groupbox id="agt-preferences-runtime">
+    <label>
+      <html:h2 data-l10n-id="agt-preferences-runtime-heading" />
+    </label>
+    <description data-l10n-id="agt-preferences-runtime-note" />
+  </groupbox>
+</vbox>
