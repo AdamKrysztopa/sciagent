@@ -39,19 +39,34 @@ function loadRuntime(data) {
     return sciAgentRuntime;
   }
 
-  var runtimeScope;
   var rootURI;
   var scriptPath;
+  var mainWindows;
+  var refWindow;
+
   try {
-    runtimeScope = {};
+    // Load the bundle directly into the Zotero window global scope so React can
+    // access window, document, and other browser globals naturally during event
+    // system initialization. Loading into a separate scope object causes React's
+    // createRoot to fail with "window is not defined" at callback time.
+    mainWindows = Zotero.getMainWindows();
+    refWindow = mainWindows.length > 0 ? mainWindows[0] : null;
+
+    if (!refWindow) {
+      throw new Error("SciAgent cannot load runtime: no main window available");
+    }
+
     rootURI = resolveRootURI(data);
     scriptPath = `${rootURI}chrome/content/bootstrap-runtime.js`;
-    Zotero.debug(`[SciAgent] Loading runtime script: ${scriptPath}`);
-    Services.scriptloader.loadSubScript(scriptPath, runtimeScope);
-    // esbuild IIFE with default export returns { default: runtime }
-    sciAgentRuntime = runtimeScope.SciAgentBootstrapRuntime?.default ?? runtimeScope.SciAgentBootstrapRuntime;
+    Zotero.debug(`[SciAgent] Loading runtime script into window global: ${scriptPath}`);
+
+    // Load directly into the window so React sees the real global environment
+    Services.scriptloader.loadSubScript(scriptPath, refWindow);
+
+    // esbuild IIFE with globalName sets refWindow.SciAgentBootstrapRuntime
+    sciAgentRuntime = refWindow.SciAgentBootstrapRuntime?.default ?? refWindow.SciAgentBootstrapRuntime;
     if (!sciAgentRuntime) {
-      throw new Error("SciAgent bootstrap runtime failed to initialize - SciAgentBootstrapRuntime not found in scope");
+      throw new Error("SciAgent bootstrap runtime failed to initialize - SciAgentBootstrapRuntime not found on window");
     }
     Zotero.debug("[SciAgent] Runtime instance created successfully");
     return sciAgentRuntime;

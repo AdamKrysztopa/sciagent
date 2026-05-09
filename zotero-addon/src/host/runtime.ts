@@ -66,13 +66,22 @@ export class RuntimeController {
       this.rootURI = data.rootURI;
       Zotero.debug(`[SciAgent] Root URI: ${this.rootURI}`);
 
+      // Insert FTL into every existing window BEFORE registering the item pane
+      // section. Zotero renders the section header immediately on registerSection,
+      // so the FTL must already be loaded or the l10nID resolves to empty text
+      // and the section header is invisible.
+      const mainWindows = Zotero.getMainWindows();
+      Zotero.debug(`[SciAgent] Pre-loading FTL for ${mainWindows.length} existing window(s)`);
+      for (const win of mainWindows) {
+        this.insertFTL(win);
+      }
+
       // Register components with error isolation
       this.registerPreferencePane();
       this.registerItemPaneSection();
       this.registerWindowObserver();
 
-      // Attach to existing windows
-      const mainWindows = Zotero.getMainWindows();
+      // Full window attachment (styles, Tools menu) for existing windows
       Zotero.debug(`[SciAgent] Found ${mainWindows.length} existing main windows`);
       for (const window of mainWindows) {
         this.onMainWindowLoad({ window });
@@ -149,17 +158,24 @@ export class RuntimeController {
     }
   }
 
+  private insertFTL(window: ZoteroWindow): void {
+    // insertFTLIfNeeded returns a Promise; use .catch() to handle async rejection.
+    // A sync try/catch silently misses the rejection and produces
+    // "Uncaught (in promise) undefined" in the console.
+    const result = window.MozXULElement?.insertFTLIfNeeded("agt/agt.ftl");
+    if (result instanceof Promise) {
+      result.catch((ftlError: unknown) => {
+        Zotero.debug(`[SciAgent] WARNING: FTL insertion failed (non-fatal): ${ftlError}`);
+      });
+    }
+  }
+
   private attachToWindow(window: ZoteroWindow): void {
     try {
-      // Attempt to insert Fluent localization if available
-      // Failure is non-fatal; UI will use fallback labels
-      try {
-        Zotero.debug("[SciAgent] Inserting FTL locale...");
-        window.MozXULElement?.insertFTLIfNeeded("agt/agt.ftl");
-      } catch (ftlError) {
-        Zotero.debug(`[SciAgent] WARNING: Could not insert FTL: ${ftlError}`);
-        Zotero.debug("[SciAgent] Using fallback labels for UI elements");
-      }
+      // FTL was already inserted for existing windows in startup(); this handles
+      // new windows that open after the add-on has started.
+      Zotero.debug("[SciAgent] Inserting FTL locale...");
+      this.insertFTL(window);
 
       Zotero.debug("[SciAgent] Ensuring window styles...");
       this.ensureWindowStyles(window);

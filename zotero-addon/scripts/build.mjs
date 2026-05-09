@@ -125,6 +125,10 @@ async function bundle() {
     bundle: true,
     define: {
       "process.env.NODE_ENV": '"production"',
+      // Replace free `window` references with `globalThis` so React's event-system
+      // callbacks don't throw ReferenceError when executed in Zotero's privileged
+      // compartment context where `window` is not available as a lexical binding.
+      "window": "globalThis",
     },
     entryPoints: {
       "chrome/content/bootstrap-runtime": join(ROOT, "src", "bootstrap-runtime.ts"),

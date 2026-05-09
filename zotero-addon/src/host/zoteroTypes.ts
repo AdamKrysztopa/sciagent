@@ -28,6 +28,7 @@ export interface ItemPaneSectionDefinition {
   header: {
     icon: string;
     l10nID: string;
+    label?: string; // Optional fallback when FTL is unavailable
   };
   onRender(context: { body: HTMLElement; editable?: boolean; item?: unknown; tabType?: string }): void;
   paneID: string;
@@ -35,6 +36,7 @@ export interface ItemPaneSectionDefinition {
   sidenav: {
     icon: string;
     l10nID: string;
+    label?: string; // Optional fallback when FTL is unavailable
   };
 }
 
@@ -45,7 +47,7 @@ export interface ItemPaneManager {
 
 export interface ZoteroWindow extends Window {
   MozXULElement?: {
-    insertFTLIfNeeded(href: string): void;
+    insertFTLIfNeeded(href: string): Promise<void>;
   };
   document: Document & {
     createXULElement(tagName: string): Element;

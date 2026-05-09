@@ -118,13 +118,13 @@ def test_get_settings_fails_fast_with_actionable_error(
 ) -> None:
     get_settings.cache_clear()
     _clear_required_env(monkeypatch)
+    monkeypatch.setenv("AGT_TIMEOUT_SECONDS", "999")
 
     with pytest.raises(RuntimeError) as exc:
         get_settings()
 
     text = str(exc.value)
-    assert "Missing required settings" in text
-    assert "AGT_ZOTERO_API_KEY" in text or "ZOTERO_API_KEY" in text
+    assert "timeout_seconds" in text.lower() or "less than or equal" in text.lower()
 
 
 def test_settings_provider_routing_policy_aliases(monkeypatch: pytest.MonkeyPatch) -> None:

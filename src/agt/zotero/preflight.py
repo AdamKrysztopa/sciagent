@@ -30,7 +30,8 @@ class PreflightResult:
 
 def _get_write_capability(payload: dict[str, Any], library_type: str) -> bool:
     access = payload.get("access", {})
-    section = access.get(library_type, {})
+    library = access.get("library", {})
+    section = library.get(library_type, {})
     return bool(section.get("write"))
 
 
