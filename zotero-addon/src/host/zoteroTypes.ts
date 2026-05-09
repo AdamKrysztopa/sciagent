@@ -52,6 +52,7 @@ export interface ZoteroWindow extends Window {
   document: Document & {
     createXULElement(tagName: string): Element;
   };
+  openDialog?(url: string, name: string, features: string, ...args: unknown[]): Window;
 }
 
 export interface ZoteroGlobal {
@@ -65,6 +66,7 @@ export interface ZoteroGlobal {
 
 export interface WindowMediator {
   addListener(listener: object): void;
+  getMostRecentWindow(windowType: string): Window | null;
   removeListener(listener: object): void;
 }
 
@@ -72,8 +74,13 @@ export interface PromptService {
   alert(parent: Window | null, dialogTitle: string, text: string): void;
 }
 
+export interface ScriptLoader {
+  loadSubScript(url: string, target?: object): void;
+}
+
 export interface ServicesGlobal {
   prompt: PromptService;
+  scriptloader: ScriptLoader;
   wm: WindowMediator;
 }
 

@@ -16,18 +16,22 @@ export function FilterEditor({
   onReset,
   searchPlan,
 }: FilterEditorProps) {
-  if (filterDraft === null || searchPlan === null) {
+  if (filterDraft === null) {
     return (
       <section className="agt-card agt-card--soft">
         <div className="agt-section-heading">
-          <h2>Parsed Filters</h2>
+          <h2>Pre-Search Filters</h2>
         </div>
-        <p className="agt-empty-state">
-          Run a search first. The add-on reads the backend search plan from <code>/status</code>, then lets you review and edit the structured filter contract before re-running.
-        </p>
+        <p className="agt-empty-state">Loading saved filter defaults…</p>
       </section>
     );
   }
+
+  const isPreSearch = searchPlan === null;
+  const sectionHeading = isPreSearch ? "Pre-Search Filters" : "Parsed Filters";
+  const hint = isPreSearch
+    ? "Set deterministic hard filters before search. These are sent with the initial /run request. The backend applies them before semantic rewrite and candidate generation."
+    : "These controls mirror the backend FilterEditContract. Re-running search sends the edited payload back through /run.";
 
   const update = (nextDraft: FilterEditContract) => {
     onChange(nextDraft);
@@ -58,14 +62,12 @@ export function FilterEditor({
   return (
     <section className="agt-card">
       <div className="agt-section-heading">
-        <h2>Parsed Filters</h2>
-        <button className="agt-button agt-button--ghost" disabled={disabled} onClick={onReset} type="button">
+        <h2>{sectionHeading}</h2>
+        <button className="agt-button agt-button--ghost" disabled={disabled || searchPlan === null} onClick={onReset} type="button">
           Reset To Parsed Plan
         </button>
       </div>
-      <p className="agt-hint">
-        These controls mirror the backend <code>FilterEditContract</code>. Re-running search sends the edited payload back through <code>/run</code>.
-      </p>
+      <p className="agt-hint">{hint}</p>
       <div className="agt-grid--compact">
         <label className="agt-field">
           <span>Result Limit</span>
@@ -218,25 +220,31 @@ export function FilterEditor({
         <div className="agt-section-heading">
           <h3>Source Enforcement</h3>
         </div>
-        <div className="agt-chip-list">
-          {searchPlan.filters_enforced_post_merge.map((filterName) => (
-            <span className="agt-chip agt-chip--warn" key={filterName}>
-              post-merge: {filterName}
-            </span>
-          ))}
-          {searchPlan.filters_enforced_post_merge.length === 0 ? (
-            <span className="agt-chip">No post-merge filters active</span>
-          ) : null}
-        </div>
-        <div className="agt-chip-list">
-          {searchPlan.source_policy.map((source) => (
-            <span className="agt-chip" key={source.name}>
-              {source.name}
-              {source.supports_year_filter ? " year" : " no-year"}
-              {source.supports_open_access_filter ? " oa" : ""}
-            </span>
-          ))}
-        </div>
+        {searchPlan !== null ? (
+          <>
+            <div className="agt-chip-list">
+              {searchPlan.filters_enforced_post_merge.map((filterName) => (
+                <span className="agt-chip agt-chip--warn" key={filterName}>
+                  post-merge: {filterName}
+                </span>
+              ))}
+              {searchPlan.filters_enforced_post_merge.length === 0 ? (
+                <span className="agt-chip">No post-merge filters active</span>
+              ) : null}
+            </div>
+            <div className="agt-chip-list">
+              {searchPlan.source_policy.map((source) => (
+                <span className="agt-chip" key={source.name}>
+                  {source.name}
+                  {source.supports_year_filter ? " year" : " no-year"}
+                  {source.supports_open_access_filter ? " oa" : ""}
+                </span>
+              ))}
+            </div>
+          </>
+        ) : (
+          <p className="agt-empty-state">Source enforcement details appear after the first search.</p>
+        )}
       </div>
     </section>
   );

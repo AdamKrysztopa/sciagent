@@ -453,27 +453,58 @@ export class RuntimeController {
 
   private handleToolsMenuCommand(window: ZoteroWindow): void {
     try {
-      Zotero.debug("[SciAgent] Tools menu command triggered");
-      const itemsView = (window as unknown as { ZoteroPane?: { itemsView?: unknown } }).ZoteroPane?.itemsView;
-      const hasSelection = itemsView !== undefined && ((itemsView as { selection?: { count?: number } }).selection?.count ?? 0) > 0;
-
-      if (hasSelection) {
-        Zotero.debug("[SciAgent] Item selected, showing item pane guidance");
-        // Item selected: show discoverable message about the item pane
-        Services.prompt.alert(
-          window,
-          "SciAgent",
-          "SciAgent interface is in the item details panel. Select an item, then look for the SciAgent section in the right sidebar.",
-        );
-      } else {
-        Zotero.debug("[SciAgent] No item selected, opening preferences");
-        // No selection: open preferences so user can configure backend
-        (window as unknown as { openPreferences?: (paneID: string) => void }).openPreferences?.("agt-preferences");
-      }
+      Zotero.debug("[SciAgent] Tools menu command triggered — opening main panel");
+      this.openOrFocusMainPanel(window);
     } catch (error) {
       Zotero.debug(`[SciAgent] Error handling Tools menu command: ${error}`);
       Zotero.logError(error);
     }
+  }
+
+  private openOrFocusMainPanel(window: ZoteroWindow): void {
+    // Focus the existing panel if it is already open.
+    const existing = Services.wm.getMostRecentWindow("agt:main-panel");
+    if (existing !== null) {
+      Zotero.debug("[SciAgent] Main panel already open — focusing");
+      (existing as { focus?: () => void }).focus?.();
+      return;
+    }
+
+    Zotero.debug("[SciAgent] Opening main panel window");
+    const panelUrl = "chrome://agt/content/sciagent-panel.xhtml";
+    const bundleUrl = `${this.rootURI}chrome/content/panel-entry.js`;
+
+    const panelWin = window.openDialog?.(
+      panelUrl,
+      "_blank",
+      "chrome,dialog=no,resizable,width=720,height=820,centerscreen",
+    );
+
+    if (!panelWin) {
+      Zotero.debug("[SciAgent] Failed to open main panel window — openDialog returned null");
+      return;
+    }
+
+    panelWin.addEventListener(
+      "load",
+      () => {
+        try {
+          Zotero.debug("[SciAgent] Loading panel-entry bundle into panel window");
+          Services.scriptloader.loadSubScript(bundleUrl, panelWin);
+          const scopedWin = panelWin as unknown as { SciAgentPanel?: { init(): void } };
+          if (typeof scopedWin.SciAgentPanel?.init === "function") {
+            scopedWin.SciAgentPanel.init();
+            Zotero.debug("[SciAgent] Main panel React app mounted");
+          } else {
+            Zotero.debug("[SciAgent] WARNING: SciAgentPanel.init not found after bundle load");
+          }
+        } catch (err) {
+          Zotero.debug(`[SciAgent] Error mounting main panel React app: ${err}`);
+          Zotero.logError(err);
+        }
+      },
+      { once: true },
+    );
   }
 
   private iconPath(size: "16" | "20" | "48" | "96"): string {

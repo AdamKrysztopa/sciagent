@@ -4,7 +4,7 @@ type SaveState = "idle" | "saving" | "saved" | "error";
 
 interface ConfigPanelProps {
   config: AddonConfig;
-  onChange(field: keyof AddonConfig, value: boolean | string): void;
+  onChange(field: keyof AddonConfig, value: boolean | number | null | string): void;
   onSave(): void;
   saveError: string | null;
   saveState: SaveState;
@@ -19,6 +19,11 @@ export function ConfigPanel({ config, onChange, onSave, saveError, saveState }: 
           {saveState === "saving" ? "Saving..." : "Save Preferences"}
         </button>
       </div>
+
+      <h3 className="agt-subsection-heading">Connection &amp; Auth</h3>
+      <p className="agt-small-note">
+        Provider and source API keys are backend-owned. Configure them in the backend <code>.env</code> file, not here.
+      </p>
       <div className="agt-grid">
         <label className="agt-field">
           <span>Backend URL</span>
@@ -48,16 +53,82 @@ export function ConfigPanel({ config, onChange, onSave, saveError, saveState }: 
           value={config.apiKey}
         />
       </label>
+
+      <h3 className="agt-subsection-heading">Search Defaults</h3>
+      <p className="agt-small-note">
+        These defaults pre-fill the pre-search filter composer. They are sent with every initial search request.
+      </p>
+      <label className="agt-field">
+        <span>Default Collection</span>
+        <input
+          className="agt-input"
+          onChange={(event) => onChange("defaultCollection", event.target.value)}
+          placeholder="Inbox"
+          type="text"
+          value={config.defaultCollection}
+        />
+      </label>
+      <div className="agt-grid--compact">
+        <label className="agt-field">
+          <span>Min Year</span>
+          <input
+            className="agt-number"
+            max={2100}
+            min={1900}
+            onChange={(event) => {
+              onChange("defaultMinYear", event.target.value === "" ? null : Number(event.target.value));
+            }}
+            type="number"
+            value={config.defaultMinYear ?? ""}
+          />
+        </label>
+        <label className="agt-field">
+          <span>Max Year</span>
+          <input
+            className="agt-number"
+            max={2100}
+            min={1900}
+            onChange={(event) => {
+              onChange("defaultMaxYear", event.target.value === "" ? null : Number(event.target.value));
+            }}
+            type="number"
+            value={config.defaultMaxYear ?? ""}
+          />
+        </label>
+        <label className="agt-field">
+          <span>Min Citations</span>
+          <input
+            className="agt-number"
+            min={0}
+            onChange={(event) => {
+              const n = Number(event.target.value);
+              onChange("defaultMinCitations", Number.isNaN(n) ? 0 : n);
+            }}
+            type="number"
+            value={config.defaultMinCitations}
+          />
+        </label>
+      </div>
+      <label className="agt-checkbox-row">
+        <input
+          checked={config.defaultOpenAccessOnly}
+          onChange={(event) => onChange("defaultOpenAccessOnly", event.target.checked)}
+          type="checkbox"
+        />
+        <span>Open access papers only by default</span>
+      </label>
+
+      <h3 className="agt-subsection-heading">PDF Imports</h3>
       <label className="agt-checkbox-row">
         <input
           checked={config.enablePdfImports}
           onChange={(event) => onChange("enablePdfImports", event.target.checked)}
           type="checkbox"
         />
-        <span>Store PDF import preference placeholder</span>
+        <span>Enable PDF import after write</span>
       </label>
       <p className="agt-small-note">
-        The toggle is persisted now for future ZAP-8 work, but the MVP keeps all writes on the backend through <code>/resume</code>.
+        The MVP saves this toggle, but all writes still stay on the backend through <code>/resume</code>.
       </p>
       {saveState === "saved" ? <span className="agt-pill agt-pill--ok">Preferences saved</span> : null}
       {saveError !== null ? <div className="agt-error">{saveError}</div> : null}

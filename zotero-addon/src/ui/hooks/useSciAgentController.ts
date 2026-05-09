@@ -6,6 +6,7 @@ import {
   type AddonConfig,
 } from "../../host/prefs";
 import {
+  buildDefaultFilterEdit,
   buildSourceBuckets,
   filterEditFromSearchPlan,
   getPaperIndex,
@@ -204,6 +205,19 @@ export function useSciAgentController(services: AddonUiServices) {
         return;
       }
       setConfig(loadedConfig);
+      // Seed collection name and filter draft from saved defaults (M6.1-A/B)
+      setCollectionName(loadedConfig.defaultCollection || "Inbox");
+      setFilterDraft((currentDraft) => {
+        if (currentDraft !== null) {
+          return currentDraft;
+        }
+        return buildDefaultFilterEdit(
+          loadedConfig.defaultMinYear,
+          loadedConfig.defaultMaxYear,
+          loadedConfig.defaultMinCitations,
+          loadedConfig.defaultOpenAccessOnly,
+        );
+      });
     }).catch((error: unknown) => {
       if (cancelled) {
         return;
@@ -227,7 +241,7 @@ export function useSciAgentController(services: AddonUiServices) {
     healthResponse,
     onApprove: () => void resumeRun(true),
     onCollectionChange: setCollectionName,
-    onConfigChange: (field: keyof AddonConfig, value: boolean | string) => {
+    onConfigChange: (field: keyof AddonConfig, value: boolean | number | null | string) => {
       setConfig((currentConfig) => ({
         ...currentConfig,
         [field]: value,

@@ -202,6 +202,26 @@ export const DEFAULT_SOFT_PREFERENCES: SoftPreferences = {
 
 const OPTIONAL_SOURCES = ["core", "dimensions", "google_scholar"] as const;
 
+export function buildDefaultFilterEdit(
+  minYear: number | null = null,
+  maxYear: number | null = null,
+  minCitations = 0,
+  openAccessOnly = false,
+): FilterEditContract {
+  return {
+    original_query: "",
+    hard_filters: {
+      ...DEFAULT_HARD_FILTERS,
+      min_year: minYear,
+      max_year: maxYear,
+      min_citations: minCitations,
+      open_access_only: openAccessOnly,
+    },
+    soft_preferences: { ...DEFAULT_SOFT_PREFERENCES },
+    result_limit: 10,
+  };
+}
+
 export function filterEditFromSearchPlan(
   originalQuery: string,
   searchPlan: SearchPlan,

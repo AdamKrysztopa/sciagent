@@ -6,13 +6,13 @@
       <RDF:Seq>
         <RDF:li>
           <RDF:Description>
-            <em:version>0.1.1</em:version>
+            <em:version>0.1.2</em:version>
             <em:targetApplication>
               <RDF:Description>
                 <em:id>zotero@chnm.gmu.edu</em:id>
                 <em:minVersion>6.999</em:minVersion>
                 <em:maxVersion>9.*</em:maxVersion>
-                <em:updateLink>https://github.com/AdamKrysztopa/sciagent/releases/download/v0.1.1/sciagent-zotero-addon.xpi</em:updateLink>
+                <em:updateLink>https://github.com/AdamKrysztopa/sciagent/releases/download/v0.1.2/sciagent-zotero-addon.xpi</em:updateLink>
               </RDF:Description>
             </em:targetApplication>
           </RDF:Description>

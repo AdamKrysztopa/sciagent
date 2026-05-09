@@ -19,6 +19,8 @@ const XPI_PATH = join(BUILD_DIR, "sciagent-zotero-addon.xpi");
 
 const STATIC_FILES = ["manifest.json", "bootstrap.js", "prefs.js", "preferences.xhtml"];
 const STATIC_DIRS = ["icons", "locale"];
+// Files that must be served at chrome://agt/content/ and therefore live in chrome/content/
+const CHROME_CONTENT_FILES = ["sciagent-panel.xhtml"];
 
 function clean() {
   rmSync(BUILD_DIR, { force: true, recursive: true });
@@ -31,6 +33,10 @@ function copyStaticAssets() {
 
   for (const directory of STATIC_DIRS) {
     cpSync(join(ROOT, directory), join(STAGE_DIR, directory), { recursive: true });
+  }
+
+  for (const fileName of CHROME_CONTENT_FILES) {
+    copyFileSync(join(ROOT, fileName), join(STAGE_DIR, "chrome", "content", fileName));
   }
 }
 
@@ -150,6 +156,26 @@ async function bundle() {
     },
     entryPoints: {
       "chrome/content/preferences-pane": join(ROOT, "src", "preferences-pane.ts"),
+    },
+    format: "iife",
+    minify: false,
+    outdir: STAGE_DIR,
+    platform: "browser",
+    sourcemap: false,
+    target: ["firefox115"],
+  });
+
+  // Bundle standalone main-window panel entry (loaded via loadSubScript into panel dialog)
+  await esbuild({
+    bundle: true,
+    define: {
+      "process.env.NODE_ENV": '"production"',
+      // Replace free `window` references with `globalThis` so the bundle runs
+      // correctly when loaded via loadSubScript into the panel chrome window.
+      "window": "globalThis",
+    },
+    entryPoints: {
+      "chrome/content/panel-entry": join(ROOT, "src", "panel-entry.ts"),
     },
     format: "iife",
     minify: false,

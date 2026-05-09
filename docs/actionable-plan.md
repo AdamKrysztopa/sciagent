@@ -1,6 +1,6 @@
 # SciAgent Prioritized Action Plan
 
-> **Finalization audit completed: 2026-05-08** — All quality gates clean (ruff 0, pyright 0, 141 tests passing).
+> **Finalization audit completed: 2026-05-09** — All quality gates clean (ruff 0, pyright 0, 141 tests passing; addon lint/typecheck/test/build green at 0.1.2).
 > This is the canonical execution tracker for live status, overall progress, and the next implementation target.
 > Update done / not done state here first.
 > See [docs/manual.md](manual.md) for configuration & usage.
@@ -11,12 +11,13 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 ### Current Status
 
-- Current focus: M6.1 — Main-window-first plugin MVP (settings/secrets boundary and backend capability contract before primary UI)
-- Current next implementation target: M6.1-A — Settings panel split, backend auth prefs, and deployment env contract
-- Next after M6.1-A: M6.1-B — Backend capabilities, pre-search filter/source contract, and source-status transparency; then M6.1-C — library-window search workspace
+- Current focus: M6.1 — Complete (shipped as 0.1.2)
+- Current next implementation target: M6.1-D follow-on hardening, then M6.2 (source capabilities endpoint) or AGT-20/21
+- Next after M6.1: AGT-20 follow-up — truthful terminal write-failure status and tests; then AGT-21 security checklist
 
 ### Recent Progress
 
+- ✅ M6.1 complete: settings panel split (Connection & Auth / Search Defaults), pre-search filter composer, main-window panel (Tools > SciAgent opens standalone dialog), version bumped to 0.1.2
 - ✅ Docs reorganized: new `docs/api.md`, `docs/deployment.md`, updated `docs/manual.md` with full local run guide
 - ✅ macOS XPI installation instructions added to manual
 - ✅ MkDocs nav restructured into Overview / Planning / Manuals / Reference
@@ -32,6 +33,7 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 - [x] M3 — Write Correctness and Idempotency
 - [x] M4 — Approval-Gated Workflow and MVP Demo
 - [x] M5 — Production v1 Hardening
+- [x] M6.1 — Main-Window Plugin MVP (ZAP-9 settings split, ZAP-4A pre-search filter composer, ZAP-3 main-window workspace, addon v0.1.2)
 
 ### Not Done Milestones
 
@@ -40,10 +42,7 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 ### Next Items In Order
 
-- [ ] M6.1-A — Settings panel split, backend auth prefs, and deployment env contract
-- [ ] M6.1-B — Backend capabilities, ZAP-4A pre-search filter/source contract, and source-status transparency
-- [ ] M6.1-C — Library-window search workspace replacing the item-pane-first MVP
-- [ ] M6.1-D — Approval/write flow and PDF attachment status in the main-window surface
+- [ ] M6.1-D follow-on — Approval/write flow hardening and PDF attachment status in the main-window surface
 - [ ] AGT-20 follow-up — truthful terminal write-failure status and tests
 - [ ] AGT-21 follow-up — security checklist and auth hardening
 - [ ] AGT-24 — durable distributed checkpointing
