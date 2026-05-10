@@ -12,12 +12,13 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 ### Current Status
 
 - Current focus: P1 — Evidence Before Expansion (post-P0 docs/metadata alignment, 2026-05-10)
-- Current next implementation target: SCI-0101 (retrieval benchmark), SCI-0103 (feature-flag measurement)
-- Last completed: SCI-0001 (README rewrite), SCI-0002 (canonical user journey), SCI-0003 (Zotero compatibility + metadata alignment) (2026-05-10)
+- Current next implementation target: SCI-0103 (feature-flag measurement and disposition)
+- Last completed: SCI-0101 (retrieval benchmark report) (2026-05-10)
 - M7 (Pluggability/Infrastructure) intentionally deprioritized: settings and elastic infra add value only after users trust the product output. See Phase P0–P2 ordering below.
 
 ### Recent Progress
 
+- ✅ SCI-0101 complete: benchmark report published in `docs/benchmark.md`; validated default run preserves hard filters and source coverage across all 22 queries, with 9 recall-only regressions against the manual web-search baseline
 - ✅ M6 complete: all ZAP-0–ZAP-11 stories done — native write path (ZAP-6/7/8), offline cache (ZAP-10), release automation (ZAP-11), /capabilities backend endpoint, nativeWriteEnabled pref
 - ✅ M6.1 complete: settings panel split (Connection & Auth / Search Defaults), pre-search filter composer, main-window panel (Tools > SciAgent opens standalone dialog), SourceToggles, version bumped to 0.1.2
 - ✅ M6.1-D complete: PDF attachment status surfaced per-item in write result (pdfStatus: attached/failed/skipped), nativeWriteResult state added to controller, renderNativeWriteResult in App, zoteroWriter tests added
@@ -60,7 +61,7 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 > Ordered by fastest path to a product a Zotero researcher would trust and recommend.
 
-- [ ] SCI-0101 — Build retrieval benchmark panel (20–30 queries, recall@10, hard-filter compliance)
+- [x] SCI-0101 — Build retrieval benchmark panel (20–30 queries, recall@10, hard-filter compliance)
 - [ ] SCI-0103 — Measure or remove undecided feature flags (KeyBERT, spell check, reranker)
 - [ ] SCI-0205 — Add "Why this paper?" result explanations (deterministic; no extra LLM call)
 - [ ] SCI-0203 — Add persistent search sessions (rerun, diff, export)
@@ -722,7 +723,7 @@ Acceptance criteria:
 
 | ID       | Story                                                                                                                                | Owner                   | Status |
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------------- | ------ |
-| SCI-0101 | Build retrieval benchmark panel: 20–30 queries, must-find DOIs, hard-filter compliance, recall@10/20, source coverage, latency, cost | python-backend-engineer | [ ]    |
+| SCI-0101 | Build retrieval benchmark panel: 20–30 queries, must-find DOIs, hard-filter compliance, recall@10/20, source coverage, latency, cost | python-backend-engineer | [x]    |
 | SCI-0102 | Add optional external baseline comparison (OpenAlex direct, Semantic Scholar direct, ChatGPT manual baseline)                        | python-backend-engineer | [ ]    |
 | SCI-0103 | Measure `AGT_USE_KEYBERT`, `AGT_USE_SPELL_CHECK`, `AGT_USE_RERANKER` against benchmark; promote or delete each                       | python-backend-engineer | [ ]    |
 
@@ -831,8 +832,9 @@ Acceptance criteria:
 
 - [ ] Implement AGT-28 search-plan model with deterministic hard filters and API/UI metadata
   - [x] **Done 2026-05-08** — `SearchPlan`, `HardFilters`, `SoftPreferences`, `SourceCapability`, `FilterEditContract` models shipped; 6 enforcement tests pass; ruff 0, pyright 0, 141 tests green.
-- [ ] Implement AGT-29 keyless-first retrieval benchmark against standalone LLM/web-search baseline
+- [x] Implement AGT-29 keyless-first retrieval benchmark against standalone LLM/web-search baseline
   - [x] **Done 2026-05-08** — 22-query benchmark panel in `examples/m2_7_benchmark.py`; covers AI, time-series, biomedicine, social science, and interdisciplinary domains.
+  - [x] **Done 2026-05-10** — validated default benchmark run and published report in `docs/benchmark.md`; hard-filter contract and source coverage hold at 1.000, while 9 anchor-paper queries remain below the reviewed baseline on recall.
 - [ ] Define ZAP-4A filter payload shared by Streamlit, REST API, and Zotero add-on
 - [x] Add provider protocol package and baseline xAI adapter implementation
 - [ ] Add OpenAI adapter implementing the same LLMProvider contract
