@@ -124,7 +124,7 @@ async function createItemsNative(
     const doi = (paper.doi ?? "").trim().toLowerCase();
     const hash = titleAuthorHash(paper.title, paper.authors);
 
-    const dupItem = (doi && doiIndex.get(doi)) ?? hashIndex.get(hash);
+    const dupItem = (doi !== "" ? doiIndex.get(doi) : undefined) ?? hashIndex.get(hash);
     if (dupItem !== undefined) {
       outcomes.push({
         paper,

@@ -18,11 +18,11 @@ export function SourceToggles({ sourcePolicy }: SourceTogglesProps) {
   return (
     <section className="agt-source-toggles" aria-label="Source availability">
       <h4 className="agt-section-heading">Available Sources</h4>
-      <ul className="agt-source-list" role="list">
+      <ul className="agt-source-list">
         {sourcePolicy.map((src) => (
           <li key={src.name} className={`agt-source-item agt-source-${src.tier}`}>
             <span className="agt-source-name">{src.name}</span>
-            <span className="agt-source-tier" aria-label={`tier: ${src.tier}`}>
+            <span className="agt-source-tier">
               {TIER_LABEL[src.tier] ?? src.tier}
             </span>
             {src.supports_year_filter && (
@@ -37,6 +37,7 @@ export function SourceToggles({ sourcePolicy }: SourceTogglesProps) {
             )}
             <span
               className={`agt-source-status agt-source-status-${src.enabled ? "enabled" : "disabled"}`}
+              role="img"
               aria-label={src.enabled ? "enabled" : "disabled"}
             >
               {src.enabled ? "✓" : "✗"}

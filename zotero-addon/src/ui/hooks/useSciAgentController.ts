@@ -211,8 +211,13 @@ export function useSciAgentController(services: AddonUiServices) {
 
       if (useNative && approved && response.approved_papers !== undefined && response.approved_papers.length > 0) {
         // ZAP-6/7/8: write to Zotero natively.
+        const nativeWrite = services.nativeWrite;
         try {
-          const nativeResult = await services.nativeWrite!(
+          if (nativeWrite === undefined) {
+            throw new Error("Native write service unavailable.");
+          }
+
+          const nativeResult = await nativeWrite(
             response.approved_papers,
             collectionName.trim() || "Inbox",
             config.enablePdfImports,
