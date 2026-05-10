@@ -72,11 +72,18 @@ Per-flag query movement versus default:
 
 Interpretation:
 
-- `AGT_USE_KEYBERT` should remain disabled. The current measurement shows lower recall and materially worse latency.
-- `AGT_USE_SPELL_CHECK` is measured but not decision-complete. The current panel contains no typo-focused acceptance queries, so this run does not justify promotion or removal by itself.
-- `AGT_USE_RERANKER` is the only flag with a positive benchmark signal, but the gain is not large enough to declare P1 retrieval competitive yet.
+- `AGT_USE_KEYBERT` is retired from the active tuning surface and should remain disabled. The current measurement shows lower recall and materially worse latency, so there is no evidence case for promotion.
+- `AGT_USE_SPELL_CHECK` stays disabled and explicitly experimental. The current panel contains no typo-focused acceptance queries, so the honest disposition is to defer promotion or removal until a dedicated typo benchmark exists rather than pretend this panel answered the question.
+- `AGT_USE_RERANKER` is retained as a supported opt-in experiment. It is the only flag with a positive benchmark signal, but the improvement is not large enough to declare P1 retrieval competitive or to treat the flag as a full milestone exit by itself.
+
+Decision summary:
+
+- `AGT_USE_KEYBERT`: do not promote; keep disabled and treat as retired pending future cleanup.
+- `AGT_USE_SPELL_CHECK`: do not promote; keep disabled and defer final keep/remove judgment to a typo-focused benchmark slice.
+- `AGT_USE_RERANKER`: keep as a positive opt-in experiment; do not claim it closes the retrieval gap on its own.
 
 ## Status
 
 - SCI-0101 is complete: the benchmark panel, baseline comparison, and published report now exist and are validated.
-- SCI-0103 remains partial: the flags are now measured, but promotion or removal decisions are not all supportable from the current panel.
+- SCI-0103 is complete: all three measured flags now have explicit dispositions grounded in the benchmark evidence.
+- P1 remains open: [docs/core.md](core.md) requires SciAgent to match or exceed the reviewed manual baseline on must-find recall before release promotion, and the validated default run still trails that baseline on 9 of 22 queries.

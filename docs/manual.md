@@ -20,14 +20,14 @@
 
 ## Prerequisites
 
-| Requirement    | Version                     | Notes                                                             |
-| -------------- | --------------------------- | ----------------------------------------------------------------- |
-| Python         | >= 3.13 (recommended: 3.14) | Free-threaded GIL optional support                                |
-| `uv`           | latest                      | Package manager ([install](https://astral.sh/uv))                 |
-| Node.js        | >= 20                       | Required only for the Zotero add-on package in `zotero-addon/`    |
-| Zotero         | 9.x                         | Required for the native add-on's main-window workflow             |
-| Zotero account | —                           | With API key and library ID                                       |
-| OpenAI API key | —                           | Default first-run LLM path; Anthropic or xAI also work            |
+| Requirement    | Version                     | Notes                                                          |
+| -------------- | --------------------------- | -------------------------------------------------------------- |
+| Python         | >= 3.13 (recommended: 3.14) | Free-threaded GIL optional support                             |
+| `uv`           | latest                      | Package manager ([install](https://astral.sh/uv))              |
+| Node.js        | >= 20                       | Required only for the Zotero add-on package in `zotero-addon/` |
+| Zotero         | 9.x                         | Required for the native add-on's main-window workflow          |
+| Zotero account | —                           | With API key and library ID                                    |
+| OpenAI API key | —                           | Default first-run LLM path; Anthropic or xAI also work         |
 
 ---
 
@@ -255,11 +255,11 @@ Should show a file around 50-100 KB.
 
 ### Zotero Add-on Compatibility
 
-| Status      | Versions              | Notes                                                                 |
-| ----------- | --------------------- | --------------------------------------------------------------------- |
-| Tested      | 9.0.0-9.* packaging   | `manifest.json`, `update.rdf`, and `npm run build` align in this repo |
-| Expected    | Zotero 9.x runtime    | Supported target, but live desktop validation is still manual         |
-| Unsupported | < 9.0.0 or > 9.x      | Not claimed; add-on metadata rejects these versions                   |
+| Status      | Versions             | Notes                                                                 |
+| ----------- | -------------------- | --------------------------------------------------------------------- |
+| Tested      | 9.0.0-9.\* packaging | `manifest.json`, `update.rdf`, and `npm run build` align in this repo |
+| Expected    | Zotero 9.x runtime   | Supported target, but live desktop validation is still manual         |
+| Unsupported | < 9.0.0 or > 9.x     | Not claimed; add-on metadata rejects these versions                   |
 
 ---
 
@@ -580,13 +580,13 @@ Each retrieval source has a configurable rate limit (requests per minute per thr
 
 ### Feature Flags
 
-| Variable                        | Default | Description                                                     |
-| ------------------------------- | ------- | --------------------------------------------------------------- |
-| `AGT_ENABLE_FALLBACK_RETRIEVAL` | `false` | Enable fallback sources when primary returns few results        |
-| `AGT_USE_KEYBERT`               | `false` | Use KeyBERT for keyword extraction (requires `keybert` package) |
-| `AGT_USE_SPELL_CHECK`           | `false` | Enable spell checking on queries (requires `pyspellchecker`)    |
-| `AGT_USE_RERANKER`              | `false` | Use cross-encoder reranker (requires `sentence-transformers`)   |
-| `AGT_SUMMARIZATION_USE_LLM`     | `true`  | Use LLM for paper summaries (false = deterministic truncation)  |
+| Variable                        | Default | Description                                                                                               |
+| ------------------------------- | ------- | --------------------------------------------------------------------------------------------------------- |
+| `AGT_ENABLE_FALLBACK_RETRIEVAL` | `false` | Enable fallback sources when primary returns few results                                                  |
+| `AGT_USE_KEYBERT`               | `false` | Retired experimental flag; benchmarked worse than default, so leave disabled                              |
+| `AGT_USE_SPELL_CHECK`           | `false` | Experimental typo-correction flag; keep disabled until a typo-focused benchmark exists                    |
+| `AGT_USE_RERANKER`              | `false` | Positive experimental reranker (requires `sentence-transformers`); useful opt-in, not a P1 exit by itself |
+| `AGT_SUMMARIZATION_USE_LLM`     | `true`  | Use LLM for paper summaries (false = deterministic truncation)                                            |
 
 ### Search Tuning
 
