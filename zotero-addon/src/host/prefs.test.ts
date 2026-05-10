@@ -30,6 +30,34 @@ function createMockZotero(): ZoteroGlobal {
       register: () => undefined,
     },
     Prefs: prefs,
+    Collections: {
+      getByLibrary: () => [],
+      getByParent: () => [],
+      add: () => Promise.resolve({ id: 1, key: "col1", name: "Test", parentKey: false, libraryID: 1 }),
+      get: () => false,
+      getAsync: () => Promise.resolve(false),
+    },
+    Items: {
+      getAll: () => [],
+      getAsync: () => Promise.resolve(false),
+      get: () => false,
+      add: () =>
+        Promise.resolve({
+          id: 1,
+          key: "item1",
+          libraryID: 1,
+          getField: () => "",
+          setField: () => undefined,
+          addToCollection: () => undefined,
+          save: () => Promise.resolve(),
+        }),
+    },
+    Attachments: {
+      importFromURL: () => Promise.resolve(false),
+    },
+    Libraries: {
+      getUserLibrary: () => ({ libraryID: 1, name: "My Library", editable: true }),
+    },
     debug: () => undefined,
     getMainWindows: () => [],
     logError: () => undefined,

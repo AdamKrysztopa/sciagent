@@ -319,6 +319,132 @@ def test_run_accepts_filter_edit_and_forwards_it(monkeypatch: pytest.MonkeyPatch
     app.dependency_overrides.clear()
 
 
+def test_capabilities_returns_source_policy(monkeypatch: pytest.MonkeyPatch) -> None:
+    app = create_app()
+
+    def fake_get_settings() -> _Settings:
+        return _Settings()
+
+    app.dependency_overrides[get_settings] = fake_get_settings
+
+    with TestClient(app) as client:
+        resp = client.get("/capabilities", headers={"X-AGT-API-Key": "backend-key"})
+        assert resp.status_code == HTTP_OK
+        payload = resp.json()
+        assert payload["api_contract_version"] == "2026-05"
+        assert isinstance(payload["source_policy"], list)
+        assert len(payload["source_policy"]) > 0
+        source_names = [s["name"] for s in payload["source_policy"]]
+        assert "semantic_scholar" in source_names
+        assert "openalex" in source_names
+        assert "arxiv" in source_names
+        assert "filter_support" in payload
+        assert "year_filter" in payload["filter_support"]
+        assert "pdf_import_supported" in payload
+
+    app.dependency_overrides.clear()
+
+
+def test_capabilities_requires_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    app = create_app()
+
+    def fake_get_settings() -> _Settings:
+        return _Settings()
+
+    app.dependency_overrides[get_settings] = fake_get_settings
+
+    with TestClient(app) as client:
+        resp = client.get("/capabilities")
+        assert resp.status_code == HTTP_UNAUTHORIZED
+
+    app.dependency_overrides.clear()
+
+
+def test_resume_native_write_returns_approved_papers(monkeypatch: pytest.MonkeyPatch) -> None:
+    app = create_app()
+
+    def fake_get_settings() -> _Settings:
+        return _Settings()
+
+    sample_paper: dict[str, object] = {
+        "title": "Test Paper",
+        "year": 2024,
+        "doi": None,
+        "arxiv_id": None,
+        "abstract": None,
+        "authors": [],
+        "url": None,
+        "pdf_url": None,
+        "source": "semantic_scholar",
+        "index": 0,
+        "semantic_score": 0.9,
+        "citation_count": 5,
+        "influential_citation_count": 0,
+        "open_access": False,
+        "summary": None,
+        "score": 0.9,
+    }
+
+    async def fake_search_phase(
+        query: str,
+        collection_name: str,
+        thread_id: str | None = None,
+        settings: object | None = None,
+        filter_edit: object | None = None,
+    ) -> dict[str, object]:
+        _ = query, collection_name, settings, filter_edit
+        return {
+            "request_id": "req-nw",
+            "thread_id": thread_id or "thread-nw",
+            "messages": ["search complete"],
+            "papers": [sample_paper],
+            "collection_name": "Inbox",
+            "approved": False,
+            "decision": "pending",
+            "phase": "awaiting_approval",
+            "selected_indices": [0],
+            "preflight": {"ok": True},
+            "trace_spans": [],
+            "write_result": None,
+            "search_metadata": {"mode": "regex"},
+        }
+
+    monkeypatch.setattr(api_module, "run_search_phase", fake_search_phase)
+    app.dependency_overrides[get_settings] = fake_get_settings
+
+    with TestClient(app) as client:
+        headers = {
+            "X-AGT-API-Key": "backend-key",
+            "X-AGT-Client-ID": "owner-nw",
+        }
+        run_resp = client.post(
+            "/run",
+            headers=headers,
+            json={"query": "q", "collection_name": "Inbox", "thread_id": "thread-nw"},
+        )
+        assert run_resp.status_code == HTTP_OK
+        run_id = run_resp.json()["run_id"]
+
+        resume_resp = client.post(
+            "/resume",
+            headers=headers,
+            json={
+                "run_id": run_id,
+                "approved": True,
+                "native_write": True,
+                "selected_indices": [0],
+            },
+        )
+        assert resume_resp.status_code == HTTP_OK
+        body = resume_resp.json()
+        assert body["status"] == "completed"
+        assert body["approved_papers"] is not None
+        assert len(body["approved_papers"]) == 1
+        assert body["approved_papers"][0]["title"] == "Test Paper"
+
+    app.dependency_overrides.clear()
+
+
 def test_run_rejects_filter_edit_query_mismatch(monkeypatch: pytest.MonkeyPatch) -> None:
     app = create_app()
 

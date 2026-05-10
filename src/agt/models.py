@@ -82,6 +82,7 @@ class NormalizedPaper(BaseModel):
     abstract: str | None = None
     authors: list[str] = Field(default_factory=list)
     url: str | None = None
+    pdf_url: str | None = None
     source: str = "semantic_scholar"
     index: int | None = None
     semantic_score: float = 0.0

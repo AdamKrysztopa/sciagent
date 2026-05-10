@@ -8,7 +8,7 @@ This package contains the SciAgent M6 native Zotero add-on scaffold and MVP UI.
 
 - Plugin ID: `agt@yourdomain.org`
 - Native Zotero UI, backend-delegated writes
-- Backend endpoints used: `GET /health`, `POST /run`, `GET /status/{run_id}`, `POST /resume`
+- Backend endpoints used: `GET /health`, `GET /capabilities`, `POST /run`, `GET /status/{run_id}`, `POST /resume`
 - All writes remain server-side through `POST /resume`
 - Filter edits are sent through the existing backend `FilterEditContract`
 - **Required backend contract version: `2026-05`** — The add-on displays a warning if the backend `/health` response returns a missing or mismatched `api_contract_version`.

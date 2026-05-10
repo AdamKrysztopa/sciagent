@@ -10,11 +10,13 @@ import {
   buildSourceBuckets,
   filterEditFromSearchPlan,
   getPaperIndex,
+  type CapabilitiesResponse,
   type FilterEditContract,
   type HealthResponse,
   type NormalizedPaper,
   type SearchMetadata,
   type SearchPlan,
+  type SourceCapability,
   type StatusResponse,
   uniqueSortedIndices,
 } from "../../shared/contracts";
@@ -62,6 +64,7 @@ export function useSciAgentController(services: AddonUiServices) {
   const [healthBusy, setHealthBusy] = useState(false);
   const [healthError, setHealthError] = useState<string | null>(null);
   const [healthResponse, setHealthResponse] = useState<HealthResponse | null>(null);
+  const [capabilities, setCapabilities] = useState<CapabilitiesResponse | null>(null);
   const [query, setQuery] = useState("");
   const [runView, setRunView] = useState<RunViewState>({
     error: null,
@@ -125,8 +128,17 @@ export function useSciAgentController(services: AddonUiServices) {
     setHealthBusy(true);
     setHealthError(null);
     try {
-      const response = await services.createClient(config).health();
+      const client = services.createClient(config);
+      const response = await client.health();
       setHealthResponse(response);
+      // Fetch capabilities after a successful health check.
+      try {
+        const caps = await client.capabilities();
+        setCapabilities(caps);
+      } catch {
+        // Non-fatal: capabilities unavailable on older backends.
+        setCapabilities(null);
+      }
     } catch (error) {
       setHealthError(describeError(error));
       setHealthResponse(null);
@@ -185,12 +197,33 @@ export function useSciAgentController(services: AddonUiServices) {
 
     setRunView({ error: null, phase: "resuming", snapshot: runView.snapshot });
     try {
+      const useNative = approved && config.nativeWriteEnabled && services.nativeWrite !== undefined;
       const response = await services.createClient(config).resume({
         approved,
         collection_name: approved ? collectionName.trim() || "Inbox" : collectionName.trim() || undefined,
         run_id: runId,
         selected_indices: approved ? selectedIndices : undefined,
+        native_write: useNative ? true : undefined,
       });
+
+      if (useNative && approved && response.approved_papers !== undefined && response.approved_papers.length > 0) {
+        // ZAP-6/7/8: write to Zotero natively.
+        try {
+          await services.nativeWrite!(
+            response.approved_papers,
+            collectionName.trim() || "Inbox",
+            config.enablePdfImports,
+          );
+        } catch (nativeError: unknown) {
+          setRunView({
+            error: `Native write failed: ${describeError(nativeError)}`,
+            phase: "failed",
+            snapshot: runView.snapshot,
+          });
+          return;
+        }
+      }
+
       await fetchStatus(response.run_id);
     } catch (error) {
       setRunView({ error: describeError(error), phase: "error", snapshot: runView.snapshot });
@@ -233,6 +266,7 @@ export function useSciAgentController(services: AddonUiServices) {
 
   return {
     canApprove: selectedIndices.length > 0 && runView.phase === "awaiting_approval",
+    capabilities,
     collectionName,
     config,
     filterDraft,
@@ -288,5 +322,6 @@ export function useSciAgentController(services: AddonUiServices) {
     searchPlan,
     selectedIndices,
     sourceBuckets,
+    sourcePolicy: (capabilities?.source_policy ?? []) as SourceCapability[],
   };
 }

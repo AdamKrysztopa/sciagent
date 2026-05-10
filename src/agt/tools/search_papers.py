@@ -612,8 +612,56 @@ _SOURCE_PUSH_DOWN: dict[str, list[str]] = {
 _SOURCE_SUPPORTS_YEAR: frozenset[str] = frozenset({"semantic_scholar", "openalex"})
 _SOURCE_SUPPORTS_OA: frozenset[str] = frozenset()
 
+_PRIMARY_SOURCE_NAMES: list[str] = [
+    "semantic_scholar",
+    "openalex",
+    "crossref",
+    "pubmed",
+    "europe_pmc",
+    "arxiv",
+    "base",
+]
 
-def _build_search_plan(  # noqa: PLR0912
+
+def build_source_policy(settings: Settings) -> list[SourceCapability]:
+    """Build the full source capability list from current settings.
+
+    This is the same logic used internally by _build_search_plan, exposed here
+    so the /capabilities API endpoint can serve it without running a search.
+    """
+    fallback_names: list[str] = []
+    if settings.core_api_key is not None:
+        fallback_names.append("core")
+    if settings.dimensions_key is not None:
+        fallback_names.append("dimensions")
+    if settings.serpapi_key is not None:
+        fallback_names.append("google_scholar")
+
+    result: list[SourceCapability] = []
+    for name in _PRIMARY_SOURCE_NAMES:
+        result.append(
+            SourceCapability(
+                name=name,
+                tier="primary",
+                enabled=True,
+                supports_year_filter=name in _SOURCE_SUPPORTS_YEAR,
+                supports_open_access_filter=name in _SOURCE_SUPPORTS_OA,
+            )
+        )
+    for name in fallback_names:
+        result.append(
+            SourceCapability(
+                name=name,
+                tier="fallback",
+                enabled=True,
+                supports_year_filter=name in _SOURCE_SUPPORTS_YEAR,
+                supports_open_access_filter=name in _SOURCE_SUPPORTS_OA,
+            )
+        )
+    return result
+
+
+def _build_search_plan(
     original_query: str,
     topic_query: str,
     rewritten_queries: list[str],
@@ -637,49 +685,12 @@ def _build_search_plan(  # noqa: PLR0912
         min_semantic_score=constraints.quality.min_semantic_score,
     )
 
-    # Primary sources are always present; optional keyed sources appear when configured.
-    primary_names: list[str] = [
-        "semantic_scholar",
-        "openalex",
-        "crossref",
-        "pubmed",
-        "europe_pmc",
-        "arxiv",
-        "base",
-    ]
-    fallback_names: list[str] = []
-    if settings.core_api_key is not None:
-        fallback_names.append("core")
-    if settings.dimensions_key is not None:
-        fallback_names.append("dimensions")
-    if settings.serpapi_key is not None:
-        fallback_names.append("google_scholar")
-
-    source_policy: list[SourceCapability] = []
-    for name in primary_names:
-        source_policy.append(
-            SourceCapability(
-                name=name,
-                tier="primary",
-                enabled=True,
-                supports_year_filter=name in _SOURCE_SUPPORTS_YEAR,
-                supports_open_access_filter=name in _SOURCE_SUPPORTS_OA,
-            )
-        )
-    for name in fallback_names:
-        source_policy.append(
-            SourceCapability(
-                name=name,
-                tier="fallback",
-                enabled=True,
-                supports_year_filter=name in _SOURCE_SUPPORTS_YEAR,
-                supports_open_access_filter=name in _SOURCE_SUPPORTS_OA,
-            )
-        )
+    source_policy = build_source_policy(settings)
+    all_source_names = [s.name for s in source_policy]
 
     # Determine which filters were pushed down per source.
     active_push_down: dict[str, list[str]] = {}
-    for name in [*primary_names, *fallback_names]:
+    for name in all_source_names:
         pushed: list[str] = []
         for filter_name in _SOURCE_PUSH_DOWN.get(name, []):
             if (filter_name == "year_min" and constraints.year.min_year is not None) or (

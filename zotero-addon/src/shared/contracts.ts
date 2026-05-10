@@ -83,6 +83,7 @@ export interface NormalizedPaper {
   abstract: string | null;
   authors: string[];
   url: string | null;
+  pdf_url: string | null;
   source: string;
   index: number | null;
   semantic_score: number;
@@ -161,12 +162,23 @@ export interface ResumeRequest {
   approved: boolean;
   collection_name?: string;
   selected_indices?: number[];
+  /** When true the backend skips pyzotero write and returns approved_papers for native JS write. */
+  native_write?: boolean;
 }
 
 export interface RunAcceptedResponse {
   run_id: string;
   thread_id: string;
   status: RunStatus;
+  /** Populated when ResumeRequest.native_write=true so the add-on can perform ZAP-6/7/8. */
+  approved_papers?: NormalizedPaper[];
+}
+
+export interface CapabilitiesResponse {
+  api_contract_version: string;
+  source_policy: SourceCapability[];
+  filter_support: Record<string, string[]>;
+  pdf_import_supported: boolean;
 }
 
 export interface StatusResponse {
