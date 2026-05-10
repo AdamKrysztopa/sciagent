@@ -1,6 +1,6 @@
 # SciAgent Prioritized Action Plan
 
-> **Finalization audit completed: 2026-05-10** — All quality gates clean (ruff 0, pyright 0, tests passing; addon lint/typecheck/test/build green). M6 and M6.1 complete.
+> **Finalization audit completed: 2026-05-10** — All quality gates clean (ruff 0, pyright 0, tests passing; addon lint/typecheck/test/build green). M6, M6.1, and M6.1-D complete.
 > This is the canonical execution tracker for live status, overall progress, and the next implementation target.
 > Update done / not done state here first.
 > See [docs/manual.md](manual.md) for configuration & usage.
@@ -13,12 +13,13 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 - Current focus: M7 — Pluggability and Elastic Infrastructure
 - Current next implementation target: AGT-23 (unified retrieval registry), AGT-24 (durable checkpointing)
-- Last completed: M6.1 — shipped as 0.1.2; M6 all ZAP stories done (2026-05-10)
+- Last completed: M6.1-D — PDF attachment status and write-flow hardening; M6.1 shipped as 0.1.2; M6 all ZAP stories done (2026-05-10)
 
 ### Recent Progress
 
 - ✅ M6 complete: all ZAP-0–ZAP-11 stories done — native write path (ZAP-6/7/8), offline cache (ZAP-10), release automation (ZAP-11), /capabilities backend endpoint, nativeWriteEnabled pref
 - ✅ M6.1 complete: settings panel split (Connection & Auth / Search Defaults), pre-search filter composer, main-window panel (Tools > SciAgent opens standalone dialog), SourceToggles, version bumped to 0.1.2
+- ✅ M6.1-D complete: PDF attachment status surfaced per-item in write result (pdfStatus: attached/failed/skipped), nativeWriteResult state added to controller, renderNativeWriteResult in App, zoteroWriter tests added
 - ✅ Docs reorganized: new `docs/api.md`, `docs/deployment.md`, updated `docs/manual.md` with full local run guide
 - ✅ macOS XPI installation instructions added to manual
 - ✅ MkDocs nav restructured into Overview / Planning / Manuals / Reference
@@ -37,15 +38,14 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 - [x] M6 — Zotero Native Add-on (all ZAP-0 through ZAP-11 complete)
 - [x] M6.1 — Main-Window-First Plugin MVP (shipped as 0.1.2)
 - [x] M6.1 — Main-Window Plugin MVP (ZAP-9 settings split, ZAP-4A pre-search filter composer, ZAP-3 main-window workspace, addon v0.1.2)
+- [x] M6.1-D — Approval/write flow hardening and PDF attachment status in the main-window surface
 
 ### Not Done Milestones
 
-- [ ] M6 — Zotero Native Add-on
 - [ ] M7 — Pluggability and Elastic Infrastructure
 
 ### Next Items In Order
 
-- [ ] M6.1-D follow-on — Approval/write flow hardening and PDF attachment status in the main-window surface
 - [ ] AGT-20 follow-up — truthful terminal write-failure status and tests
 - [ ] AGT-21 follow-up — security checklist and auth hardening
 - [ ] AGT-24 — durable distributed checkpointing

@@ -22,6 +22,8 @@ export interface NativeItemResult {
   status: "created" | "unchanged" | "failed";
   itemKey: string | null;
   reason: string | null;
+  /** null when PDF import was disabled or item was not created; "skipped" when no pdf_url. */
+  pdfStatus: "attached" | "failed" | "skipped" | null;
 }
 
 export interface NativeWriteResult {
@@ -129,6 +131,7 @@ async function createItemsNative(
         status: "unchanged",
         itemKey: dupItem.key,
         reason: doi && doiIndex.has(doi) ? "doi_match" : "title_author_hash_match",
+        pdfStatus: null,
       });
       continue;
     }
@@ -147,13 +150,14 @@ async function createItemsNative(
       );
       item.addToCollection(collectionId);
       await item.save();
-      outcomes.push({ paper, status: "created", itemKey: item.key, reason: null });
+      outcomes.push({ paper, status: "created", itemKey: item.key, reason: null, pdfStatus: null });
     } catch (err: unknown) {
       outcomes.push({
         paper,
         status: "failed",
         itemKey: null,
         reason: err instanceof Error ? err.message : String(err),
+        pdfStatus: null,
       });
     }
   }
@@ -199,24 +203,35 @@ export async function nativeWrite(
 ): Promise<NativeWriteResult> {
   const services = servicesFromZotero(zotero);
   const collection = await resolveOrCreateCollection(collectionName, services);
-  const outcomes = await createItemsNative(papers, collection.id, services);
+  const rawOutcomes = await createItemsNative(papers, collection.id, services);
 
   let pdfAttached = 0;
   let pdfFailed = 0;
+  // Map from itemKey → per-item PDF outcome (only for newly created items).
+  const pdfStatusByKey = new Map<string, "attached" | "failed" | "skipped">();
 
   if (enablePdfImport) {
-    for (const outcome of outcomes) {
+    // Resolve library items once so we can look up numeric IDs by key.
+    const libraryID = services.libraries.getUserLibrary().libraryID;
+    const allItems = services.items.getAll(libraryID);
+
+    for (const outcome of rawOutcomes) {
       if (outcome.status !== "created" || outcome.itemKey === null) continue;
       const pdfUrl = outcome.paper.pdf_url;
-      if (!pdfUrl) continue;
+      if (!pdfUrl) {
+        pdfStatusByKey.set(outcome.itemKey, "skipped");
+        continue;
+      }
 
-      // Resolve numeric item ID from the key.
-      const libraryID = services.libraries.getUserLibrary().libraryID;
-      const allItems = services.items.getAll(libraryID);
       const item = allItems.find((it: ZoteroItem) => it.key === outcome.itemKey);
-      if (!item) continue;
+      if (!item) {
+        pdfStatusByKey.set(outcome.itemKey, "failed");
+        pdfFailed++;
+        continue;
+      }
 
       const ok = await attachPdf(item.id, pdfUrl, outcome.paper.title, services);
+      pdfStatusByKey.set(outcome.itemKey, ok ? "attached" : "failed");
       if (ok) {
         pdfAttached++;
       } else {
@@ -224,6 +239,12 @@ export async function nativeWrite(
       }
     }
   }
+
+  // Rebuild outcomes with resolved pdfStatus.
+  const outcomes: NativeItemResult[] = rawOutcomes.map((o) => ({
+    ...o,
+    pdfStatus: o.itemKey !== null ? (pdfStatusByKey.get(o.itemKey) ?? null) : null,
+  }));
 
   return {
     collectionKey: collection.key,

@@ -1,4 +1,5 @@
 import type { WriteResult } from "../shared/contracts";
+import type { NativeWriteResult } from "../host/zoteroWriter";
 
 import type { AddonUiServices } from "./serviceTypes";
 import { ConfigPanel } from "./components/ConfigPanel";
@@ -6,6 +7,48 @@ import { FilterEditor } from "./components/FilterEditor";
 import { HealthStatus } from "./components/HealthStatus";
 import { ResultsList } from "./components/ResultsList";
 import { useSciAgentController } from "./hooks/useSciAgentController";
+
+function renderNativeWriteResult(nativeWriteResult: NativeWriteResult | null) {
+  if (nativeWriteResult === null) {
+    return null;
+  }
+
+  return (
+    <div className="agt-outcomes">
+      <p className="agt-meta">Collection: {nativeWriteResult.collectionName}</p>
+      <div className="agt-chip-list">
+        <span className="agt-chip agt-chip--ok">created: {nativeWriteResult.created}</span>
+        <span className="agt-chip">unchanged: {nativeWriteResult.unchanged}</span>
+        <span className="agt-chip agt-chip--danger">failed: {nativeWriteResult.failed}</span>
+        {nativeWriteResult.pdfAttached > 0 ? (
+          <span className="agt-chip agt-chip--ok">PDF attached: {nativeWriteResult.pdfAttached}</span>
+        ) : null}
+        {nativeWriteResult.pdfFailed > 0 ? (
+          <span className="agt-chip agt-chip--danger">PDF failed: {nativeWriteResult.pdfFailed}</span>
+        ) : null}
+      </div>
+      {nativeWriteResult.outcomes.map((outcome, idx) => (
+        <div className="agt-outcome-row" key={`${outcome.paper.doi ?? ""}-${outcome.paper.title}`}>
+          <span>{outcome.paper.index ?? idx + 1}</span>
+          <span>
+            <strong>{outcome.paper.title}</strong>
+            {outcome.reason !== null ? <span className="agt-meta"> {outcome.reason}</span> : null}
+            {outcome.pdfStatus === "attached" ? (
+              <span className="agt-chip agt-chip--ok" style={{ marginLeft: "4px" }}>PDF ✓</span>
+            ) : null}
+            {outcome.pdfStatus === "failed" ? (
+              <span className="agt-chip agt-chip--danger" style={{ marginLeft: "4px" }}>PDF failed</span>
+            ) : null}
+            {outcome.pdfStatus === "skipped" ? (
+              <span className="agt-chip" style={{ marginLeft: "4px" }}>no PDF URL</span>
+            ) : null}
+          </span>
+          <span>{outcome.status}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function renderWriteResult(writeResult: WriteResult | null) {
   if (writeResult === null) {
@@ -204,7 +247,9 @@ export function App({ services }: { services: AddonUiServices }) {
           <div className="agt-section-heading">
             <h3>Write Result</h3>
           </div>
-          {renderWriteResult(currentState?.write_result ?? null)}
+          {controller.nativeWriteResult !== null
+            ? renderNativeWriteResult(controller.nativeWriteResult)
+            : renderWriteResult(currentState?.write_result ?? null)}
         </div>
       </section>
     </div>

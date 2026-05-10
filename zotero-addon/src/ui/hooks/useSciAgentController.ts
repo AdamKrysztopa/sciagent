@@ -5,6 +5,7 @@ import {
   DEFAULT_ADDON_CONFIG,
   type AddonConfig,
 } from "../../host/prefs";
+import type { NativeWriteResult } from "../../host/zoteroWriter";
 import {
   buildDefaultFilterEdit,
   buildSourceBuckets,
@@ -71,6 +72,7 @@ export function useSciAgentController(services: AddonUiServices) {
     phase: "idle",
     snapshot: null,
   });
+  const [nativeWriteResult, setNativeWriteResult] = useState<NativeWriteResult | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
@@ -172,6 +174,7 @@ export function useSciAgentController(services: AddonUiServices) {
       return;
     }
 
+    setNativeWriteResult(null);
     setRunView({ error: null, phase: "submitting", snapshot: runView.snapshot });
     try {
       const response = await services.createClient(config).run({
@@ -209,11 +212,12 @@ export function useSciAgentController(services: AddonUiServices) {
       if (useNative && approved && response.approved_papers !== undefined && response.approved_papers.length > 0) {
         // ZAP-6/7/8: write to Zotero natively.
         try {
-          await services.nativeWrite!(
+          const nativeResult = await services.nativeWrite!(
             response.approved_papers,
             collectionName.trim() || "Inbox",
             config.enablePdfImports,
           );
+          setNativeWriteResult(nativeResult);
         } catch (nativeError: unknown) {
           setRunView({
             error: `Native write failed: ${describeError(nativeError)}`,
@@ -269,6 +273,7 @@ export function useSciAgentController(services: AddonUiServices) {
     capabilities,
     collectionName,
     config,
+    nativeWriteResult,
     filterDraft,
     healthBusy,
     healthError,
