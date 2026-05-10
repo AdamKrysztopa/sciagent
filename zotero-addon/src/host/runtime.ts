@@ -57,6 +57,7 @@ export class RuntimeController {
   private sectionRegistrationId: string | null = null;
   private preferencePaneRegistered = false;
   private windowObserver: object | null = null;
+  private mainPanelWin: (Window & { closed?: boolean }) | null = null;
 
   install(_data: BootstrapData, _reason: number): void {}
 
@@ -462,16 +463,17 @@ export class RuntimeController {
   }
 
   private openOrFocusMainPanel(window: ZoteroWindow): void {
-    // Focus the existing panel if it is already open.
-    const existing = Services.wm.getMostRecentWindow("agt:main-panel");
-    if (existing !== null) {
+    // Focus the existing panel if it is still open.
+    // HTML windows have no windowtype, so we track the reference manually.
+    if (this.mainPanelWin !== null && this.mainPanelWin.closed !== true) {
       Zotero.debug("[SciAgent] Main panel already open — focusing");
-      (existing as { focus?: () => void }).focus?.();
+      (this.mainPanelWin as { focus?: () => void }).focus?.();
       return;
     }
+    this.mainPanelWin = null;
 
     Zotero.debug("[SciAgent] Opening main panel window");
-    const panelUrl = "chrome://agt/content/sciagent-panel.xhtml";
+    const panelUrl = "chrome://agt/content/sciagent-panel.html";
     const bundleUrl = `${this.rootURI}chrome/content/panel-entry.js`;
 
     const panelWin = window.openDialog?.(
@@ -485,11 +487,15 @@ export class RuntimeController {
       return;
     }
 
+    // Keep a reference so we can focus or detect closure without relying on
+    // Services.wm (HTML windows have no windowtype attribute).
+    this.mainPanelWin = panelWin as unknown as Window & { closed?: boolean };
+
     const loadAndInit = () => {
       try {
         Zotero.debug("[SciAgent] Loading panel-entry bundle into panel window");
         // Inject the Zotero global into the panel window scope before the bundle
-        // runs. The panel window (sciagent-panel.xhtml) is a separate chrome
+        // runs. The panel window (sciagent-panel.html) is a separate chrome
         // window that does not automatically inherit the Zotero global.
         const panelScope = panelWin as unknown as Record<string, unknown>;
         panelScope.Zotero = Zotero;
@@ -506,6 +512,11 @@ export class RuntimeController {
         Zotero.logError(err);
       }
     };
+
+    // Clear our reference when the panel window is closed.
+    panelWin.addEventListener("unload", () => {
+      this.mainPanelWin = null;
+    }, { once: true });
 
     // If the panel document loaded synchronously (rare but possible), fire
     // immediately; otherwise wait for the load event.

@@ -22,7 +22,7 @@ const SUPPORTED_ZOTERO_MAX_VERSION = "9.*";
 const STATIC_FILES = ["manifest.json", "bootstrap.js", "prefs.js", "preferences.xhtml"];
 const STATIC_DIRS = ["icons", "locale"];
 // Files that must be served at chrome://agt/content/ and therefore live in chrome/content/
-const CHROME_CONTENT_FILES = ["sciagent-panel.xhtml"];
+const CHROME_CONTENT_FILES = ["sciagent-panel.html"];
 
 function clean() {
   rmSync(BUILD_DIR, { force: true, recursive: true });
