@@ -24,7 +24,7 @@ import {
 import type { AddonUiServices } from "../serviceTypes";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
-type RunPhase =
+export type RunPhase =
   | "idle"
   | "submitting"
   | "awaiting_approval"
@@ -191,6 +191,12 @@ export function useSciAgentController(services: AddonUiServices) {
     }
   });
 
+  const resetRun = useEffectEvent(() => {
+    setRunView({ error: null, phase: "idle", snapshot: null });
+    setNativeWriteResult(null);
+    setSelectedIndices([]);
+  });
+
   const resumeRun = useEffectEvent(async (approved: boolean) => {
     const runId = runView.snapshot?.run_id;
     if (runId === undefined) {
@@ -301,6 +307,7 @@ export function useSciAgentController(services: AddonUiServices) {
     },
     onRefreshHealth: () => void refreshHealth(),
     onReject: () => void resumeRun(false),
+    onReset: () => void resetRun(),
     onResetFilters: () => {
       if (searchPlan === null) {
         return;

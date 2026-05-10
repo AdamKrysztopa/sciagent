@@ -485,26 +485,35 @@ export class RuntimeController {
       return;
     }
 
-    panelWin.addEventListener(
-      "load",
-      () => {
-        try {
-          Zotero.debug("[SciAgent] Loading panel-entry bundle into panel window");
-          Services.scriptloader.loadSubScript(bundleUrl, panelWin);
-          const scopedWin = panelWin as unknown as { SciAgentPanel?: { init(): void } };
-          if (typeof scopedWin.SciAgentPanel?.init === "function") {
-            scopedWin.SciAgentPanel.init();
-            Zotero.debug("[SciAgent] Main panel React app mounted");
-          } else {
-            Zotero.debug("[SciAgent] WARNING: SciAgentPanel.init not found after bundle load");
-          }
-        } catch (err) {
-          Zotero.debug(`[SciAgent] Error mounting main panel React app: ${err}`);
-          Zotero.logError(err);
+    const loadAndInit = () => {
+      try {
+        Zotero.debug("[SciAgent] Loading panel-entry bundle into panel window");
+        // Inject the Zotero global into the panel window scope before the bundle
+        // runs. The panel window (sciagent-panel.xhtml) is a separate chrome
+        // window that does not automatically inherit the Zotero global.
+        const panelScope = panelWin as unknown as Record<string, unknown>;
+        panelScope.Zotero = Zotero;
+        Services.scriptloader.loadSubScript(bundleUrl, panelWin);
+        const scopedWin = panelWin as unknown as { SciAgentPanel?: { init(): void } };
+        if (typeof scopedWin.SciAgentPanel?.init === "function") {
+          scopedWin.SciAgentPanel.init();
+          Zotero.debug("[SciAgent] Main panel React app mounted");
+        } else {
+          Zotero.debug("[SciAgent] WARNING: SciAgentPanel.init not found after bundle load");
         }
-      },
-      { once: true },
-    );
+      } catch (err) {
+        Zotero.debug(`[SciAgent] Error mounting main panel React app: ${err}`);
+        Zotero.logError(err);
+      }
+    };
+
+    // If the panel document loaded synchronously (rare but possible), fire
+    // immediately; otherwise wait for the load event.
+    if ((panelWin as unknown as { document?: { readyState?: string } }).document?.readyState === "complete") {
+      loadAndInit();
+    } else {
+      panelWin.addEventListener("load", loadAndInit, { once: true });
+    }
   }
 
   private iconPath(size: "16" | "20" | "48" | "96"): string {

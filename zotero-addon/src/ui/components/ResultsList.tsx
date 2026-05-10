@@ -31,6 +31,7 @@ export function ResultsList({ disabled, onToggle, papers, selectedIndices }: Res
       <div className="agt-result-list">
         {papers.map((paper, fallbackIndex) => {
           const paperIndex = getPaperIndex(paper, fallbackIndex);
+          const scorePercent = Math.min(1, Math.max(0, paper.score)) * 100;
           return (
             <article className="agt-result-card" key={paperIndex}>
               <div className="agt-result-header">
@@ -42,23 +43,29 @@ export function ResultsList({ disabled, onToggle, papers, selectedIndices }: Res
                     type="checkbox"
                   />
                   <span className="agt-result-title">
-                    {paperIndex}. {paper.title}
+                    {paperIndex}.{" "}
+                    {paper.url !== null ? (
+                      <a href={paper.url} rel="noreferrer" target="_blank">{paper.title}</a>
+                    ) : (
+                      paper.title
+                    )}
                   </span>
                 </label>
                 <span className="agt-pill agt-pill--muted">{paper.source}</span>
               </div>
+              {paper.authors.length > 0 ? (
+                <p className="agt-result-authors">{paper.authors.join(", ")}</p>
+              ) : null}
               <div className="agt-result-meta">
-                <span>Year: {paper.year ?? "n/a"}</span>
+                {paper.year !== null ? <span>Year: {paper.year}</span> : null}
                 <span>Citations: {paper.citation_count}</span>
                 <span>Score: {paper.score.toFixed(2)}</span>
-                <span>Open access: {paper.open_access ? "yes" : "no"}</span>
+                {paper.open_access ? <span className="agt-oa-badge">Open Access</span> : null}
+              </div>
+              <div className="agt-score-bar">
+                <div className="agt-score-fill" style={{ width: `${scorePercent}%` }} />
               </div>
               {paper.summary !== null ? <p className="agt-result-summary">{paper.summary}</p> : null}
-              {paper.url !== null ? (
-                <a href={paper.url} rel="noreferrer" target="_blank">
-                  Open paper
-                </a>
-              ) : null}
             </article>
           );
         })}
@@ -66,3 +73,4 @@ export function ResultsList({ disabled, onToggle, papers, selectedIndices }: Res
     </section>
   );
 }
+

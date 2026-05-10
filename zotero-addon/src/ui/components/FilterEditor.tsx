@@ -168,7 +168,7 @@ export function FilterEditor({
       </div>
       <div className="agt-grid">
         <label className="agt-field">
-          <span>Include Keywords</span>
+          <span>Required terms / keywords</span>
           <textarea
             className="agt-textarea"
             disabled={disabled}
