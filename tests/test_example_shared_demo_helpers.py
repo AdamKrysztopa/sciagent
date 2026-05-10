@@ -7,7 +7,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from examples._shared_demo_helpers import resolve_env_key
+from examples._shared_demo_helpers import default_provider_settings_payload, resolve_env_key
 
 
 def test_resolve_env_key_reads_dotenv_when_process_env_missing(
@@ -35,3 +35,34 @@ def test_resolve_env_key_prefers_process_env_over_dotenv(
     resolved = resolve_env_key("AGT_SEMANTIC_SCHOLAR_API_KEY", "SEMANTIC_SCHOLAR_API_KEY")
 
     assert resolved == "ss-from-env"
+
+
+def test_default_provider_settings_payload_prefers_openai_key(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("OPENAI_API_KEY", "openai-secret")
+
+    payload = default_provider_settings_payload()
+
+    assert payload == {
+        "AGT_LLM_PROVIDER": "openai",
+        "AGT_OPENAI_API_KEY": "openai-secret",
+    }
+
+
+def test_default_provider_settings_payload_falls_back_to_anthropic_key(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "anthropic-secret")
+
+    payload = default_provider_settings_payload()
+
+    assert payload == {
+        "AGT_LLM_PROVIDER": "anthropic",
+        "AGT_ANTHROPIC_API_KEY": "anthropic-secret",
+    }

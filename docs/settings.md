@@ -257,12 +257,13 @@ You now have:
   - `AGT_RETRIES`
   - `AGT_TEMPERATURE`
   - `AGT_ENV` + `AGT_ENV_OVERRIDES` for environment-specific overrides
-- Current default implementation is xAI via `src/agt/providers/xai.py`.
-- OpenAI/Anthropic/Groq adapters should implement the same protocol and be added only in the router, with no workflow-level changes.
+- If `AGT_LLM_PROVIDER` is unset, runtime auto-selects the first configured provider key in this order: OpenAI, Anthropic, xAI, Groq.
+- The current built-in adapters are OpenAI, Anthropic, and xAI via `src/agt/providers/router.py`; Groq remains config-recognized but not yet implemented.
+- Provider-specific missing-key errors must name the selected provider and every accepted env-var alias.
 
 ## M5 Provider Routing Policy (AGT-22)
 
-- Primary provider selection remains config-driven via `AGT_LLM_PROVIDER`.
+- Primary provider selection remains config-driven via `AGT_LLM_PROVIDER`; if unset, runtime resolves a provider from configured keys.
 - Optional fallback provider can be configured via `AGT_LLM_FALLBACK_PROVIDER`.
 - Failover policy is explicit and independently toggled:
   - `AGT_LLM_FAILOVER_ON_TIMEOUT=true|false`

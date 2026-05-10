@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from _shared_demo_helpers import (
+    default_provider_settings_payload,
     default_zotero_api_key,
     default_zotero_library_id,
-    resolve_xai_key,
 )
 
 from agt.config import Settings, configure_logging
@@ -15,11 +15,12 @@ from agt.zotero.preflight import run_zotero_preflight
 
 
 def main() -> None:
-    settings = Settings.model_validate({
-        "AGT_XAI_API_KEY": resolve_xai_key(),
+    settings_payload = default_provider_settings_payload()
+    settings_payload.update({
         "AGT_ZOTERO_API_KEY": default_zotero_api_key(),
         "AGT_ZOTERO_LIBRARY_ID": default_zotero_library_id(),
     })
+    settings = Settings.model_validate(settings_payload)
     configure_logging(settings.log_level)
     configure_guardrails(settings)
 

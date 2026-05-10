@@ -7,9 +7,15 @@ import pytest
 from agt.config import RuntimeConfig, Settings
 from agt.providers import router
 from agt.providers import xai as xai_module
+from agt.providers.anthropic import AnthropicProvider
+from agt.providers.openai import OpenAIProvider
 from agt.providers.protocol import ProviderRateLimitError
 from agt.providers.router import build_provider
 from agt.providers.xai import XAIProvider
+
+
+def _settings_from(data: dict[str, object]) -> Settings:
+    return Settings(_env_file=None, **data)  # pyright: ignore[reportCallIssue]
 
 
 @dataclass
@@ -78,19 +84,22 @@ async def test_xai_provider_ainvoke() -> None:
 
 
 def test_router_rejects_unimplemented_provider() -> None:
-    settings = Settings.model_validate({
-        "AGT_XAI_API_KEY": "xai-secret",
+    settings = _settings_from({
         "AGT_ZOTERO_API_KEY": "zot-secret",
         "AGT_ZOTERO_LIBRARY_ID": "12345",
-        "AGT_LLM_PROVIDER": "openai",
+        "AGT_LLM_PROVIDER": "groq",
     })
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(RuntimeError, match="groq") as exc:
         build_provider(settings)
+
+    text = str(exc.value)
+    assert "AGT_GROQ_API_KEY" in text
+    assert "GROQ_API_KEY" in text
 
 
 def test_router_builds_xai_provider(monkeypatch: pytest.MonkeyPatch) -> None:
-    settings = Settings.model_validate({
+    settings = _settings_from({
         "AGT_XAI_API_KEY": "xai-secret",
         "AGT_ZOTERO_API_KEY": "zot-secret",
         "AGT_ZOTERO_LIBRARY_ID": "12345",
@@ -117,8 +126,75 @@ def test_router_builds_xai_provider(monkeypatch: pytest.MonkeyPatch) -> None:
     assert build_provider(settings) is built
 
 
+def test_router_builds_openai_provider(monkeypatch: pytest.MonkeyPatch) -> None:
+    settings = _settings_from({
+        "AGT_OPENAI_API_KEY": "openai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "12345",
+        "AGT_LLM_PROVIDER": "openai",
+    })
+
+    class _Built:
+        pass
+
+    built = _Built()
+
+    def _build_stub(
+        runtime: RuntimeConfig,
+        api_key: str,
+    ) -> _Built:
+        _ = runtime
+        _ = api_key
+        return built
+
+    monkeypatch.setattr(router, "OpenAIProvider", _build_stub)
+
+    assert build_provider(settings) is built
+
+
+def test_router_builds_anthropic_provider(monkeypatch: pytest.MonkeyPatch) -> None:
+    settings = _settings_from({
+        "AGT_ANTHROPIC_API_KEY": "anthropic-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "12345",
+        "AGT_LLM_PROVIDER": "anthropic",
+    })
+
+    class _Built:
+        pass
+
+    built = _Built()
+
+    def _build_stub(
+        runtime: RuntimeConfig,
+        api_key: str,
+    ) -> _Built:
+        _ = runtime
+        _ = api_key
+        return built
+
+    monkeypatch.setattr(router, "AnthropicProvider", _build_stub)
+
+    assert build_provider(settings) is built
+
+
+def test_router_missing_key_error_names_provider_and_env_vars() -> None:
+    settings = _settings_from({
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "12345",
+        "AGT_LLM_PROVIDER": "anthropic",
+    })
+
+    with pytest.raises(RuntimeError, match="anthropic") as exc:
+        build_provider(settings)
+
+    text = str(exc.value)
+    assert "AGT_ANTHROPIC_API_KEY" in text
+    assert "ANTHROPIC_API_KEY" in text
+
+
 def test_router_fails_over_on_rate_limit(monkeypatch: pytest.MonkeyPatch) -> None:
-    settings = Settings.model_validate({
+    settings = _settings_from({
         "AGT_XAI_API_KEY": "xai-secret",
         "AGT_ZOTERO_API_KEY": "zot-secret",
         "AGT_ZOTERO_LIBRARY_ID": "12345",
@@ -168,7 +244,7 @@ def test_router_fails_over_on_rate_limit(monkeypatch: pytest.MonkeyPatch) -> Non
 
 
 def test_router_skips_failover_when_disabled(monkeypatch: pytest.MonkeyPatch) -> None:
-    settings = Settings.model_validate({
+    settings = _settings_from({
         "AGT_XAI_API_KEY": "xai-secret",
         "AGT_ZOTERO_API_KEY": "zot-secret",
         "AGT_ZOTERO_LIBRARY_ID": "12345",
@@ -217,3 +293,27 @@ def test_router_skips_failover_when_disabled(monkeypatch: pytest.MonkeyPatch) ->
             router.unregister_provider_builder("openai")
         else:
             router.register_provider_builder("openai", original_openai)
+
+
+def test_openai_provider_bind_tools_preserves_provider_type() -> None:
+    provider = OpenAIProvider(
+        runtime=RuntimeConfig(provider="openai", model_name="gpt-5.4"),
+        api_key="openai-secret",
+        model=FakeModel(),
+    )
+
+    bound = provider.bind_tools([{"type": "function", "name": "lookup"}])
+
+    assert isinstance(bound, OpenAIProvider)
+
+
+def test_anthropic_provider_bind_tools_preserves_provider_type() -> None:
+    provider = AnthropicProvider(
+        runtime=RuntimeConfig(provider="anthropic", model_name="claude-opus-4-6"),
+        api_key="anthropic-secret",
+        model=FakeModel(),
+    )
+
+    bound = provider.bind_tools([{"name": "lookup", "input_schema": {"type": "object"}}])
+
+    assert isinstance(bound, AnthropicProvider)

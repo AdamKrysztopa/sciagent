@@ -4,14 +4,15 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import json
 import os
 
 import httpx
 from _shared_demo_helpers import (
+    default_provider_settings_payload,
     default_zotero_api_key,
     default_zotero_library_id,
     normalize_strict_settings_env,
-    resolve_xai_key,
 )
 
 from agt.graph import finalize_approval, resume_workflow, run_search_phase
@@ -19,7 +20,8 @@ from agt.graph import finalize_approval, resume_workflow, run_search_phase
 
 def _ensure_required_env() -> None:
     normalize_strict_settings_env()
-    os.environ.setdefault("AGT_XAI_API_KEY", resolve_xai_key())
+    for name, value in default_provider_settings_payload().items():
+        os.environ.setdefault(name, value)
     os.environ.setdefault("AGT_ZOTERO_API_KEY", default_zotero_api_key())
     os.environ.setdefault("AGT_ZOTERO_LIBRARY_ID", default_zotero_library_id())
 
@@ -85,6 +87,12 @@ async def _run(query: str, collection_name: str) -> int:
             "approve_write: "
             f"created={result['created']} unchanged={result['unchanged']} failed={result['failed']}"
         )
+        print("approved_write_result_json=")
+        print(json.dumps(result, indent=2))
+
+    if resumed["write_result"] is not None:
+        print("resumed_write_result_json=")
+        print(json.dumps(resumed["write_result"], indent=2))
 
     print(
         "api_capabilities: "
@@ -92,7 +100,7 @@ async def _run(query: str, collection_name: str) -> int:
         f"resume={api_capabilities['resume']} status={api_capabilities['status']}"
     )
 
-    return 0
+    return 1 if resumed["phase"] == "failed" else 0
 
 
 def main() -> None:

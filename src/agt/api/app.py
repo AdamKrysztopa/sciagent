@@ -132,7 +132,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
             "ok": preflight.ok,
             "message": preflight.message,
             "preflight": preflight.to_dict(),
-            "provider": settings.llm_provider,
+            "provider": settings.runtime.provider,
             "fallback_provider": settings.llm_fallback_provider,
             "api_contract_version": API_CONTRACT_VERSION,
         }

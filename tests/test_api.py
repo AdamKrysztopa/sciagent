@@ -26,10 +26,19 @@ class _Secret:
 
 
 @dataclass(slots=True)
+class _Runtime:
+    provider: str = "xai"
+
+
+@dataclass(slots=True)
 class _Settings:
     backend_api_key: _Secret | None = field(default_factory=lambda: _Secret("backend-key"))
     llm_provider: str = "xai"
     llm_fallback_provider: str | None = None
+    runtime: _Runtime = field(default_factory=_Runtime)
+    core_api_key: _Secret | None = None
+    dimensions_key: _Secret | None = None
+    serpapi_key: _Secret | None = None
 
 
 def test_health_requires_valid_api_key(monkeypatch: pytest.MonkeyPatch) -> None:

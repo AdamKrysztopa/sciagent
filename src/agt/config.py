@@ -19,12 +19,34 @@ LLMProviderName = Literal["xai", "openai", "anthropic", "groq"]
 LibraryType = Literal["user", "group"]
 RuntimeEnvironment = Literal["local", "staging", "production"]
 
+_PROVIDER_AUTO_PRIORITY: tuple[LLMProviderName, ...] = ("openai", "anthropic", "xai", "groq")
+_PROVIDER_DEFAULT_MODELS: dict[LLMProviderName, str] = {
+    "openai": "gpt-5.4",
+    "anthropic": "claude-opus-4-6",
+    "xai": "grok-4",
+    "groq": "llama-3.3-70b-versatile",
+}
+_PROVIDER_ENV_ALIASES: dict[LLMProviderName, tuple[str, ...]] = {
+    "openai": ("AGT_OPENAI_API_KEY", "OPENAI_API_KEY"),
+    "anthropic": ("AGT_ANTHROPIC_API_KEY", "ANTHROPIC_API_KEY"),
+    "xai": ("AGT_XAI_API_KEY", "XAI_API_KEY"),
+    "groq": ("AGT_GROQ_API_KEY", "GROQ_API_KEY"),
+}
+
+
+def default_model_for_provider(provider_name: LLMProviderName) -> str:
+    return _PROVIDER_DEFAULT_MODELS[provider_name]
+
+
+def provider_env_aliases(provider_name: LLMProviderName) -> tuple[str, ...]:
+    return _PROVIDER_ENV_ALIASES[provider_name]
+
 
 class RuntimeConfig(BaseModel):
     """Runtime tuning parameters used by provider adapters."""
 
-    provider: LLMProviderName = "xai"
-    model_name: str = "grok-4"
+    provider: LLMProviderName = "openai"
+    model_name: str = "gpt-5.4"
     timeout_seconds: int = Field(default=30, ge=1, le=300)
     retries: int = Field(default=3, ge=0, le=10)
     temperature: float = Field(default=0.2, ge=0.0, le=2.0)
@@ -107,7 +129,7 @@ class Settings(BaseSettings):
     )
 
     llm_provider: LLMProviderName = Field(
-        default="xai",
+        default="openai",
         validation_alias=AliasChoices("AGT_LLM_PROVIDER", "LLM_PROVIDER"),
     )
     llm_fallback_provider: LLMProviderName | None = Field(
@@ -125,8 +147,8 @@ class Settings(BaseSettings):
             "LLM_FAILOVER_ON_RATE_LIMIT",
         ),
     )
-    model_name: str = Field(
-        default="grok-4", validation_alias=AliasChoices("AGT_MODEL_NAME", "MODEL_NAME")
+    model_name: str | None = Field(
+        default=None, validation_alias=AliasChoices("AGT_MODEL_NAME", "MODEL_NAME")
     )
     timeout_seconds: int = Field(
         default=30,
@@ -347,11 +369,40 @@ class Settings(BaseSettings):
             return cast(dict[RuntimeEnvironment, RuntimeConfig], parsed)
         return value
 
+    @field_validator("model_name", mode="before")
+    @classmethod
+    def _normalize_model_name(cls, value: object) -> object:
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
+
+    def provider_api_key(self, provider_name: LLMProviderName) -> SecretStr | None:
+        if provider_name == "openai":
+            return self.openai_api_key
+        if provider_name == "anthropic":
+            return self.anthropic_api_key
+        if provider_name == "xai":
+            return self.xai_api_key
+        return self.groq_api_key
+
+    @property
+    def resolved_llm_provider(self) -> LLMProviderName:
+        if "llm_provider" in self.model_fields_set:
+            return self.llm_provider
+
+        for provider_name in _PROVIDER_AUTO_PRIORITY:
+            if self.provider_api_key(provider_name) is not None:
+                return provider_name
+
+        return self.llm_provider
+
     @property
     def runtime(self) -> RuntimeConfig:
+        provider_name = self.resolved_llm_provider
+        explicit_model_name = self.model_name is not None
         base = RuntimeConfig(
-            provider=self.llm_provider,
-            model_name=self.model_name,
+            provider=provider_name,
+            model_name=self.model_name or default_model_for_provider(provider_name),
             timeout_seconds=self.timeout_seconds,
             retries=self.retries,
             temperature=self.temperature,
@@ -359,7 +410,19 @@ class Settings(BaseSettings):
         override: RuntimeConfig | None = self.env_overrides.get(self.env)
         if override is None:
             return base
-        return base.model_copy(update=override.model_dump(exclude_unset=True))
+
+        override_data = cast(dict[str, object], override.model_dump(exclude_unset=True))
+        if (
+            "provider" in override_data
+            and "model_name" not in override_data
+            and not explicit_model_name
+        ):
+            override_provider = override_data["provider"]
+            if isinstance(override_provider, str):
+                override_data["model_name"] = default_model_for_provider(
+                    cast(LLMProviderName, override_provider)
+                )
+        return base.model_copy(update=override_data)
 
 
 def redact_value(value: object) -> object:

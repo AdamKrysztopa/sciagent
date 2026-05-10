@@ -7,6 +7,16 @@ No more browser tab. Open SciAgent from Zotero's main window → set determinist
 
 **Zotero 9 is the supported M6 target; Zotero 7 compatibility is unclaimed and untested.**
 
+This is the primary researcher workflow. Streamlit remains a prototype/support surface. CLI and REST remain developer/support interfaces.
+
+## Compatibility Stance
+
+| Status      | Versions             | Notes                                                                 |
+| ----------- | -------------------- | --------------------------------------------------------------------- |
+| Tested      | 9.0.0-9.\* packaging | `manifest.json`, `update.rdf`, and the add-on build target Zotero 9.x |
+| Expected    | Zotero 9.x runtime   | Supported product target; live desktop validation remains manual      |
+| Unsupported | < 9.0.0 or > 9.x     | Not claimed; add-on metadata rejects these versions                   |
+
 **Scope:** Pure Zotero plugin (TypeScript + WebExtension manifest).
 **Leverages:** Existing backend APIs (`/health`, `/run`, `/resume`, `/status/{run_id}`) plus planned capability and initial-search contract extensions for source filters, attachment metadata, and settings awareness.
 **Target Release:** Q2 2026 (as promised in marketing).

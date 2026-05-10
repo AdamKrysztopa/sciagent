@@ -11,9 +11,9 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 ### Current Status
 
-- Current focus: P0 — Product Truth and Trust (reviewer audit, 2026-05-10)
-- Current next implementation target: SCI-0001 (README rewrite), SCI-0004 (terminal status honesty)
-- Last completed: M6.1-D — PDF attachment status and write-flow hardening; M6.1 shipped as 0.1.2; M6 all ZAP stories done (2026-05-10)
+- Current focus: P1 — Evidence Before Expansion (post-P0 docs/metadata alignment, 2026-05-10)
+- Current next implementation target: SCI-0101 (retrieval benchmark), SCI-0103 (feature-flag measurement)
+- Last completed: SCI-0001 (README rewrite), SCI-0002 (canonical user journey), SCI-0003 (Zotero compatibility + metadata alignment) (2026-05-10)
 - M7 (Pluggability/Infrastructure) intentionally deprioritized: settings and elastic infra add value only after users trust the product output. See Phase P0–P2 ordering below.
 
 ### Recent Progress
@@ -24,7 +24,11 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 - ✅ Docs reorganized: new `docs/api.md`, `docs/deployment.md`, updated `docs/manual.md` with full local run guide
 - ✅ macOS XPI installation instructions added to manual
 - ✅ MkDocs nav restructured into Overview / Planning / Manuals / Reference
-- ✅ README updated with clear doc pointers
+- ✅ README rewritten in researcher language with the Zotero-first product path
+- ✅ SCI-0004 complete: terminal-facing workflow exits are honest on full write failure; write-result JSON remains scriptable
+- ✅ SCI-0005 complete: runtime auto-selects common LLM keys (OpenAI, then Anthropic, then xAI); missing-key errors now name the selected provider and env vars
+- ✅ SCI-0002 complete: docs now consistently describe the Zotero add-on as primary; Streamlit as prototype/support; CLI and REST as developer/support interfaces
+- ✅ SCI-0003 complete: manifest, update metadata, build checks, and docs now conservatively target Zotero 9.x and distinguish tested packaging from expected desktop runtime
 
 ### Done Milestones
 
@@ -40,12 +44,12 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 - [x] M6.1 — Main-Window-First Plugin MVP (shipped as 0.1.2)
 - [x] M6.1 — Main-Window Plugin MVP (ZAP-9 settings split, ZAP-4A pre-search filter composer, ZAP-3 main-window workspace, addon v0.1.2)
 - [x] M6.1-D — Approval/write flow hardening and PDF attachment status in the main-window surface
+- [x] P0 — Product Truth and Trust
 
 ### Not Done Milestones
 
 > Ordered from fastest path to final product. P0 (trust) before P1 (evidence) before P2 (differentiation) before P3 (Zotero-native) before P4 (retention) before P5 (scale). M7 infrastructure moved to P5.
 
-- [ ] P0 — Product Truth and Trust _(docs + minimal code; hours to days)_
 - [ ] P1 — Evidence Before Expansion _(benchmark panel; days)_
 - [ ] P2 — Differentiating Core _(sessions, explanations, cache; weeks)_
 - [ ] P3 — Zotero-Native Value _(collection-aware search, Library Doctor; weeks)_
@@ -56,11 +60,6 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 > Ordered by fastest path to a product a Zotero researcher would trust and recommend.
 
-- [ ] SCI-0001 — Rewrite README around product value (no code; researcher-language positioning)
-- [ ] SCI-0004 — Fix terminal workflow status honesty (truthful write-failure status, tests) ← maps to AGT-20 follow-up
-- [ ] SCI-0005 — Reduce first-run LLM provider friction (OpenAI/Anthropic as documented default)
-- [ ] SCI-0002 — Define canonical user journey (Zotero add-on first; CLI/REST as developer tooling)
-- [ ] SCI-0003 — Verify and document Zotero version compatibility (tested vs. expected vs. unsupported table)
 - [ ] SCI-0101 — Build retrieval benchmark panel (20–30 queries, recall@10, hard-filter compliance)
 - [ ] SCI-0103 — Measure or remove undecided feature flags (KeyBERT, spell check, reranker)
 - [ ] SCI-0205 — Add "Why this paper?" result explanations (deterministic; no extra LLM call)
@@ -705,13 +704,13 @@ Acceptance criteria:
 
 **Goal:** Make the existing product understandable, installable, honest, and frictionless. No new features.
 
-| ID | Story | Owner | Status |
-| --- | --- | --- | --- |
-| SCI-0001 | Rewrite README in researcher language — one-sentence hook, 3 value bullets, canonical journey, "why not another plugin?" section | zotero-addon / docs | [ ] |
-| SCI-0002 | Define canonical user journey: Zotero add-on is primary; Streamlit = prototype; CLI/REST = developer | docs | [ ] |
-| SCI-0003 | Verify Zotero version compatibility and publish tested/expected/unsupported table | zotero-addon | [ ] |
-| SCI-0004 | Fix terminal workflow status honesty: full write failure must never show as success; per-item outcomes visible | python-backend-engineer | [ ] |
-| SCI-0005 | Reduce first-run LLM provider friction: OpenAI/Anthropic as documented default; xAI optional; actionable missing-key errors | python-backend-engineer | [ ] |
+| ID       | Story                                                                                                                            | Owner                   | Status |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------- | ------ |
+| SCI-0001 | Rewrite README in researcher language — one-sentence hook, 3 value bullets, canonical journey, "why not another plugin?" section | zotero-addon / docs     | [x]    |
+| SCI-0002 | Define canonical user journey: Zotero add-on is primary; Streamlit = prototype; CLI/REST = developer                             | docs                    | [x]    |
+| SCI-0003 | Verify Zotero version compatibility and publish tested/expected/unsupported table                                                | zotero-addon            | [x]    |
+| SCI-0004 | Fix terminal workflow status honesty: full write failure must never show as success; per-item outcomes visible                   | python-backend-engineer | [x]    |
+| SCI-0005 | Reduce first-run LLM provider friction: OpenAI/Anthropic as documented default; xAI optional; actionable missing-key errors      | python-backend-engineer | [x]    |
 
 **Gate:** A Zotero user can explain what SciAgent does in 30 seconds. Terminal states are honest. A new user can run SciAgent with one common LLM key.
 
@@ -721,11 +720,11 @@ Acceptance criteria:
 
 **Goal:** Prove retrieval quality with a stable benchmark. Measure or remove undecided feature flags. Do not add more sources or settings until this evidence exists.
 
-| ID | Story | Owner | Status |
-| --- | --- | --- | --- |
-| SCI-0101 | Build retrieval benchmark panel: 20–30 queries, must-find DOIs, hard-filter compliance, recall@10/20, source coverage, latency, cost | python-backend-engineer | [ ] |
-| SCI-0102 | Add optional external baseline comparison (OpenAlex direct, Semantic Scholar direct, ChatGPT manual baseline) | python-backend-engineer | [ ] |
-| SCI-0103 | Measure `AGT_USE_KEYBERT`, `AGT_USE_SPELL_CHECK`, `AGT_USE_RERANKER` against benchmark; promote or delete each | python-backend-engineer | [ ] |
+| ID       | Story                                                                                                                                | Owner                   | Status |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------------- | ------ |
+| SCI-0101 | Build retrieval benchmark panel: 20–30 queries, must-find DOIs, hard-filter compliance, recall@10/20, source coverage, latency, cost | python-backend-engineer | [ ]    |
+| SCI-0102 | Add optional external baseline comparison (OpenAlex direct, Semantic Scholar direct, ChatGPT manual baseline)                        | python-backend-engineer | [ ]    |
+| SCI-0103 | Measure `AGT_USE_KEYBERT`, `AGT_USE_SPELL_CHECK`, `AGT_USE_RERANKER` against benchmark; promote or delete each                       | python-backend-engineer | [ ]    |
 
 **Gate:** Benchmark report published in `docs/`. Hard-filter compliance visible. No feature flag remains unmeasured.
 
@@ -735,14 +734,14 @@ Acceptance criteria:
 
 **Goal:** Implement the features that make SciAgent unique and irreplaceable. These are the gaps competitors do not fill.
 
-| ID | Story | Owner | Status |
-| --- | --- | --- | --- |
-| SCI-0205 | Add "Why this paper?" result explanations: source, matched filters, score components, warnings — no extra LLM call | python-backend-engineer | [ ] |
-| SCI-0203 | Add persistent search sessions: save, rerun from plan, diff two sessions, export (Markdown/JSON/CSV) | python-backend-engineer | [ ] |
-| SCI-0204 | Add local result cache: SQLite, TTL, cache-hit logging, `agt cache stats/clear` CLI commands | python-backend-engineer | [ ] |
-| SCI-0201 | Extend backend capability endpoint: per-source capabilities, provider availability, filter support map, PDF support | python-backend-engineer | [ ] |
-| SCI-0206 | Export search plan and session report: PRISMA-lite log, search plan, filter snapshot, write outcomes | python-backend-engineer | [ ] |
-| SCI-0202 | Add source selector and safe presets: Balanced, Fast, Biomedical, Open-access only, Deep, No preprints | zotero-frontend | [ ] |
+| ID       | Story                                                                                                               | Owner                   | Status |
+| -------- | ------------------------------------------------------------------------------------------------------------------- | ----------------------- | ------ |
+| SCI-0205 | Add "Why this paper?" result explanations: source, matched filters, score components, warnings — no extra LLM call  | python-backend-engineer | [ ]    |
+| SCI-0203 | Add persistent search sessions: save, rerun from plan, diff two sessions, export (Markdown/JSON/CSV)                | python-backend-engineer | [ ]    |
+| SCI-0204 | Add local result cache: SQLite, TTL, cache-hit logging, `agt cache stats/clear` CLI commands                        | python-backend-engineer | [ ]    |
+| SCI-0201 | Extend backend capability endpoint: per-source capabilities, provider availability, filter support map, PDF support | python-backend-engineer | [ ]    |
+| SCI-0206 | Export search plan and session report: PRISMA-lite log, search plan, filter snapshot, write outcomes                | python-backend-engineer | [ ]    |
+| SCI-0202 | Add source selector and safe presets: Balanced, Fast, Biomedical, Open-access only, Deep, No preprints              | zotero-frontend         | [ ]    |
 
 **Gate:** User can rerun a past search from saved plan. Every result card shows why it appeared. Session export is human-readable.
 
@@ -752,12 +751,12 @@ Acceptance criteria:
 
 **Goal:** Make SciAgent valuable inside real Zotero libraries, not only as a web search tool.
 
-| ID | Story | Owner | Status |
-| --- | --- | --- | --- |
-| SCI-0301 | Add collection-aware search: inspect target collection before retrieval; badge results as Already in library / New / Possible duplicate | python-backend-engineer + zotero-frontend | [ ] |
-| SCI-0302 | Add PDF attachment pipeline: open-access sources only; validate before attach; PDF failure never fails metadata import | python-backend-engineer | [ ] |
-| SCI-0303 | Add Library Doctor: read-only collection scanner for missing DOI/abstract/PDF/venue, duplicates, broken URLs; all writes require approval | python-backend-engineer + zotero-frontend | [ ] |
-| SCI-0304 | Add collection gap finder: given existing collection, suggest missing seminal papers, recent follow-ups, reviews, negative results | python-backend-engineer | [ ] |
+| ID       | Story                                                                                                                                     | Owner                                     | Status |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | ------ |
+| SCI-0301 | Add collection-aware search: inspect target collection before retrieval; badge results as Already in library / New / Possible duplicate   | python-backend-engineer + zotero-frontend | [ ]    |
+| SCI-0302 | Add PDF attachment pipeline: open-access sources only; validate before attach; PDF failure never fails metadata import                    | python-backend-engineer                   | [ ]    |
+| SCI-0303 | Add Library Doctor: read-only collection scanner for missing DOI/abstract/PDF/venue, duplicates, broken URLs; all writes require approval | python-backend-engineer + zotero-frontend | [ ]    |
+| SCI-0304 | Add collection gap finder: given existing collection, suggest missing seminal papers, recent follow-ups, reviews, negative results        | python-backend-engineer                   | [ ]    |
 
 **Gate:** Re-running the same search against a collection does not create duplicates. Library Doctor scan is read-only and exportable.
 
@@ -767,12 +766,12 @@ Acceptance criteria:
 
 **Goal:** Make SciAgent useful every week, not only once.
 
-| ID | Story | Owner | Status |
-| --- | --- | --- | --- |
-| SCI-0401 | Watch lists: save a search plan; report new papers since last run | python-backend-engineer | [ ] |
-| SCI-0402 | Scheduled reruns: configurable interval; "new papers since last run" diff surfaced in add-on | python-backend-engineer + zotero-frontend | [ ] |
-| SCI-0403 | Zotero subcollection updates: watch list writes to dedicated subcollection; never overwrites manually curated items | python-backend-engineer + zotero-frontend | [ ] |
-| SCI-0404 | Session reports: weekly/monthly summary of searches, discovered papers, writes, watch-list updates | python-backend-engineer | [ ] |
+| ID       | Story                                                                                                               | Owner                                     | Status |
+| -------- | ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | ------ |
+| SCI-0401 | Watch lists: save a search plan; report new papers since last run                                                   | python-backend-engineer                   | [ ]    |
+| SCI-0402 | Scheduled reruns: configurable interval; "new papers since last run" diff surfaced in add-on                        | python-backend-engineer + zotero-frontend | [ ]    |
+| SCI-0403 | Zotero subcollection updates: watch list writes to dedicated subcollection; never overwrites manually curated items | python-backend-engineer + zotero-frontend | [ ]    |
+| SCI-0404 | Session reports: weekly/monthly summary of searches, discovered papers, writes, watch-list updates                  | python-backend-engineer                   | [ ]    |
 
 **Gate:** A researcher using SciAgent weekly sees a "what's new" report without re-entering queries.
 
@@ -782,14 +781,14 @@ Acceptance criteria:
 
 **Goal:** Expose SciAgent externally only after local-first product value is proven. Includes all M7 stories.
 
-| ID | Story | Owner | Status |
-| --- | --- | --- | --- |
-| AGT-23 | Unified retrieval registry: typed `Protocol`, registry module, centralized merge/dedup/rank | python-backend-engineer | [ ] |
-| AGT-24 | Durable distributed checkpointing: Redis/Postgres LangGraph checkpointer; stateless container behavior | python-backend-engineer | [ ] |
-| AGT-25 | Async task queue: Celery/Dramatiq; `POST /run` returns `task_id`; worker reuses approval guardrails | python-backend-engineer | [ ] |
-| AGT-26 | Cloud-agnostic IaC modules: compute, persistence, queue, networking; managed secret injection; CI/CD deploy job | settings-bootstrap | [ ] |
-| SCI-0501 | MCP server: expose `search_papers`, `get_session`, `list_sessions` as MCP tools; authenticated and rate-limited | python-backend-engineer | [ ] |
-| SCI-0502 | Hosted backend pilot: Postgres-backed session store; provider quotas; auth; autoscaling on Cloud Run | settings-bootstrap | [ ] |
+| ID       | Story                                                                                                           | Owner                   | Status |
+| -------- | --------------------------------------------------------------------------------------------------------------- | ----------------------- | ------ |
+| AGT-23   | Unified retrieval registry: typed `Protocol`, registry module, centralized merge/dedup/rank                     | python-backend-engineer | [ ]    |
+| AGT-24   | Durable distributed checkpointing: Redis/Postgres LangGraph checkpointer; stateless container behavior          | python-backend-engineer | [ ]    |
+| AGT-25   | Async task queue: Celery/Dramatiq; `POST /run` returns `task_id`; worker reuses approval guardrails             | python-backend-engineer | [ ]    |
+| AGT-26   | Cloud-agnostic IaC modules: compute, persistence, queue, networking; managed secret injection; CI/CD deploy job | settings-bootstrap      | [ ]    |
+| SCI-0501 | MCP server: expose `search_papers`, `get_session`, `list_sessions` as MCP tools; authenticated and rate-limited | python-backend-engineer | [ ]    |
+| SCI-0502 | Hosted backend pilot: Postgres-backed session store; provider quotas; auth; autoscaling on Cloud Run            | settings-bootstrap      | [ ]    |
 
 **Gate:** CI job produces reproducible infrastructure plan. Hosted backend smoke test passes. Sessions persist across worker restarts.
 

@@ -5,11 +5,33 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from typing import Any
 
-from agt.config import Settings
+from agt.config import LLMProviderName, Settings, provider_env_aliases
+from agt.providers.anthropic import AnthropicProvider
+from agt.providers.openai import OpenAIProvider
 from agt.providers.protocol import LLMProvider, ProviderRateLimitError, ProviderTimeoutError
 from agt.providers.xai import TokenPricing, XAIProvider
 
 ProviderBuilder = Callable[[Settings], LLMProvider]
+
+
+def _required_env_message(provider_name: LLMProviderName) -> str:
+    env_names = provider_env_aliases(provider_name)
+    return " or ".join(env_names)
+
+
+def _missing_provider_key_error(provider_name: LLMProviderName) -> RuntimeError:
+    return RuntimeError(
+        f"Selected provider '{provider_name}' requires {_required_env_message(provider_name)}. "
+        "Set one of those env vars or choose a different provider with AGT_LLM_PROVIDER."
+    )
+
+
+def _unimplemented_provider_error(provider_name: LLMProviderName) -> RuntimeError:
+    supported = ", ".join(sorted(_PROVIDER_BUILDERS))
+    return RuntimeError(
+        f"Selected provider '{provider_name}' is not implemented in this runtime. "
+        f"Supported providers: {supported}. Required env var(s): {_required_env_message(provider_name)}."
+    )
 
 
 class RoutedProvider(LLMProvider):
@@ -62,7 +84,7 @@ class RoutedProvider(LLMProvider):
 
 def _build_xai(settings: Settings) -> LLMProvider:
     if settings.xai_api_key is None:
-        raise RuntimeError("AGT_XAI_API_KEY is required when AGT_LLM_PROVIDER=xai")
+        raise _missing_provider_key_error("xai")
     return XAIProvider(
         runtime=settings.runtime,
         api_key=settings.xai_api_key.get_secret_value(),
@@ -73,7 +95,27 @@ def _build_xai(settings: Settings) -> LLMProvider:
     )
 
 
+def _build_openai(settings: Settings) -> LLMProvider:
+    if settings.openai_api_key is None:
+        raise _missing_provider_key_error("openai")
+    return OpenAIProvider(
+        runtime=settings.runtime,
+        api_key=settings.openai_api_key.get_secret_value(),
+    )
+
+
+def _build_anthropic(settings: Settings) -> LLMProvider:
+    if settings.anthropic_api_key is None:
+        raise _missing_provider_key_error("anthropic")
+    return AnthropicProvider(
+        runtime=settings.runtime,
+        api_key=settings.anthropic_api_key.get_secret_value(),
+    )
+
+
 _PROVIDER_BUILDERS: dict[str, ProviderBuilder] = {
+    "anthropic": _build_anthropic,
+    "openai": _build_openai,
     "xai": _build_xai,
 }
 
@@ -96,20 +138,17 @@ def unregister_provider_builder(provider_name: str) -> None:
     _PROVIDER_BUILDERS.pop(provider_name, None)
 
 
-def _build_single_provider(settings: Settings, provider_name: str) -> LLMProvider:
+def _build_single_provider(settings: Settings, provider_name: LLMProviderName) -> LLMProvider:
     builder = _PROVIDER_BUILDERS.get(provider_name)
     if builder is None:
-        raise RuntimeError(
-            "Configured provider is not implemented yet. Use AGT_LLM_PROVIDER=xai for now. "
-            "Swap path for openai/anthropic/groq is documented in docs/settings.md."
-        )
+        raise _unimplemented_provider_error(provider_name)
     return builder(settings)
 
 
 def build_provider(settings: Settings) -> LLMProvider:
     """Build provider implementation based on runtime settings."""
 
-    primary_name = settings.llm_provider
+    primary_name = settings.runtime.provider
     primary = _build_single_provider(settings, primary_name)
     fallback_name = settings.llm_fallback_provider
     if fallback_name is None:

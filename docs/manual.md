@@ -25,9 +25,9 @@
 | Python         | >= 3.13 (recommended: 3.14) | Free-threaded GIL optional support                                |
 | `uv`           | latest                      | Package manager ([install](https://astral.sh/uv))                 |
 | Node.js        | >= 20                       | Required only for the Zotero add-on package in `zotero-addon/`    |
-| Zotero         | 9.x                         | Required for the native add-on scaffold and item-pane integration |
+| Zotero         | 9.x                         | Required for the native add-on's main-window workflow             |
 | Zotero account | —                           | With API key and library ID                                       |
-| xAI API key    | —                           | Default LLM provider (or OpenAI/Anthropic)                        |
+| OpenAI API key | —                           | Default first-run LLM path; Anthropic or xAI also work            |
 
 ---
 
@@ -85,22 +85,29 @@ These **must** be set — the application will fail fast with an actionable erro
 
 | Variable                | Description                                                           | Example          |
 | ----------------------- | --------------------------------------------------------------------- | ---------------- |
-| `AGT_XAI_API_KEY`       | xAI (Grok) API key                                                    | `xai-abc123...`  |
 | `AGT_ZOTERO_API_KEY`    | Zotero API key ([get one here](https://www.zotero.org/settings/keys)) | `AbCdEf12345...` |
 | `AGT_ZOTERO_LIBRARY_ID` | Your Zotero library ID (numeric)                                      | `12345678`       |
 
+You must also set at least one LLM key. The default first-run path is OpenAI, but Anthropic and xAI are also supported:
+
+| Variable                | Description                      | Example            |
+| ----------------------- | -------------------------------- | ------------------ |
+| `AGT_OPENAI_API_KEY`    | Default first-run OpenAI API key | `sk-abc123...`     |
+| `AGT_ANTHROPIC_API_KEY` | Anthropic API key                | `sk-ant-abc123...` |
+| `AGT_XAI_API_KEY`       | Optional xAI (Grok) API key      | `xai-abc123...`    |
+
 ### Optional Variables
 
-| Variable                  | Default  | Description                                           |
-| ------------------------- | -------- | ----------------------------------------------------- |
-| `AGT_ZOTERO_LIBRARY_TYPE` | `user`   | `user` or `group`                                     |
-| `AGT_LLM_PROVIDER`        | `xai`    | LLM provider: `xai`, `openai`, `anthropic`, `groq`    |
-| `AGT_MODEL_NAME`          | `grok-4` | Model name for the selected provider                  |
-| `AGT_TIMEOUT_SECONDS`     | `30`     | LLM call timeout (1–300)                              |
-| `AGT_RETRIES`             | `3`      | LLM retry count (0–10)                                |
-| `AGT_TEMPERATURE`         | `0.2`    | LLM sampling temperature (0.0–2.0)                    |
-| `AGT_LOG_LEVEL`           | `INFO`   | Logging level                                         |
-| `AGT_ENV`                 | `local`  | Runtime environment: `local`, `staging`, `production` |
+| Variable                  | Default           | Description                                                                             |
+| ------------------------- | ----------------- | --------------------------------------------------------------------------------------- |
+| `AGT_ZOTERO_LIBRARY_TYPE` | `user`            | `user` or `group`                                                                       |
+| `AGT_LLM_PROVIDER`        | `auto-detect`     | Explicit provider override. If unset, runtime prefers OpenAI, then Anthropic, xAI, Groq |
+| `AGT_MODEL_NAME`          | provider-specific | Optional model override. Defaults to the selected provider's built-in model             |
+| `AGT_TIMEOUT_SECONDS`     | `30`              | LLM call timeout (1–300)                                                                |
+| `AGT_RETRIES`             | `3`               | LLM retry count (0–10)                                                                  |
+| `AGT_TEMPERATURE`         | `0.2`             | LLM sampling temperature (0.0–2.0)                                                      |
+| `AGT_LOG_LEVEL`           | `INFO`            | Logging level                                                                           |
+| `AGT_ENV`                 | `local`           | Runtime environment: `local`, `staging`, `production`                                   |
 
 ### Optional API Keys (Enhance Retrieval)
 
@@ -135,14 +142,18 @@ These keys are **optional** but improve retrieval coverage and rate limits.
 
 ```env
 # Required
-AGT_XAI_API_KEY=xai-your-key-here
+AGT_OPENAI_API_KEY=sk-your-openai-key
 AGT_ZOTERO_API_KEY=your-zotero-api-key
 AGT_ZOTERO_LIBRARY_ID=12345678
 AGT_ZOTERO_LIBRARY_TYPE=user
 
-# LLM settings
-AGT_LLM_PROVIDER=xai
-AGT_MODEL_NAME=grok-4
+# Optional alternatives
+# AGT_ANTHROPIC_API_KEY=sk-ant-your-anthropic-key
+# AGT_XAI_API_KEY=xai-your-key-here
+
+# Optional explicit routing
+# AGT_LLM_PROVIDER=openai
+# AGT_MODEL_NAME=gpt-5.4
 AGT_TEMPERATURE=0.2
 
 # Optional: enhanced retrieval
@@ -161,12 +172,12 @@ AGT_OPENAI_API_KEY=sk-your-openai-key
 
 ## Running SciAgent
 
-SciAgent has four interfaces:
+SciAgent has four interfaces, but only one primary researcher path:
 
-1. **Command-Line Interface (CLI)** — one-shot search from terminal
-2. **Streamlit UI** — interactive web-based approval interface
-3. **REST API** — programmatic backend for Zotero add-on and custom clients
-4. **Zotero 9 Add-on** — native integration with Zotero desktop client (M6)
+1. **Zotero 9 Add-on** — primary researcher interface inside Zotero
+2. **Streamlit UI** — prototype and support surface for local demos
+3. **REST API** — developer and support backend contract for custom clients
+4. **Command-Line Interface (CLI)** — developer and support terminal runner
 
 ---
 
@@ -185,7 +196,8 @@ cd /path/to/sciagent
 uv sync
 
 # Verify .env file has required keys
-# AGT_XAI_API_KEY, AGT_ZOTERO_API_KEY, AGT_ZOTERO_LIBRARY_ID
+# One LLM key: AGT_OPENAI_API_KEY or AGT_ANTHROPIC_API_KEY or AGT_XAI_API_KEY
+# Plus: AGT_ZOTERO_API_KEY and AGT_ZOTERO_LIBRARY_ID
 
 # Start the API server
 uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000
@@ -206,11 +218,11 @@ INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
 curl http://localhost:8000/health
 ```
 
-Should return JSON with `"status": "ok"` and Zotero preflight details.
+Should return JSON with `"ok": true`, the resolved provider name, and Zotero preflight details.
 
 **Common issues:**
 
-- `Missing required field`: Check `.env` has `AGT_XAI_API_KEY`, `AGT_ZOTERO_API_KEY`, and `AGT_ZOTERO_LIBRARY_ID`
+- `Missing required field`: Check `.env` has one LLM key (`AGT_OPENAI_API_KEY`, `AGT_ANTHROPIC_API_KEY`, or `AGT_XAI_API_KEY`) plus `AGT_ZOTERO_API_KEY` and `AGT_ZOTERO_LIBRARY_ID`
 - `Address already in use`: Another process is using port 8000; kill it or use `--port 8001`
 - `Preflight failed`: Zotero API key may be invalid or lack write permissions
 
@@ -241,6 +253,14 @@ ls -lh build/sciagent-zotero-addon.xpi
 
 Should show a file around 50-100 KB.
 
+### Zotero Add-on Compatibility
+
+| Status      | Versions              | Notes                                                                 |
+| ----------- | --------------------- | --------------------------------------------------------------------- |
+| Tested      | 9.0.0-9.* packaging   | `manifest.json`, `update.rdf`, and `npm run build` align in this repo |
+| Expected    | Zotero 9.x runtime    | Supported target, but live desktop validation is still manual         |
+| Unsupported | < 9.0.0 or > 9.x      | Not claimed; add-on metadata rejects these versions                   |
+
 ---
 
 ### Step 3: Install the Add-on in Zotero 9
@@ -260,7 +280,7 @@ Do **NOT** double-click the XPI file or use "Open With" → Zotero. macOS will a
 
 **Expected result:**
 
-- SciAgent appears in the add-ons list with version `0.1.0`
+- SciAgent appears in the add-ons list with version `0.1.2`
 - Status shows "Enabled"
 - A restart prompt may appear; restart Zotero if requested
 
@@ -300,11 +320,11 @@ After installation, configure the backend connection:
 
 ### Step 5: Run Your First Search
 
-1. In Zotero, open the **SciAgent item pane section**:
-   - The pane should appear in the right sidebar when viewing your library
-   - If not visible, check View → Layout or right-click the item pane header
+1. In Zotero, open the **SciAgent main workspace** from **Tools → SciAgent**.
+   - This is the primary workflow surface.
+   - If your build still registers an item-pane section, treat it as a secondary launcher into the same product path rather than the main UI.
 
-2. **Backend health indicator** (top of pane):
+2. **Backend health indicator** (top of workspace):
    - Should show **green/connected** if backend is running
    - If red, check backend is running on `http://localhost:8000`
 
@@ -354,10 +374,11 @@ Before marking M6 complete, verify the following in a live Zotero 9 session:
 - [ ] Backend starts without errors: `uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000`
 - [ ] Add-on builds cleanly: `npm run build` in `zotero-addon/`
 - [ ] XPI installs via Zotero's add-ons manager (not double-click on macOS)
-- [ ] Add-on appears in Tools → Add-ons with version 0.1.0
+- [ ] Add-on appears in Tools → Add-ons with version 0.1.2
 - [ ] Preferences pane opens and saves settings
-- [ ] SciAgent item pane section is visible in Zotero
-- [ ] Backend health indicator shows green/connected
+- [ ] **Tools → SciAgent** opens the main-window workspace
+- [ ] Backend health indicator shows green/connected in the main-window workspace
+- [ ] If the item-pane section is present, it behaves as a secondary launcher only
 - [ ] Search query and collection inputs accept text
 - [ ] "Run Search" executes without errors
 - [ ] Parsed filters render correctly (year, exclude terms, sources, preferences)
@@ -375,7 +396,8 @@ Before marking M6 complete, verify the following in a live Zotero 9 session:
 **Current M6 status:**
 
 - ✅ Backend, add-on build, and package quality gates passing
-- ❌ Live Zotero 9 desktop smoke test not yet performed
+- ✅ Add-on metadata now consistently targets Zotero 9.x packaging
+- ❌ Live Zotero 9 desktop smoke test not yet performed in this environment
 - ❌ M6 not marked complete until manual validation passes
 
 ---
@@ -593,7 +615,7 @@ AGT_ENV_OVERRIDES={"staging": {"provider": "openai", "model_name": "gpt-4o", "te
 ### Startup Failures
 
 **"Missing required field" error:**
-Ensure `AGT_XAI_API_KEY`, `AGT_ZOTERO_API_KEY`, and `AGT_ZOTERO_LIBRARY_ID` are set in your `.env` file or exported.
+Ensure one LLM key (`AGT_OPENAI_API_KEY`, `AGT_ANTHROPIC_API_KEY`, or `AGT_XAI_API_KEY`) plus `AGT_ZOTERO_API_KEY` and `AGT_ZOTERO_LIBRARY_ID` are set in your `.env` file or exported.
 
 **"Extra field not allowed" error:**
 The settings model uses `extra="forbid"`. Check for typos in variable names — all must start with `AGT_` prefix (or use the unprefixed alias).
@@ -681,11 +703,12 @@ uv run python examples/m5_hardening_demo.py
 uv run python examples/m6_zotero_addon_demo.py
 ```
 
-The real add-on scaffold lives in `zotero-addon/` and packages a Zotero 9 add-on with:
+The real add-on scaffold lives in `zotero-addon/` and packages the primary Zotero 9 interface with:
 
 - `manifest.json` + `bootstrap.js`
 - typed backend client for `/health`, `/run`, `/status/{run_id}`, `/resume`
-- native item-pane section + preference pane registration boundaries
+- native main-window workspace + preference pane registration boundaries
+- optional item-pane registration as a secondary launcher
 - React MVP for query, parsed filter review/edit, selection, approval, reject, and result rendering
 
 ### Docker

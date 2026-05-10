@@ -1,6 +1,6 @@
 # SciAgent REST API Reference
 
-The SciAgent backend exposes a FastAPI REST API for programmatic access and as the backend for the Zotero add-on.
+The SciAgent backend exposes a FastAPI REST API as the contract behind the primary Zotero add-on and as a developer/support interface for automation, debugging, and custom clients.
 
 ## Base URL
 
@@ -418,7 +418,7 @@ Returned when request payload fails validation.
 
 ## Contract Versioning
 
-The current API is **v0.1.0** and follows these stability rules:
+The current client contract is **2026-05** and follows these stability rules:
 
 1. Endpoint paths (`/health`, `/run`, `/status/{run_id}`, `/resume`) are stable
 2. Required request fields will not be removed in minor versions
@@ -438,7 +438,7 @@ Future compatibility:
 
 ### Zotero Add-on Integration
 
-The Zotero 9 add-on uses this API with the following flow:
+The Zotero 9 add-on is the primary researcher interface and uses this API with the following flow:
 
 1. **Health Check**: `GET /health` on startup to verify backend connectivity
 2. **Run Search**: `POST /run` with query and collection name
