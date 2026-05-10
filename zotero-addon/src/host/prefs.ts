@@ -5,6 +5,8 @@ export interface AddonConfig {
   backendUrl: string;
   clientId: string;
   enablePdfImports: boolean;
+  /** When true, the addon writes to Zotero natively (ZAP-6/7/8) instead of via pyzotero. */
+  nativeWriteEnabled: boolean;
   // Search Defaults (M6.1-A)
   defaultCollection: string;
   defaultMinYear: number | null;
@@ -23,6 +25,7 @@ export const PREF_KEYS = {
   backendUrl: "extensions.agt.backendURL",
   clientId: "extensions.agt.clientID",
   enablePdfImports: "extensions.agt.enablePDFImports",
+  nativeWriteEnabled: "extensions.agt.nativeWriteEnabled",
   defaultCollection: "extensions.agt.defaultCollection",
   defaultMinYear: "extensions.agt.defaultMinYear",
   defaultMaxYear: "extensions.agt.defaultMaxYear",
@@ -35,6 +38,7 @@ export const DEFAULT_ADDON_CONFIG: AddonConfig = {
   backendUrl: "http://127.0.0.1:8000",
   clientId: "zotero-local",
   enablePdfImports: false,
+  nativeWriteEnabled: false,
   defaultCollection: "Inbox",
   defaultMinYear: null,
   defaultMaxYear: null,
@@ -91,6 +95,11 @@ export function createZoteroPreferenceStore(zotero: ZoteroGlobal): PreferenceSto
           PREF_KEYS.enablePdfImports,
           DEFAULT_ADDON_CONFIG.enablePdfImports,
         ),
+        nativeWriteEnabled: readBooleanPref(
+          zotero,
+          PREF_KEYS.nativeWriteEnabled,
+          DEFAULT_ADDON_CONFIG.nativeWriteEnabled,
+        ),
         defaultCollection: readStringPref(
           zotero,
           PREF_KEYS.defaultCollection,
@@ -127,6 +136,7 @@ export function createZoteroPreferenceStore(zotero: ZoteroGlobal): PreferenceSto
       zotero.Prefs.set(PREF_KEYS.apiKey, nextConfig.apiKey);
       zotero.Prefs.set(PREF_KEYS.clientId, nextConfig.clientId);
       zotero.Prefs.set(PREF_KEYS.enablePdfImports, nextConfig.enablePdfImports);
+      zotero.Prefs.set(PREF_KEYS.nativeWriteEnabled, nextConfig.nativeWriteEnabled);
       zotero.Prefs.set(PREF_KEYS.defaultCollection, nextConfig.defaultCollection);
       zotero.Prefs.set(
         PREF_KEYS.defaultMinYear,

@@ -1,0 +1,70 @@
+name: Zotero Add-on Release
+
+on:
+    push:
+        tags:
+            - "v*"
+
+permissions:
+    contents: write
+
+jobs:
+    build-and-release:
+        name: Build, validate, and publish XPI
+        runs-on: ubuntu-latest
+
+        defaults:
+            run:
+                working-directory: zotero-addon
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+                  cache: "npm"
+                  cache-dependency-path: zotero-addon/package-lock.json
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Lint
+              run: npm run lint
+
+            - name: Type check
+              run: npm run typecheck
+
+            - name: Run tests
+              run: npm run test
+
+            - name: Build XPI
+              run: npm run build
+
+            - name: Verify XPI exists
+              run: test -f build/sciagent-zotero-addon.xpi
+
+            - name: Extract version from tag
+              id: version
+              run: echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+
+            - name: Create GitHub Release and upload XPI
+              uses: softprops/action-gh-release@v2
+              with:
+                  tag_name: ${{ github.ref_name }}
+                  name: "SciAgent Zotero Add-on ${{ github.ref_name }}"
+                  draft: false
+                  prerelease: ${{ contains(github.ref_name, '-') }}
+                  files: zotero-addon/build/sciagent-zotero-addon.xpi
+                  body: |
+                      ## SciAgent Zotero Add-on ${{ github.ref_name }}
+
+                      ### Installation
+                      1. Download `sciagent-zotero-addon.xpi` below.
+                      2. In Zotero: **Tools → Add-ons → Install Add-on From File…**
+                      3. Select the `.xpi` file and restart Zotero.
+
+                      ### What's new
+                      See [CHANGELOG](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.

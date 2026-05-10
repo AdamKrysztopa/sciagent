@@ -5,23 +5,26 @@ import {
   DEFAULT_ADDON_CONFIG,
   type AddonConfig,
 } from "../../host/prefs";
+import type { NativeWriteResult } from "../../host/zoteroWriter";
 import {
   buildDefaultFilterEdit,
   buildSourceBuckets,
   filterEditFromSearchPlan,
   getPaperIndex,
+  type CapabilitiesResponse,
   type FilterEditContract,
   type HealthResponse,
   type NormalizedPaper,
   type SearchMetadata,
   type SearchPlan,
+  type SourceCapability,
   type StatusResponse,
   uniqueSortedIndices,
 } from "../../shared/contracts";
 import type { AddonUiServices } from "../serviceTypes";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
-type RunPhase =
+export type RunPhase =
   | "idle"
   | "submitting"
   | "awaiting_approval"
@@ -62,12 +65,14 @@ export function useSciAgentController(services: AddonUiServices) {
   const [healthBusy, setHealthBusy] = useState(false);
   const [healthError, setHealthError] = useState<string | null>(null);
   const [healthResponse, setHealthResponse] = useState<HealthResponse | null>(null);
+  const [capabilities, setCapabilities] = useState<CapabilitiesResponse | null>(null);
   const [query, setQuery] = useState("");
   const [runView, setRunView] = useState<RunViewState>({
     error: null,
     phase: "idle",
     snapshot: null,
   });
+  const [nativeWriteResult, setNativeWriteResult] = useState<NativeWriteResult | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
@@ -125,8 +130,17 @@ export function useSciAgentController(services: AddonUiServices) {
     setHealthBusy(true);
     setHealthError(null);
     try {
-      const response = await services.createClient(config).health();
+      const client = services.createClient(config);
+      const response = await client.health();
       setHealthResponse(response);
+      // Fetch capabilities after a successful health check.
+      try {
+        const caps = await client.capabilities();
+        setCapabilities(caps);
+      } catch {
+        // Non-fatal: capabilities unavailable on older backends.
+        setCapabilities(null);
+      }
     } catch (error) {
       setHealthError(describeError(error));
       setHealthResponse(null);
@@ -160,6 +174,7 @@ export function useSciAgentController(services: AddonUiServices) {
       return;
     }
 
+    setNativeWriteResult(null);
     setRunView({ error: null, phase: "submitting", snapshot: runView.snapshot });
     try {
       const response = await services.createClient(config).run({
@@ -176,6 +191,12 @@ export function useSciAgentController(services: AddonUiServices) {
     }
   });
 
+  const resetRun = useEffectEvent(() => {
+    setRunView({ error: null, phase: "idle", snapshot: null });
+    setNativeWriteResult(null);
+    setSelectedIndices([]);
+  });
+
   const resumeRun = useEffectEvent(async (approved: boolean) => {
     const runId = runView.snapshot?.run_id;
     if (runId === undefined) {
@@ -185,12 +206,39 @@ export function useSciAgentController(services: AddonUiServices) {
 
     setRunView({ error: null, phase: "resuming", snapshot: runView.snapshot });
     try {
+      const useNative = approved && config.nativeWriteEnabled && services.nativeWrite !== undefined;
       const response = await services.createClient(config).resume({
         approved,
         collection_name: approved ? collectionName.trim() || "Inbox" : collectionName.trim() || undefined,
         run_id: runId,
         selected_indices: approved ? selectedIndices : undefined,
+        native_write: useNative ? true : undefined,
       });
+
+      if (useNative && approved && response.approved_papers !== undefined && response.approved_papers.length > 0) {
+        // ZAP-6/7/8: write to Zotero natively.
+        const nativeWrite = services.nativeWrite;
+        try {
+          if (nativeWrite === undefined) {
+            throw new Error("Native write service unavailable.");
+          }
+
+          const nativeResult = await nativeWrite(
+            response.approved_papers,
+            collectionName.trim() || "Inbox",
+            config.enablePdfImports,
+          );
+          setNativeWriteResult(nativeResult);
+        } catch (nativeError: unknown) {
+          setRunView({
+            error: `Native write failed: ${describeError(nativeError)}`,
+            phase: "failed",
+            snapshot: runView.snapshot,
+          });
+          return;
+        }
+      }
+
       await fetchStatus(response.run_id);
     } catch (error) {
       setRunView({ error: describeError(error), phase: "error", snapshot: runView.snapshot });
@@ -233,8 +281,10 @@ export function useSciAgentController(services: AddonUiServices) {
 
   return {
     canApprove: selectedIndices.length > 0 && runView.phase === "awaiting_approval",
+    capabilities,
     collectionName,
     config,
+    nativeWriteResult,
     filterDraft,
     healthBusy,
     healthError,
@@ -257,6 +307,7 @@ export function useSciAgentController(services: AddonUiServices) {
     },
     onRefreshHealth: () => void refreshHealth(),
     onReject: () => void resumeRun(false),
+    onReset: () => void resetRun(),
     onResetFilters: () => {
       if (searchPlan === null) {
         return;
@@ -288,5 +339,6 @@ export function useSciAgentController(services: AddonUiServices) {
     searchPlan,
     selectedIndices,
     sourceBuckets,
+    sourcePolicy: (capabilities?.source_policy ?? []) as SourceCapability[],
   };
 }

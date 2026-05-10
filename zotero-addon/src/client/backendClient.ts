@@ -1,4 +1,5 @@
 import type {
+  CapabilitiesResponse,
   HealthResponse,
   ResumeRequest,
   RunAcceptedResponse,
@@ -55,6 +56,10 @@ export class SciAgentBackendClient {
 
   async health(): Promise<HealthResponse> {
     return this.request<HealthResponse>("/health", { method: "GET" });
+  }
+
+  async capabilities(): Promise<CapabilitiesResponse> {
+    return this.request<CapabilitiesResponse>("/capabilities", { method: "GET" });
   }
 
   async run(payload: RunRequest): Promise<RunAcceptedResponse> {

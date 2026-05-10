@@ -35,6 +35,7 @@ nav:
       - Configuration & Usage: manual.md
       - Deployment & Hosting: deployment.md
   - Reference:
+      - P1 Benchmark: benchmark.md
       - REST API: api.md
       - Settings: settings.md
       - Zotero Add-on: zotero.md

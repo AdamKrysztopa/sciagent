@@ -11,7 +11,8 @@ from pydantic import BaseModel, Field, model_validator
 
 from agt.config import Settings, get_settings
 from agt.graph.workflow import resume_workflow, run_search_phase
-from agt.models import AgentState, FilterEditContract
+from agt.models import AgentState, FilterEditContract, SourceCapability
+from agt.tools.search_papers import build_source_policy
 from agt.zotero.preflight import run_zotero_preflight
 
 # Backend contract version exposed via /health for client compatibility checks.
@@ -39,12 +40,25 @@ class ResumeRequest(BaseModel):
     approved: bool
     collection_name: str | None = None
     selected_indices: list[int] | None = None
+    # When True the backend skips the pyzotero write and returns approved papers
+    # so the add-on can perform ZAP-6/7/8 native Zotero JS writes.
+    native_write: bool = False
 
 
 class RunAcceptedResponse(BaseModel):
     run_id: str
     thread_id: str
     status: Literal["awaiting_approval", "completed", "rejected", "failed"]
+    # Populated only when ResumeRequest.native_write=True so the add-on can write natively.
+    approved_papers: list[dict[str, Any]] | None = None
+
+
+class CapabilitiesResponse(BaseModel):
+    api_contract_version: str
+    source_policy: list[SourceCapability]
+    # Maps filter names to the sources that enforce them server-side.
+    filter_support: dict[str, list[str]]
+    pdf_import_supported: bool
 
 
 class StatusResponse(BaseModel):
@@ -100,7 +114,7 @@ def _client_id_header(
     return x_client_id.strip()
 
 
-def create_app() -> FastAPI:
+def create_app() -> FastAPI:  # noqa: PLR0915
     app = FastAPI(title="SciAgent API", version="0.1.0")
     store = _RunStore()
 
@@ -118,7 +132,7 @@ def create_app() -> FastAPI:
             "ok": preflight.ok,
             "message": preflight.message,
             "preflight": preflight.to_dict(),
-            "provider": settings.llm_provider,
+            "provider": settings.runtime.provider,
             "fallback_provider": settings.llm_fallback_provider,
             "api_contract_version": API_CONTRACT_VERSION,
         }
@@ -202,6 +216,40 @@ def create_app() -> FastAPI:
                 status_code=status.HTTP_409_CONFLICT, detail="run_has_no_checkpoint"
             )
 
+        if payload.native_write and payload.approved:
+            # Native write mode: skip pyzotero; return approved papers for add-on to write.
+            checkpoint = cast(AgentState, record.state)
+            selected = payload.selected_indices
+            if selected is None:
+                selected = checkpoint["selected_indices"]
+            all_papers = checkpoint["papers"]
+            approved_papers = [all_papers[i] for i in selected if 0 <= i < len(all_papers)]
+            next_status_nw: Literal["awaiting_approval", "completed", "rejected", "failed"] = (
+                "completed"
+            )
+            store.put(
+                _RunRecord(
+                    run_id=record.run_id,
+                    owner=record.owner,
+                    thread_id=record.thread_id,
+                    status=next_status_nw,
+                    state={
+                        **checkpoint,
+                        "phase": "completed",
+                        "decision": "approved",
+                        "approved": True,
+                        "selected_indices": selected,
+                        "write_result": {"native_write": True, "created": len(approved_papers)},
+                    },
+                )
+            )
+            return RunAcceptedResponse(
+                run_id=record.run_id,
+                thread_id=record.thread_id,
+                status=next_status_nw,
+                approved_papers=approved_papers,
+            )
+
         resumed = await resume_workflow(
             cast(AgentState, record.state),
             approved=payload.approved,
@@ -232,6 +280,23 @@ def create_app() -> FastAPI:
             run_id=record.run_id,
             thread_id=record.thread_id,
             status=next_status,
+        )
+
+    @app.get("/capabilities", response_model=CapabilitiesResponse)
+    async def _capabilities(  # pyright: ignore[reportUnusedFunction]
+        _: None = Depends(_require_backend_key),
+        settings: Settings = Depends(get_settings),
+    ) -> CapabilitiesResponse:
+        source_policy = build_source_policy(settings)
+        filter_support: dict[str, list[str]] = {
+            "year_filter": [s.name for s in source_policy if s.supports_year_filter],
+            "open_access_filter": [s.name for s in source_policy if s.supports_open_access_filter],
+        }
+        return CapabilitiesResponse(
+            api_contract_version=API_CONTRACT_VERSION,
+            source_policy=source_policy,
+            filter_support=filter_support,
+            pdf_import_supported=True,
         )
 
     @app.get("/status/{run_id}", response_model=StatusResponse)

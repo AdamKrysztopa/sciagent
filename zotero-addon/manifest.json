@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "SciAgent",
   "version": "0.1.2",
-  "description": "Native SciAgent search, review, and backend-delegated Zotero approval flow inside Zotero 7+.",
+  "description": "Main-window-first SciAgent search, review, and backend-delegated approval flow inside Zotero 9.x.",
   "homepage_url": "https://github.com/AdamKrysztopa/sciagent",
   "author": "SciAgent",
   "icons": {
@@ -13,7 +13,7 @@
     "zotero": {
       "id": "agt@yourdomain.org",
       "update_url": "https://github.com/AdamKrysztopa/sciagent/releases/latest/download/update.rdf",
-      "strict_min_version": "6.999",
+      "strict_min_version": "9.0.0",
       "strict_max_version": "9.*"
     }
   }

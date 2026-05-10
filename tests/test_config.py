@@ -7,13 +7,19 @@ from agt.config import RedactionFilter, RuntimeConfig, Settings, get_settings, r
 
 
 def _settings_from(data: dict[str, object]) -> Settings:
-    return Settings.model_validate(data)
+    return Settings(_env_file=None, **data)  # pyright: ignore[reportCallIssue]
 
 
 def _clear_required_env(monkeypatch: pytest.MonkeyPatch) -> None:
     for name in (
+        "AGT_OPENAI_API_KEY",
+        "OPENAI_API_KEY",
+        "AGT_ANTHROPIC_API_KEY",
+        "ANTHROPIC_API_KEY",
         "AGT_XAI_API_KEY",
         "XAI_API_KEY",
+        "AGT_GROQ_API_KEY",
+        "GROQ_API_KEY",
         "AGT_ZOTERO_API_KEY",
         "ZOTERO_API_KEY",
         "AGT_ZOTERO_LIBRARY_ID",
@@ -86,6 +92,36 @@ def test_settings_runtime_uses_env_override(monkeypatch: pytest.MonkeyPatch) -> 
     assert runtime.timeout_seconds == expected_timeout
     assert runtime.retries == 1
     assert runtime.temperature == 0.0
+
+
+def test_settings_runtime_auto_selects_openai_when_common_key_present(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _clear_required_env(monkeypatch)
+    settings = _settings_from({
+        "AGT_OPENAI_API_KEY": "openai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "12345",
+    })
+
+    runtime = settings.runtime
+    assert runtime.provider == "openai"
+    assert runtime.model_name == "gpt-5.4"
+
+
+def test_settings_runtime_auto_selects_anthropic_when_no_openai_key_present(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _clear_required_env(monkeypatch)
+    settings = _settings_from({
+        "AGT_ANTHROPIC_API_KEY": "anthropic-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "12345",
+    })
+
+    runtime = settings.runtime
+    assert runtime.provider == "anthropic"
+    assert runtime.model_name == "claude-opus-4-6"
 
 
 def test_settings_reject_unknown_init_field() -> None:

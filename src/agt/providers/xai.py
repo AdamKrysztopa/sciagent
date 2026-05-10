@@ -297,7 +297,7 @@ class XAIProvider(LLMProvider):
         bound_model = self._model.bind_tools(tools)
         return cast(
             LLMProvider,
-            XAIProvider(
+            type(self)(
                 runtime=self._runtime,
                 api_key=self._api_key,
                 pricing=self._pricing,

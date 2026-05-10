@@ -1,0 +1,189 @@
+{
+  "baseline_name": "manual-reviewed-standalone-web-search",
+  "baseline_version": "2026-05-10-v1",
+  "benchmark_version": "m2.7-agt29-v3",
+  "review_method": "Manual review artifact that stores the scored expectation surface from a standalone web-search / LLM-assisted search pass without depending on a live vendor runtime.",
+  "notes": [
+    "This artifact is deterministic by design: it stores only the reviewed scoring floor, not raw third-party outputs.",
+    "Hard-filter contract and source coverage are required for every query.",
+    "Recall floors are conservative for broad exploratory queries and stricter for anchor-paper queries with DOI-backed must-find targets."
+  ],
+  "entries": [
+    {
+      "query_id": "AI-01",
+      "minimum_recall_at_10": 0.5,
+      "minimum_recall_at_20": 1.0,
+      "requires_hard_filter_contract": true,
+      "requires_source_coverage": true,
+      "notes": "Standalone search should recover at least one core RAG anchor quickly and both within the first 20 results."
+    },
+    {
+      "query_id": "AI-02",
+      "minimum_recall_at_10": 0.0,
+      "minimum_recall_at_20": 0.0,
+      "requires_hard_filter_contract": true,
+      "requires_source_coverage": true,
+      "notes": "Freshness and citation constraints matter more than a single anchor paper for this exploratory query."
+    },
+    {
+      "query_id": "AI-03",
+      "minimum_recall_at_10": 0.0,
+      "minimum_recall_at_20": 0.0,
+      "requires_hard_filter_contract": true,
+      "requires_source_coverage": true,
+      "notes": "Recent-only reasoning papers should remain constraint compliant even if exact ranking varies."
+    },
+    {
+      "query_id": "AI-04",
+      "minimum_recall_at_10": 0.0,
+      "minimum_recall_at_20": 1.0,
+      "requires_hard_filter_contract": true,
+      "requires_source_coverage": true,
+      "notes": "A strong general-purpose baseline should find Attention Is All You Need within the top 20."
+    },
+    {
+      "query_id": "AI-05",
+      "minimum_recall_at_10": 0.0,
+      "minimum_recall_at_20": 0.0,
+      "requires_hard_filter_contract": true,
+      "requires_source_coverage": true,
+      "notes": "Open-access and 2023+ compliance are the main requirement."
+    },
+    {
+      "query_id": "TS-01",
+      "minimum_recall_at_10": 0.0,
+      "minimum_recall_at_20": 0.0,
+      "requires_hard_filter_contract": true,
+      "requires_source_coverage": true,
+      "notes": "Method-selection papers must remain 2024+ and on-topic."
+    },
+    {
+      "query_id": "TS-02",
+      "minimum_recall_at_10": 0.0,
+      "minimum_recall_at_20": 1.0,
+      "requires_hard_filter_contract": true,
+      "requires_source_coverage": true,
+      "notes": "Temporal Fusion Transformer or an equivalent high-impact 2020+ time-series anchor should appear within the top 20."
+    },
+    {
+      "query_id": "TS-03",
+      "minimum_recall_at_10": 0.0,
+      "minimum_recall_at_20": 1.0,
+      "requires_hard_filter_contract": true,
+      "requires_source_coverage": true,
+      "notes": "DeepAnT is the reviewed anchor for this anomaly-detection query."
+    },
+    {
+      "query_id": "TS-04",
+      "minimum_recall_at_10": 0.0,
+      "minimum_recall_at_20": 1.0,
+      "requires_hard_filter_contract": true,
+      "requires_source_coverage": true,
+      "notes": "The specific Temporal Fusion Transformer paper should be recoverable within the top 20."
+    },
+    {
+      "query_id": "TS-05",
+      "minimum_recall_at_10": 0.0,
+      "minimum_recall_at_20": 1.0,
+      "requires_hard_filter_contract": true,
+      "requires_source_coverage": true,
+      "notes": "Lag-Llama is the reviewed foundation-model anchor for time-series retrieval."
+    },
+    {
+      "query_id": "BIO-01",
+      "minimum_recall_at_10": 0.0,
+      "minimum_recall_at_20": 1.0,
+      "requires_hard_filter_contract": true,
+      "requires_source_coverage": true,
+      "notes": "A recent CRISPR therapeutics review should be present within the first 20 biomedical results."
+    },
+    {
+      "query_id": "BIO-02",
+      "minimum_recall_at_10": 0.0,
+      "minimum_recall_at_20": 1.0,
+      "requires_hard_filter_contract": true,
+      "requires_source_coverage": true,
+      "notes": "AlphaFold 2 is a required anchor within the first 20 results."
+    },
+    {
+      "query_id": "BIO-03",
+      "minimum_recall_at_10": 0.0,
+      "minimum_recall_at_20": 0.0,
+      "requires_hard_filter_contract": true,
+      "requires_source_coverage": true,
+      "notes": "Recent clinical-trial coverage matters more than a single canonical paper."
+    },
+    {
+      "query_id": "BIO-04",
+      "minimum_recall_at_10": 0.0,
+      "minimum_recall_at_20": 1.0,
+      "requires_hard_filter_contract": true,
+      "requires_source_coverage": true,
+      "notes": "The reviewed Long COVID synthesis should be recoverable while preserving OA and year filters."
+    },
+    {
+      "query_id": "BIO-05",
+      "minimum_recall_at_10": 0.0,
+      "minimum_recall_at_20": 1.0,
+      "requires_hard_filter_contract": true,
+      "requires_source_coverage": true,
+      "notes": "SCANPY is the reviewed methods anchor for this scRNA-seq query."
+    },
+    {
+      "query_id": "SOC-01",
+      "minimum_recall_at_10": 0.0,
+      "minimum_recall_at_20": 0.0,
+      "requires_hard_filter_contract": true,
+      "requires_source_coverage": true,
+      "notes": "Broad social-science coverage is acceptable if nudge / decision-making relevance is visible."
+    },
+    {
+      "query_id": "SOC-02",
+      "minimum_recall_at_10": 0.0,
+      "minimum_recall_at_20": 0.0,
+      "requires_hard_filter_contract": true,
+      "requires_source_coverage": true,
+      "notes": "Survey-methodology coverage is the reviewed expectation; exact paper identity is secondary."
+    },
+    {
+      "query_id": "SOC-03",
+      "minimum_recall_at_10": 0.0,
+      "minimum_recall_at_20": 0.0,
+      "requires_hard_filter_contract": true,
+      "requires_source_coverage": true,
+      "notes": "Recent misinformation-network literature should remain 2022+ and source-covered."
+    },
+    {
+      "query_id": "INTER-01",
+      "minimum_recall_at_10": 0.0,
+      "minimum_recall_at_20": 1.0,
+      "requires_hard_filter_contract": true,
+      "requires_source_coverage": true,
+      "notes": "The message-passing molecular-property paper is the reviewed interdisciplinary anchor."
+    },
+    {
+      "query_id": "INTER-02",
+      "minimum_recall_at_10": 0.0,
+      "minimum_recall_at_20": 0.0,
+      "requires_hard_filter_contract": true,
+      "requires_source_coverage": true,
+      "notes": "Climate / ML coverage and 2022+ compliance are the key reviewed expectations."
+    },
+    {
+      "query_id": "INTER-03",
+      "minimum_recall_at_10": 0.0,
+      "minimum_recall_at_20": 1.0,
+      "requires_hard_filter_contract": true,
+      "requires_source_coverage": true,
+      "notes": "Large Language Models in Medicine is the reviewed healthcare anchor."
+    },
+    {
+      "query_id": "INTER-04",
+      "minimum_recall_at_10": 0.0,
+      "minimum_recall_at_20": 0.0,
+      "requires_hard_filter_contract": true,
+      "requires_source_coverage": true,
+      "notes": "Adaptive-learning relevance matters more than a single canonical paper."
+    }
+  ]
+}

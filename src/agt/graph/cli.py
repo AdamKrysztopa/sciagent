@@ -8,6 +8,7 @@ import json
 import sys
 
 from agt.graph.workflow import run_workflow
+from agt.models import AgentState
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -19,7 +20,11 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-async def _main() -> None:
+def _exit_code_for_state(state: AgentState) -> int:
+    return 1 if state["phase"] == "failed" else 0
+
+
+async def main() -> int:
     args = build_parser().parse_args()
     try:
         state = await run_workflow(
@@ -29,10 +34,11 @@ async def _main() -> None:
             thread_id=args.thread_id,
         )
         print(json.dumps(state, indent=2, default=str))
+        return _exit_code_for_state(state)
     except RuntimeError as exc:
         print(f"Startup validation failed: {exc}", file=sys.stderr)
-        raise SystemExit(2) from exc
+        return 2
 
 
 if __name__ == "__main__":
-    asyncio.run(_main())
+    raise SystemExit(asyncio.run(main()))

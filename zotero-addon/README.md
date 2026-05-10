@@ -1,14 +1,22 @@
 # SciAgent Zotero Add-on
 
-This package contains the SciAgent M6 native Zotero add-on scaffold and MVP UI.
+This package contains the primary researcher interface for SciAgent: a main-window-first Zotero add-on that sends deterministic searches to the backend and keeps library writes approval-gated.
 
-**Compatibility:** Zotero 7.0+ through Zotero 9.\* (bootstrapped Manifest V2 plugin with dynamic chrome registration)
+Streamlit remains a prototype/support surface. The CLI and REST API remain developer/support interfaces.
+
+## Compatibility
+
+| Status      | Versions             | Notes                                                                 |
+| ----------- | -------------------- | --------------------------------------------------------------------- |
+| Tested      | 9.0.0-9.\* packaging | `manifest.json`, `update.rdf`, and `npm run build` align in this repo |
+| Expected    | Zotero 9.x runtime   | Supported target, but live desktop validation is still manual         |
+| Unsupported | < 9.0.0 or > 9.x     | Not claimed; add-on metadata rejects these versions                   |
 
 ## Contract
 
 - Plugin ID: `agt@yourdomain.org`
 - Native Zotero UI, backend-delegated writes
-- Backend endpoints used: `GET /health`, `POST /run`, `GET /status/{run_id}`, `POST /resume`
+- Backend endpoints used: `GET /health`, `GET /capabilities`, `POST /run`, `GET /status/{run_id}`, `POST /resume`
 - All writes remain server-side through `POST /resume`
 - Filter edits are sent through the existing backend `FilterEditContract`
 - **Required backend contract version: `2026-05`** — The add-on displays a warning if the backend `/health` response returns a missing or mismatched `api_contract_version`.
@@ -42,7 +50,7 @@ Zotero provides a JavaScript error console essential for diagnosing add-on insta
 
 - Bootstrap startup: chrome registration, runtime bundle loading, and controller initialization
 - Window attachment: document ready state, FTL loading, stylesheet injection, menu item attachment
-- Item pane registration: section registration ID and render callback execution
+- Main-window launch path plus secondary item-pane registration when present
 - Preference pane registration
 - Window observer lifecycle
 - Tools menu command handling
@@ -58,8 +66,8 @@ Zotero provides a JavaScript error console essential for diagnosing add-on insta
 ### Common Installation Issues
 
 1. **"Add-on is incompatible with this version of Zotero"**
-   - **Verify Zotero version:** Help → About Zotero should show 7.0.0 or higher
-   - **Check manifest:** `unzip -p build/sciagent-zotero-addon.xpi manifest.json | grep -A 5 applications` must show `applications.zotero` with `strict_max_version: "9.*"`
+   - **Verify Zotero version:** Help → About Zotero should show 9.0.0 or higher
+   - **Check manifest:** `unzip -p build/sciagent-zotero-addon.xpi manifest.json | grep -A 5 applications` must show `applications.zotero` with `strict_min_version: "9.0.0"` and `strict_max_version: "9.*"`
    - **Rebuild:** Run `npm run build` and reinstall
    - **Check error console:** Look for specific compatibility messages
 
@@ -97,11 +105,9 @@ When diagnosing issues:
    ```
 
 2. Install the add-on from `build/sciagent-zotero-addon.xpi` using Zotero's add-ons/plugins manager.
-3. After installation and restart, **SciAgent appears in the Tools menu**. Click **Tools → SciAgent** to:
-   - Open preferences if no item is selected (configure backend URL, API key, and client ID)
-   - See a reminder about the item pane location if an item is selected
-4. The main SciAgent interface appears in the **item details panel on the right** after you select a library item. Look for the **SciAgent section** in the right sidebar.
-5. Run a search, review the parsed filters loaded from `/status`, optionally edit them, then approve or reject.
+3. After installation and restart, open **Tools → SciAgent** to launch the main-window workspace.
+4. Configure backend URL, API key, and client ID if prompted, then run a search, review the parsed filters loaded from `/status`, optionally edit them, and approve or reject.
+5. If your build also exposes an item-pane section, treat it as a secondary launcher or reference surface rather than the primary workflow.
 
 ## Included MVP Surface
 
@@ -111,6 +117,7 @@ When diagnosing issues:
 - re-run with edited `FilterEditContract`
 - result list with stable indices, summaries, and selection checkboxes
 - approve and reject flow with write result rendering
+- main-window-first launcher via **Tools → SciAgent**
 - preference storage for backend URL, API key, client ID, and PDF toggle placeholder
 
 ## Zotero Smoke Test Checklist
@@ -118,22 +125,20 @@ When diagnosing issues:
 Before marking M6 complete, validate in a live Zotero runtime on macOS:
 
 - [ ] Build the XPI: `npm run build` from `zotero-addon/` completes with no errors
-- [ ] Verify Zotero version: **Help → About Zotero** shows 7.0.0 or higher
-- [ ] Verify manifest compatibility: `unzip -p build/sciagent-zotero-addon.xpi manifest.json | grep -A 5 applications` shows `applications.zotero` with `id`, `update_url`, `strict_min_version: "6.999"`, and `strict_max_version: "9.*"`
+- [ ] Verify Zotero version: **Help → About Zotero** shows 9.0.0 or higher
+- [ ] Verify manifest compatibility: `unzip -p build/sciagent-zotero-addon.xpi manifest.json | grep -A 5 applications` shows `applications.zotero` with `id`, `update_url`, `strict_min_version: "9.0.0"`, and `strict_max_version: "9.*"`
 - [ ] Open the Zotero Error Console: **Tools → Developer → Error Console** (or `Cmd+Shift+Z`) and clear it before installation
 - [ ] Start the backend: `uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000`
 - [ ] Open Zotero and navigate to Tools → Add-ons (or Preferences → Plugins)
 - [ ] Install the add-on using the "Install Add-on From File..." button and select `build/sciagent-zotero-addon.xpi`
-  - **Note:** Do NOT use double-click or open-with on macOS; use the add-ons/plugins manager
-  - **If install fails with "incompatible with this version":** Check the Error Console for specific messages, rebuild XPI, verify Zotero version ≥7.0.0, check manifest has `manifest_version: 2` and `applications.zotero` (not `browser_specific_settings`), verify `strict_max_version` is `"9.*"`, and restart Zotero
+  - **Note:** Do NOT use double-click or open-with on macOS; use the add-ons/plugins manager. If install fails with "incompatible with this version", check the Error Console for specific messages, rebuild the XPI, verify Zotero version ≥9.0.0, confirm `manifest_version: 2` with `applications.zotero`, and verify `strict_min_version` is `"9.0.0"`.
 - [ ] After installation, check the Error Console for any bootstrap or chrome registration errors
-- [ ] After installation, the SciAgent add-on appears in the add-ons list with version 0.1.0
-- [ ] After restart, **Tools → SciAgent** menu entry is visible
-- [ ] Click **Tools → SciAgent** with no item selected: preferences open automatically
+- [ ] After installation, the SciAgent add-on appears in the add-ons list with version 0.1.2
+- [ ] After restart, **Tools → SciAgent** opens the main-window workspace
+- [ ] Click **Tools → SciAgent** with no item selected: preferences or the main workspace opens as expected
 - [ ] Configure backend URL (`http://localhost:8000`), API key, and client ID in preferences
-- [ ] Select a library item, then click **Tools → SciAgent**: a discoverability message explains the item pane location
-- [ ] The **SciAgent section** appears in the right sidebar/item details panel after selecting an item
-- [ ] Backend health indicator shows green/connected in the item pane section
+- [ ] Backend health indicator shows green/connected in the main-window workspace
+- [ ] If the item-pane section is present, it behaves as a secondary launcher only
 - [ ] Health status displays the backend contract version `2026-05` without warnings
 - [ ] Enter a test query (e.g., "retrieval augmented generation") and collection name
 - [ ] Parsed filters from `/status` render correctly with year, date range, sources, and preferences
@@ -158,7 +163,7 @@ SciAgent uses Zotero's automatic update mechanism for distribution:
    - `package.json`
    - `manifest.json`
    - `update.rdf` (version tag and XPI download URL)
-4. **Tag format:** Use `v{version}` tags (e.g., `v0.1.0`) matching the XPI download URL in `update.rdf`
+4. **Tag format:** Use `v{version}` tags (e.g., `v0.1.2`) matching the XPI download URL in `update.rdf`
 
 **Manual release steps:**
 

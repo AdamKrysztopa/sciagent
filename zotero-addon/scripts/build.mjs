@@ -16,11 +16,13 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const BUILD_DIR = join(ROOT, "build");
 const STAGE_DIR = join(BUILD_DIR, "xpi");
 const XPI_PATH = join(BUILD_DIR, "sciagent-zotero-addon.xpi");
+const SUPPORTED_ZOTERO_MIN_VERSION = "9.0.0";
+const SUPPORTED_ZOTERO_MAX_VERSION = "9.*";
 
 const STATIC_FILES = ["manifest.json", "bootstrap.js", "prefs.js", "preferences.xhtml"];
 const STATIC_DIRS = ["icons", "locale"];
 // Files that must be served at chrome://agt/content/ and therefore live in chrome/content/
-const CHROME_CONTENT_FILES = ["sciagent-panel.xhtml"];
+const CHROME_CONTENT_FILES = ["sciagent-panel.html"];
 
 function clean() {
   rmSync(BUILD_DIR, { force: true, recursive: true });
@@ -41,22 +43,22 @@ function copyStaticAssets() {
 }
 
 function validatePackage() {
-  // Check for Zotero 6 JSM markers that break Zotero 7+ compatibility
+  // Reject legacy JSM markers that do not match the supported Zotero 9 target.
   const bootstrapPath = join(STAGE_DIR, "bootstrap.js");
   const bootstrapContent = readFileSync(bootstrapPath, "utf-8");
 
   if (bootstrapContent.includes("EXPORTED_SYMBOLS")) {
     throw new Error(
-      "bootstrap.js contains EXPORTED_SYMBOLS, which is incompatible with Zotero 7+. " +
-      "Remove this Zotero 6 JSM marker."
+      "bootstrap.js contains EXPORTED_SYMBOLS, which is incompatible with the supported Zotero 9.x target. " +
+      "Remove this legacy JSM marker."
     );
   }
 
-  // Verify chrome registration is present for Zotero 7+ bootstrapped plugins
+  // Verify chrome registration is present for the supported Zotero 9 bootstrapped target.
   if (!bootstrapContent.includes("registerChrome") || !bootstrapContent.includes("amIAddonManagerStartup")) {
     throw new Error(
       "bootstrap.js is missing registerChrome call with amIAddonManagerStartup. " +
-      "Zotero 7+ bootstrapped plugins require dynamic chrome registration."
+      "Supported Zotero 9 bootstrapped add-ons require dynamic chrome registration."
     );
   }
 
@@ -64,7 +66,7 @@ function validatePackage() {
   const manifestPath = join(STAGE_DIR, "manifest.json");
   const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));
 
-  // Zotero 7+ bootstrapped plugins should use Manifest V2
+  // The supported Zotero 9 bootstrapped target uses Manifest V2.
   if (manifest.manifest_version !== 2) {
     throw new Error(
       `manifest.json has manifest_version ${manifest.manifest_version}, but Zotero bootstrapped plugins require Manifest V2.`
@@ -92,9 +94,23 @@ function validatePackage() {
     );
   }
 
+  if (zoteroSettings.strict_min_version !== SUPPORTED_ZOTERO_MIN_VERSION) {
+    throw new Error(
+      `manifest.json strict_min_version must be ${SUPPORTED_ZOTERO_MIN_VERSION} for the supported Zotero target; ` +
+      `received ${zoteroSettings.strict_min_version}.`
+    );
+  }
+
   if (!zoteroSettings.strict_max_version) {
     throw new Error(
       "manifest.json is missing strict_max_version in applications.zotero"
+    );
+  }
+
+  if (zoteroSettings.strict_max_version !== SUPPORTED_ZOTERO_MAX_VERSION) {
+    throw new Error(
+      `manifest.json strict_max_version must be ${SUPPORTED_ZOTERO_MAX_VERSION} for the supported Zotero target; ` +
+      `received ${zoteroSettings.strict_max_version}.`
     );
   }
 

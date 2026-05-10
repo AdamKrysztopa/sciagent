@@ -8,10 +8,10 @@ import json
 import os
 
 from _shared_demo_helpers import (
+    default_provider_settings_payload,
     default_zotero_api_key,
     default_zotero_library_id,
     normalize_strict_settings_env,
-    resolve_xai_key,
 )
 
 from agt.graph import finalize_approval, run_search_phase
@@ -19,7 +19,8 @@ from agt.graph import finalize_approval, run_search_phase
 
 def _ensure_required_env() -> None:
     normalize_strict_settings_env()
-    os.environ.setdefault("AGT_XAI_API_KEY", resolve_xai_key())
+    for name, value in default_provider_settings_payload().items():
+        os.environ.setdefault(name, value)
     os.environ.setdefault("AGT_ZOTERO_API_KEY", default_zotero_api_key())
     os.environ.setdefault("AGT_ZOTERO_LIBRARY_ID", default_zotero_library_id())
 
@@ -70,7 +71,7 @@ async def _run(query: str, collection_name: str, approve: bool) -> int:
         )
     )
 
-    return 0
+    return 1 if final["phase"] == "failed" else 0
 
 
 def main() -> None:

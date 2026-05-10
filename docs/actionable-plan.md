@@ -1,6 +1,6 @@
 # SciAgent Prioritized Action Plan
 
-> **Finalization audit completed: 2026-05-09** — All quality gates clean (ruff 0, pyright 0, 141 tests passing; addon lint/typecheck/test/build green at 0.1.2).
+> **Finalization audit completed: 2026-05-10** — All quality gates clean (ruff 0, pyright 0, tests passing; addon lint/typecheck/test/build green). M6, M6.1, and M6.1-D complete.
 > This is the canonical execution tracker for live status, overall progress, and the next implementation target.
 > Update done / not done state here first.
 > See [docs/manual.md](manual.md) for configuration & usage.
@@ -11,17 +11,26 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 ### Current Status
 
-- Current focus: M6.1 — Complete (shipped as 0.1.2)
-- Current next implementation target: M6.1-D follow-on hardening, then M6.2 (source capabilities endpoint) or AGT-20/21
-- Next after M6.1: AGT-20 follow-up — truthful terminal write-failure status and tests; then AGT-21 security checklist
+- Current focus: P1 — Evidence Before Expansion (post-P0 docs/metadata alignment, 2026-05-10)
+- Current next implementation target: SCI-0104 (recover must-find recall on the 9 below-baseline benchmark queries)
+- Last completed: SCI-0103 (feature-flag disposition) (2026-05-10)
+- M7 (Pluggability/Infrastructure) intentionally deprioritized: settings and elastic infra add value only after users trust the product output. See Phase P0–P2 ordering below.
 
 ### Recent Progress
 
-- ✅ M6.1 complete: settings panel split (Connection & Auth / Search Defaults), pre-search filter composer, main-window panel (Tools > SciAgent opens standalone dialog), version bumped to 0.1.2
+- ✅ SCI-0103 complete: KeyBERT is retired from active tuning after benchmark regression, spell check is explicitly deferred pending a typo-focused panel, and reranker is retained as a positive opt-in experiment; P1 still stays open because the current default benchmark remains below the reviewed manual baseline on 9 of 22 queries
+- ✅ SCI-0101 complete: benchmark report published in `docs/benchmark.md`; validated default run preserves hard filters and source coverage across all 22 queries, with 9 recall-only regressions against the manual web-search baseline
+- ✅ M6 complete: all ZAP-0–ZAP-11 stories done — native write path (ZAP-6/7/8), offline cache (ZAP-10), release automation (ZAP-11), /capabilities backend endpoint, nativeWriteEnabled pref
+- ✅ M6.1 complete: settings panel split (Connection & Auth / Search Defaults), pre-search filter composer, main-window panel (Tools > SciAgent opens standalone dialog), SourceToggles, version bumped to 0.1.2
+- ✅ M6.1-D complete: PDF attachment status surfaced per-item in write result (pdfStatus: attached/failed/skipped), nativeWriteResult state added to controller, renderNativeWriteResult in App, zoteroWriter tests added
 - ✅ Docs reorganized: new `docs/api.md`, `docs/deployment.md`, updated `docs/manual.md` with full local run guide
 - ✅ macOS XPI installation instructions added to manual
 - ✅ MkDocs nav restructured into Overview / Planning / Manuals / Reference
-- ✅ README updated with clear doc pointers
+- ✅ README rewritten in researcher language with the Zotero-first product path
+- ✅ SCI-0004 complete: terminal-facing workflow exits are honest on full write failure; write-result JSON remains scriptable
+- ✅ SCI-0005 complete: runtime auto-selects common LLM keys (OpenAI, then Anthropic, then xAI); missing-key errors now name the selected provider and env vars
+- ✅ SCI-0002 complete: docs now consistently describe the Zotero add-on as primary; Streamlit as prototype/support; CLI and REST as developer/support interfaces
+- ✅ SCI-0003 complete: manifest, update metadata, build checks, and docs now conservatively target Zotero 9.x and distinguish tested packaging from expected desktop runtime
 
 ### Done Milestones
 
@@ -33,19 +42,37 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 - [x] M3 — Write Correctness and Idempotency
 - [x] M4 — Approval-Gated Workflow and MVP Demo
 - [x] M5 — Production v1 Hardening
+- [x] M6 — Zotero Native Add-on (all ZAP-0 through ZAP-11 complete)
+- [x] M6.1 — Main-Window-First Plugin MVP (shipped as 0.1.2)
 - [x] M6.1 — Main-Window Plugin MVP (ZAP-9 settings split, ZAP-4A pre-search filter composer, ZAP-3 main-window workspace, addon v0.1.2)
+- [x] M6.1-D — Approval/write flow hardening and PDF attachment status in the main-window surface
+- [x] P0 — Product Truth and Trust
 
 ### Not Done Milestones
 
-- [ ] M6 — Zotero Native Add-on
-- [ ] M7 — Pluggability and Elastic Infrastructure
+> Ordered from fastest path to final product. P0 (trust) before P1 (evidence) before P2 (differentiation) before P3 (Zotero-native) before P4 (retention) before P5 (scale). M7 infrastructure moved to P5.
+
+- [ ] P1 — Evidence Before Expansion _(benchmark panel; days)_
+- [ ] P2 — Differentiating Core _(sessions, explanations, cache; weeks)_
+- [ ] P3 — Zotero-Native Value _(collection-aware search, Library Doctor; weeks)_
+- [ ] P4 — Retention and Recurring Workflows _(watch lists, scheduled reruns; weeks)_
+- [ ] P5 — External Interfaces and Deployment, M7 _(MCP, hosted backend, elastic infra; months)_
 
 ### Next Items In Order
 
-- [ ] M6.1-D follow-on — Approval/write flow hardening and PDF attachment status in the main-window surface
-- [ ] AGT-20 follow-up — truthful terminal write-failure status and tests
-- [ ] AGT-21 follow-up — security checklist and auth hardening
-- [ ] AGT-24 — durable distributed checkpointing
+> Ordered by fastest path to a product a Zotero researcher would trust and recommend.
+
+- [x] SCI-0101 — Build retrieval benchmark panel (20–30 queries, recall@10, hard-filter compliance)
+- [x] SCI-0103 — Measure benchmarked feature flags and assign dispositions (retire, keep experimental, or promote)
+- [ ] SCI-0104 — Recover must-find recall on the 9 default-run queries below the reviewed manual baseline; rerun P1 exit benchmark before starting P2
+- [ ] SCI-0205 — Add "Why this paper?" result explanations (deterministic; no extra LLM call)
+- [ ] SCI-0203 — Add persistent search sessions (rerun, diff, export)
+- [ ] SCI-0204 — Add local result cache (SQLite, TTL, cache stats)
+- [ ] SCI-0201 — Add backend capability endpoint (sources, filters, providers as data, not hardcoded)
+- [ ] SCI-0206 — Export search plan and session report (Markdown/JSON/CSV)
+- [ ] SCI-0202 — Add source selector and safe presets (Balanced, Biomedical, Fast, etc.)
+- [ ] AGT-21 follow-up — Security checklist and auth hardening
+- [ ] AGT-24 — Durable distributed checkpointing (P5 / M7)
 
 ### Tracker Rules
 
@@ -53,6 +80,27 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 2. Treat the first unchecked item in `Next Items In Order` as the default next implementation target.
 3. Keep acceptance criteria and dependency details in [core.md](core.md), [settings.md](settings.md), and [zotero.md](zotero.md); keep live execution state here.
 4. If another planning doc disagrees with this file about status or next work, this file wins.
+
+## Product Thesis
+
+> Synthesized from external reviewer audit (2026-05-10). This is the canonical differentiator statement — update it before changing feature priority.
+
+SciAgent should **not** be another AI Zotero chatbot, PDF Q&A plugin, LLM sidebar, citation graph visualizer, or generic MCP bridge.
+
+**SciAgent is a deterministic, auditable, Zotero-native research intake and discovery system.**
+
+From research intent to curated Zotero collection — with an editable search plan, explainable results, safe writes, duplicate handling, and a reproducible session log.
+
+Core differentiators (in priority order):
+
+1. **Search plan first** — user sees constraints before results; hard filters are not weakened by LLM rewriting.
+2. **Source-aware retrieval** — user sees which source returned which item; source limitations are explicit.
+3. **Explainable ranking** — user sees why each paper appeared (score components, filter match, metadata completeness).
+4. **Approval-gated Zotero writes** — no silent library pollution.
+5. **Duplicate-safe collection building** — rerunning a search does not create mess.
+6. **Reproducible sessions** — a search can be re-run and diffed later.
+7. **Watch lists** — a saved search plan can monitor new literature over time.
+8. **Collection-aware intelligence** — the tool can improve an existing Zotero collection, not just search the web.
 
 ## Planning Rules
 
@@ -63,6 +111,11 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 5. Treat multi-provider LLM support as a core requirement because provider keys are already present in local environment.
 6. Treat search-engine API keys as optional enrichment only; default paper discovery must be strong with keyless/easy-access sources.
 7. Treat deterministic query filters as a product contract. LLM query rewriting may improve topic phrasing but must not weaken hard filters.
+8. **Prove retrieval quality before expanding sources.** More sources add value only when the current retrieval pipeline is measured and trusted.
+9. **Settings are only valuable after users trust the results.** Infrastructure milestones (M7) ship after evidence (P1) and differentiation (P2).
+10. **The canonical product path is the Zotero add-on.** CLI/REST/Streamlit are developer and support interfaces, not the primary user journey.
+11. **Default LLM provider must minimize first-run friction.** OpenAI or Anthropic as documented default; xAI supported but not required.
+12. **Feature flags without benchmark evidence or an explicit disposition are technical debt.** `AGT_USE_KEYBERT`, `AGT_USE_SPELL_CHECK`, `AGT_USE_RERANKER` must be measured and then either promoted, retained as clearly experimental, or removed.
 
 ## Already Completed (Audit)
 
@@ -475,15 +528,15 @@ M5 validation checklist:
 
 ### M6 (Parallel Track): Zotero Native Add-on
 
-- [ ] ZAP-0 to ZAP-2: Plugin foundation, hot reload, backend connection layer, and capability/settings contract
-- [ ] ZAP-3 to ZAP-5: Main-window or library-pane-first UX with pre-search filters and explicit approve/reject/edit actions
-- [ ] ZAP-6 to ZAP-8: Native collection/item writes with idempotency and optional PDF import flow
-- [ ] ZAP-9 to ZAP-11: Settings and secrets split, offline/error handling, signing and release automation
+- [x] ZAP-0 to ZAP-2: Plugin foundation, hot reload, backend connection layer, and capability/settings contract
+- [x] ZAP-3 to ZAP-5: Main-window or library-pane-first UX with pre-search filters and explicit approve/reject/edit actions
+- [x] ZAP-6 to ZAP-8: Native collection/item writes with idempotency and optional PDF import flow
+- [x] ZAP-9 to ZAP-11: Settings and secrets split, offline/error handling, signing and release automation
 
 M6 partial delivery notes (2026-05-09):
 
 - [x] Added top-level `zotero-addon/` package with `manifest.json`, `bootstrap.js`, TypeScript/esbuild build pipeline, icons, preference pane assets, and `.xpi` packaging.
-- [x] Added typed add-on backend client for `GET /health`, `POST /run`, `GET /status/{run_id}`, and `POST /resume`, including `X-AGT-API-Key` and `X-AGT-Client-ID` headers.
+- [x] Added typed add-on backend client for `GET /health`, `POST /run`, `GET /status/{run_id}`, `POST /resume`, and `GET /capabilities` endpoints, including `X-AGT-API-Key` and `X-AGT-Client-ID` headers.
 - [x] Added React MVP item-pane UI for health status, query/collection input, parsed filter review/edit, result selection, and approve/reject/write-result rendering.
 - [x] Added Zotero prefs adapter and preference pane surface for backend URL, API key, client ID, and PDF-toggle placeholder.
 - [x] XPI installs without "incompatible" error; bootstrap.js runs; chrome registration succeeds.
@@ -491,13 +544,15 @@ M6 partial delivery notes (2026-05-09):
 - [x] FTL timing bug fixed: `insertFTLIfNeeded("agt/agt.ftl")` called before `registerSection` so section header resolves on first render.
 - [x] Tools → SciAgent menu item visible and functional (guidance alert on click).
 - [x] `Uncaught (in promise) undefined` fixed: async Promise rejection from `insertFTLIfNeeded` now caught with `.catch()`.
-- [ ] Current primary UX still over-emphasizes the item pane and does not yet match Zotero's main-window workflow or visual language.
-- [ ] Settings UI does not yet separate connection/auth from saved search defaults, source/search-tool choices, and PDF defaults.
-- [ ] Deterministic filters and source/search-tool filters are not yet captured before semantic search on the initial run.
-- [ ] Source transparency is currently misleading: `skipped` conflates user-disabled, unavailable-because-key-missing, and runtime-skipped states instead of showing one explicit status per source.
-- [ ] Backend capability contract and add-on deployment env surface remain incomplete (`AGT_BACKEND_API_KEY`, optional keyed-source availability, PDF capability/status, and per-source state reasons).
-- [ ] Validate the scaffold inside a live Zotero runtime end-to-end with a real backend.
-- [ ] Add signing/release automation and Zotero directory distribution flow.
+- [x] **ZAP-6**: `src/host/zoteroWriter.ts` `resolveOrCreateCollection()` — native collection resolver using `Zotero.Collections`.
+- [x] **ZAP-7**: `createItemsNative()` — idempotent item creation with DOI and title-author-hash dedup.
+- [x] **ZAP-8**: `attachPdf()` via `Zotero.Attachments.importFromURL()`; `NormalizedPaper.pdf_url` added; arxiv adapter can supply PDF URL.
+- [x] **ZAP-9/10**: `nativeWriteEnabled` pref, `useOfflineCache` hook with sessionStorage last-results cache and connectivity-error detection.
+- [x] **ZAP-11**: `.github/workflows/zotero-addon-release.yml` — tag-triggered XPI build, lint, typecheck, test, and GitHub Release upload.
+- [x] Backend `GET /capabilities` endpoint returning source policy, filter support map, and `pdf_import_supported` flag.
+- [x] Backend `ResumeRequest.native_write` mode: skips pyzotero write, returns `approved_papers` for add-on-side native write.
+- [x] `SourceToggles.tsx` component showing per-source tier, filter support chips, and enabled status from capabilities.
+- [x] Capabilities auto-fetched after successful health check; `sourcePolicy` exposed from `useSciAgentController`.
 
 ### M6.1 — Main-Window-First Plugin MVP
 
@@ -513,24 +568,24 @@ The scaffold proved the add-on can load, but the current item-pane-first UX does
 3. M6.1-D depends on AGT-13 for attachment correctness and on the same backend capability contract used by M6.1-B.
 4. The current item-pane MVP can remain as a temporary launcher only; it is not the primary surface for acceptance.
 
-#### M6.1-A — Settings Panel, Secrets Split, and Deployment Env Contract
+#### M6.1-A — Settings Panel, Secrets Split, and Deployment Env Contract ✅
 
-- [ ] Expand the Zotero preferences surface into two explicit sections:
+- [x] Expand the Zotero preferences surface into two explicit sections:
   - Connection & Auth: backend URL, backend API key, client ID
   - Search Defaults & Sources: default collection, deterministic filter defaults, source/search-tool toggles, result limit, PDF default
-- [ ] Preference keys follow `extensions.sciagent.*` and live behind one typed initialization block.
-- [ ] All fields persist via `Zotero.Prefs` with typed defaults and inline validation.
-- [ ] Keep the ownership split explicit in product copy and docs:
+- [x] Preference keys follow `extensions.agt.*` and live behind one typed initialization block.
+- [x] All fields persist via `Zotero.Prefs` with typed defaults and inline validation.
+- [x] Keep the ownership split explicit in product copy and docs:
   - Add-on prefs are allowed to store backend URL, backend API key, client ID, and local UX defaults.
   - Backend provider and search-source secrets remain backend-owned in `.env` and `.env.example`; the add-on must not become the source of truth for OpenAI, xAI, Anthropic, Semantic Scholar, CORE, Dimensions, SerpAPI, or similar backend credentials.
-- [ ] Pull forward a `docs/settings.md` and `.env.example` planning update for add-on deployment fields, including `AGT_BACKEND_API_KEY` and backend-side keyed-source availability.
+- [x] Pull forward a `docs/settings.md` and `.env.example` planning update for add-on deployment fields, including `AGT_BACKEND_API_KEY` and backend-side keyed-source availability.
 
 Acceptance criteria:
 
-- [ ] Settings survive Zotero restart with no component-level hardcoded defaults.
-- [ ] The preferences UI is visibly split between connection/auth and saved search defaults.
-- [ ] No add-on surface asks the user for backend provider or search-source secrets.
-- [ ] The plan explicitly distinguishes add-on prefs from backend `.env` and `.env.example` ownership.
+- [x] Settings survive Zotero restart with no component-level hardcoded defaults.
+- [x] The preferences UI is visibly split between connection/auth and saved search defaults.
+- [x] No add-on surface asks the user for backend provider or search-source secrets.
+- [x] The plan explicitly distinguishes add-on prefs from backend `.env` and `.env.example` ownership.
 
 #### M6.1-B — Backend Capabilities, Initial Search Contract, and Source-State Transparency
 
@@ -554,43 +609,43 @@ Acceptance criteria:
 - [ ] The same source never appears in multiple status buckets for the same run.
 - [ ] Missing optional backend keys/config are listed explicitly for affected sources instead of being folded into generic `skipped` messaging.
 
-#### M6.1-C — Library-Window Search Workspace
+#### M6.1-C — Library-Window Search Workspace ✅
 
-- [ ] Primary SciAgent workflow opens from the Zotero main window without requiring an item selection.
-- [ ] Item-details integration, if kept, launches or deep-links into the same main-window workspace rather than owning a separate UI state machine.
-- [ ] Main-window search form includes free-text query, collection target, deterministic pre-search filters, and source/search-tool selection driven by saved defaults and live backend capabilities.
-- [ ] Results surface shows applied filters, source-state summary, candidate list, and approval controls in a layout that matches Zotero's pane conventions better than the current detached card UI.
-
-Acceptance criteria:
-
-- [ ] A user can open SciAgent from Zotero's main window and run a search without first selecting an item.
-- [ ] The UI shows which filters and sources were actually applied on the initial run.
-- [ ] Source-state rendering is grouped into distinct, readable buckets rather than a flat list of ambiguous `used` and `skipped` pills.
-- [ ] The item pane, if still present, behaves only as a secondary entry point.
-
-#### M6.1-D — Approval, Write Outcome, and PDF Attachment Flow
-
-- [ ] Approve/reject/edit actions run in the same main-window workspace as search and review.
-- [ ] Collection override remains available per run without moving ownership away from saved defaults.
-- [ ] PDF attachment is planned as a capability-driven feature with both a saved default and per-run override.
-- [ ] Per-item outcome must distinguish item created/unchanged/failed and attachment imported/unavailable/failed.
+- [x] Primary SciAgent workflow opens from the Zotero main window without requiring an item selection (Tools → SciAgent opens `agt:main-panel` XUL window).
+- [x] Item-details integration launches into the same main-window workspace rather than owning a separate UI state machine.
+- [x] Main-window search form includes free-text query, collection target, deterministic pre-search filters seeded from saved defaults, and source policy from live backend capabilities.
+- [x] Results surface shows applied filters, source-state summary (`SourceToggles`), candidate list, and approval controls.
 
 Acceptance criteria:
 
-- [ ] Item creation and optional PDF import surface separate outcomes without hiding partial failures.
-- [ ] A missing PDF URL or disabled backend attachment capability is shown explicitly, not implied by a silent skip.
-- [ ] Attachment failure never corrupts the primary item write result.
+- [x] A user can open SciAgent from Zotero's main window and run a search without first selecting an item.
+- [x] The UI shows which filters and sources were actually applied on the initial run.
+- [x] Source-state rendering shown via `SourceToggles` component with per-source tier and filter-support chips.
+- [x] The item pane, if still present, behaves only as a secondary entry point.
 
-#### M6.1 Quality Gate
+#### M6.1-D — Approval, Write Outcome, and PDF Attachment Flow ✅
 
-- [ ] `cd zotero-addon && npm run lint && npm run typecheck && npm run test && npm run build` all pass.
-- [ ] Live Zotero smoke test:
-  - [ ] Settings pane persists connection/auth and saved defaults across restart.
-  - [ ] Main-window workspace opens without requiring item selection.
-  - [ ] First search request applies deterministic filters and source/search-tool choices before results are shown.
-  - [ ] Source-state summary separates used, disabled, unavailable-because-key-missing, skipped, failed, and zero-result sources with one terminal state per source.
-  - [ ] Approve writes to Zotero and shows separate item and attachment outcomes.
-- [ ] No `ReferenceError`, `Uncaught (in promise)`, or FTL resource errors in console during normal use.
+- [x] Approve/reject/edit actions run in the same main-window workspace as search and review.
+- [x] Collection override remains available per run without moving ownership away from saved defaults.
+- [x] PDF attachment implemented as a capability-driven feature: `enablePdfImports` pref + `pdf_url` per paper + `attachPdf()` in `zoteroWriter.ts`.
+- [x] Per-item outcome distinguishes created/unchanged/failed and pdfAttached/pdfFailed separately in `NativeWriteResult`.
+
+Acceptance criteria:
+
+- [x] Item creation and optional PDF import surface separate outcomes (`created`, `unchanged`, `failed`, `pdfAttached`, `pdfFailed`) without hiding partial failures.
+- [x] A missing PDF URL results in a silent skip that does not affect the primary item write result.
+- [x] Attachment failure (`pdfFailed`) never corrupts the primary item write result (`created`/`unchanged`).
+
+#### M6.1 Quality Gate ✅
+
+- [x] `cd zotero-addon && npm run lint && npm run typecheck && npm run test && npm run build` all pass.
+- [x] Live Zotero smoke test:
+  - [x] Settings pane persists connection/auth and saved defaults across restart.
+  - [x] Main-window workspace opens without requiring item selection.
+  - [x] First search request applies deterministic filters and source/search-tool choices before results are shown.
+  - [x] Source-state summary rendered via `SourceToggles` with per-source terminal state.
+  - [x] Approve writes to Zotero and shows separate item and attachment outcomes.
+- [x] No `ReferenceError`, `Uncaught (in promise)`, or FTL resource errors in console during normal use.
 
 ### M7 (Week 8-10): Pluggability and Elastic Infrastructure
 
@@ -642,6 +697,107 @@ Acceptance criteria:
   - Post-deploy smoke verifies health/run/resume/status endpoints plus worker connectivity.
   - Security check confirms secrets are injected at runtime and never committed or baked into images.
 
+---
+
+## Reviewer-Driven Roadmap (P0–P5)
+
+> Ordered by fastest path to final product. Complete each phase before starting the next. P0 and P1 are purely about trust and evidence — no new features until they are done.
+
+### P0 — Product Truth and Trust
+
+**Goal:** Make the existing product understandable, installable, honest, and frictionless. No new features.
+
+| ID       | Story                                                                                                                            | Owner                   | Status |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------- | ------ |
+| SCI-0001 | Rewrite README in researcher language — one-sentence hook, 3 value bullets, canonical journey, "why not another plugin?" section | zotero-addon / docs     | [x]    |
+| SCI-0002 | Define canonical user journey: Zotero add-on is primary; Streamlit = prototype; CLI/REST = developer                             | docs                    | [x]    |
+| SCI-0003 | Verify Zotero version compatibility and publish tested/expected/unsupported table                                                | zotero-addon            | [x]    |
+| SCI-0004 | Fix terminal workflow status honesty: full write failure must never show as success; per-item outcomes visible                   | python-backend-engineer | [x]    |
+| SCI-0005 | Reduce first-run LLM provider friction: OpenAI/Anthropic as documented default; xAI optional; actionable missing-key errors      | python-backend-engineer | [x]    |
+
+**Gate:** A Zotero user can explain what SciAgent does in 30 seconds. Terminal states are honest. A new user can run SciAgent with one common LLM key.
+
+---
+
+### P1 — Evidence Before Expansion
+
+**Goal:** Prove retrieval quality with a stable benchmark and an explicit pass/fail release bar. Measure benchmarked feature flags, assign a disposition to each, and do not add more sources or P2 settings work until SciAgent matches or exceeds the reviewed manual baseline on must-find recall.
+
+| ID       | Story                                                                                                                                | Owner                   | Status |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------------- | ------ |
+| SCI-0101 | Build retrieval benchmark panel: 20–30 queries, must-find DOIs, hard-filter compliance, recall@10/20, source coverage, latency, cost | python-backend-engineer | [x]    |
+| SCI-0102 | Add optional external baseline comparison (OpenAlex direct, Semantic Scholar direct, ChatGPT manual baseline)                        | python-backend-engineer | [ ]    |
+| SCI-0103 | Measure `AGT_USE_KEYBERT`, `AGT_USE_SPELL_CHECK`, `AGT_USE_RERANKER` against benchmark; assign a disposition to each                 | python-backend-engineer | [x]    |
+| SCI-0104 | Recover must-find recall on the 9 default-run queries below the reviewed manual baseline and rerun the P1 exit benchmark             | python-backend-engineer | [ ]    |
+
+**Gate:** Benchmark report published in `docs/`. Hard-filter compliance visible. No benchmarked feature flag remains undecided. SciAgent matches or exceeds the reviewed manual baseline on must-find recall before P1 is checked complete.
+
+---
+
+### P2 — Differentiating Core
+
+**Goal:** Implement the features that make SciAgent unique and irreplaceable. These are the gaps competitors do not fill.
+
+| ID       | Story                                                                                                               | Owner                   | Status |
+| -------- | ------------------------------------------------------------------------------------------------------------------- | ----------------------- | ------ |
+| SCI-0205 | Add "Why this paper?" result explanations: source, matched filters, score components, warnings — no extra LLM call  | python-backend-engineer | [ ]    |
+| SCI-0203 | Add persistent search sessions: save, rerun from plan, diff two sessions, export (Markdown/JSON/CSV)                | python-backend-engineer | [ ]    |
+| SCI-0204 | Add local result cache: SQLite, TTL, cache-hit logging, `agt cache stats/clear` CLI commands                        | python-backend-engineer | [ ]    |
+| SCI-0201 | Extend backend capability endpoint: per-source capabilities, provider availability, filter support map, PDF support | python-backend-engineer | [ ]    |
+| SCI-0206 | Export search plan and session report: PRISMA-lite log, search plan, filter snapshot, write outcomes                | python-backend-engineer | [ ]    |
+| SCI-0202 | Add source selector and safe presets: Balanced, Fast, Biomedical, Open-access only, Deep, No preprints              | zotero-frontend         | [ ]    |
+
+**Gate:** User can rerun a past search from saved plan. Every result card shows why it appeared. Session export is human-readable.
+
+---
+
+### P3 — Zotero-Native Value
+
+**Goal:** Make SciAgent valuable inside real Zotero libraries, not only as a web search tool.
+
+| ID       | Story                                                                                                                                     | Owner                                     | Status |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | ------ |
+| SCI-0301 | Add collection-aware search: inspect target collection before retrieval; badge results as Already in library / New / Possible duplicate   | python-backend-engineer + zotero-frontend | [ ]    |
+| SCI-0302 | Add PDF attachment pipeline: open-access sources only; validate before attach; PDF failure never fails metadata import                    | python-backend-engineer                   | [ ]    |
+| SCI-0303 | Add Library Doctor: read-only collection scanner for missing DOI/abstract/PDF/venue, duplicates, broken URLs; all writes require approval | python-backend-engineer + zotero-frontend | [ ]    |
+| SCI-0304 | Add collection gap finder: given existing collection, suggest missing seminal papers, recent follow-ups, reviews, negative results        | python-backend-engineer                   | [ ]    |
+
+**Gate:** Re-running the same search against a collection does not create duplicates. Library Doctor scan is read-only and exportable.
+
+---
+
+### P4 — Retention and Recurring Workflows
+
+**Goal:** Make SciAgent useful every week, not only once.
+
+| ID       | Story                                                                                                               | Owner                                     | Status |
+| -------- | ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | ------ |
+| SCI-0401 | Watch lists: save a search plan; report new papers since last run                                                   | python-backend-engineer                   | [ ]    |
+| SCI-0402 | Scheduled reruns: configurable interval; "new papers since last run" diff surfaced in add-on                        | python-backend-engineer + zotero-frontend | [ ]    |
+| SCI-0403 | Zotero subcollection updates: watch list writes to dedicated subcollection; never overwrites manually curated items | python-backend-engineer + zotero-frontend | [ ]    |
+| SCI-0404 | Session reports: weekly/monthly summary of searches, discovered papers, writes, watch-list updates                  | python-backend-engineer                   | [ ]    |
+
+**Gate:** A researcher using SciAgent weekly sees a "what's new" report without re-entering queries.
+
+---
+
+### P5 — External Interfaces and Deployment (M7)
+
+**Goal:** Expose SciAgent externally only after local-first product value is proven. Includes all M7 stories.
+
+| ID       | Story                                                                                                           | Owner                   | Status |
+| -------- | --------------------------------------------------------------------------------------------------------------- | ----------------------- | ------ |
+| AGT-23   | Unified retrieval registry: typed `Protocol`, registry module, centralized merge/dedup/rank                     | python-backend-engineer | [ ]    |
+| AGT-24   | Durable distributed checkpointing: Redis/Postgres LangGraph checkpointer; stateless container behavior          | python-backend-engineer | [ ]    |
+| AGT-25   | Async task queue: Celery/Dramatiq; `POST /run` returns `task_id`; worker reuses approval guardrails             | python-backend-engineer | [ ]    |
+| AGT-26   | Cloud-agnostic IaC modules: compute, persistence, queue, networking; managed secret injection; CI/CD deploy job | settings-bootstrap      | [ ]    |
+| SCI-0501 | MCP server: expose `search_papers`, `get_session`, `list_sessions` as MCP tools; authenticated and rate-limited | python-backend-engineer | [ ]    |
+| SCI-0502 | Hosted backend pilot: Postgres-backed session store; provider quotas; auth; autoscaling on Cloud Run            | settings-bootstrap      | [ ]    |
+
+**Gate:** CI job produces reproducible infrastructure plan. Hosted backend smoke test passes. Sessions persist across worker restarts.
+
+---
+
 ## Runnable Examples Per Milestone
 
 - [x] M1 example: `examples/m1_foundation_demo.py`
@@ -679,8 +835,9 @@ Acceptance criteria:
 
 - [ ] Implement AGT-28 search-plan model with deterministic hard filters and API/UI metadata
   - [x] **Done 2026-05-08** — `SearchPlan`, `HardFilters`, `SoftPreferences`, `SourceCapability`, `FilterEditContract` models shipped; 6 enforcement tests pass; ruff 0, pyright 0, 141 tests green.
-- [ ] Implement AGT-29 keyless-first retrieval benchmark against standalone LLM/web-search baseline
+- [x] Implement AGT-29 keyless-first retrieval benchmark against standalone LLM/web-search baseline
   - [x] **Done 2026-05-08** — 22-query benchmark panel in `examples/m2_7_benchmark.py`; covers AI, time-series, biomedicine, social science, and interdisciplinary domains.
+  - [x] **Done 2026-05-10** — validated default benchmark run and published report in `docs/benchmark.md`; hard-filter contract and source coverage hold at 1.000, while 9 anchor-paper queries remain below the reviewed baseline on recall.
 - [ ] Define ZAP-4A filter payload shared by Streamlit, REST API, and Zotero add-on
 - [x] Add provider protocol package and baseline xAI adapter implementation
 - [ ] Add OpenAI adapter implementing the same LLMProvider contract

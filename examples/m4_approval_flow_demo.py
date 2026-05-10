@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import json
 
 from _shared_demo_helpers import (
+    default_provider_settings_payload,
     default_zotero_api_key,
     default_zotero_library_id,
     normalize_strict_settings_env,
     resolve_env_key,
-    resolve_xai_key,
 )
 
 from agt.config import Settings
@@ -25,15 +26,19 @@ async def _run(
     thread_id: str | None,
 ) -> int:
     normalize_strict_settings_env()
-    settings = Settings.model_validate({
-        "AGT_XAI_API_KEY": resolve_xai_key(),
+    settings_payload: dict[str, object] = {
+        key: value for key, value in default_provider_settings_payload().items()
+    }
+    settings_payload.update({
         "AGT_ZOTERO_API_KEY": default_zotero_api_key(),
         "AGT_ZOTERO_LIBRARY_ID": default_zotero_library_id(),
         "AGT_SEMANTIC_SCHOLAR_API_KEY": resolve_env_key(
             "AGT_SEMANTIC_SCHOLAR_API_KEY", "SEMANTIC_SCHOLAR_API_KEY"
-        ),
+        )
+        or "",
         "AGT_SUMMARIZATION_USE_LLM": False,
     })
+    settings = Settings.model_validate(settings_payload)
 
     try:
         checkpoint = await run_search_phase(
@@ -78,8 +83,10 @@ async def _run(
             f"created={write_result['created']} unchanged={write_result['unchanged']} "
             f"failed={write_result['failed']}"
         )
+        print("write_result_json=")
+        print(json.dumps(write_result, indent=2))
 
-    return 0
+    return 1 if final["phase"] == "failed" else 0
 
 
 def _parse_indices(raw: str) -> list[int] | None:
