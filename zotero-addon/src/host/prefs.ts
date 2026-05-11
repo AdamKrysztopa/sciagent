@@ -13,6 +13,7 @@ export interface AddonConfig {
   defaultMaxYear: number | null;
   defaultMinCitations: number;
   defaultOpenAccessOnly: boolean;
+  spellCheckEnabled: boolean;
 }
 
 export interface PreferenceStore {
@@ -31,6 +32,7 @@ export const PREF_KEYS = {
   defaultMaxYear: "extensions.agt.defaultMaxYear",
   defaultMinCitations: "extensions.agt.defaultMinCitations",
   defaultOpenAccessOnly: "extensions.agt.defaultOpenAccessOnly",
+  spellCheckEnabled: "extensions.agt.spellCheckEnabled",
 } as const;
 
 export const DEFAULT_ADDON_CONFIG: AddonConfig = {
@@ -44,6 +46,7 @@ export const DEFAULT_ADDON_CONFIG: AddonConfig = {
   defaultMaxYear: null,
   defaultMinCitations: 0,
   defaultOpenAccessOnly: false,
+  spellCheckEnabled: true,
 };
 
 function normalizeBackendUrl(value: string): string {
@@ -117,6 +120,11 @@ export function createZoteroPreferenceStore(zotero: ZoteroGlobal): PreferenceSto
           PREF_KEYS.defaultOpenAccessOnly,
           DEFAULT_ADDON_CONFIG.defaultOpenAccessOnly,
         ),
+        spellCheckEnabled: readBooleanPref(
+          zotero,
+          PREF_KEYS.spellCheckEnabled,
+          DEFAULT_ADDON_CONFIG.spellCheckEnabled,
+        ),
       };
     },
 
@@ -148,6 +156,7 @@ export function createZoteroPreferenceStore(zotero: ZoteroGlobal): PreferenceSto
       );
       zotero.Prefs.set(PREF_KEYS.defaultMinCitations, nextConfig.defaultMinCitations);
       zotero.Prefs.set(PREF_KEYS.defaultOpenAccessOnly, nextConfig.defaultOpenAccessOnly);
+      zotero.Prefs.set(PREF_KEYS.spellCheckEnabled, nextConfig.spellCheckEnabled);
 
       return nextConfig;
     },

@@ -263,7 +263,7 @@ export function useSciAgentController(services: AddonUiServices) {
 
   useEffect(() => {
     const trimmed = query.trim();
-    if (trimmed.length === 0) {
+    if (trimmed.length === 0 || !config.spellCheckEnabled) {
       setCorrectedQuery(null);
       return;
     }
@@ -271,7 +271,7 @@ export function useSciAgentController(services: AddonUiServices) {
       void checkSpelling(trimmed);
     }, 500);
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, config.spellCheckEnabled]);
 
   useEffect(() => {
     let cancelled = false;
