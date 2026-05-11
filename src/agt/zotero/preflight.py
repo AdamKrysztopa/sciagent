@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from typing import Any
+from typing import Any, cast
 
 import httpx
 
@@ -29,10 +29,19 @@ class PreflightResult:
 
 
 def _get_write_capability(payload: dict[str, Any], library_type: str) -> bool:
-    access = payload.get("access", {})
-    library = access.get("library", {})
-    section = library.get(library_type, {})
-    return bool(section.get("write"))
+    # Zotero /keys/current returns: {"access": {"user": {"write": true}, "groups": {...}}}
+    access: dict[str, Any] = payload.get("access") or {}
+    if library_type == "user":
+        user: dict[str, Any] = access.get("user") or {}
+        return bool(user.get("write"))
+    # For group libraries check access.groups.all or any group entry.
+    groups: dict[str, Any] = access.get("groups") or {}
+    all_group: dict[str, Any] = groups.get("all") or {}
+    if all_group.get("write"):
+        return True
+    return any(
+        bool(cast(dict[str, Any], v).get("write")) for v in groups.values() if isinstance(v, dict)
+    )
 
 
 def _library_probe_path(settings: Settings) -> str:

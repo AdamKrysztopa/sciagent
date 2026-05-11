@@ -15,13 +15,15 @@ def _settings() -> Settings:
     })
 
 
+# Real Zotero /keys/current response shape: {"access": {"user": {"write": true}, ...}}
+_KEY_WITH_WRITE = {"access": {"user": {"library": True, "write": True, "files": True}}}
+_KEY_NO_WRITE = {"access": {"user": {"library": True, "write": False}}}
+
+
 def test_preflight_success() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         if request.url.path == "/keys/current":
-            return httpx.Response(
-                200,
-                json={"access": {"library": {"user": {"read": 1, "write": 1}}}},
-            )
+            return httpx.Response(200, json=_KEY_WITH_WRITE)
         if request.url.path.startswith("/users/12345/collections"):
             return httpx.Response(200, json=[])
         return httpx.Response(404)
@@ -36,10 +38,7 @@ def test_preflight_success() -> None:
 def test_preflight_detects_missing_write_permission() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         if request.url.path == "/keys/current":
-            return httpx.Response(
-                200,
-                json={"access": {"library": {"user": {"read": 1, "write": 0}}}},
-            )
+            return httpx.Response(200, json=_KEY_NO_WRITE)
         if request.url.path.startswith("/users/12345/collections"):
             return httpx.Response(200, json=[])
         return httpx.Response(404)
@@ -55,10 +54,7 @@ def test_preflight_detects_missing_write_permission() -> None:
 def test_preflight_detects_library_access_problem() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         if request.url.path == "/keys/current":
-            return httpx.Response(
-                200,
-                json={"access": {"library": {"user": {"read": 1, "write": 1}}}},
-            )
+            return httpx.Response(200, json=_KEY_WITH_WRITE)
         if request.url.path.startswith("/users/12345/collections"):
             return httpx.Response(403)
         return httpx.Response(404)
