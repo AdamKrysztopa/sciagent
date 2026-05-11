@@ -91,6 +91,7 @@ class NormalizedPaper(BaseModel):
     open_access: bool = False
     summary: str | None = None
     score: float = 0.0
+    explanation: str | None = None
 
 
 class SearchMetadata(BaseModel):

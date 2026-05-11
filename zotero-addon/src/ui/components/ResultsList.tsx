@@ -65,6 +65,9 @@ export function ResultsList({ disabled, onToggle, papers, selectedIndices }: Res
               <div className="agt-score-bar">
                 <div className="agt-score-fill" style={{ width: `${scorePercent}%` }} />
               </div>
+              {paper.explanation !== null ? (
+                <p className="agt-result-explanation">{paper.explanation}</p>
+              ) : null}
               {paper.summary !== null ? <p className="agt-result-summary">{paper.summary}</p> : null}
             </article>
           );

@@ -9,6 +9,7 @@ from agt.tools.ranking import (
     WEIGHTS_DEFAULT,
     WEIGHTS_RECENCY,
     compute_rank_score,
+    explain_paper,
     rank_and_index_papers,
 )
 
@@ -373,3 +374,79 @@ def test_weights_presets_sum_to_approximately_one() -> None:
     for preset in (WEIGHTS_DEFAULT, WEIGHTS_RECENCY, WEIGHTS_CITATION):
         core_sum = preset.semantic + preset.citation + preset.influential + preset.recency
         assert core_sum <= 1.0 + 1e-9, f"Core weights sum > 1.0 for {preset}"
+
+
+# ---------------------------------------------------------------------------
+# explain_paper
+# ---------------------------------------------------------------------------
+
+
+def test_explain_paper_high_semantic_score() -> None:
+    paper = NormalizedPaper(
+        title="Attention is All You Need",
+        year=2017,
+        semantic_score=0.92,
+        citation_count=50_000,
+        influential_citation_count=300,
+        source="semantic_scholar",
+        open_access=False,
+    )
+    explanation = explain_paper(paper, query_terms=["attention", "transformer"])
+    assert "high relevance" in explanation
+    assert "50,000 citations" in explanation
+    assert "300 influential" in explanation
+    assert "semantic scholar" in explanation
+    assert "2017" in explanation
+
+
+def test_explain_paper_no_semantic_score_uses_keyword_match() -> None:
+    paper = NormalizedPaper(
+        title="Temporal fusion transformer forecasting",
+        year=2021,
+        semantic_score=0.0,
+        citation_count=5,
+        source="crossref",
+        open_access=True,
+    )
+    explanation = explain_paper(
+        paper,
+        query_terms=["temporal", "fusion", "transformer", "forecasting"],
+    )
+    assert "query terms in title" in explanation or "query terms matched" in explanation
+    assert "open access" in explanation
+    assert "crossref" in explanation
+    assert "2021" in explanation
+
+
+def test_explain_paper_low_citations_omitted() -> None:
+    paper = NormalizedPaper(
+        title="A small study",
+        year=2023,
+        semantic_score=0.5,
+        citation_count=3,
+        source="pubmed",
+    )
+    explanation = explain_paper(paper)
+    assert "citations" not in explanation
+    assert "pubmed" in explanation
+
+
+def test_explain_paper_no_signals_returns_fallback() -> None:
+    paper = NormalizedPaper(title="Unknown paper", source="base")
+    explanation = explain_paper(paper)
+    assert explanation
+    assert "base" in explanation
+
+
+def test_explain_paper_format_is_dot_separated() -> None:
+    paper = NormalizedPaper(
+        title="CRISPR genome editing",
+        year=2022,
+        semantic_score=0.8,
+        citation_count=200,
+        source="europe_pmc",
+        open_access=True,
+    )
+    explanation = explain_paper(paper, query_terms=["crispr", "genome", "editing"])
+    parts = explanation.split(" · ")
+    assert len(parts) >= 3

@@ -26,6 +26,13 @@ _TITLE_DIVERSITY_STOPWORDS: frozenset[str] = frozenset({
     "to",
     "with",
 })
+_SEMANTIC_SCORE_HIGH = 0.75
+_SEMANTIC_SCORE_MEDIUM = 0.45
+_CITATION_HIGH = 1_000
+_CITATION_LOW = 10
+_INFLUENTIAL_MIN = 5
+_EXPLAIN_MIN_KEYWORD_HITS = 2
+
 _MIN_TITLE_SPECIFICITY_QUERY_TERMS = 3
 _MIN_TITLE_SPECIFICITY_QUERY_HITS = 2
 _MIN_TITLE_SPECIFICITY_COVERAGE = 0.75
@@ -96,6 +103,60 @@ WEIGHTS_CITATION = RankingWeights(
     abstract_bonus=0.03,
     open_access_bonus=0.02,
 )
+
+
+def explain_paper(
+    paper: NormalizedPaper,
+    *,
+    query_terms: list[str] | None = None,
+    current_year: int | None = None,
+) -> str:
+    """Return a deterministic, human-readable explanation of why this paper ranked here.
+
+    Uses only signals already computed during ranking — no extra LLM call.
+    Format: "signal one · signal two · source · year"
+    """
+    _ = current_year  # reserved for future age-aware phrasing
+    parts: list[str] = []
+
+    if paper.semantic_score >= _SEMANTIC_SCORE_HIGH:
+        parts.append("high relevance")
+    elif paper.semantic_score >= _SEMANTIC_SCORE_MEDIUM:
+        parts.append("good relevance")
+    elif paper.semantic_score > 0:
+        parts.append("moderate relevance")
+    elif query_terms:
+        title_lower = paper.title.lower()
+        text_lower = f"{title_lower} {(paper.abstract or '').lower()}"
+        title_hits = sum(1 for t in query_terms if t.lower() in title_lower)
+        text_hits = sum(1 for t in query_terms if t.lower() in text_lower)
+        total = len(query_terms)
+        if title_hits >= _EXPLAIN_MIN_KEYWORD_HITS:
+            parts.append(f"{title_hits}/{total} query terms in title")
+        elif text_hits >= _EXPLAIN_MIN_KEYWORD_HITS:
+            parts.append(f"{text_hits}/{total} query terms matched")
+
+    if paper.citation_count >= _CITATION_LOW:
+        formatted = (
+            f"{paper.citation_count:,}"
+            if paper.citation_count >= _CITATION_HIGH
+            else str(paper.citation_count)
+        )
+        parts.append(f"{formatted} citations")
+
+    if paper.influential_citation_count >= _INFLUENTIAL_MIN:
+        parts.append(f"{paper.influential_citation_count} influential")
+
+    if paper.open_access:
+        parts.append("open access")
+
+    source = paper.source.split(":")[0].replace("_", " ")
+    parts.append(source)
+
+    if paper.year is not None:
+        parts.append(str(paper.year))
+
+    return " · ".join(parts) if parts else "academic paper"
 
 
 def _compute_keyword_relevance(paper: NormalizedPaper, query_terms: list[str]) -> float:

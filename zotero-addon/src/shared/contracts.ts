@@ -92,6 +92,7 @@ export interface NormalizedPaper {
   open_access: boolean;
   summary: string | null;
   score: number;
+  explanation: string | null;
 }
 
 export interface SearchMetadata {

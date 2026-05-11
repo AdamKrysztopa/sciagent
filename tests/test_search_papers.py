@@ -1575,3 +1575,45 @@ async def test_search_papers_applies_filter_edit_to_constraints_and_plan(
     assert plan.hard_filters.min_year == 2025
     assert plan.hard_filters.include_keywords == ["graph", "neural"]
     assert metadata.total_after_filter == 1
+
+
+@pytest.mark.anyio
+async def test_search_papers_populates_explanation(monkeypatch: pytest.MonkeyPatch) -> None:
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "123",
+        "AGT_SUMMARIZATION_USE_LLM": False,
+    })
+
+    papers = [
+        NormalizedPaper(
+            title="Attention is all you need",
+            abstract="We propose a transformer model based solely on attention mechanisms.",
+            year=2017,
+            semantic_score=0.9,
+            citation_count=60_000,
+            source="semantic_scholar",
+        ),
+    ]
+
+    monkeypatch.setattr(search_module, "get_guardrails", _fake_get_guardrails)
+    monkeypatch.setattr(search_module, "SemanticScholarClient", _fake_client_factory(papers))
+    monkeypatch.setattr(search_module, "OpenAlexClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "CrossrefClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "PubMedClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+
+    ranked, _ = await search_module.search_papers(
+        query="transformer attention mechanism",
+        settings=settings,
+        thread_id="thread-explain",
+    )
+
+    assert len(ranked) == 1
+    assert ranked[0].explanation is not None
+    assert ranked[0].explanation != ""
+    assert "semantic scholar" in ranked[0].explanation
+    assert "2017" in ranked[0].explanation

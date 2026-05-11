@@ -51,6 +51,7 @@ from agt.tools.ranking import (
     WEIGHTS_DEFAULT,
     WEIGHTS_RECENCY,
     RankingWeights,
+    explain_paper,
     rank_and_index_papers,
 )
 from agt.tools.reranker import rerank_papers
@@ -602,6 +603,16 @@ def _intent_weights(constraints: SearchConstraintSpec) -> RankingWeights:
     if has_year:
         return WEIGHTS_RECENCY
     return WEIGHTS_DEFAULT
+
+
+def _attach_explanations(
+    papers: list[NormalizedPaper],
+    query_terms: list[str],
+) -> list[NormalizedPaper]:
+    return [
+        paper.model_copy(update={"explanation": explain_paper(paper, query_terms=query_terms)})
+        for paper in papers
+    ]
 
 
 def _rank_and_filter(
@@ -1369,7 +1380,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                 source_timings=all_timings,
                 search_plan=plan.model_copy(update={"rewritten_queries": executed_query_sequence}),
             )
-            return filtered, metadata
+            return _attach_explanations(filtered, ranking_terms), metadata
 
     if retrieval_query != regex_query:
         _emit_progress(progress, "retrying with deterministic keyword query")
@@ -1426,7 +1437,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                         update={"rewritten_queries": executed_query_sequence}
                     ),
                 )
-                return filtered, metadata
+                return _attach_explanations(filtered, ranking_terms), metadata
         if not results:
             results = fallback_results
 

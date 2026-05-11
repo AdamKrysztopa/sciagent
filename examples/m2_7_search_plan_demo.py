@@ -125,6 +125,8 @@ async def _run(query: str) -> int:
         oa = "OA" if paper.open_access else "  "
         print(f"  [{paper.index}] {oa} [{yr}] {paper.title[:70]}")
         print(f"       score={paper.score:.2f}  citations={paper.citation_count}  doi={doi}")
+        if paper.explanation:
+            print(f"       why: {paper.explanation}")
 
     print(f"\n  Sources used : {', '.join(metadata.sources_used)}")
     print(f"  Sources failed: {', '.join(metadata.sources_failed) or 'none'}")

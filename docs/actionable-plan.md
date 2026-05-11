@@ -11,13 +11,14 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 ### Current Status
 
-- Current focus: P2 — Differentiating Core (SCI-0205 next: deterministic "Why this paper?" explanations)
-- Current next implementation target: SCI-0205
-- Last completed: P1 closed — SCI-0104 final run 19/22 (2026-05-11); INTER-03 recovered; TS-02/BIO-01/BIO-04 remain as known retrieval-depth limits, not P2 blockers
+- Current focus: P2 — Differentiating Core (SCI-0203 next: persistent search sessions)
+- Current next implementation target: SCI-0203
+- Last completed: SCI-0205 — deterministic "Why this paper?" explanations (2026-05-11)
 - M7 (Pluggability/Infrastructure) intentionally deprioritized: settings and elastic infra add value only after users trust the product output. See Phase P0–P2 ordering below.
 
 ### Recent Progress
 
+- ✅ SCI-0205 complete: `NormalizedPaper.explanation` field added; `explain_paper()` in ranking.py generates deterministic, signal-based reasons (semantic score tier, keyword hit count, citations, influential citations, open access, source, year); populated by `_attach_explanations` before all result returns in search_papers; shown in Streamlit UI, Zotero sidebar (ResultsList.tsx), and m2_7_search_plan_demo (2026-05-11)
 - ✅ SCI-0104 closed: final validated run 19/22, recall@20=0.769; INTER-03 recovered via long-query prefix variant; TS-02/BIO-01/BIO-04 remain as external-API retrieval-depth limits; P1 closed by product decision (2026-05-11)
 - ✅ SCI-0103 complete: KeyBERT is retired from active tuning after benchmark regression, spell check is explicitly deferred pending a typo-focused panel, and reranker is retained as a positive opt-in experiment; P1 remains open pending SCI-0104 on the 4 remaining below-baseline queries
 - ✅ SCI-0101 complete: benchmark report published in `docs/benchmark.md`; validated default run preserves hard filters and source coverage across all 22 queries, with 9 recall-only regressions against the manual web-search baseline
@@ -66,7 +67,7 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 - [x] SCI-0101 — Build retrieval benchmark panel (20–30 queries, recall@10, hard-filter compliance)
 - [x] SCI-0103 — Measure benchmarked feature flags and assign dispositions (retire, keep experimental, or promote)
 - [x] SCI-0104 — Closed at 19/22 (INTER-03 recovered; TS-02/BIO-01/BIO-04 are external-API retrieval limits); P1 closed by product decision
-- [ ] SCI-0205 — Add "Why this paper?" result explanations (deterministic; no extra LLM call)
+- [x] SCI-0205 — "Why this paper?" explanations: deterministic, signal-based (relevance, citations, source, year, open access); shown in Streamlit UI, Zotero sidebar, and demo output; NormalizedPaper.explanation field populated at ranking time
 - [ ] SCI-0203 — Add persistent search sessions (rerun, diff, export)
 - [ ] SCI-0204 — Add local result cache (SQLite, TTL, cache stats)
 - [ ] SCI-0201 — Add backend capability endpoint (sources, filters, providers as data, not hardcoded)
