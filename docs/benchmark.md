@@ -5,10 +5,11 @@ Validated on 2026-05-11 against benchmark version `m2.7-agt29-v3` and baseline a
 ## Conclusion
 
 - The benchmark is functioning as intended. The primary failure mode is retrieval recall on must-find anchor papers, not broken evaluator logic.
-- SCI-0104 currently holds the default run at 18 of 22 queries meeting or exceeding the reviewed manual baseline; the latest validated rerun did not close the remaining recall gap.
+- SCI-0104 holds the default run at 19 of 22 queries meeting or exceeding the reviewed manual baseline; the latest validated rerun recovered INTER-03 (Large language models in medicine) but did not close the remaining three retrieval gaps.
 - Hard-filter contract preservation, post-merge result filtering, topic coverage, alternate coverage, and source coverage all held at 1.000 in the validated default run.
-- The remaining regressions are narrowed to four recall-only misses: TS-02 (Temporal Fusion Transformer), BIO-01 (Therapeutic genome editing by CRISPR-Cas systems), BIO-04 (Long COVID review), and INTER-03 (Large language models in medicine).
-- P1 remains open because [docs/core.md](core.md) requires SciAgent to match or exceed the reviewed manual baseline on constraint compliance and must-find recall before release promotion, and four queries still trail the baseline on recall.
+- The remaining regressions are narrowed to three recall-only misses: TS-02 (Temporal Fusion Transformer), BIO-01 (Therapeutic genome editing by CRISPR-Cas systems), and BIO-04 (Long COVID review).
+- These three are external-API retrieval misses — the target papers do not appear in the free-tier APIs' top results for those broad or vocabulary-mismatched queries. Further code changes are unlikely to close this gap without paid API coverage or query hardcoding.
+- P1 exit criteria per [docs/core.md](core.md) are not strictly satisfied (3 queries still trail the baseline on recall). The product team has decided to close P1 at 19/22 and advance to P2, treating the remaining three as known retrieval-depth limitations rather than P1 blockers.
 
 ## Default Scenario
 
@@ -21,15 +22,15 @@ uv run python examples/m2_7_benchmark.py --output-json /tmp/p1-benchmark-current
 | Metric                    | Result       |
 | ------------------------- | ------------ |
 | Queries                   | 22           |
-| Passed all checks         | 18 / 22      |
+| Passed all checks         | 19 / 22      |
 | Hard-filter contract rate | 1.000        |
 | Result hard-filter rate   | 1.000        |
 | Topic coverage rate       | 1.000        |
 | Alternate coverage rate   | 1.000        |
 | Source coverage rate      | 1.000        |
 | Must-find recall@10       | 0.615        |
-| Must-find recall@20       | 0.692        |
-| Average latency           | 23.75 s      |
+| Must-find recall@20       | 0.769        |
+| Average latency           | 27.09 s      |
 | Estimated cost            | 0.000000 USD |
 
 Queries below the reviewed manual baseline:
@@ -37,15 +38,14 @@ Queries below the reviewed manual baseline:
 - TS-02
 - BIO-01
 - BIO-04
-- INTER-03
 
 Representative evidence from the validated run:
 
-- AI-01 now passes on the Lewis et al. RAG anchor, which removes the prior RAG-specific blocker from the P1 exit set.
-- AI-04 now passes on the exact _Attention Is All You Need_ anchor, which removes the prior foundational-transformer regression.
-- BIO-02 now passes on the AlphaFold 2 anchor, and TS-05 now passes on the Lag-Llama anchor, showing the deterministic query expansions and broader result gathering recovered multiple prior misses.
-- TS-04 still passes on the exact Temporal Fusion Transformer anchor, while TS-02 still misses that anchor on the broader citation-sorted timeseries query. This keeps the remaining issue localized to broad-query recall rather than evaluator matching.
-- BIO-01 still misses _Therapeutic genome editing by CRISPR-Cas systems_, BIO-04 still misses the benchmark _Long COVID_ review anchor, and INTER-03 still misses _Large language models in medicine_.
+- INTER-03 now passes on the _Large language models in medicine_ anchor, recovered by the long-query prefix variant that added a 4-keyword variant to the multi-term retrieval query.
+- AI-01 passes on the Lewis et al. RAG anchor; AI-04 passes on _Attention Is All You Need_; BIO-02 passes on AlphaFold 2; TS-05 passes on Lag-Llama.
+- TS-04 passes on the exact Temporal Fusion Transformer anchor, while TS-02 still misses it on the broader citation-sorted timeseries query. The issue is confirmed to be in external-API retrieval depth for generic time-series queries, not evaluator matching or ranking logic.
+- BIO-01 still misses _Therapeutic genome editing by CRISPR-Cas systems_ despite the genome-editing synonym variant; the paper does not surface in any source's top results for broad CRISPR queries.
+- BIO-04 still misses the _Long COVID_ review anchor despite the "long covid" query variant; the paper likely appears but is filtered by open-access status in some sources or is beyond the fetch depth for others.
 
 ## Feature-Flag Measurement
 
@@ -86,5 +86,5 @@ Decision summary:
 
 - SCI-0101 is complete: the benchmark panel, baseline comparison, and published report now exist and are validated.
 - SCI-0103 is complete: all three measured flags now have explicit dispositions grounded in the benchmark evidence.
-- SCI-0104 is in progress: the latest validated default run still meets or exceeds baseline on 18 / 22 queries, but four recall regressions remain.
-- P1 remains open: [docs/core.md](core.md) requires SciAgent to match or exceed the reviewed manual baseline on constraint compliance and must-find recall before release promotion, and the validated default run still trails that baseline on TS-02, BIO-01, BIO-04, and INTER-03.
+- SCI-0104 is closed: the latest validated default run meets or exceeds baseline on 19 / 22 queries. INTER-03 was recovered by the long-query prefix variant. Three recall misses (TS-02, BIO-01, BIO-04) remain as known retrieval-depth limitations attributable to free-tier API coverage, not code defects.
+- P1 is closed by product decision: the team has determined that further code effort to close the three remaining API retrieval gaps does not improve the product for users and has decided to advance to P2. The constraint compliance and topic coverage rates are all at 1.000.

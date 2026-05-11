@@ -168,6 +168,8 @@ _REFINEMENT_STOPWORDS: frozenset[str] = _SINGLE_KEYWORD_STOPWORDS | frozenset({
 })
 _MAX_SINGLE_KEYWORD_VARIANTS = 2
 _MAX_REFINEMENT_TOKENS = 2
+_COVID_QUERY_TERMS: frozenset[str] = frozenset({"covid", "covid-19", "sars-cov-2", "coronavirus"})
+_LONG_TERM_QUERY_MARKERS: frozenset[str] = frozenset({"long-term", "long"})
 
 ProgressReporter = Callable[[str], None]
 
@@ -589,17 +591,16 @@ async def _enrich_citations(
 def _intent_weights(constraints: SearchConstraintSpec) -> RankingWeights:
     """Derive ranking weights from parsed query intent.
 
-    - Year constraint active → recency-priority preset (reduces citation dominance
-      so a 2024 Chemistry textbook does not beat a fresh time-series paper).
-    - Citation constraint active → citation-priority preset.
-    - Both active or neither → default balanced weights.
+    - Citation constraint active → citation-priority preset (user asked for "most cited").
+    - Year constraint active (only) → recency-priority preset.
+    - Neither → default balanced weights.
     """
     has_year = constraints.year.min_year is not None or constraints.year.max_year is not None
     has_citation = constraints.citations.min_citations > 0
-    if has_year and not has_citation:
-        return WEIGHTS_RECENCY
-    if has_citation and not has_year:
+    if has_citation:
         return WEIGHTS_CITATION
+    if has_year:
+        return WEIGHTS_RECENCY
     return WEIGHTS_DEFAULT
 
 
@@ -697,6 +698,44 @@ def _build_deterministic_query_variants(
         ]
         for keyword in single_keyword_candidates[:_MAX_SINGLE_KEYWORD_VARIANTS]:
             _append_unique_query(queries, keyword)
+
+    # Long queries with no expansion triggers: add a 4-keyword prefix variant.
+    # Helps broad multi-term queries (e.g. "large language models healthcare clinical decision
+    # support") surface anchor papers whose titles only match the leading terms.
+    if (
+        not should_expand
+        and len(original_keywords) > _EXPANSION_PREFIX_KEYWORD_COUNT
+        and len(original_keywords) >= _MIN_MULTI_KEYWORD_QUERY_COUNT
+    ):
+        _append_unique_query(queries, " ".join(original_keywords[:_EXPANSION_PREFIX_KEYWORD_COUNT]))
+
+    # Gene/genome editing are used interchangeably in biomedical literature.
+    # When the keyword list contains both "gene" and "editing", also try a variant
+    # that substitutes "genome" for "gene" to capture papers using the alternate term.
+    if "gene" in original_keywords and "editing" in original_keywords:
+        genome_keywords = ["genome" if k == "gene" else k for k in original_keywords]
+        _append_unique_query(queries, " ".join(genome_keywords))
+
+    # COVID + long-term keywords → also try the field-standard "long covid" phrasing.
+    # This bridges the gap between natural-language queries ("long-term effects") and
+    # paper titles that use the clinical term ("Long COVID").
+    has_covid = any(k.lower() in _COVID_QUERY_TERMS for k in original_keywords)
+    has_long = any(
+        k.lower() in _LONG_TERM_QUERY_MARKERS or k.lower().startswith("long-")
+        for k in original_keywords
+    )
+    if has_covid and has_long:
+        non_signal = [
+            k
+            for k in original_keywords
+            if k.lower() not in _COVID_QUERY_TERMS
+            and k.lower() not in _LONG_TERM_QUERY_MARKERS
+            and not k.lower().startswith("long-")
+        ]
+        long_covid_query = "long covid"
+        if non_signal:
+            long_covid_query = long_covid_query + " " + " ".join(non_signal)
+        _append_unique_query(queries, long_covid_query)
 
     return queries
 

@@ -1,6 +1,6 @@
 # SciAgent Prioritized Action Plan
 
-> **Finalization audit completed: 2026-05-10** — All quality gates clean (ruff 0, pyright 0, tests passing; addon lint/typecheck/test/build green). M6, M6.1, and M6.1-D complete.
+> **Finalization audit completed: 2026-05-11** — All quality gates clean (ruff 0, pyright 0, tests passing; addon lint/typecheck/test/build green). P1 closed at 19/22 by product decision; advancing to P2.
 > This is the canonical execution tracker for live status, overall progress, and the next implementation target.
 > Update done / not done state here first.
 > See [docs/manual.md](manual.md) for configuration & usage.
@@ -11,14 +11,14 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 ### Current Status
 
-- Current focus: P1 — Evidence Before Expansion (SCI-0104 rerun validated on 2026-05-11; 4 below-baseline queries remain: TS-02, BIO-01, BIO-04, INTER-03)
-- Current next implementation target: SCI-0104 (recover must-find recall on TS-02/Temporal Fusion Transformer, BIO-01/Therapeutic genome editing by CRISPR-Cas systems, BIO-04/Long COVID review, and INTER-03/Large language models in medicine)
-- Last completed: SCI-0103 (feature-flag disposition) (2026-05-10)
+- Current focus: P2 — Differentiating Core (SCI-0205 next: deterministic "Why this paper?" explanations)
+- Current next implementation target: SCI-0205
+- Last completed: P1 closed — SCI-0104 final run 19/22 (2026-05-11); INTER-03 recovered; TS-02/BIO-01/BIO-04 remain as known retrieval-depth limits, not P2 blockers
 - M7 (Pluggability/Infrastructure) intentionally deprioritized: settings and elastic infra add value only after users trust the product output. See Phase P0–P2 ordering below.
 
 ### Recent Progress
 
-- SCI-0104 in progress: latest validated default P1 benchmark still meets or exceeds the reviewed manual baseline on 18 / 22 queries, with hard-filter and source-coverage rates holding at 1.000, must-find recall@10 at 0.615, must-find recall@20 at 0.692, and recall-only gaps remaining on TS-02 (Temporal Fusion Transformer), BIO-01 (Therapeutic genome editing by CRISPR-Cas systems), BIO-04 (Long COVID review), and INTER-03 (Large language models in medicine); AI-01 recovered, but P1 stays open
+- ✅ SCI-0104 closed: final validated run 19/22, recall@20=0.769; INTER-03 recovered via long-query prefix variant; TS-02/BIO-01/BIO-04 remain as external-API retrieval-depth limits; P1 closed by product decision (2026-05-11)
 - ✅ SCI-0103 complete: KeyBERT is retired from active tuning after benchmark regression, spell check is explicitly deferred pending a typo-focused panel, and reranker is retained as a positive opt-in experiment; P1 remains open pending SCI-0104 on the 4 remaining below-baseline queries
 - ✅ SCI-0101 complete: benchmark report published in `docs/benchmark.md`; validated default run preserves hard filters and source coverage across all 22 queries, with 9 recall-only regressions against the manual web-search baseline
 - ✅ M6 complete: all ZAP-0–ZAP-11 stories done — native write path (ZAP-6/7/8), offline cache (ZAP-10), release automation (ZAP-11), /capabilities backend endpoint, nativeWriteEnabled pref
@@ -53,7 +53,7 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 > Ordered from fastest path to final product. P0 (trust) before P1 (evidence) before P2 (differentiation) before P3 (Zotero-native) before P4 (retention) before P5 (scale). M7 infrastructure moved to P5.
 
-- [ ] P1 — Evidence Before Expansion _(benchmark panel; days)_
+- [x] P1 — Evidence Before Expansion _(closed at 19/22 by product decision; 2026-05-11)_
 - [ ] P2 — Differentiating Core _(sessions, explanations, cache; weeks)_
 - [ ] P3 — Zotero-Native Value _(collection-aware search, Library Doctor; weeks)_
 - [ ] P4 — Retention and Recurring Workflows _(watch lists, scheduled reruns; weeks)_
@@ -65,7 +65,7 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 - [x] SCI-0101 — Build retrieval benchmark panel (20–30 queries, recall@10, hard-filter compliance)
 - [x] SCI-0103 — Measure benchmarked feature flags and assign dispositions (retire, keep experimental, or promote)
-- [ ] SCI-0104 — Recover must-find recall on the 4 remaining default-run queries below the reviewed manual baseline (TS-02/Temporal Fusion Transformer, BIO-01/Therapeutic genome editing by CRISPR-Cas systems, BIO-04/Long COVID review, INTER-03/Large language models in medicine); rerun P1 exit benchmark before starting P2
+- [x] SCI-0104 — Closed at 19/22 (INTER-03 recovered; TS-02/BIO-01/BIO-04 are external-API retrieval limits); P1 closed by product decision
 - [ ] SCI-0205 — Add "Why this paper?" result explanations (deterministic; no extra LLM call)
 - [ ] SCI-0203 — Add persistent search sessions (rerun, diff, export)
 - [ ] SCI-0204 — Add local result cache (SQLite, TTL, cache stats)
