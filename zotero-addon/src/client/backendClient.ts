@@ -21,6 +21,8 @@ export class BackendClientError extends Error {
 
 type FetchImplementation = typeof fetch;
 
+const HEALTH_FALLBACK_MESSAGE = "Backend is reachable, but /health is not available.";
+
 export interface BackendClientConfig {
   apiKey: string;
   baseUrl: string;
@@ -41,6 +43,10 @@ async function parseErrorPayload(response: Response): Promise<unknown> {
   return response.text();
 }
 
+function endpointCanUseReachabilityFallback(error: BackendClientError): boolean {
+  return error.status === 404 || error.status === 405;
+}
+
 export class SciAgentBackendClient {
   private readonly apiKey: string;
   private readonly baseUrl: string;
@@ -55,7 +61,14 @@ export class SciAgentBackendClient {
   }
 
   async health(): Promise<HealthResponse> {
-    return this.request<HealthResponse>("/health", { method: "GET" });
+    try {
+      return await this.request<HealthResponse>("/health", { method: "GET" });
+    } catch (error) {
+      if (error instanceof BackendClientError && endpointCanUseReachabilityFallback(error)) {
+        return this.healthFromReachableApiDocs(error);
+      }
+      throw error;
+    }
   }
 
   async capabilities(): Promise<CapabilitiesResponse> {
@@ -108,6 +121,50 @@ export class SciAgentBackendClient {
     }
 
     return response.json() as Promise<T>;
+  }
+
+  private async healthFromReachableApiDocs(originalError: BackendClientError): Promise<HealthResponse> {
+    const openApiResponse = await this.fetchImpl(`${this.baseUrl}/openapi.json`, {
+      headers: this.buildHeaders(false),
+      method: "GET",
+    });
+
+    if (openApiResponse.ok) {
+      return {
+        fallback_provider: null,
+        message: HEALTH_FALLBACK_MESSAGE,
+        ok: true,
+        preflight: {
+          message: "/openapi.json responded successfully.",
+          ok: true,
+        },
+        provider: "unknown",
+      };
+    }
+
+    if (!endpointCanUseReachabilityFallback(new BackendClientError("openapi_unavailable", openApiResponse.status, null))) {
+      throw originalError;
+    }
+
+    const docsResponse = await this.fetchImpl(`${this.baseUrl}/docs`, {
+      headers: this.buildHeaders(false),
+      method: "GET",
+    });
+
+    if (docsResponse.ok) {
+      return {
+        fallback_provider: null,
+        message: HEALTH_FALLBACK_MESSAGE,
+        ok: true,
+        preflight: {
+          message: "/docs responded successfully.",
+          ok: true,
+        },
+        provider: "unknown",
+      };
+    }
+
+    throw originalError;
   }
 }
 

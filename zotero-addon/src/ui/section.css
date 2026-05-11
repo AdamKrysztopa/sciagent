@@ -27,12 +27,34 @@
 
 .agt-root {
   background: -moz-dialog;
+  box-sizing: border-box;
   color: var(--agt-text);
   display: block;
   font-family: system-ui, -apple-system, sans-serif;
   font-size: 13px;
   /* Ensure the root fills the XUL host element */
   min-height: 100%;
+  padding: 10px;
+}
+
+.agt-root--error {
+  min-height: 100vh;
+}
+
+.agt-startup-error h2 {
+  color: var(--agt-danger);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.agt-startup-error pre {
+  color: var(--agt-danger);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .agt-shell {
@@ -41,7 +63,7 @@
   border-radius: var(--agt-radius);
   display: flex;
   flex-direction: column;
-  min-height: 200px;
+  min-height: 100%;
 }
 
 /* ── Titlebar ─────────────────────────────────────────────── */
@@ -73,16 +95,36 @@
   font-weight: 500;
 }
 
+.agt-status-dot {
+  background: currentColor;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  height: 6px;
+  width: 6px;
+}
+
 .agt-status-pill--ok {
   background: var(--agt-accent-dim);
   color: var(--agt-accent);
   border: 0.5px solid var(--agt-accent);
 }
 
+.agt-status-pill--idle {
+  background: var(--agt-surface-raised);
+  color: var(--agt-text-muted);
+  border: 0.5px solid var(--agt-border);
+}
+
 .agt-status-pill--error {
   background: var(--agt-danger-dim);
   color: var(--agt-danger);
   border: 0.5px solid var(--agt-danger);
+}
+
+.agt-status-pill--warn {
+  background: var(--agt-amber-dim);
+  color: var(--agt-amber);
+  border: 0.5px solid var(--agt-amber);
 }
 
 .agt-status-pill--loading {
@@ -193,6 +235,12 @@
   border: 0.5px solid var(--agt-amber);
 }
 
+.agt-pill--warn {
+  background: var(--agt-amber-dim);
+  color: var(--agt-amber);
+  border: 0.5px solid var(--agt-amber);
+}
+
 .agt-pill--ok {
   background: var(--agt-accent-dim);
   color: var(--agt-accent);
@@ -218,6 +266,14 @@
 
 .agt-card--soft {
   background: transparent;
+}
+
+.agt-subpanel {
+  border-top: 0.5px solid var(--agt-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
 }
 
 /* ── Section heading ──────────────────────────────────────── */
@@ -457,6 +513,21 @@
   border: 0.5px solid var(--agt-danger);
   border-radius: var(--agt-radius-sm);
   padding: 8px 10px;
+}
+
+.agt-status-note {
+  border-radius: var(--agt-radius-sm);
+  display: block;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  margin: 0;
+  padding: 7px 9px;
+}
+
+.agt-status-note--warn {
+  background: var(--agt-amber-dim);
+  border: 0.5px solid var(--agt-amber);
+  color: var(--agt-amber);
 }
 
 /* ── Key–value grid ───────────────────────────────────────── */

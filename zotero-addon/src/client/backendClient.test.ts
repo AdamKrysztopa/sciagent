@@ -70,6 +70,60 @@ describe("SciAgentBackendClient", () => {
     await expect(client.health()).rejects.toMatchObject({ status: 401 });
   });
 
+  it("treats a reachable OpenAPI document as online when /health is absent", async () => {
+    const calls: string[] = [];
+    const fetchImpl = vi.fn(async (url: RequestInfo | URL) => {
+      calls.push(String(url));
+      if (String(url).endsWith("/health")) {
+        return jsonResponse({ detail: "not found" }, 404);
+      }
+      return jsonResponse({ info: { title: "SciAgent API", version: "0.1.0" }, paths: {} });
+    });
+    const client = createBackendClient({
+      apiKey: "",
+      baseUrl: "http://localhost:8000",
+      clientId: "sidebar-d",
+      fetchImpl,
+    });
+
+    const result = await client.health();
+
+    expect(calls).toEqual(["http://localhost:8000/health", "http://localhost:8000/openapi.json"]);
+    expect(result.ok).toBe(true);
+    expect(result.message).toContain("reachable");
+    expect(result.preflight.message).toBe("/openapi.json responded successfully.");
+  });
+
+  it("falls back to /docs when both /health and /openapi.json are absent", async () => {
+    const calls: string[] = [];
+    const fetchImpl = vi.fn(async (url: RequestInfo | URL) => {
+      calls.push(String(url));
+      if (String(url).endsWith("/docs")) {
+        return new Response("<html><title>SciAgent API</title></html>", {
+          headers: { "Content-Type": "text/html" },
+          status: 200,
+        });
+      }
+      return jsonResponse({ detail: "not found" }, 404);
+    });
+    const client = createBackendClient({
+      apiKey: "",
+      baseUrl: "http://localhost:8000",
+      clientId: "sidebar-e",
+      fetchImpl,
+    });
+
+    const result = await client.health();
+
+    expect(calls).toEqual([
+      "http://localhost:8000/health",
+      "http://localhost:8000/openapi.json",
+      "http://localhost:8000/docs",
+    ]);
+    expect(result.ok).toBe(true);
+    expect(result.preflight.message).toBe("/docs responded successfully.");
+  });
+
   it("calls /capabilities and returns the response", async () => {
     const capResponse = {
       api_contract_version: "2026-05",
@@ -83,7 +137,7 @@ describe("SciAgentBackendClient", () => {
     const client = createBackendClient({
       apiKey: "key",
       baseUrl: "http://localhost:8000",
-      clientId: "sidebar-d",
+      clientId: "sidebar-f",
       fetchImpl,
     });
 

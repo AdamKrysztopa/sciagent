@@ -126,11 +126,11 @@ export function useSciAgentController(services: AddonUiServices) {
     });
   });
 
-  const refreshHealth = useEffectEvent(async () => {
+  const refreshHealth = useEffectEvent(async (nextConfig: AddonConfig = config) => {
     setHealthBusy(true);
     setHealthError(null);
     try {
-      const client = services.createClient(config);
+      const client = services.createClient(nextConfig);
       const response = await client.health();
       setHealthResponse(response);
       // Fetch capabilities after a successful health check.
@@ -144,6 +144,7 @@ export function useSciAgentController(services: AddonUiServices) {
     } catch (error) {
       setHealthError(describeError(error));
       setHealthResponse(null);
+      setCapabilities(null);
     } finally {
       setHealthBusy(false);
     }
@@ -156,6 +157,7 @@ export function useSciAgentController(services: AddonUiServices) {
       const nextConfig = await services.saveConfig(config);
       setConfig(nextConfig);
       setSaveState("saved");
+      void refreshHealth(nextConfig);
     } catch (error) {
       setSaveError(describeError(error));
       setSaveState("error");
@@ -266,6 +268,7 @@ export function useSciAgentController(services: AddonUiServices) {
           loadedConfig.defaultOpenAccessOnly,
         );
       });
+      void refreshHealth(loadedConfig);
     }).catch((error: unknown) => {
       if (cancelled) {
         return;
@@ -289,6 +292,7 @@ export function useSciAgentController(services: AddonUiServices) {
     healthBusy,
     healthError,
     healthResponse,
+    canSubmitSearch: query.trim().length > 0 && healthResponse !== null && !healthBusy,
     onApprove: () => void resumeRun(true),
     onCollectionChange: setCollectionName,
     onConfigChange: (field: keyof AddonConfig, value: boolean | number | null | string) => {
@@ -301,9 +305,21 @@ export function useSciAgentController(services: AddonUiServices) {
     onFilterDraftChange: setFilterDraft,
     onQueryChange: (nextQuery: string) => {
       setQuery(nextQuery);
-      if (filterDraft !== null && filterDraft.original_query !== nextQuery.trim()) {
-        setFilterDraft(null);
-      }
+      const trimmedQuery = nextQuery.trim();
+      setFilterDraft((currentDraft) => {
+        if (currentDraft !== null) {
+          return {
+            ...currentDraft,
+            original_query: trimmedQuery,
+          };
+        }
+        return buildDefaultFilterEdit(
+          config.defaultMinYear,
+          config.defaultMaxYear,
+          config.defaultMinCitations,
+          config.defaultOpenAccessOnly,
+        );
+      });
     },
     onRefreshHealth: () => void refreshHealth(),
     onReject: () => void resumeRun(false),

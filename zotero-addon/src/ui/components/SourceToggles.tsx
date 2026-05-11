@@ -16,8 +16,11 @@ export function SourceToggles({ sourcePolicy }: SourceTogglesProps) {
   }
 
   return (
-    <section className="agt-source-toggles" aria-label="Source availability">
-      <h4 className="agt-section-heading">Available Sources</h4>
+    <section className="agt-card agt-card--soft agt-source-toggles" aria-label="Source availability">
+      <div className="agt-section-heading">
+        <h2>Available Sources</h2>
+        <span className="agt-pill agt-pill--muted">{sourcePolicy.length} sources</span>
+      </div>
       <ul className="agt-source-list">
         {sourcePolicy.map((src) => (
           <li key={src.name} className={`agt-source-item agt-source-${src.tier}`}>

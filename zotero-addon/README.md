@@ -33,7 +33,10 @@ npm run build
 Build outputs:
 
 - `build/xpi/` — staged unpacked add-on contents
+- `build/update.rdf` — update feed copied next to the XPI for predictable local/release exposure
 - `build/sciagent-zotero-addon.xpi` — local install package
+
+The staged and zipped manifests must include `applications.zotero.update_url`; Zotero rejects the XPI before bootstrap if this field is missing.
 
 ## Troubleshooting & Developer Console
 
@@ -67,7 +70,7 @@ Zotero provides a JavaScript error console essential for diagnosing add-on insta
 
 1. **"Add-on is incompatible with this version of Zotero"**
    - **Verify Zotero version:** Help → About Zotero should show 9.0.0 or higher
-   - **Check manifest:** `unzip -p build/sciagent-zotero-addon.xpi manifest.json | grep -A 5 applications` must show `applications.zotero` with `strict_min_version: "9.0.0"` and `strict_max_version: "9.*"`
+   - **Check manifest:** `unzip -p build/sciagent-zotero-addon.xpi manifest.json | grep -A 6 applications` must show `applications.zotero` with `id`, `update_url`, `strict_min_version: "9.0.0"`, and `strict_max_version: "9.*"`
    - **Rebuild:** Run `npm run build` and reinstall
    - **Check error console:** Look for specific compatibility messages
 
@@ -126,7 +129,7 @@ Before marking M6 complete, validate in a live Zotero runtime on macOS:
 
 - [ ] Build the XPI: `npm run build` from `zotero-addon/` completes with no errors
 - [ ] Verify Zotero version: **Help → About Zotero** shows 9.0.0 or higher
-- [ ] Verify manifest compatibility: `unzip -p build/sciagent-zotero-addon.xpi manifest.json | grep -A 5 applications` shows `applications.zotero` with `id`, `update_url`, `strict_min_version: "9.0.0"`, and `strict_max_version: "9.*"`
+- [ ] Verify manifest compatibility: `unzip -p build/sciagent-zotero-addon.xpi manifest.json | grep -A 7 applications` shows `applications.zotero` with `id`, `update_url`, `strict_min_version: "9.0.0"`, and `strict_max_version: "9.*"`
 - [ ] Open the Zotero Error Console: **Tools → Developer → Error Console** (or `Cmd+Shift+Z`) and clear it before installation
 - [ ] Start the backend: `uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000`
 - [ ] Open Zotero and navigate to Tools → Add-ons (or Preferences → Plugins)
@@ -153,9 +156,11 @@ Before marking M6 complete, validate in a live Zotero runtime on macOS:
 
 ## Release And Update Flow
 
-SciAgent uses Zotero's automatic update mechanism for distribution:
+Zotero requires `applications.zotero.update_url` even for manually installed local XPIs. Local development builds keep this field set to the checked-in update feed URL, `https://raw.githubusercontent.com/AdamKrysztopa/sciagent/main/zotero-addon/update.rdf`, so the XPI remains installable without publishing a GitHub release. If the repository URL or referenced release asset is unavailable, Zotero may still log update-check noise until a published release feed exists; this does not block local installation.
 
-1. **Update URL:** `manifest.json` points to `https://github.com/AdamKrysztopa/sciagent/releases/latest/download/update.rdf`, which Zotero checks periodically for new versions
+Release builds can opt into Zotero's automatic update mechanism:
+
+1. **Update URL:** optionally set `SCIAGENT_ZOTERO_UPDATE_URL=https://github.com/AdamKrysztopa/sciagent/releases/latest/download/update.rdf` when running `npm run build` for a release package
 2. **Release assets:** Each GitHub release must include both:
    - `sciagent-zotero-addon.xpi` — the add-on package
    - `update.rdf` — the update manifest pointing to the version-specific XPI URL
@@ -168,10 +173,10 @@ SciAgent uses Zotero's automatic update mechanism for distribution:
 **Manual release steps:**
 
 1. Update versions in `package.json` and `manifest.json`
-2. Build: `npm run build`
+2. Build: `SCIAGENT_ZOTERO_UPDATE_URL=https://github.com/AdamKrysztopa/sciagent/releases/latest/download/update.rdf npm run build`
 3. Update `update.rdf` with the new version and tag
 4. Create a GitHub release with tag `v{version}`
-5. Upload both `build/sciagent-zotero-addon.xpi` and `update.rdf` as release assets
+5. Upload both `build/sciagent-zotero-addon.xpi` and `build/update.rdf` as release assets
 6. Existing users will receive the update automatically; new users can install from the latest release
 
 ## Current Limitations

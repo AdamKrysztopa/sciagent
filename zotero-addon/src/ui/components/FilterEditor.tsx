@@ -216,7 +216,7 @@ export function FilterEditor({
           <span>Require positive community perception</span>
         </label>
       </div>
-      <div className="agt-card agt-card--soft">
+      <div className="agt-subpanel">
         <div className="agt-section-heading">
           <h3>Source Enforcement</h3>
         </div>

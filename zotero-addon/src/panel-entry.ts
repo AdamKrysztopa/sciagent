@@ -1,13 +1,51 @@
 import { createElement } from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, type Root } from "react-dom/client";
 
 import { createBackendClient } from "./client/backendClient";
+import { resolvePanelZotero, type PanelBridgeTarget } from "./host/panelBridge";
 import { createZoteroPreferenceStore } from "./host/prefs";
+import type { ZoteroGlobal } from "./host/zoteroTypes";
 import { App } from "./ui/App";
 import type { AddonUiServices } from "./ui/serviceTypes";
 
-function createPanelServices(): AddonUiServices {
-  const preferenceStore = createZoteroPreferenceStore(Zotero);
+type PanelWindow = Window &
+  typeof globalThis & {
+    SciAgentPanel?: {
+      init(): void;
+    };
+  } & PanelBridgeTarget;
+
+let panelRoot: Root | null = null;
+let panelInitialized = false;
+
+function getPanelWindow(): PanelWindow {
+  return globalThis as unknown as PanelWindow;
+}
+
+function resolveZotero(): ZoteroGlobal | null {
+  return resolvePanelZotero(getPanelWindow());
+}
+
+function renderStartupError(message: string): void {
+  const mountPoint = document.getElementById("agt-panel-root");
+  if (mountPoint === null) {
+    document.body.replaceChildren();
+    const fallback = document.createElement("div");
+    fallback.className = "agt-panel-startup-error";
+    fallback.textContent = message;
+    document.body.appendChild(fallback);
+    return;
+  }
+
+  mountPoint.replaceChildren();
+  const fallback = document.createElement("div");
+  fallback.className = "agt-panel-startup-error";
+  fallback.textContent = message;
+  mountPoint.appendChild(fallback);
+}
+
+function createPanelServices(zotero: ZoteroGlobal): AddonUiServices {
+  const preferenceStore = createZoteroPreferenceStore(zotero);
 
   return {
     createClient(config) {
@@ -25,13 +63,13 @@ function createPanelServices(): AddonUiServices {
 
     log(message, data) {
       if (data === undefined) {
-        Zotero.debug(`[SciAgent Panel] ${message}`);
+        zotero.debug(`[SciAgent Panel] ${message}`);
         return;
       }
       try {
-        Zotero.debug(`[SciAgent Panel] ${message}: ${JSON.stringify(data)}`);
+        zotero.debug(`[SciAgent Panel] ${message}: ${JSON.stringify(data)}`);
       } catch {
-        Zotero.debug(`[SciAgent Panel] ${message}: [unserializable payload]`);
+        zotero.debug(`[SciAgent Panel] ${message}: [unserializable payload]`);
       }
     },
 
@@ -49,16 +87,53 @@ declare global {
   }
 }
 
-window.SciAgentPanel = {
-  init(): void {
+function initPanel(): void {
+  const zotero = resolveZotero();
+  if (zotero === null) {
+    renderStartupError("SciAgent could not access the Zotero host API. Reopen the panel from Zotero Tools > SciAgent.");
+    return;
+  }
+
+  if (panelInitialized) {
+    return;
+  }
+
+  try {
     const mountPoint = document.getElementById("agt-panel-root");
     if (mountPoint === null) {
-      Zotero.debug("[SciAgent Panel] Mount point #agt-panel-root not found");
+      zotero.debug("[SciAgent Panel] Mount point #agt-panel-root not found");
+      renderStartupError("SciAgent could not find its panel mount point.");
       return;
     }
-    const services = createPanelServices();
-    const root = createRoot(mountPoint);
-    root.render(createElement(App, { services }));
-    Zotero.debug("[SciAgent Panel] Main-window React app mounted");
+
+    if (panelRoot === null) {
+      panelRoot = createRoot(mountPoint);
+    }
+
+    const services = createPanelServices(zotero);
+    panelRoot.render(createElement(App, { services }));
+    panelInitialized = true;
+    zotero.debug("[SciAgent Panel] Main-window React app mounted");
+  } catch (error) {
+    zotero.debug(`[SciAgent Panel] Startup failed: ${error instanceof Error ? error.message : String(error)}`);
+    zotero.logError(error);
+    renderStartupError("SciAgent UI failed to start. Check the Zotero Error Console for [SciAgent Panel] details.");
+  }
+}
+
+function initWhenReady(): void {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initPanel, { once: true });
+    return;
+  }
+
+  initPanel();
+}
+
+getPanelWindow().SciAgentPanel = {
+  init(): void {
+    initPanel();
   },
 };
+
+initWhenReady();
