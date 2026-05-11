@@ -271,13 +271,13 @@ def test_compute_rank_score_uses_keyword_fallback_when_semantic_zero() -> None:
     )
 
 
-def test_compute_rank_score_ignores_fallback_when_semantic_nonzero() -> None:
-    """When semantic_score > 0 the keyword fallback must not be applied."""
+def test_compute_rank_score_adds_query_bonus_when_semantic_nonzero() -> None:
+    """Strong lexical matches should still receive a small query bonus even with provider scores."""
     paper = NormalizedPaper(
-        title="Completely unrelated paper",
-        abstract="Nothing about forecasting here.",
+        title="Time series forecasting overview",
+        abstract="Forecasting methods for time series applications.",
         year=2024,
-        semantic_score=0.9,  # already has relevance signal
+        semantic_score=0.9,
         citation_count=0,
     )
     score_with_terms = compute_rank_score(
@@ -287,7 +287,25 @@ def test_compute_rank_score_ignores_fallback_when_semantic_nonzero() -> None:
     )
     score_without_terms = compute_rank_score(paper, current_year=2026)
 
-    # Scores should be identical: fallback is inactive when semantic_score > 0.
+    assert score_with_terms > score_without_terms
+
+
+def test_compute_rank_score_no_query_bonus_for_unmatched_semantic_paper() -> None:
+    paper = NormalizedPaper(
+        title="Completely unrelated paper",
+        abstract="Nothing about chemistry or materials here.",
+        year=2024,
+        semantic_score=0.9,
+        citation_count=0,
+    )
+
+    score_with_terms = compute_rank_score(
+        paper,
+        current_year=2026,
+        query_terms=["time", "series", "forecasting"],
+    )
+    score_without_terms = compute_rank_score(paper, current_year=2026)
+
     assert abs(score_with_terms - score_without_terms) < 1e-9
 
 

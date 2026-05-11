@@ -1,13 +1,14 @@
 # P1 Benchmark Report
 
-Validated on 2026-05-10 against benchmark version `m2.7-agt29-v3` and baseline artifact `manual-reviewed-standalone-web-search (2026-05-10-v1)`.
+Validated on 2026-05-11 against benchmark version `m2.7-agt29-v3` and baseline artifact `manual-reviewed-standalone-web-search (2026-05-10-v1)`.
 
 ## Conclusion
 
 - The benchmark is functioning as intended. The primary failure mode is retrieval recall on must-find anchor papers, not broken evaluator logic.
-- The baseline artifact is not the dominant problem. The default run fell below baseline on 9 of 22 queries, and every regression was a recall metric.
+- SCI-0104 materially improved the default run: SciAgent now meets or exceeds the reviewed manual baseline on 18 of 22 queries, up from 13 of 22 in the prior validated run.
 - Hard-filter contract preservation, post-merge result filtering, topic coverage, alternate coverage, and source coverage all held at 1.000 in the validated default run.
-- One benchmark-surface cleanup was applied during validation: the Temporal Fusion Transformer anchor now uses the 2021 journal DOI instead of the 2019 arXiv preprint DOI so the must-find target matches the query's 2020+ framing more directly.
+- The remaining regressions are narrowed to four recall-only misses: AI-01 (REALM), TS-02 (Temporal Fusion Transformer), BIO-01 (Therapeutic genome editing by CRISPR-Cas systems), and BIO-04 (Long COVID review).
+- P1 remains open because [docs/core.md](core.md) requires SciAgent to match or exceed the reviewed manual baseline on constraint compliance and must-find recall before release promotion, and four queries still trail the baseline on recall.
 
 ## Default Scenario
 
@@ -20,36 +21,34 @@ uv run python examples/m2_7_benchmark.py --output-json /tmp/p1-benchmark-current
 | Metric                    | Result       |
 | ------------------------- | ------------ |
 | Queries                   | 22           |
-| Passed all checks         | 13 / 22      |
+| Passed all checks         | 18 / 22      |
 | Hard-filter contract rate | 1.000        |
 | Result hard-filter rate   | 1.000        |
 | Topic coverage rate       | 1.000        |
 | Alternate coverage rate   | 1.000        |
 | Source coverage rate      | 1.000        |
-| Must-find recall@10       | 0.231        |
-| Must-find recall@20       | 0.231        |
-| Average latency           | 15.36 s      |
+| Must-find recall@10       | 0.615        |
+| Must-find recall@20       | 0.692        |
+| Average latency           | 24.74 s      |
 | Estimated cost            | 0.000000 USD |
 
 Queries below the reviewed manual baseline:
 
 - AI-01
-- AI-04
 - TS-02
-- TS-05
 - BIO-01
-- BIO-02
 - BIO-04
-- BIO-05
-- INTER-01
 
 Representative evidence from the validated run:
 
-- AI-04 returned transformer and attention surveys, but not _Attention Is All You Need_ in the top 20.
-- BIO-02 returned AlphaFold-adjacent papers, including AlphaFold 3 and AlphaFold-Multimer, but not the AlphaFold 2 anchor.
-- TS-04 passed on the exact Temporal Fusion Transformer anchor, which shows the evaluator matches anchor papers correctly when retrieval returns them.
+- AI-04 now passes on the exact _Attention Is All You Need_ anchor, which removes the prior foundational-transformer regression.
+- BIO-02 now passes on the AlphaFold 2 anchor, and TS-05 now passes on the Lag-Llama anchor, showing the deterministic query expansions and broader result gathering recovered multiple prior misses.
+- TS-04 still passes on the exact Temporal Fusion Transformer anchor, while TS-02 still misses that anchor on the broader citation-sorted timeseries query. This keeps the remaining issue localized to broad-query recall rather than evaluator matching.
+- AI-01 still returns Lewis et al. RAG but misses REALM; BIO-01 still misses _Therapeutic genome editing by CRISPR-Cas systems_; BIO-04 still misses the benchmark _Long COVID_ review anchor.
 
 ## Feature-Flag Measurement
+
+Last measured on 2026-05-10. SCI-0104 validation reran only the default scenario, so the flag dispositions below remain the latest validated flag-specific measurements and were not rerun as part of this pass.
 
 Command used:
 
@@ -86,4 +85,5 @@ Decision summary:
 
 - SCI-0101 is complete: the benchmark panel, baseline comparison, and published report now exist and are validated.
 - SCI-0103 is complete: all three measured flags now have explicit dispositions grounded in the benchmark evidence.
-- P1 remains open: [docs/core.md](core.md) requires SciAgent to match or exceed the reviewed manual baseline on must-find recall before release promotion, and the validated default run still trails that baseline on 9 of 22 queries.
+- SCI-0104 is in progress: the validated default run improved from 13 / 22 to 18 / 22 queries meeting or exceeding baseline, but four recall regressions remain.
+- P1 remains open: [docs/core.md](core.md) requires SciAgent to match or exceed the reviewed manual baseline on constraint compliance and must-find recall before release promotion, and the validated default run still trails that baseline on AI-01, TS-02, BIO-01, and BIO-04.

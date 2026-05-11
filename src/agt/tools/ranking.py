@@ -67,6 +67,15 @@ def _compute_keyword_relevance(paper: NormalizedPaper, query_terms: list[str]) -
     return hits / len(query_terms)
 
 
+def _compute_title_keyword_relevance(paper: NormalizedPaper, query_terms: list[str]) -> float:
+    """Estimate how directly the title matches the query terms."""
+    if not query_terms:
+        return 0.0
+    title = paper.title.lower()
+    hits = sum(1 for term in query_terms if term.lower() in title)
+    return hits / len(query_terms)
+
+
 def _normalize_title(value: str) -> str:
     return _TITLE_SPACE_RE.sub(" ", value.strip().lower())
 
@@ -150,12 +159,19 @@ def compute_rank_score(
     # and query terms are available, use keyword overlap as a relevance proxy.
     # This prevents citation count from dominating results from sources that
     # do not provide a native relevance signal (CrossRef, BASE, Europe PMC, …).
+    lexical_relevance = 0.0
+    title_relevance = 0.0
+    if query_terms:
+        lexical_relevance = _compute_keyword_relevance(paper, query_terms)
+        title_relevance = _compute_title_keyword_relevance(paper, query_terms)
+
     effective_semantic = semantic
-    if effective_semantic == 0.0 and query_terms:
-        effective_semantic = _compute_keyword_relevance(paper, query_terms)
+    if effective_semantic == 0.0 and lexical_relevance > 0.0:
+        effective_semantic = lexical_relevance
 
     abstract_bonus = weights.abstract_bonus if paper.abstract and paper.abstract.strip() else 0.0
     open_access_bonus = weights.open_access_bonus if paper.open_access else 0.0
+    query_match_bonus = min(0.15, lexical_relevance * 0.08 + title_relevance * 0.07)
 
     score = (
         effective_semantic * weights.semantic
@@ -164,6 +180,7 @@ def compute_rank_score(
         + recency * weights.recency
         + abstract_bonus
         + open_access_bonus
+        + query_match_bonus
     )
     return score * 100.0
 

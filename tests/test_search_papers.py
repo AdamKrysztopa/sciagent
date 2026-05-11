@@ -279,6 +279,199 @@ async def test_search_papers_calls_all_parallel_sources(monkeypatch: pytest.Monk
 
 
 @pytest.mark.anyio
+async def test_search_papers_respects_requested_limit_above_source_setting(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "123",
+        "AGT_SUMMARIZATION_USE_LLM": False,
+        "AGT_SEMANTIC_SCHOLAR_LIMIT": 10,
+    })
+
+    papers = [
+        NormalizedPaper(
+            title=f"Transformer study {index}",
+            abstract="Transformer attention benchmark",
+            year=2024,
+            semantic_score=0.8,
+        )
+        for index in range(20)
+    ]
+
+    monkeypatch.setattr(search_module, "get_guardrails", _fake_get_guardrails)
+    monkeypatch.setattr(search_module, "SemanticScholarClient", _fake_client_factory(papers))
+    monkeypatch.setattr(search_module, "OpenAlexClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "CrossrefClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "PubMedClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+
+    ranked, metadata = await search_module.search_papers(
+        query="transformer attention papers",
+        limit=20,
+        settings=settings,
+        thread_id="thread-limit",
+    )
+
+    assert len(ranked) == 20
+    assert metadata.total_after_filter == 20
+
+
+@pytest.mark.anyio
+async def test_search_papers_uses_deterministic_query_expansions(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "123",
+        "AGT_SUMMARIZATION_USE_LLM": False,
+    })
+    captured_queries: list[str] = []
+
+    class _ExpansionClient:
+        async def search(
+            self,
+            query: str,
+            *,
+            limit: int,
+            year_min: int | None = None,
+            year_max: int | None = None,
+            max_pages: int = 1,
+            categories: list[str] | None = None,
+        ) -> list[NormalizedPaper]:
+            _ = limit
+            _ = year_min
+            _ = year_max
+            _ = max_pages
+            _ = categories
+            captured_queries.append(query)
+            if query == "retrieval augmented":
+                return [
+                    NormalizedPaper(
+                        title="Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+                        abstract="retrieval augmented generation benchmark",
+                        year=2020,
+                        semantic_score=0.9,
+                    )
+                ]
+            return []
+
+    def _expansion_factory(**kwargs: object) -> _ExpansionClient:
+        _ = kwargs
+        return _ExpansionClient()
+
+    monkeypatch.setattr(search_module, "get_guardrails", _fake_get_guardrails)
+    monkeypatch.setattr(search_module, "SemanticScholarClient", _expansion_factory)
+    monkeypatch.setattr(search_module, "OpenAlexClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "CrossrefClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "PubMedClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+
+    ranked, metadata = await search_module.search_papers(
+        query="retrieval augmented generation survey",
+        limit=10,
+        settings=settings,
+        thread_id="thread-expand",
+    )
+
+    assert ranked
+    assert ranked[0].title == "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks"
+    assert "retrieval augmented" in captured_queries
+    assert metadata.search_plan is not None
+    assert "retrieval augmented" in metadata.search_plan.rewritten_queries
+
+
+@pytest.mark.anyio
+async def test_search_papers_refines_broad_two_keyword_queries(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "123",
+        "AGT_SUMMARIZATION_USE_LLM": False,
+    })
+    captured_queries: list[str] = []
+
+    broad_results = [
+        NormalizedPaper(
+            title="Transformers Are Effective for Time Series Forecasting",
+            abstract="Forecasting transformers for time series tasks.",
+            year=2023,
+            semantic_score=0.9,
+            citation_count=100,
+        ),
+        NormalizedPaper(
+            title="General Time Series Forecasting with Transformers",
+            abstract="Transformer forecasting models for time series.",
+            year=2024,
+            semantic_score=0.8,
+            citation_count=90,
+        ),
+    ]
+    anchor = NormalizedPaper(
+        title="Temporal Fusion Transformers for interpretable multi-horizon time series forecasting",
+        abstract="Transformer forecasting for time series with multi-horizon outputs.",
+        year=2021,
+        semantic_score=0.95,
+        citation_count=250,
+        doi="10.1016/j.ijforecast.2021.03.012",
+    )
+
+    class _RefinementClient:
+        async def search(
+            self,
+            query: str,
+            *,
+            limit: int,
+            year_min: int | None = None,
+            year_max: int | None = None,
+            max_pages: int = 1,
+            categories: list[str] | None = None,
+        ) -> list[NormalizedPaper]:
+            _ = limit
+            _ = year_min
+            _ = year_max
+            _ = max_pages
+            _ = categories
+            captured_queries.append(query)
+            if query == "time series":
+                return broad_results
+            if query == "time series forecasting transformer":
+                return [anchor]
+            return []
+
+    def _refinement_factory(**kwargs: object) -> _RefinementClient:
+        _ = kwargs
+        return _RefinementClient()
+
+    monkeypatch.setattr(search_module, "get_guardrails", _fake_get_guardrails)
+    monkeypatch.setattr(search_module, "SemanticScholarClient", _refinement_factory)
+    monkeypatch.setattr(search_module, "OpenAlexClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "CrossrefClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "PubMedClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+
+    ranked, _ = await search_module.search_papers(
+        query="the most cited 2020 and newer timeseries papers - list 5",
+        limit=20,
+        settings=settings,
+        thread_id="thread-refine",
+    )
+
+    assert any(paper.doi == "10.1016/j.ijforecast.2021.03.012" for paper in ranked)
+    assert "time series forecasting transformer" in captured_queries
+
+
+@pytest.mark.anyio
 async def test_fallback_disabled_skips_fallback_providers(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

@@ -11,13 +11,14 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 ### Current Status
 
-- Current focus: P1 — Evidence Before Expansion (post-P0 docs/metadata alignment, 2026-05-10)
-- Current next implementation target: SCI-0104 (recover must-find recall on the 9 below-baseline benchmark queries)
+- Current focus: P1 — Evidence Before Expansion (SCI-0104 rerun validated on 2026-05-11; 4 below-baseline queries remain)
+- Current next implementation target: SCI-0104 (recover must-find recall on the 4 remaining below-baseline benchmark queries: AI-01, TS-02, BIO-01, BIO-04)
 - Last completed: SCI-0103 (feature-flag disposition) (2026-05-10)
 - M7 (Pluggability/Infrastructure) intentionally deprioritized: settings and elastic infra add value only after users trust the product output. See Phase P0–P2 ordering below.
 
 ### Recent Progress
 
+- SCI-0104 in progress: validated default P1 benchmark improved from 13 / 22 to 18 / 22 queries meeting or exceeding the reviewed manual baseline, with must-find recall@20 rising to 0.692; remaining recall gaps are AI-01, TS-02, BIO-01, and BIO-04, so P1 stays open
 - ✅ SCI-0103 complete: KeyBERT is retired from active tuning after benchmark regression, spell check is explicitly deferred pending a typo-focused panel, and reranker is retained as a positive opt-in experiment; P1 still stays open because the current default benchmark remains below the reviewed manual baseline on 9 of 22 queries
 - ✅ SCI-0101 complete: benchmark report published in `docs/benchmark.md`; validated default run preserves hard filters and source coverage across all 22 queries, with 9 recall-only regressions against the manual web-search baseline
 - ✅ M6 complete: all ZAP-0–ZAP-11 stories done — native write path (ZAP-6/7/8), offline cache (ZAP-10), release automation (ZAP-11), /capabilities backend endpoint, nativeWriteEnabled pref
@@ -64,7 +65,7 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 - [x] SCI-0101 — Build retrieval benchmark panel (20–30 queries, recall@10, hard-filter compliance)
 - [x] SCI-0103 — Measure benchmarked feature flags and assign dispositions (retire, keep experimental, or promote)
-- [ ] SCI-0104 — Recover must-find recall on the 9 default-run queries below the reviewed manual baseline; rerun P1 exit benchmark before starting P2
+- [ ] SCI-0104 — Recover must-find recall on the 4 remaining default-run queries below the reviewed manual baseline (AI-01, TS-02, BIO-01, BIO-04); rerun P1 exit benchmark before starting P2
 - [ ] SCI-0205 — Add "Why this paper?" result explanations (deterministic; no extra LLM call)
 - [ ] SCI-0203 — Add persistent search sessions (rerun, diff, export)
 - [ ] SCI-0204 — Add local result cache (SQLite, TTL, cache stats)

@@ -23,6 +23,11 @@ async def test_openalex_search_normalizes_payload(monkeypatch: pytest.MonkeyPatc
                     "publication_year": 2024,
                     "doi": "https://doi.org/10.1/abc",
                     "authorships": [{"author": {"display_name": "Ada Lovelace"}}],
+                    "abstract_inverted_index": {
+                        "Sport": [1],
+                        "Nutrition": [0],
+                        "performance": [2],
+                    },
                     "primary_location": {"landing_page_url": "https://example.org/paper"},
                     "open_access": {"is_oa": True},
                     "relevance_score": 0.7,
@@ -37,6 +42,7 @@ async def test_openalex_search_normalizes_payload(monkeypatch: pytest.MonkeyPatc
     assert len(papers) == 1
     assert papers[0].title == "Nutrition in Sport"
     assert papers[0].doi == "10.1/abc"
+    assert papers[0].abstract == "Nutrition Sport performance"
     assert papers[0].authors == ["Ada Lovelace"]
     assert papers[0].open_access is True
     assert papers[0].citation_count == _EXPECTED_CITATION_COUNT
