@@ -5,9 +5,10 @@
 from __future__ import annotations
 
 import asyncio
+import math
 import re
 import time
-from collections import Counter
+from collections import Counter, defaultdict
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from typing import Literal
@@ -61,16 +62,22 @@ _OVER_FETCH_MULTIPLIER = 3
 _MAX_FETCH_LIMIT = 30
 _MAX_RESULT_LIMIT = 50
 _WAIT_TOKEN_TIMEOUT_SECONDS = 1.5
+_MIN_MULTI_KEYWORD_QUERY_COUNT = 2
 _MAX_EXPANSION_KEYWORD_COUNT = 6
 _EXPANSION_PREFIX_KEYWORD_COUNT = 4
 _SINGLE_KEYWORD_MIN_LEN = 6
 _SINGULARIZE_MIN_LEN = 4
-_MAX_REFINEMENT_BASE_KEYWORDS = 2
+_MAX_REFINEMENT_CORE_KEYWORD_COUNT = 4
 _MIN_REFINEMENT_TOKEN_LEN = 5
-_MIN_REFINEMENT_SUPPORT = 2
 _TITLE_QUERY_TOKEN_RE = re.compile(r"[^\W\d_][\w-]{3,}", re.UNICODE)
+_MAX_REFINEMENT_QUERY_COUNT = 1
+_MAX_REFINEMENT_PAPERS_PER_SOURCE = 8
+_REFINEMENT_CORE_TITLE_HIT_WEIGHT = 4.0
+_REFINEMENT_SEMANTIC_BONUS = 2.0
+_REFINEMENT_ABSTRACT_TERM_WEIGHT = 1.0
 _SINGLE_KEYWORD_STOPWORDS: frozenset[str] = frozenset({
     "analysis",
+    "editing",
     "application",
     "applications",
     "effects",
@@ -101,23 +108,63 @@ _EXPANSION_TRIGGER_KEYWORDS: frozenset[str] = frozenset({
     "review",
     "survey",
 })
+_TRAILING_QUERY_NOISE_TOKENS: frozenset[str] = frozenset({
+    "application",
+    "effect",
+    "list",
+    "method",
+    "paper",
+    "review",
+    "study",
+    "survey",
+    "term",
+})
 _REFINEMENT_STOPWORDS: frozenset[str] = _SINGLE_KEYWORD_STOPWORDS | frozenset({
     "advances",
     "approach",
+    "comparative",
     "approaches",
+    "benchmarking",
     "benchmark",
+    "datasets",
+    "dataset",
+    "engineering",
     "effective",
+    "experimental",
+    "finding",
     "general",
     "large",
-    "paper",
-    "papers",
+    "major",
+    "management",
+    "infection",
+    "infections",
+    "outcome",
+    "outcomes",
+    "patient",
+    "patients",
+    "clinical",
+    "cohort",
+    "hospital",
+    "hospitals",
+    "trial",
+    "trials",
+    "coronavirus",
+    "covid-19",
+    "sars-cov-2",
     "pretrained",
+    "query",
     "recent",
+    "research",
     "study",
     "studies",
+    "support",
+    "symptom",
+    "systematic",
     "task",
     "tasks",
     "using",
+    "which",
+    "meta",
 })
 _MAX_SINGLE_KEYWORD_VARIANTS = 2
 _MAX_REFINEMENT_TOKENS = 2
@@ -195,6 +242,8 @@ def _build_retrieval_registry(
     constraints: SearchConstraintSpec,
     settings: Settings,
     rewritten: RewrittenQuery | None,
+    *,
+    openalex_max_pages: int | None = None,
 ) -> list[_RetrievalProvider]:
     semantic_api_key = None
     if settings.semantic_scholar_api_key is not None:
@@ -259,7 +308,11 @@ def _build_retrieval_registry(
                 query=query,
                 limit=limit,
                 year_min=constraints.year.min_year,
-                max_pages=settings.search_max_pages,
+                max_pages=(
+                    openalex_max_pages
+                    if openalex_max_pages is not None
+                    else settings.search_max_pages
+                ),
             ),
         ),
         _RetrievalProvider(
@@ -359,6 +412,7 @@ async def _fetch_from_sources(
     rewritten: RewrittenQuery | None,
     *,
     tier: Literal["primary", "fallback", "all"] = "all",
+    openalex_max_pages: int | None = None,
 ) -> tuple[list[NormalizedPaper], list[str], list[str], dict[str, float]]:
     """Fetch papers from configured academic sources in parallel."""
 
@@ -367,7 +421,14 @@ async def _fetch_from_sources(
     sources_used: list[str] = []
     timings: dict[str, float] = {}
 
-    registry = _build_retrieval_registry(query, limit, constraints, settings, rewritten)
+    registry = _build_retrieval_registry(
+        query,
+        limit,
+        constraints,
+        settings,
+        rewritten,
+        openalex_max_pages=openalex_max_pages,
+    )
 
     source_tasks: list[asyncio.Task[_SourceFetchResult]] = []
     for provider in registry:
@@ -405,6 +466,8 @@ async def _fetch_query_with_optional_fallback(
     capped_limit: int,
     corrected_query: str,
     progress: ProgressReporter | None = None,
+    *,
+    openalex_max_pages: int | None = None,
 ) -> tuple[list[NormalizedPaper], list[str], list[str], dict[str, float]]:
     results: list[NormalizedPaper] = []
     failures: list[str] = []
@@ -420,6 +483,7 @@ async def _fetch_query_with_optional_fallback(
         thread_id,
         rewritten,
         tier="primary",
+        openalex_max_pages=openalex_max_pages,
     )
     results.extend(primary_results)
     failures.extend(primary_failures)
@@ -460,6 +524,7 @@ async def _fetch_query_with_optional_fallback(
             thread_id,
             rewritten,
             tier="fallback",
+            openalex_max_pages=openalex_max_pages,
         )
         results.extend(fallback_results)
         failures.extend(fallback_failures)
@@ -591,6 +656,16 @@ def _append_unique_query(queries: list[str], query: str) -> None:
     queries.append(normalized)
 
 
+def _trim_trailing_query_noise_tokens(keywords: list[str]) -> list[str]:
+    trimmed = list(keywords)
+    while (
+        len(trimmed) > _MIN_MULTI_KEYWORD_QUERY_COUNT
+        and _normalize_query_token(trimmed[-1]) in _TRAILING_QUERY_NOISE_TOKENS
+    ):
+        trimmed.pop()
+    return trimmed
+
+
 def _build_deterministic_query_variants(
     constraints: SearchConstraintSpec,
     primary_query: str,
@@ -598,18 +673,26 @@ def _build_deterministic_query_variants(
     queries: list[str] = []
     _append_unique_query(queries, primary_query)
 
-    keywords = constraints.keywords.include_keywords
-    should_expand = len(keywords) <= _MAX_EXPANSION_KEYWORD_COUNT and any(
-        keyword in _EXPANSION_TRIGGER_KEYWORDS for keyword in keywords
-    )
-    if should_expand and len(keywords) >= _EXPANSION_PREFIX_KEYWORD_COUNT:
-        for prefix_size in (2, 3):
-            _append_unique_query(queries, " ".join(keywords[:prefix_size]))
+    original_keywords = list(constraints.keywords.include_keywords)
+    keywords = _trim_trailing_query_noise_tokens(original_keywords)
+    if _MIN_MULTI_KEYWORD_QUERY_COUNT <= len(keywords) < len(original_keywords):
+        _append_unique_query(queries, " ".join(keywords))
 
-    if should_expand and len(keywords) == _EXPANSION_PREFIX_KEYWORD_COUNT:
+    expansion_keywords = (
+        keywords if len(keywords) >= _MIN_MULTI_KEYWORD_QUERY_COUNT else original_keywords
+    )
+    should_expand = len(original_keywords) <= _MAX_EXPANSION_KEYWORD_COUNT and any(
+        keyword in _EXPANSION_TRIGGER_KEYWORDS for keyword in original_keywords
+    )
+    if should_expand and len(expansion_keywords) >= _MIN_MULTI_KEYWORD_QUERY_COUNT:
+        for prefix_size in (2, 3):
+            if prefix_size <= len(expansion_keywords):
+                _append_unique_query(queries, " ".join(expansion_keywords[:prefix_size]))
+
+    if should_expand and len(expansion_keywords) == _EXPANSION_PREFIX_KEYWORD_COUNT:
         single_keyword_candidates = [
             keyword
-            for keyword in keywords[1:-1]
+            for keyword in expansion_keywords[1:-1]
             if len(keyword) >= _SINGLE_KEYWORD_MIN_LEN and keyword not in _SINGLE_KEYWORD_STOPWORDS
         ]
         for keyword in single_keyword_candidates[:_MAX_SINGLE_KEYWORD_VARIANTS]:
@@ -625,6 +708,87 @@ def _normalize_query_token(token: str) -> str:
     return lowered
 
 
+def _extract_query_tokens(query: str) -> list[str]:
+    tokens: list[str] = []
+    seen: set[str] = set()
+    for raw_token in _TITLE_QUERY_TOKEN_RE.findall(query.lower()):
+        if raw_token in seen:
+            continue
+        seen.add(raw_token)
+        tokens.append(raw_token)
+    return tokens
+
+
+def _build_refinement_core_terms(
+    constraints: SearchConstraintSpec,
+    active_query: str,
+) -> list[str]:
+    active_terms = _extract_query_tokens(active_query)
+    if len(active_terms) < _MIN_MULTI_KEYWORD_QUERY_COUNT:
+        active_terms = _trim_trailing_query_noise_tokens(
+            list(constraints.keywords.include_keywords)
+        )
+
+    while (
+        len(active_terms) > _MIN_MULTI_KEYWORD_QUERY_COUNT
+        and _normalize_query_token(active_terms[-1]) in _TRAILING_QUERY_NOISE_TOKENS
+    ):
+        active_terms.pop()
+
+    return active_terms[:_MAX_REFINEMENT_CORE_KEYWORD_COUNT]
+
+
+def _token_overlaps_query_keywords(token: str, keywords: set[str]) -> bool:
+    return any(token == keyword or token in keyword or keyword in token for keyword in keywords)
+
+
+def _extract_refinement_terms(text: str, *, excluded_keywords: set[str]) -> list[str]:
+    refinement_terms: list[str] = []
+    for raw_token in _TITLE_QUERY_TOKEN_RE.findall(text.lower()):
+        raw_lower = raw_token.lower()
+        token = _normalize_query_token(raw_token)
+        if len(token) < _MIN_REFINEMENT_TOKEN_LEN:
+            continue
+        if raw_lower in _REFINEMENT_STOPWORDS or token in _REFINEMENT_STOPWORDS:
+            continue
+        if _token_overlaps_query_keywords(token, excluded_keywords):
+            continue
+        refinement_terms.append(token)
+    return refinement_terms
+
+
+def _count_refinement_terms(
+    token_counts: defaultdict[str, float],
+    text: str | None,
+    *,
+    weight: float,
+    excluded_keywords: set[str],
+) -> None:
+    if weight <= 0 or text is None or not text.strip():
+        return
+
+    for token in _extract_refinement_terms(text, excluded_keywords=excluded_keywords):
+        token_counts[token] += weight
+
+
+def _refinement_paper_weight(
+    paper: NormalizedPaper,
+    *,
+    source_rank: int,
+    core_keywords: list[str],
+) -> float:
+    rank_weight = max(1.0, (_MAX_REFINEMENT_PAPERS_PER_SOURCE + 1) - source_rank)
+    citation_weight = min(12.0, math.log1p(max(0, paper.citation_count)))
+    semantic_weight = _REFINEMENT_SEMANTIC_BONUS if paper.semantic_score > 0 else 0.0
+    title_hits = sum(1 for keyword in core_keywords if keyword.lower() in paper.title.lower())
+    return (
+        rank_weight
+        + citation_weight
+        + semantic_weight
+        + (title_hits * _REFINEMENT_CORE_TITLE_HIT_WEIGHT)
+    )
+
+
 def _merge_ranking_terms(existing_terms: list[str], query: str) -> list[str]:
     merged = list(existing_terms)
     for raw_token in _TITLE_QUERY_TOKEN_RE.findall(query.lower()):
@@ -637,42 +801,75 @@ def _merge_ranking_terms(existing_terms: list[str], query: str) -> list[str]:
 def _build_refinement_query(
     papers: list[NormalizedPaper],
     constraints: SearchConstraintSpec,
-) -> str | None:
-    keywords = [
-        _normalize_query_token(keyword) for keyword in constraints.keywords.include_keywords
-    ]
-    if len(keywords) > _MAX_REFINEMENT_BASE_KEYWORDS:
+    active_query: str,
+) -> tuple[str, float] | None:
+    core_keywords = _build_refinement_core_terms(constraints, active_query)
+    if len(core_keywords) < _MIN_MULTI_KEYWORD_QUERY_COUNT:
         return None
 
-    token_counts: Counter[str] = Counter()
-    for paper in papers[:10]:
-        seen_tokens: set[str] = set()
-        text = f"{paper.title} {paper.abstract or ''}"
-        for raw_token in _TITLE_QUERY_TOKEN_RE.findall(text.lower()):
-            token = _normalize_query_token(raw_token)
-            if len(token) < _MIN_REFINEMENT_TOKEN_LEN:
-                continue
-            if token in keywords or token in _REFINEMENT_STOPWORDS:
-                continue
-            if token in seen_tokens:
-                continue
-            seen_tokens.add(token)
-            token_counts[token] += 1
+    excluded_keywords = {
+        _normalize_query_token(keyword) for keyword in constraints.keywords.include_keywords
+    }
+    excluded_keywords.update(_normalize_query_token(keyword) for keyword in core_keywords)
+
+    papers_by_source: dict[str, list[NormalizedPaper]] = defaultdict(list)
+    for paper in papers:
+        papers_by_source[paper.source].append(paper)
+
+    token_counts: defaultdict[str, float] = defaultdict(float)
+    term_document_counts: Counter[str] = Counter()
+    for source_papers in papers_by_source.values():
+        for source_rank, paper in enumerate(
+            source_papers[:_MAX_REFINEMENT_PAPERS_PER_SOURCE], start=1
+        ):
+            paper_weight = _refinement_paper_weight(
+                paper,
+                source_rank=source_rank,
+                core_keywords=core_keywords,
+            )
+            paper_terms = set(
+                _extract_refinement_terms(paper.title, excluded_keywords=excluded_keywords)
+            )
+            if paper.abstract is not None and paper.abstract.strip():
+                paper_terms.update(
+                    _extract_refinement_terms(paper.abstract, excluded_keywords=excluded_keywords)
+                )
+            term_document_counts.update(paper_terms)
+            _count_refinement_terms(
+                token_counts,
+                paper.title,
+                weight=paper_weight,
+                excluded_keywords=excluded_keywords,
+            )
+            _count_refinement_terms(
+                token_counts,
+                paper.abstract,
+                weight=paper_weight * _REFINEMENT_ABSTRACT_TERM_WEIGHT,
+                excluded_keywords=excluded_keywords,
+            )
 
     refinement_terms = [
-        token
+        (token, count)
         for token, count in sorted(
             token_counts.items(),
-            key=lambda item: (-item[1], -len(item[0]), item[0]),
+            key=lambda item: (
+                -term_document_counts[item[0]],
+                -item[1],
+                -len(item[0]),
+                item[0],
+            ),
         )
-        if count >= _MIN_REFINEMENT_SUPPORT
     ][:_MAX_REFINEMENT_TOKENS]
     if not refinement_terms:
         return None
 
-    refinement_query = " ".join([*constraints.keywords.include_keywords, *refinement_terms])
+    selected_terms = [token for token, _ in refinement_terms]
+    refinement_query = " ".join([*core_keywords, *selected_terms])
     normalized = " ".join(refinement_query.split()).strip()
-    return normalized or None
+    if not normalized or normalized == active_query:
+        return None
+    refinement_score = sum(count for _, count in refinement_terms)
+    return normalized, refinement_score
 
 
 def _apply_filter_edit(
@@ -976,7 +1173,9 @@ async def search_papers(  # noqa: PLR0912, PLR0915
     all_timings: dict[str, float] = {}
     retry_count = 0
     executed_queries: set[str] = set()
+    executed_query_sequence: list[str] = []
     ranking_terms = list(constraints.keywords.include_keywords)
+    refinement_candidates: list[tuple[float, int, int, str]] = []
 
     def _merge_telemetry(
         failures: list[str],
@@ -997,6 +1196,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
         if index > 0:
             _emit_progress(progress, "retrieving query expansion")
         executed_queries.add(active_query)
+        executed_query_sequence.append(active_query)
         ranking_terms = _merge_ranking_terms(ranking_terms, active_query)
         query_results, failures, sources_used, timings = await _fetch_query_with_optional_fallback(
             active_query,
@@ -1012,20 +1212,27 @@ async def search_papers(  # noqa: PLR0912, PLR0915
         )
         results.extend(query_results)
         _merge_telemetry(failures, sources_used, timings)
+        if provider is None and query_results:
+            refinement_candidate = _build_refinement_query(query_results, constraints, active_query)
+            if refinement_candidate is not None:
+                refinement_query, refinement_score = refinement_candidate
+                refinement_candidates.append((
+                    refinement_score,
+                    len(_build_refinement_core_terms(constraints, active_query)),
+                    len(active_query),
+                    refinement_query,
+                ))
 
     if provider is None and results:
-        preliminary = _rank_and_filter(
-            results,
-            constraints,
-            capped_limit,
-            settings=active_settings,
-            query=corrected_query,
-            query_terms=ranking_terms,
-        )
-        refinement_query = _build_refinement_query(preliminary, constraints)
-        if refinement_query is not None and refinement_query not in executed_queries:
+        for _, _, _, refinement_query in sorted(
+            refinement_candidates,
+            key=lambda item: (-item[0], -item[1], -item[2], len(item[3]), item[3]),
+        ):
+            if refinement_query in executed_queries:
+                continue
             _emit_progress(progress, "retrieving broad-query refinement")
             executed_queries.add(refinement_query)
+            executed_query_sequence.append(refinement_query)
             ranking_terms = _merge_ranking_terms(ranking_terms, refinement_query)
             (
                 refinement_results,
@@ -1043,9 +1250,11 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                 capped_limit,
                 corrected_query,
                 progress,
+                openalex_max_pages=max(active_settings.search_max_pages, 2),
             )
             results.extend(refinement_results)
             _merge_telemetry(refinement_failures, refinement_sources, refinement_timings)
+            break
 
     if results:
         _emit_progress(progress, "enriching citations")
@@ -1119,12 +1328,15 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                 total_fetched=len(results),
                 total_after_filter=len(filtered),
                 source_timings=all_timings,
-                search_plan=plan,
+                search_plan=plan.model_copy(update={"rewritten_queries": executed_query_sequence}),
             )
             return filtered, metadata
 
     if retrieval_query != regex_query:
         _emit_progress(progress, "retrying with deterministic keyword query")
+        if regex_query not in executed_queries:
+            executed_queries.add(regex_query)
+            executed_query_sequence.append(regex_query)
         (
             fallback_results,
             fallback_failures,
@@ -1171,7 +1383,9 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                     total_fetched=len(fallback_results),
                     total_after_filter=len(filtered),
                     source_timings=all_timings,
-                    search_plan=plan,
+                    search_plan=plan.model_copy(
+                        update={"rewritten_queries": executed_query_sequence}
+                    ),
                 )
                 return filtered, metadata
         if not results:
@@ -1192,6 +1406,6 @@ async def search_papers(  # noqa: PLR0912, PLR0915
         total_fetched=len(results),
         total_after_filter=0,
         source_timings=all_timings,
-        search_plan=plan,
+        search_plan=plan.model_copy(update={"rewritten_queries": executed_query_sequence}),
     )
     return [], metadata

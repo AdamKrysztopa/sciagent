@@ -309,6 +309,65 @@ def test_compute_rank_score_no_query_bonus_for_unmatched_semantic_paper() -> Non
     assert abs(score_with_terms - score_without_terms) < 1e-9
 
 
+def test_rank_and_index_papers_promotes_distinct_anchor_over_near_duplicate_titles() -> None:
+    papers = [
+        NormalizedPaper(
+            title="Retrieval-Augmented Generation for Large Language Models: A Survey",
+            year=2025,
+            semantic_score=0.95,
+            citation_count=260,
+        ),
+        NormalizedPaper(
+            title="Agentic Retrieval-Augmented Generation: A Survey on Agentic RAG",
+            year=2025,
+            semantic_score=0.94,
+            citation_count=240,
+        ),
+        NormalizedPaper(
+            title="REALM: Retrieval-Augmented Language Model Pre-Training",
+            year=2020,
+            semantic_score=0.94,
+            citation_count=515,
+        ),
+    ]
+
+    ranked = rank_and_index_papers(
+        papers,
+        current_year=2026,
+        query_terms=["retrieval", "augmented"],
+    )
+
+    assert ranked[1].title == "REALM: Retrieval-Augmented Language Model Pre-Training"
+    assert ranked[2].title == "Agentic Retrieval-Augmented Generation: A Survey on Agentic RAG"
+
+
+def test_rank_and_index_papers_boosts_specific_anchor_with_full_query_coverage() -> None:
+    papers = [
+        NormalizedPaper(
+            title="Time series forecasting with transformers",
+            year=2023,
+            semantic_score=0.95,
+            citation_count=220,
+        ),
+        NormalizedPaper(
+            title="Temporal Fusion Transformers for interpretable multi-horizon time series forecasting",
+            year=2021,
+            semantic_score=0.94,
+            citation_count=153,
+        ),
+    ]
+
+    ranked = rank_and_index_papers(
+        papers,
+        current_year=2026,
+        query_terms=["time", "series", "forecasting", "transformer"],
+    )
+
+    assert ranked[0].title == (
+        "Temporal Fusion Transformers for interpretable multi-horizon time series forecasting"
+    )
+
+
 def test_weights_presets_sum_to_approximately_one() -> None:
     """All weight fields (excl. bonuses) of the presets should sum ≤ 1.0."""
     for preset in (WEIGHTS_DEFAULT, WEIGHTS_RECENCY, WEIGHTS_CITATION):
