@@ -896,6 +896,163 @@ Acceptance criteria:
 - [ ] Add endpoint contract section to [core.md](core.md) for AGT-18 and plugin usage
 - [ ] Add release checklist document for MVP and Production v1 promotion criteria
 
+## CI/CD and Release Delivery Plan
+
+### Release Pipeline Status
+
+GitHub Actions are already present for the repo-wide quality gate:
+
+| Surface        | Workflow                                     | Current behavior                                                                                               |
+| -------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Python backend | `.github/workflows/ci.yml`                   | Runs `ruff check`, `ruff format --check`, `pyright`, and `pytest -q --vcr-record=none` on Python 3.13 and 3.14 |
+| Zotero add-on  | `.github/workflows/ci.yml`                   | Runs `npm ci`, `npm run lint`, `npm run build`, `npm run typecheck`, and `npm run test` in `zotero-addon/`     |
+| Docs           | `.github/workflows/ci.yml`                   | Runs `markdownlint-cli2` and `mkdocs build --strict`                                                           |
+| XPI release    | `.github/workflows/zotero-addon-release.yml` | On `v*` tags, validates and uploads `sciagent-zotero-addon.xpi` to a GitHub Release                            |
+
+Release delivery is only partially complete. The add-on release workflow builds and
+publishes the XPI, but it does not yet generate, update, checksum, sign, or upload
+`update.rdf`. Backend artifact publishing, hosted backend deployment, and MkDocs
+site deployment are also not implemented yet.
+
+### Planned CI/Release Work
+
+| Area               | Planned work                                                                                                                      | Owner   |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| Backend artifact   | Build a Docker image and optional wheel/sdist on release tags; publish to GHCR or the selected package registry                   | Project |
+| Backend deployment | Add staged deployment workflow after AGT-24/25/26: durable store, worker queue, IaC, health check, and manual production approval | Project |
+| Add-on artifact    | Keep tag-triggered XPI build; add deterministic version validation against `manifest.json`, `package.json`, and tag               | Project |
+| Add-on integrity   | Generate SHA256 for each XPI and upload it with the release                                                                       | Project |
+| Add-on signing     | Keep unsigned self-hosted builds for MVP; document Zotero/Mozilla signing path before public distribution                         | Project |
+| `update.rdf`       | Generate or update RDF during release; publish it from a stable URL reachable by Zotero auto-update                               | Project |
+| Docs deployment    | Add GitHub Pages, Netlify, or equivalent deployment after `mkdocs build --strict` passes on `main`                                | Project |
+| Release notes      | Generate release notes from changelog or commit range instead of the current static body                                          | Project |
+| Smoke tests        | Add optional release smoke test for `/health`, basic search, approval reject path, and XPI artifact presence                      | Project |
+| Security scans     | Add dependency and secret scanning before public release; fail on high-severity findings                                          | Project |
+
+### `update.rdf` Policy
+
+- Version source of truth: align `zotero-addon/package.json`,
+  `zotero-addon/manifest.json`, the git tag, and `<em:version>`.
+- Release URL: `update.rdf` must point to the immutable GitHub Release XPI URL,
+  not a mutable build artifact.
+- Integrity: generate SHA256 for every XPI; add `<em:updateHash>` if Zotero 9
+  accepts the selected hash format, and always upload a `.sha256` release asset.
+- Hosting: publish `update.rdf` from a stable raw URL or release asset URL that
+  Zotero can fetch without authentication.
+- Rollback: retain enough prior entries or a hotfix path so users on the previous
+  version can still discover a safe update.
+- Signing: unsigned self-hosted XPI is acceptable for internal MVP validation;
+  public distribution needs an explicit signing and trust policy.
+
+## Backend and Frontend Completeness Checklist
+
+### Backend
+
+| Area                     | Status           | Remaining plan                                                                                                                  |
+| ------------------------ | ---------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| API surface              | Mostly complete  | Keep `/health`, `/run`, `/resume`, `/status/{run_id}`, and `/capabilities` contract tests current                               |
+| Search and retrieval     | Mostly complete  | Recover P1 benchmark recall gaps before starting new differentiators                                                            |
+| Ranking and filters      | Mostly complete  | Add deterministic "Why this paper?" explanation output for result trust                                                         |
+| Workflow state           | Mostly complete  | Add remaining resume-from-checkpoint tests for interrupted post-search and post-approval paths                                  |
+| Zotero write path        | Complete for MVP | Preserve preflight, approval gate, idempotent upsert, partial-success reporting, and retry safety                               |
+| Backend PDF writes       | Not complete     | AGT-13 remains open for backend PDF attachment; add-on native PDF path exists                                                   |
+| LLM providers            | Partial          | xAI path exists; OpenAI, Anthropic, and Groq adapters need shared protocol tests before multi-provider rollout is complete      |
+| Auth and tenancy         | Partial          | Current backend API key and client ID isolation are MVP only; hosted mode needs OAuth/JWT, quotas, audit log, and RBAC decision |
+| Persistence and scale    | Planned          | AGT-24 distributed checkpointing, AGT-25 async worker queue, and AGT-26 IaC/deploy pipeline remain P5/M7 work                   |
+| Local cache and sessions | Planned          | Add SQLite result cache, persistent sessions, rerun, diff, and export workflows in P2                                           |
+| Provider registry        | Planned          | AGT-23 unified retrieval registry and provider contract tests remain required before broad adapter growth                       |
+
+### Frontend / Zotero Add-on
+
+| Area                 | Status            | Remaining plan                                                                                            |
+| -------------------- | ----------------- | --------------------------------------------------------------------------------------------------------- |
+| Build and packaging  | Complete for MVP  | Keep XPI build, manifest, bootstrap, and update metadata aligned with release workflow                    |
+| Main-window UI       | Complete for M6.1 | Continue with main-window product path; item-pane launcher stays secondary                                |
+| Backend client       | Complete for MVP  | Keep typed client aligned with backend contract and `/capabilities` schema                                |
+| Host boundary        | Complete for MVP  | Keep Zotero globals inside adapters, not presentational React components                                  |
+| Native write path    | Complete for MVP  | Preserve explicit approval before native item creation, idempotent dedup, and per-item write outcomes     |
+| Native PDF path      | Complete for MVP  | Keep PDF attachment failure separate from item write failure                                              |
+| Settings             | Complete for MVP  | Backend URL/API key/client ID and search defaults are in add-on prefs; provider keys stay backend-side    |
+| Source transparency  | Partial           | Expand unavailable-source states with missing-key guidance and capability-driven UI copy                  |
+| Session workflows    | Planned           | Add saved sessions, rerun, diff, export, watch lists, and scheduled reruns in P2/P4                       |
+| Result explanations  | Planned           | Render deterministic score/explanation fields once backend exposes them                                   |
+| Accessibility        | Planned           | Add keyboard navigation, ARIA labels, high-contrast checks, and screen-reader audit before public release |
+| Internationalization | Planned           | Fluent scaffolding exists; add non-English translations and i18n tests when product copy stabilizes       |
+
+### Non-Negotiable Invariants
+
+- Zotero writes remain idempotent and approval-gated; no silent library writes.
+- `src/agt/zotero/preflight.py` must pass before backend write attempts.
+- Hard filters are not weakened by LLM rewriting.
+- Python remains strictly typed and quality-gated by Ruff, Pyright, and pytest.
+- Add-on React/TypeScript keeps hooks lint-clean and host APIs at the boundary.
+- Provider/search keys stay on the backend unless a future BYOK feature is
+  explicitly designed, reviewed, and secured.
+
+## API Keys and Access Inventory
+
+### Ownership Rules
+
+- **Project-owned**: maintained by the SciAgent backend operator for hosted or
+  shared environments; stored in backend secrets or GitHub/cloud secret stores.
+- **User-provided**: belongs to the researcher or Zotero account owner; stored
+  locally, in Zotero/add-on preferences, or in delegated auth after hosted auth
+  exists.
+- **Optional user-provided**: useful for local self-hosting or BYOK experiments,
+  but not required for the default hosted product path.
+- **Developer/local-only**: build, release, or local debugging access; not part of
+  the researcher-facing settings surface.
+
+For the hosted product, LLM and search-source credentials are backend-side
+project secrets. The add-on must not store OpenAI, Anthropic, xAI, Groq, CORE,
+Dimensions, SerpAPI, Semantic Scholar, or NCBI keys unless a future BYOK design
+adds encryption, audit logging, rate limits, and explicit consent.
+
+### Backend-Side Provider and Search Keys
+
+| Access                                                      | Ownership     | Current need         | Notes                                                                    |
+| ----------------------------------------------------------- | ------------- | -------------------- | ------------------------------------------------------------------------ |
+| `AGT_OPENAI_API_KEY` / `OPENAI_API_KEY`                     | Project-owned | One LLM key required | Default auto-detect priority starts with OpenAI                          |
+| `AGT_ANTHROPIC_API_KEY` / `ANTHROPIC_API_KEY`               | Project-owned | One LLM key required | Auto-detect fallback after OpenAI                                        |
+| `AGT_XAI_API_KEY` / `XAI_API_KEY`                           | Project-owned | One LLM key required | Auto-detect fallback after OpenAI and Anthropic                          |
+| `AGT_GROQ_API_KEY` / `GROQ_API_KEY`                         | Project-owned | Optional             | Config supports Groq fallback, but provider rollout remains partial      |
+| `AGT_SEMANTIC_SCHOLAR_API_KEY` / `SEMANTIC_SCHOLAR_API_KEY` | Project-owned | Optional             | Raises Semantic Scholar rate limits; no-key mode remains supported       |
+| `AGT_NCBI_API_KEY` / `NCBI_API_KEY`                         | Project-owned | Optional             | Raises PubMed E-Utilities rate limit; keyless PubMed still works         |
+| `AGT_CORE_API_KEY` / `CORE_API_KEY`                         | Project-owned | Optional             | Enables CORE enrichment; default discovery must remain strong without it |
+| `AGT_SERPAPI_KEY` / `SERPAPI_KEY`                           | Project-owned | Optional             | Enables Google Scholar via SerpAPI; paid and optional                    |
+| `AGT_DIMENSIONS_KEY` / `DIMENSIONS_KEY`                     | Project-owned | Optional             | Enables Dimensions; usually paid or institution-managed                  |
+
+### Missing or Future Service Accesses
+
+| Access                                    | Ownership     | Current need            | Notes                                                                 |
+| ----------------------------------------- | ------------- | ----------------------- | --------------------------------------------------------------------- |
+| `AGT_BACKEND_API_KEY` / `BACKEND_API_KEY` | Project-owned | Hosted required         | Add-on-to-backend auth for shared deployments; optional for local dev |
+| Database or checkpoint store URL          | Project-owned | Future hosted required  | Needed for AGT-24 durable LangGraph checkpoints                       |
+| Redis or task queue URL                   | Project-owned | Future hosted required  | Needed for AGT-25 async worker queue                                  |
+| Container registry token                  | Project-owned | Future release required | Needed if backend images publish outside default GitHub permissions   |
+| Cloud deploy credentials                  | Project-owned | Future hosted required  | Needed for staging/production deployment workflow                     |
+| Add-on signing account/token              | Project-owned | Public release required | Needed only if distributing through a signed public channel           |
+| GitHub Pages or docs host token           | Project-owned | Future docs deploy      | Not needed until docs deployment is automated                         |
+
+### User-Provided Accesses
+
+| Access                                            | Ownership                            | Current need                         | Notes                                                                                      |
+| ------------------------------------------------- | ------------------------------------ | ------------------------------------ | ------------------------------------------------------------------------------------------ |
+| `AGT_ZOTERO_API_KEY` / `ZOTERO_API_KEY`           | User-provided                        | Required for backend pyzotero writes | User or group library key with write scope; native add-on writes can avoid backend storage |
+| `AGT_ZOTERO_LIBRARY_ID` / `ZOTERO_LIBRARY_ID`     | User-provided                        | Required for backend pyzotero writes | Identifies the user's personal or group library                                            |
+| `AGT_ZOTERO_LIBRARY_TYPE` / `ZOTERO_LIBRARY_TYPE` | User-provided                        | Usually defaulted                    | `user` or `group`; must match the library key scope                                        |
+| Backend URL                                       | User-provided                        | Required for add-on local setup      | Points the add-on to local or hosted backend                                               |
+| Add-on backend API key                            | User-provided copy of project secret | Hosted required                      | Researcher pastes a scoped key/token issued by the project backend                         |
+| Add-on client ID                                  | User-provided/local identity         | Required for isolation               | Used for owner/thread isolation; can be generated per installation                         |
+
+### Already-Covered Baseline
+
+The current keyless/easy-access baseline does not require missing search keys for
+OpenAlex, Crossref, Europe PMC, arXiv, BASE, OpenCitations, PubMed keyless mode,
+or Semantic Scholar no-key mode. At least one LLM provider key is still required
+for LLM-backed query rewriting and summaries unless those features are disabled
+or replaced with deterministic fallbacks.
+
 ## PR Checklist Template
 
 - [ ] PR title includes story IDs (for example AGT-11)
