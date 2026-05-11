@@ -194,6 +194,11 @@ export interface ExtractKeywordsResponse {
   include_keywords: string[];
   exclude_keywords: string[];
   collection_name: string | null;
+  min_year: number | null;
+  max_year: number | null;
+  min_citations: number | null;
+  max_citations: number | null;
+  open_access_only: boolean;
 }
 
 export interface StatusResponse {

@@ -270,6 +270,11 @@ export function useSciAgentController(services: AddonUiServices) {
             ...base.hard_filters,
             include_keywords: result.include_keywords,
             exclude_keywords: result.exclude_keywords,
+            ...(result.min_year !== null ? { min_year: result.min_year } : {}),
+            ...(result.max_year !== null ? { max_year: result.max_year } : {}),
+            ...(result.min_citations !== null ? { min_citations: result.min_citations } : {}),
+            ...(result.max_citations !== null ? { max_citations: result.max_citations } : {}),
+            open_access_only: result.open_access_only || base.hard_filters.open_access_only,
           },
         };
       });

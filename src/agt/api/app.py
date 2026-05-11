@@ -93,6 +93,11 @@ class ExtractKeywordsResponse(BaseModel):
     include_keywords: list[str]
     exclude_keywords: list[str]
     collection_name: str | None
+    min_year: int | None
+    max_year: int | None
+    min_citations: int | None
+    max_citations: int | None
+    open_access_only: bool
 
 
 @dataclass(slots=True)
@@ -419,6 +424,11 @@ def create_app() -> FastAPI:  # noqa: PLR0915
             include_keywords=result.include_keywords,
             exclude_keywords=result.exclude_keywords,
             collection_name=result.collection_name,
+            min_year=result.min_year,
+            max_year=result.max_year,
+            min_citations=result.min_citations,
+            max_citations=result.max_citations,
+            open_access_only=result.open_access_only,
         )
 
     @app.get("/status/{run_id}", response_model=StatusResponse)
