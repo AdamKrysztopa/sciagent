@@ -1,6 +1,6 @@
 # SciAgent Prioritized Action Plan
 
-> **Finalization audit completed: 2026-05-11** — All quality gates clean (ruff 0, pyright 0, tests passing; addon lint/typecheck/test/build green). P1 closed at 19/22 by product decision; advancing to P2.
+> **Finalization audit completed: 2026-05-11** — P2 complete (2026-05-11). All quality gates green: ruff 0, pyright 0, 230 tests passing; addon lint/typecheck/build/test green; markdownlint 0.
 > This is the canonical execution tracker for live status, overall progress, and the next implementation target.
 > Update done / not done state here first.
 > See [docs/manual.md](manual.md) for configuration & usage.
@@ -11,13 +11,14 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 ### Current Status
 
-- Current focus: P2 — Differentiating Core (SCI-0203 next: persistent search sessions)
-- Current next implementation target: SCI-0203
-- Last completed: SCI-0205 — deterministic "Why this paper?" explanations (2026-05-11)
+- Current focus: P3 — Zotero-Native Value
+- Current next implementation target: SCI-0301
+- Last completed: P2 complete — SCI-0201/0202/0203/0204/0206 all shipped (2026-05-11)
 - M7 (Pluggability/Infrastructure) intentionally deprioritized: settings and elastic infra add value only after users trust the product output. See Phase P0–P2 ordering below.
 
 ### Recent Progress
 
+- ✅ P2 complete (2026-05-11): SCI-0201 `/capabilities` extended with `provider_availability` + `active_provider`; SCI-0203 `SessionStore` (JSON file persistence, list/load/rerun API); SCI-0204 `ResultCache` (SQLite, TTL, stats/clear API); SCI-0206 `export_session` (Markdown PRISMA-lite, JSON, CSV via `/status/{id}/export`); SCI-0202 `SourcePresets` component in Zotero sidebar (Balanced, Open Access, Recent 5yr, Highly Cited, Quick 5, Deep 20). All gates: ruff 0, pyright 0, 230 tests, addon clean.
 - ✅ SCI-0205 complete: `NormalizedPaper.explanation` field added; `explain_paper()` in ranking.py generates deterministic, signal-based reasons (semantic score tier, keyword hit count, citations, influential citations, open access, source, year); populated by `_attach_explanations` before all result returns in search_papers; shown in Streamlit UI, Zotero sidebar (ResultsList.tsx), and m2_7_search_plan_demo (2026-05-11)
 - ✅ SCI-0104 closed: final validated run 19/22, recall@20=0.769; INTER-03 recovered via long-query prefix variant; TS-02/BIO-01/BIO-04 remain as external-API retrieval-depth limits; P1 closed by product decision (2026-05-11)
 - ✅ SCI-0103 complete: KeyBERT is retired from active tuning after benchmark regression, spell check is explicitly deferred pending a typo-focused panel, and reranker is retained as a positive opt-in experiment; P1 remains open pending SCI-0104 on the 4 remaining below-baseline queries
@@ -49,13 +50,13 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 - [x] M6.1 — Main-Window Plugin MVP (ZAP-9 settings split, ZAP-4A pre-search filter composer, ZAP-3 main-window workspace, addon v0.1.2)
 - [x] M6.1-D — Approval/write flow hardening and PDF attachment status in the main-window surface
 - [x] P0 — Product Truth and Trust
+- [x] P1 — Evidence Before Expansion _(closed at 19/22 by product decision; 2026-05-11)_
+- [x] P2 — Differentiating Core _(sessions, cache, export, capability endpoint, source presets; 2026-05-11)_
 
 ### Not Done Milestones
 
 > Ordered from fastest path to final product. P0 (trust) before P1 (evidence) before P2 (differentiation) before P3 (Zotero-native) before P4 (retention) before P5 (scale). M7 infrastructure moved to P5.
 
-- [x] P1 — Evidence Before Expansion _(closed at 19/22 by product decision; 2026-05-11)_
-- [ ] P2 — Differentiating Core _(sessions, explanations, cache; weeks)_
 - [ ] P3 — Zotero-Native Value _(collection-aware search, Library Doctor; weeks)_
 - [ ] P4 — Retention and Recurring Workflows _(watch lists, scheduled reruns; weeks)_
 - [ ] P5 — External Interfaces and Deployment, M7 _(MCP, hosted backend, elastic infra; months)_
@@ -68,11 +69,11 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 - [x] SCI-0103 — Measure benchmarked feature flags and assign dispositions (retire, keep experimental, or promote)
 - [x] SCI-0104 — Closed at 19/22 (INTER-03 recovered; TS-02/BIO-01/BIO-04 are external-API retrieval limits); P1 closed by product decision
 - [x] SCI-0205 — "Why this paper?" explanations: deterministic, signal-based (relevance, citations, source, year, open access); shown in Streamlit UI, Zotero sidebar, and demo output; NormalizedPaper.explanation field populated at ranking time
-- [ ] SCI-0203 — Add persistent search sessions (rerun, diff, export)
-- [ ] SCI-0204 — Add local result cache (SQLite, TTL, cache stats)
-- [ ] SCI-0201 — Add backend capability endpoint (sources, filters, providers as data, not hardcoded)
-- [ ] SCI-0206 — Export search plan and session report (Markdown/JSON/CSV)
-- [ ] SCI-0202 — Add source selector and safe presets (Balanced, Biomedical, Fast, etc.)
+- [x] SCI-0203 — Persistent sessions: SessionStore (JSON files in ~/.sciagent/sessions/), auto-save on run, /sessions + /sessions/{id} + /sessions/{id}/rerun API endpoints
+- [x] SCI-0204 — Local result cache: ResultCache (SQLite, configurable TTL, /cache/stats, /cache/clear), auto-populate on run, cache-hit bypass of search phase
+- [x] SCI-0201 — Backend capability endpoint extended: provider_availability + active_provider added to /capabilities response; CapabilitiesResponse in contracts.ts updated
+- [x] SCI-0206 — Export: export_session() in session_export.py (Markdown PRISMA-lite, JSON, CSV); /status/{run_id}/export?format= endpoint
+- [x] SCI-0202 — Source presets: SourcePresets.tsx component (Balanced, Open Access, Recent 5yr, Highly Cited, Quick 5, Deep 20); rendered above FilterEditor in Zotero sidebar; CSS styles added
 - [ ] AGT-21 follow-up — Security checklist and auth hardening
 - [ ] AGT-24 — Durable distributed checkpointing (P5 / M7)
 
@@ -742,12 +743,12 @@ Acceptance criteria:
 
 | ID       | Story                                                                                                               | Owner                   | Status |
 | -------- | ------------------------------------------------------------------------------------------------------------------- | ----------------------- | ------ |
-| SCI-0205 | Add "Why this paper?" result explanations: source, matched filters, score components, warnings — no extra LLM call  | python-backend-engineer | [ ]    |
-| SCI-0203 | Add persistent search sessions: save, rerun from plan, diff two sessions, export (Markdown/JSON/CSV)                | python-backend-engineer | [ ]    |
-| SCI-0204 | Add local result cache: SQLite, TTL, cache-hit logging, `agt cache stats/clear` CLI commands                        | python-backend-engineer | [ ]    |
-| SCI-0201 | Extend backend capability endpoint: per-source capabilities, provider availability, filter support map, PDF support | python-backend-engineer | [ ]    |
-| SCI-0206 | Export search plan and session report: PRISMA-lite log, search plan, filter snapshot, write outcomes                | python-backend-engineer | [ ]    |
-| SCI-0202 | Add source selector and safe presets: Balanced, Fast, Biomedical, Open-access only, Deep, No preprints              | zotero-frontend         | [ ]    |
+| SCI-0205 | Add "Why this paper?" result explanations: source, matched filters, score components, warnings — no extra LLM call  | python-backend-engineer | \[x]   |
+| SCI-0203 | Add persistent search sessions: save, rerun from plan, diff two sessions, export (Markdown/JSON/CSV)                | python-backend-engineer | \[x]   |
+| SCI-0204 | Add local result cache: SQLite, TTL, cache-hit logging, `agt cache stats/clear` CLI commands                        | python-backend-engineer | \[x]   |
+| SCI-0201 | Extend backend capability endpoint: per-source capabilities, provider availability, filter support map, PDF support | python-backend-engineer | \[x]   |
+| SCI-0206 | Export search plan and session report: PRISMA-lite log, search plan, filter snapshot, write outcomes                | python-backend-engineer | \[x]   |
+| SCI-0202 | Add source selector and safe presets: Balanced, Fast, Biomedical, Open-access only, Deep, No preprints              | zotero-frontend         | \[x]   |
 
 **Gate:** User can rerun a past search from saved plan. Every result card shows why it appeared. Session export is human-readable.
 

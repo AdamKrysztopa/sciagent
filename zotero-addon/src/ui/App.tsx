@@ -7,6 +7,7 @@ import { ConfigPanel } from "./components/ConfigPanel";
 import { FilterEditor } from "./components/FilterEditor";
 import { HealthStatus } from "./components/HealthStatus";
 import { ResultsList } from "./components/ResultsList";
+import { SourcePresets } from "./components/SourcePresets";
 import { SourceToggles } from "./components/SourceToggles";
 import { type RunPhase, useSciAgentController } from "./hooks/useSciAgentController";
 
@@ -230,6 +231,12 @@ function IdleView({ controller }: { controller: SciAgentController }) {
           </output>
         ) : null}
       </section>
+
+      <SourcePresets
+        disabled={false}
+        filterDraft={controller.filterDraft}
+        onChange={controller.onFilterDraftChange}
+      />
 
       <FilterEditor
         disabled={false}

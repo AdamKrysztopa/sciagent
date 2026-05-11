@@ -180,6 +180,8 @@ export interface CapabilitiesResponse {
   source_policy: SourceCapability[];
   filter_support: Record<string, string[]>;
   pdf_import_supported: boolean;
+  provider_availability: Record<string, boolean>;
+  active_provider: string;
 }
 
 export interface StatusResponse {

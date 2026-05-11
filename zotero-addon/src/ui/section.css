@@ -637,6 +637,44 @@
 }
 
 /* ── Responsive ───────────────────────────────────────────── */
+/* ── Source presets ───────────────────────────────────────── */
+.agt-presets {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.agt-presets-label {
+  color: var(--agt-text-muted);
+  font-size: 0.78rem;
+  flex-shrink: 0;
+}
+
+.agt-preset-chip {
+  background: var(--agt-surface-secondary);
+  border: 1px solid var(--agt-border);
+  border-radius: 12px;
+  color: var(--agt-text);
+  cursor: pointer;
+  font-size: 0.78rem;
+  padding: 2px 10px;
+  transition: background 0.15s;
+}
+
+.agt-preset-chip:hover:not(:disabled) {
+  background: var(--agt-accent);
+  border-color: var(--agt-accent);
+  color: #fff;
+}
+
+.agt-preset-chip:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
 @media (max-width: 640px) {
   .agt-grid,
   .agt-grid--compact,

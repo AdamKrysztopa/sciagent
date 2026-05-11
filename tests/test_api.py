@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import tempfile
+import uuid
 from dataclasses import dataclass, field
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -39,6 +42,21 @@ class _Settings:
     core_api_key: _Secret | None = None
     dimensions_key: _Secret | None = None
     serpapi_key: _Secret | None = None
+    zotero_collection_name: str = "SciAgent"
+    openai_api_key: _Secret | None = None
+    anthropic_api_key: _Secret | None = None
+    xai_api_key: _Secret | None = None
+    groq_api_key: _Secret | None = None
+    resolved_session_dir: Path = field(
+        default_factory=lambda: Path(tempfile.mkdtemp()) / f"sess-{uuid.uuid4().hex}"
+    )
+    resolved_cache_dir: Path = field(
+        default_factory=lambda: Path(tempfile.mkdtemp()) / f"cache-{uuid.uuid4().hex}"
+    )
+    cache_ttl_seconds: int = 3600
+
+    def provider_api_key(self, provider: str) -> _Secret | None:
+        return getattr(self, f"{provider}_api_key", None)
 
 
 def test_health_requires_valid_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
