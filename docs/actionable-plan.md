@@ -53,12 +53,11 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 - [x] P0 — Product Truth and Trust
 - [x] P1 — Evidence Before Expansion _(closed at 19/22 by product decision; 2026-05-11)_
 - [x] P2 — Differentiating Core _(sessions, cache, export, capability endpoint, source presets; 2026-05-11)_
+- [x] P3 — Zotero-Native Value _(collection-aware search, PDF attach, Library Doctor, Gap Finder; addon v0.2.0; 2026-05-11)_
 
 ### Not Done Milestones
 
 > Ordered from fastest path to final product. P0 (trust) before P1 (evidence) before P2 (differentiation) before P3 (Zotero-native) before P4 (retention) before P5 (scale). M7 infrastructure moved to P5.
-
-- [ ] P3 — Zotero-Native Value _(collection-aware search, Library Doctor; weeks)_
 - [ ] P4 — Retention and Recurring Workflows _(watch lists, scheduled reruns; weeks)_
 - [ ] P5 — External Interfaces and Deployment, M7 _(MCP, hosted backend, elastic infra; months)_
 
@@ -75,6 +74,10 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 - [x] SCI-0201 — Backend capability endpoint extended: provider_availability + active_provider added to /capabilities response; CapabilitiesResponse in contracts.ts updated
 - [x] SCI-0206 — Export: export_session() in session_export.py (Markdown PRISMA-lite, JSON, CSV); /status/{run_id}/export?format= endpoint
 - [x] SCI-0202 — Source presets: SourcePresets.tsx component (Balanced, Open Access, Recent 5yr, Highly Cited, Quick 5, Deep 20); rendered above FilterEditor in Zotero sidebar; CSS styles added
+- [x] SCI-0301 — Collection-aware search: library_status badge (in_library/possible_duplicate/new) on every result; collection_inspector fetches Zotero library before retrieval; workflow.py tags papers; sidebar shows badges; addon v0.2.0
+- [x] SCI-0302 — PDF attachment pipeline: attach_pdfs_to_items POSTs linked_url child to /items with parentItem; open-access only; failure never blocks metadata import; enable_pdf_imports flag on ResumeRequest
+- [x] SCI-0303 — Library Doctor: scan_collection reads collection for missing_doi/abstract/pdf and duplicate pairs; POST /library-doctor; LibraryDoctor.tsx component in Zotero sidebar; read-only, no writes
+- [x] SCI-0304 — Gap Finder: find_gaps LLM generates 3–5 search queries from existing collection titles, searches, filters already-in-library results, deduplicates; POST /gap-finder; Gap Finder section in sidebar
 - [ ] AGT-21 follow-up — Security checklist and auth hardening
 - [ ] AGT-24 — Durable distributed checkpointing (P5 / M7)
 
