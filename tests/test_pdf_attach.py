@@ -195,9 +195,12 @@ async def test_successful_pdf_attachment() -> None:
     assert result.failed == 0
     assert result.skipped == 0
     mock_client.post.assert_called_once()
-    call_kwargs = mock_client.post.call_args
-    # Verify endpoint contains item key
-    assert "KEY001" in call_kwargs[0][0]
+    call_args = mock_client.post.call_args
+    # Endpoint is /items, parentItem in body links attachment to the parent
+    posted_url: str = call_args[0][0]
+    assert posted_url.endswith("/items")
+    posted_body: list[dict[str, object]] = call_args[1]["json"]
+    assert posted_body[0]["parentItem"] == "KEY001"
 
 
 # ---------------------------------------------------------------------------

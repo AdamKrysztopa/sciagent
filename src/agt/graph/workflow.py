@@ -154,8 +154,13 @@ async def run_search_phase(
                 paper.model_copy(update={"library_status": classify_paper(paper, lib_index)})
                 for paper in papers
             ]
-        except Exception:  # fmt: skip
-            pass
+        except Exception as exc:  # fmt: skip
+            logger.warning(
+                "library_status_tagging_failed",
+                error=str(exc),
+                error_type=type(exc).__name__,
+                collection_name=collection_name,
+            )
 
         with trace_step(trace, "approval_checkpoint", approved=False):
             logger.info("approval_checkpoint", approved=False)

@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, cast
 
 import httpx
+import structlog
 
 from agt.config import Settings
 from agt.models import GapSuggestion, NormalizedPaper
@@ -18,6 +19,8 @@ _MAX_TITLES_IN_PROMPT = 30
 _QUERIES_PER_GAP = 5
 _RESULTS_PER_QUERY = 5
 _MAX_GAP_PAPERS = 15
+
+_logger = structlog.get_logger("agt.gap_finder")
 
 _GAP_PROMPT = """\
 You are a research librarian. Given these paper titles from a Zotero collection named "{collection_name}":
@@ -125,7 +128,8 @@ async def find_gaps(
     for query in queries[:_QUERIES_PER_GAP]:
         try:
             results, _ = await search_papers(query, limit=_RESULTS_PER_QUERY, settings=settings)
-        except Exception:
+        except Exception as exc:
+            _logger.warning("gap_finder_search_failed", query=query, error=str(exc))
             continue
         for paper in results:
             if not _is_already_in_library(paper, lib_index):

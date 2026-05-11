@@ -87,7 +87,7 @@ async def attach_pdfs_to_items(
             ]
             try:
                 resp = await api_client.post(
-                    f"{prefix}/items/{item_key}/children",
+                    f"{prefix}/items",
                     headers=headers,
                     json=attachment_payload,
                 )
