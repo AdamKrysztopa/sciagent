@@ -207,15 +207,29 @@ function IdleView({ controller }: { controller: SciAgentController }) {
         {controller.runView.error !== null ? (
           <div className="agt-error">{controller.runView.error}</div>
         ) : null}
-        <label className="agt-field">
-          <span>Query</span>
+        <div className="agt-field">
+          <div className="agt-field-header">
+            <span>Query</span>
+            <button
+              className="agt-button agt-button--ghost agt-button--sm"
+              disabled={controller.query.trim().length === 0 || controller.extracting || controller.healthResponse === null}
+              onClick={controller.onExtractKeywords}
+              title="Extract keywords and collection name from the query text"
+              type="button"
+            >
+              {controller.extracting ? "Extracting…" : "Extract"}
+            </button>
+          </div>
           <textarea
             className="agt-textarea"
             onChange={(event) => controller.onQueryChange(event.target.value)}
             rows={3}
             value={controller.query}
           />
-        </label>
+          {controller.extractError !== null ? (
+            <span className="agt-small-note agt-small-note--error">{controller.extractError}</span>
+          ) : null}
+        </div>
         <label className="agt-field">
           <span>Collection Name</span>
           <input

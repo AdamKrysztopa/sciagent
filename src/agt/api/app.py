@@ -13,9 +13,11 @@ from pydantic import BaseModel, Field, model_validator
 from agt.config import Settings, get_settings
 from agt.graph.workflow import resume_workflow, run_search_phase
 from agt.models import AgentState, FilterEditContract, SourceCapability
+from agt.providers.router import build_provider
 from agt.result_cache import ResultCache
 from agt.session_export import ExportFormat, export_session
 from agt.session_store import SessionStore
+from agt.tools.keyword_extract import KeywordExtraction, extract_keywords
 from agt.tools.search_papers import build_source_policy
 from agt.tools.spell_check import correct_query
 from agt.zotero.preflight import run_zotero_preflight
@@ -81,6 +83,16 @@ class CorrectQueryResponse(BaseModel):
     original: str
     corrected: str
     changed: bool
+
+
+class ExtractKeywordsRequest(BaseModel):
+    query: str = Field(min_length=1)
+
+
+class ExtractKeywordsResponse(BaseModel):
+    include_keywords: list[str]
+    exclude_keywords: list[str]
+    collection_name: str | None
 
 
 @dataclass(slots=True)
@@ -391,6 +403,23 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     ) -> CorrectQueryResponse:
         corrected = correct_query(q)
         return CorrectQueryResponse(original=q, corrected=corrected, changed=corrected != q)
+
+    @app.post("/extract-keywords", response_model=ExtractKeywordsResponse)
+    async def _extract_keywords_endpoint(  # pyright: ignore[reportUnusedFunction]
+        body: ExtractKeywordsRequest,
+        _: None = Depends(_require_backend_key),
+        settings: Settings = Depends(get_settings),
+    ) -> ExtractKeywordsResponse:
+        try:
+            provider = build_provider(settings)
+            result: KeywordExtraction = await extract_keywords(body.query, provider)
+        except Exception:
+            result = KeywordExtraction()
+        return ExtractKeywordsResponse(
+            include_keywords=result.include_keywords,
+            exclude_keywords=result.exclude_keywords,
+            collection_name=result.collection_name,
+        )
 
     @app.get("/status/{run_id}", response_model=StatusResponse)
     async def _status_endpoint(  # pyright: ignore[reportUnusedFunction]

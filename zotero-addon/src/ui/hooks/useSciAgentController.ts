@@ -77,6 +77,8 @@ export function useSciAgentController(services: AddonUiServices) {
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
   const [correctedQuery, setCorrectedQuery] = useState<string | null>(null);
+  const [extracting, setExtracting] = useState(false);
+  const [extractError, setExtractError] = useState<string | null>(null);
 
   const currentState = runView.snapshot?.state ?? null;
   const papers: NormalizedPaper[] = currentState?.papers ?? [];
@@ -248,6 +250,39 @@ export function useSciAgentController(services: AddonUiServices) {
     }
   });
 
+  const runExtractKeywords = useEffectEvent(async () => {
+    const trimmed = query.trim();
+    if (trimmed.length === 0) return;
+    setExtracting(true);
+    setExtractError(null);
+    try {
+      const result = await services.createClient(config).extractKeywords(trimmed);
+      setFilterDraft((currentDraft) => {
+        const base = currentDraft ?? buildDefaultFilterEdit(
+          config.defaultMinYear,
+          config.defaultMaxYear,
+          config.defaultMinCitations,
+          config.defaultOpenAccessOnly,
+        );
+        return {
+          ...base,
+          hard_filters: {
+            ...base.hard_filters,
+            include_keywords: result.include_keywords,
+            exclude_keywords: result.exclude_keywords,
+          },
+        };
+      });
+      if (result.collection_name !== null) {
+        setCollectionName(result.collection_name);
+      }
+    } catch (error) {
+      setExtractError(describeError(error));
+    } finally {
+      setExtracting(false);
+    }
+  });
+
   const checkSpelling = useEffectEvent(async (trimmedQuery: string) => {
     if (healthResponse === null) {
       setCorrectedQuery(null);
@@ -320,6 +355,9 @@ export function useSciAgentController(services: AddonUiServices) {
     healthError,
     healthResponse,
     canSubmitSearch: query.trim().length > 0 && healthResponse !== null && !healthBusy,
+    extractError,
+    extracting,
+    onExtractKeywords: () => void runExtractKeywords(),
     onAcceptCorrection: () => {
       if (correctedQuery !== null) {
         const accepted = correctedQuery;

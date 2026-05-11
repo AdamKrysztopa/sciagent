@@ -213,6 +213,16 @@
   margin: 0;
 }
 
+.agt-small-note--error {
+  color: var(--agt-danger);
+}
+
+.agt-field-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
 /* ── Pill ─────────────────────────────────────────────────── */
 .agt-pill {
   border-radius: 999px;
@@ -426,6 +436,11 @@
   background: transparent;
   border-color: var(--agt-border);
   color: var(--agt-text);
+}
+
+.agt-button--sm {
+  font-size: 0.75rem;
+  padding: 3px 9px;
 }
 
 .agt-button--warn {

@@ -190,6 +190,12 @@ export interface CorrectQueryResponse {
   changed: boolean;
 }
 
+export interface ExtractKeywordsResponse {
+  include_keywords: string[];
+  exclude_keywords: string[];
+  collection_name: string | null;
+}
+
 export interface StatusResponse {
   run_id: string;
   thread_id: string;

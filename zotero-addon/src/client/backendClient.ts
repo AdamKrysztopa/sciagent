@@ -1,6 +1,7 @@
 import type {
   CapabilitiesResponse,
   CorrectQueryResponse,
+  ExtractKeywordsResponse,
   HealthResponse,
   ResumeRequest,
   RunAcceptedResponse,
@@ -100,6 +101,13 @@ export class SciAgentBackendClient {
       `/correct-query?q=${encodeURIComponent(q)}`,
       { method: "GET" },
     );
+  }
+
+  async extractKeywords(query: string): Promise<ExtractKeywordsResponse> {
+    return this.request<ExtractKeywordsResponse>("/extract-keywords", {
+      body: JSON.stringify({ query }),
+      method: "POST",
+    });
   }
 
   private buildHeaders(withJsonBody: boolean): Headers {
