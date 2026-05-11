@@ -53,6 +53,15 @@ export function ResultsList({ disabled, onToggle, papers, selectedIndices }: Res
                 </label>
                 <span className="agt-pill agt-pill--muted">{paper.source}</span>
               </div>
+              {paper.library_status != null ? (
+                <span className={`agt-lib-badge agt-lib-badge--${paper.library_status}`}>
+                  {paper.library_status === "in_library"
+                    ? "Already in library"
+                    : paper.library_status === "possible_duplicate"
+                      ? "Possible duplicate"
+                      : "New"}
+                </span>
+              ) : null}
               {paper.authors.length > 0 ? (
                 <p className="agt-result-authors">{paper.authors.join(", ")}</p>
               ) : null}
@@ -65,6 +74,9 @@ export function ResultsList({ disabled, onToggle, papers, selectedIndices }: Res
               <div className="agt-score-bar">
                 <div className="agt-score-fill" style={{ width: `${scorePercent}%` }} />
               </div>
+              {paper.explanation !== null ? (
+                <p className="agt-result-explanation">{paper.explanation}</p>
+              ) : null}
               {paper.summary !== null ? <p className="agt-result-summary">{paper.summary}</p> : null}
             </article>
           );

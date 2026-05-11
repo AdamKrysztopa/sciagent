@@ -2,17 +2,26 @@
 
 from __future__ import annotations
 
+import uuid
 from dataclasses import dataclass
 from typing import Any, Literal, cast
 
-from fastapi import Depends, FastAPI, Header, HTTPException, status
-from fastapi.responses import RedirectResponse
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, status
+from fastapi.responses import PlainTextResponse, RedirectResponse
 from pydantic import BaseModel, Field, model_validator
 
 from agt.config import Settings, get_settings
 from agt.graph.workflow import resume_workflow, run_search_phase
-from agt.models import AgentState, FilterEditContract, SourceCapability
+from agt.models import AgentState, DoctorReport, FilterEditContract, GapSuggestion, SourceCapability
+from agt.providers.router import build_provider
+from agt.result_cache import ResultCache
+from agt.session_export import ExportFormat, export_session
+from agt.session_store import SessionStore
+from agt.tools.gap_finder import find_gaps
+from agt.tools.keyword_extract import KeywordExtraction, extract_keywords
 from agt.tools.search_papers import build_source_policy
+from agt.tools.spell_check import correct_query
+from agt.zotero.library_doctor import scan_collection
 from agt.zotero.preflight import run_zotero_preflight
 
 # Backend contract version exposed via /health for client compatibility checks.
@@ -43,6 +52,8 @@ class ResumeRequest(BaseModel):
     # When True the backend skips the pyzotero write and returns approved papers
     # so the add-on can perform ZAP-6/7/8 native Zotero JS writes.
     native_write: bool = False
+    # When True, attach open-access PDF URLs to newly-created Zotero items (SCI-0302).
+    enable_pdf_imports: bool = False
 
 
 class RunAcceptedResponse(BaseModel):
@@ -59,6 +70,9 @@ class CapabilitiesResponse(BaseModel):
     # Maps filter names to the sources that enforce them server-side.
     filter_support: dict[str, list[str]]
     pdf_import_supported: bool
+    # Maps provider name to True if an API key is configured.
+    provider_availability: dict[str, bool]
+    active_provider: str
 
 
 class StatusResponse(BaseModel):
@@ -67,6 +81,40 @@ class StatusResponse(BaseModel):
     status: Literal["awaiting_approval", "completed", "rejected", "failed"]
     state: dict[str, Any] | None
     error: str | None = None
+
+
+class CorrectQueryResponse(BaseModel):
+    original: str
+    corrected: str
+    changed: bool
+
+
+class ExtractKeywordsRequest(BaseModel):
+    query: str = Field(min_length=1)
+
+
+class ExtractKeywordsResponse(BaseModel):
+    include_keywords: list[str]
+    exclude_keywords: list[str]
+    collection_name: str | None
+    min_year: int | None
+    max_year: int | None
+    min_citations: int | None
+    max_citations: int | None
+    open_access_only: bool
+
+
+class LibraryDoctorRequest(BaseModel):
+    collection_name: str = Field(min_length=1)
+
+
+class GapFinderRequest(BaseModel):
+    collection_name: str = Field(min_length=1)
+
+
+class GapFinderResponse(BaseModel):
+    reasoning: str
+    papers: list[dict[str, Any]]
 
 
 @dataclass(slots=True)
@@ -114,9 +162,30 @@ def _client_id_header(
     return x_client_id.strip()
 
 
+class _AppState:
+    """Lazy-initialized per-app singletons."""
+
+    def __init__(self) -> None:
+        self._session_store: SessionStore | None = None
+        self._result_cache: ResultCache | None = None
+
+    def session_store(self, settings: Settings) -> SessionStore:
+        if self._session_store is None:
+            self._session_store = SessionStore(settings.resolved_session_dir)
+        return self._session_store
+
+    def result_cache(self, settings: Settings) -> ResultCache:
+        if self._result_cache is None:
+            self._result_cache = ResultCache(
+                settings.resolved_cache_dir, settings.cache_ttl_seconds
+            )
+        return self._result_cache
+
+
 def create_app() -> FastAPI:  # noqa: PLR0915
     app = FastAPI(title="SciAgent API", version="0.1.0")
     store = _RunStore()
+    app_state = _AppState()
 
     @app.get("/", include_in_schema=False)
     async def _root() -> RedirectResponse:  # pyright: ignore[reportUnusedFunction]
@@ -145,6 +214,42 @@ def create_app() -> FastAPI:  # noqa: PLR0915
         client_id: str = Depends(_client_id_header),
     ) -> RunAcceptedResponse:
         collection_name = payload.collection_name or settings.zotero_collection_name
+        cache = app_state.result_cache(settings)
+        hard_filters = (
+            payload.filter_edit.hard_filters.model_dump() if payload.filter_edit is not None else {}
+        )
+        result_limit = payload.filter_edit.result_limit if payload.filter_edit is not None else 10
+        cached = cache.get(payload.query, hard_filters, result_limit)
+        if cached is not None:
+            run_id = payload.thread_id or str(uuid.uuid4())
+            cached_state = cast(
+                AgentState,
+                {
+                    **cached,
+                    "thread_id": run_id,
+                    "request_id": run_id,
+                    "collection_name": collection_name,
+                    "approved": False,
+                    "decision": "pending",
+                    "phase": "search_complete",
+                    "selected_indices": [],
+                    "write_result": None,
+                },
+            )
+            store.put(
+                _RunRecord(
+                    run_id=run_id,
+                    owner=client_id,
+                    thread_id=run_id,
+                    status="awaiting_approval",
+                    state=cached_state,
+                )
+            )
+            return RunAcceptedResponse(
+                run_id=run_id,
+                thread_id=run_id,
+                status="awaiting_approval",
+            )
         try:
             if payload.filter_edit is None:
                 state = await run_search_phase(
@@ -178,7 +283,15 @@ def create_app() -> FastAPI:  # noqa: PLR0915
                 detail=f"run_failed:{exc}",
             ) from exc
 
+        cache.set(
+            payload.query,
+            hard_filters,
+            result_limit,
+            {"papers": state.get("papers", []), "search_metadata": state.get("search_metadata")},
+        )
+        sess = app_state.session_store(settings)
         run_id = state["thread_id"]
+        sess.save(run_id, cast(dict[str, Any], state))
         store.put(
             _RunRecord(
                 run_id=run_id,
@@ -256,6 +369,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
             collection_name=payload.collection_name,
             selected_indices=payload.selected_indices,
             settings=settings,
+            enable_pdf_imports=payload.enable_pdf_imports,
         )
         next_status: Literal["awaiting_approval", "completed", "rejected", "failed"]
         if resumed["phase"] == "completed":
@@ -292,11 +406,47 @@ def create_app() -> FastAPI:  # noqa: PLR0915
             "year_filter": [s.name for s in source_policy if s.supports_year_filter],
             "open_access_filter": [s.name for s in source_policy if s.supports_open_access_filter],
         }
+        provider_availability = {
+            p: settings.provider_api_key(p) is not None  # type: ignore[arg-type]
+            for p in ("openai", "anthropic", "xai", "groq")
+        }
         return CapabilitiesResponse(
             api_contract_version=API_CONTRACT_VERSION,
             source_policy=source_policy,
             filter_support=filter_support,
             pdf_import_supported=True,
+            provider_availability=provider_availability,
+            active_provider=settings.runtime.provider,
+        )
+
+    @app.get("/correct-query", response_model=CorrectQueryResponse)
+    async def _correct_query_endpoint(  # pyright: ignore[reportUnusedFunction]
+        q: str = Query(default="", description="Query to spell-check"),
+        _: None = Depends(_require_backend_key),
+    ) -> CorrectQueryResponse:
+        corrected = correct_query(q)
+        return CorrectQueryResponse(original=q, corrected=corrected, changed=corrected != q)
+
+    @app.post("/extract-keywords", response_model=ExtractKeywordsResponse)
+    async def _extract_keywords_endpoint(  # pyright: ignore[reportUnusedFunction]
+        body: ExtractKeywordsRequest,
+        _: None = Depends(_require_backend_key),
+        settings: Settings = Depends(get_settings),
+    ) -> ExtractKeywordsResponse:
+        try:
+            provider = build_provider(settings)
+            result: KeywordExtraction = await extract_keywords(body.query, provider)
+        except Exception:
+            result = KeywordExtraction()
+        return ExtractKeywordsResponse(
+            include_keywords=result.include_keywords,
+            exclude_keywords=result.exclude_keywords,
+            collection_name=result.collection_name,
+            min_year=result.min_year,
+            max_year=result.max_year,
+            min_citations=result.min_citations,
+            max_citations=result.max_citations,
+            open_access_only=result.open_access_only,
         )
 
     @app.get("/status/{run_id}", response_model=StatusResponse)
@@ -321,6 +471,138 @@ def create_app() -> FastAPI:  # noqa: PLR0915
             status=record.status,
             state=record.state,
             error=record.error,
+        )
+
+    @app.get("/status/{run_id}/export")
+    async def _export_run(  # pyright: ignore[reportUnusedFunction]
+        run_id: str,
+        fmt: ExportFormat = Query(default="markdown", alias="format"),
+        _: None = Depends(_require_backend_key),
+        client_id: str = Depends(_client_id_header),
+    ) -> PlainTextResponse:
+        try:
+            record = store.get(run_id)
+        except KeyError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="run_not_found"
+            ) from exc
+        if record.owner != client_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="run_forbidden")
+        if record.state is None:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="run_has_no_state")
+        state_dict = cast(dict[str, Any], record.state)
+        content = export_session(state_dict, fmt, run_id=run_id)
+        media_map: dict[ExportFormat, str] = {
+            "markdown": "text/markdown; charset=utf-8",
+            "json": "application/json; charset=utf-8",
+            "csv": "text/csv; charset=utf-8",
+        }
+        return PlainTextResponse(content=content, media_type=media_map[fmt])
+
+    @app.get("/sessions")
+    async def _list_sessions(  # pyright: ignore[reportUnusedFunction]
+        _: None = Depends(_require_backend_key),
+        settings: Settings = Depends(get_settings),
+    ) -> list[dict[str, Any]]:
+        return app_state.session_store(settings).list_sessions()
+
+    @app.get("/sessions/{session_id}")
+    async def _get_session(  # pyright: ignore[reportUnusedFunction]
+        session_id: str,
+        _: None = Depends(_require_backend_key),
+        settings: Settings = Depends(get_settings),
+    ) -> dict[str, Any]:
+        try:
+            return app_state.session_store(settings).load(session_id)
+        except KeyError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="session_not_found"
+            ) from exc
+
+    @app.post("/sessions/{session_id}/rerun", response_model=RunAcceptedResponse)
+    async def _rerun_session(  # pyright: ignore[reportUnusedFunction]
+        session_id: str,
+        _: None = Depends(_require_backend_key),
+        settings: Settings = Depends(get_settings),
+        client_id: str = Depends(_client_id_header),
+    ) -> RunAcceptedResponse:
+        try:
+            rerun = app_state.session_store(settings).extract_rerun_payload(session_id)
+        except KeyError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="session_not_found"
+            ) from exc
+        query: str = rerun.get("query", "")
+        collection_name: str | None = rerun.get("collection_name")
+        filter_edit_data: dict[str, Any] | None = rerun.get("filter_edit")
+        filter_edit: FilterEditContract | None = (
+            FilterEditContract.model_validate(filter_edit_data)
+            if filter_edit_data and query
+            else None
+        )
+        try:
+            state = await run_search_phase(
+                query=query,
+                collection_name=collection_name or settings.zotero_collection_name,
+                settings=settings,
+                filter_edit=filter_edit,
+            )
+        except RuntimeError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=f"run_failed:{exc}"
+            ) from exc
+        run_id = state["thread_id"]
+        app_state.session_store(settings).save(run_id, cast(dict[str, Any], state))
+        store.put(
+            _RunRecord(
+                run_id=run_id,
+                owner=client_id,
+                thread_id=run_id,
+                status="awaiting_approval",
+                state=state,
+            )
+        )
+        return RunAcceptedResponse(
+            run_id=run_id,
+            thread_id=run_id,
+            status="awaiting_approval",
+        )
+
+    @app.get("/cache/stats")
+    async def _cache_stats(  # pyright: ignore[reportUnusedFunction]
+        _: None = Depends(_require_backend_key),
+        settings: Settings = Depends(get_settings),
+    ) -> dict[str, Any]:
+        return app_state.result_cache(settings).stats()
+
+    @app.delete("/cache/clear")
+    async def _cache_clear(  # pyright: ignore[reportUnusedFunction]
+        expired_only: bool = Query(default=False),
+        _: None = Depends(_require_backend_key),
+        settings: Settings = Depends(get_settings),
+    ) -> dict[str, Any]:
+        deleted = app_state.result_cache(settings).clear(expired_only=expired_only)
+        return {"deleted": deleted, "expired_only": expired_only}
+
+    @app.post("/library-doctor", response_model=DoctorReport)
+    async def _library_doctor(  # pyright: ignore[reportUnusedFunction]
+        body: LibraryDoctorRequest,
+        _: None = Depends(_require_backend_key),
+        settings: Settings = Depends(get_settings),
+    ) -> DoctorReport:
+        return await scan_collection(body.collection_name, settings)
+
+    @app.post("/gap-finder", response_model=GapFinderResponse)
+    async def _gap_finder(  # pyright: ignore[reportUnusedFunction]
+        body: GapFinderRequest,
+        _: None = Depends(_require_backend_key),
+        settings: Settings = Depends(get_settings),
+    ) -> GapFinderResponse:
+        provider = build_provider(settings)
+        suggestion: GapSuggestion = await find_gaps(body.collection_name, settings, provider)
+        return GapFinderResponse(
+            reasoning=suggestion.reasoning,
+            papers=[p.model_dump() for p in suggestion.papers],
         )
 
     return app

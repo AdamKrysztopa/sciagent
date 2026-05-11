@@ -57,6 +57,12 @@ def _title_author_fingerprint(title: str, authors: list[str]) -> str:
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
+# Public re-exports for intra-package use (collection_inspector, library_doctor, gap_finder).
+normalize_doi = _normalize_doi
+title_author_fingerprint = _title_author_fingerprint
+library_prefix = _library_prefix
+
+
 def _split_creator_name(full_name: str) -> tuple[str, str]:
     cleaned = " ".join(full_name.strip().split())
     if "," in cleaned:

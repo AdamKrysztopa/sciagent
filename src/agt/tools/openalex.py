@@ -124,7 +124,7 @@ class OpenAlexClient:
 
         doi = OpenAlexClient._extract_doi(item)
 
-        abstract = None
+        abstract = OpenAlexClient._extract_abstract(item)
 
         authors: list[str] = []
         authorships = item.get("authorships")
@@ -173,6 +173,28 @@ class OpenAlexClient:
             citation_count=citation_count,
             open_access=open_access,
         )
+
+    @staticmethod
+    def _extract_abstract(item: dict[str, Any]) -> str | None:
+        abstract_index = item.get("abstract_inverted_index")
+        if not isinstance(abstract_index, dict):
+            return None
+
+        terms_by_position: dict[int, str] = {}
+        for raw_term, raw_positions in abstract_index.items():
+            if not isinstance(raw_term, str) or not isinstance(raw_positions, list):
+                continue
+            for raw_position in cast(list[object], raw_positions):
+                if not isinstance(raw_position, int) or raw_position < 0:
+                    continue
+                if raw_position not in terms_by_position:
+                    terms_by_position[raw_position] = raw_term
+
+        if not terms_by_position:
+            return None
+
+        ordered_terms = [term for _, term in sorted(terms_by_position.items())]
+        return " ".join(ordered_terms).strip() or None
 
     @staticmethod
     def _extract_doi(item: dict[str, Any]) -> str | None:

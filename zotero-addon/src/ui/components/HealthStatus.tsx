@@ -22,7 +22,7 @@ function healthClassName(busy: boolean, response: HealthResponse | null, error: 
     return "agt-pill agt-pill--ok";
   }
   if (response !== null) {
-    return "agt-pill agt-pill--error";
+    return "agt-pill agt-pill--warn";
   }
   return "agt-pill agt-pill--idle";
 }
@@ -38,7 +38,7 @@ function healthLabel(busy: boolean, response: HealthResponse | null, error: stri
     return "Backend healthy";
   }
   if (response !== null) {
-    return "Backend unavailable";
+    return "Backend reachable";
   }
   return "Health not checked";
 }
@@ -46,6 +46,7 @@ function healthLabel(busy: boolean, response: HealthResponse | null, error: stri
 export function HealthStatus({ busy, error, onRefresh, response }: HealthStatusProps) {
   const contractStatus = validateContractVersion(response);
   const showContractWarning = response !== null && contractStatus !== "compatible";
+  const showPreflightWarning = response !== null && !response.ok;
 
   return (
     <section className="agt-card agt-card--soft">
@@ -74,6 +75,14 @@ export function HealthStatus({ busy, error, onRefresh, response }: HealthStatusP
           <span>Preflight</span>
           <span>{response.preflight.message ?? response.message}</span>
         </div>
+      ) : null}
+      {showPreflightWarning ? (
+        <output className="agt-status-note agt-status-note--warn" aria-live="polite">
+          Backend is online, but preflight needs attention: {response.preflight.message ?? response.message}
+        </output>
+      ) : null}
+      {response === null && error === null ? (
+        <p className="agt-empty-state">Waiting for the first backend health response.</p>
       ) : null}
       {error !== null ? <div className="agt-error">{error}</div> : null}
     </section>

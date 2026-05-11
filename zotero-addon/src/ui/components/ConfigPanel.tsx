@@ -117,6 +117,14 @@ export function ConfigPanel({ config, onChange, onSave, saveError, saveState }: 
         />
         <span>Open access papers only by default</span>
       </label>
+      <label className="agt-checkbox-row">
+        <input
+          checked={config.spellCheckEnabled}
+          onChange={(event) => onChange("spellCheckEnabled", event.target.checked)}
+          type="checkbox"
+        />
+        <span>Spell-check queries before search</span>
+      </label>
 
       <h3 className="agt-subsection-heading">PDF Imports</h3>
       <label className="agt-checkbox-row">

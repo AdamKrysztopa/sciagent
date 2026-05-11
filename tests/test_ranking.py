@@ -9,6 +9,7 @@ from agt.tools.ranking import (
     WEIGHTS_DEFAULT,
     WEIGHTS_RECENCY,
     compute_rank_score,
+    explain_paper,
     rank_and_index_papers,
 )
 
@@ -271,13 +272,13 @@ def test_compute_rank_score_uses_keyword_fallback_when_semantic_zero() -> None:
     )
 
 
-def test_compute_rank_score_ignores_fallback_when_semantic_nonzero() -> None:
-    """When semantic_score > 0 the keyword fallback must not be applied."""
+def test_compute_rank_score_adds_query_bonus_when_semantic_nonzero() -> None:
+    """Strong lexical matches should still receive a small query bonus even with provider scores."""
     paper = NormalizedPaper(
-        title="Completely unrelated paper",
-        abstract="Nothing about forecasting here.",
+        title="Time series forecasting overview",
+        abstract="Forecasting methods for time series applications.",
         year=2024,
-        semantic_score=0.9,  # already has relevance signal
+        semantic_score=0.9,
         citation_count=0,
     )
     score_with_terms = compute_rank_score(
@@ -287,8 +288,85 @@ def test_compute_rank_score_ignores_fallback_when_semantic_nonzero() -> None:
     )
     score_without_terms = compute_rank_score(paper, current_year=2026)
 
-    # Scores should be identical: fallback is inactive when semantic_score > 0.
+    assert score_with_terms > score_without_terms
+
+
+def test_compute_rank_score_no_query_bonus_for_unmatched_semantic_paper() -> None:
+    paper = NormalizedPaper(
+        title="Completely unrelated paper",
+        abstract="Nothing about chemistry or materials here.",
+        year=2024,
+        semantic_score=0.9,
+        citation_count=0,
+    )
+
+    score_with_terms = compute_rank_score(
+        paper,
+        current_year=2026,
+        query_terms=["time", "series", "forecasting"],
+    )
+    score_without_terms = compute_rank_score(paper, current_year=2026)
+
     assert abs(score_with_terms - score_without_terms) < 1e-9
+
+
+def test_rank_and_index_papers_promotes_distinct_anchor_over_near_duplicate_titles() -> None:
+    papers = [
+        NormalizedPaper(
+            title="Retrieval-Augmented Generation for Large Language Models: A Survey",
+            year=2025,
+            semantic_score=0.95,
+            citation_count=260,
+        ),
+        NormalizedPaper(
+            title="Agentic Retrieval-Augmented Generation: A Survey on Agentic RAG",
+            year=2025,
+            semantic_score=0.94,
+            citation_count=240,
+        ),
+        NormalizedPaper(
+            title="REALM: Retrieval-Augmented Language Model Pre-Training",
+            year=2020,
+            semantic_score=0.94,
+            citation_count=515,
+        ),
+    ]
+
+    ranked = rank_and_index_papers(
+        papers,
+        current_year=2026,
+        query_terms=["retrieval", "augmented"],
+    )
+
+    assert ranked[1].title == "REALM: Retrieval-Augmented Language Model Pre-Training"
+    assert ranked[2].title == "Agentic Retrieval-Augmented Generation: A Survey on Agentic RAG"
+
+
+def test_rank_and_index_papers_boosts_specific_anchor_with_full_query_coverage() -> None:
+    papers = [
+        NormalizedPaper(
+            title="Time series forecasting with transformers",
+            year=2023,
+            semantic_score=0.95,
+            citation_count=220,
+        ),
+        NormalizedPaper(
+            title="Temporal Fusion Transformers for interpretable multi-horizon time series forecasting",
+            year=2021,
+            semantic_score=0.94,
+            citation_count=153,
+        ),
+    ]
+
+    ranked = rank_and_index_papers(
+        papers,
+        current_year=2026,
+        query_terms=["time", "series", "forecasting", "transformer"],
+    )
+
+    assert ranked[0].title == (
+        "Temporal Fusion Transformers for interpretable multi-horizon time series forecasting"
+    )
 
 
 def test_weights_presets_sum_to_approximately_one() -> None:
@@ -296,3 +374,79 @@ def test_weights_presets_sum_to_approximately_one() -> None:
     for preset in (WEIGHTS_DEFAULT, WEIGHTS_RECENCY, WEIGHTS_CITATION):
         core_sum = preset.semantic + preset.citation + preset.influential + preset.recency
         assert core_sum <= 1.0 + 1e-9, f"Core weights sum > 1.0 for {preset}"
+
+
+# ---------------------------------------------------------------------------
+# explain_paper
+# ---------------------------------------------------------------------------
+
+
+def test_explain_paper_high_semantic_score() -> None:
+    paper = NormalizedPaper(
+        title="Attention is All You Need",
+        year=2017,
+        semantic_score=0.92,
+        citation_count=50_000,
+        influential_citation_count=300,
+        source="semantic_scholar",
+        open_access=False,
+    )
+    explanation = explain_paper(paper, query_terms=["attention", "transformer"])
+    assert "high relevance" in explanation
+    assert "50,000 citations" in explanation
+    assert "300 influential" in explanation
+    assert "semantic scholar" in explanation
+    assert "2017" in explanation
+
+
+def test_explain_paper_no_semantic_score_uses_keyword_match() -> None:
+    paper = NormalizedPaper(
+        title="Temporal fusion transformer forecasting",
+        year=2021,
+        semantic_score=0.0,
+        citation_count=5,
+        source="crossref",
+        open_access=True,
+    )
+    explanation = explain_paper(
+        paper,
+        query_terms=["temporal", "fusion", "transformer", "forecasting"],
+    )
+    assert "query terms in title" in explanation or "query terms matched" in explanation
+    assert "open access" in explanation
+    assert "crossref" in explanation
+    assert "2021" in explanation
+
+
+def test_explain_paper_low_citations_omitted() -> None:
+    paper = NormalizedPaper(
+        title="A small study",
+        year=2023,
+        semantic_score=0.5,
+        citation_count=3,
+        source="pubmed",
+    )
+    explanation = explain_paper(paper)
+    assert "citations" not in explanation
+    assert "pubmed" in explanation
+
+
+def test_explain_paper_no_signals_returns_fallback() -> None:
+    paper = NormalizedPaper(title="Unknown paper", source="base")
+    explanation = explain_paper(paper)
+    assert explanation
+    assert "base" in explanation
+
+
+def test_explain_paper_format_is_dot_separated() -> None:
+    paper = NormalizedPaper(
+        title="CRISPR genome editing",
+        year=2022,
+        semantic_score=0.8,
+        citation_count=200,
+        source="europe_pmc",
+        open_access=True,
+    )
+    explanation = explain_paper(paper, query_terms=["crispr", "genome", "editing"])
+    parts = explanation.split(" · ")
+    assert len(parts) >= 3

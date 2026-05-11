@@ -20,6 +20,7 @@ function makePaper(overrides?: Partial<NormalizedPaper>): NormalizedPaper {
     semantic_score: 1,
     source: "test",
     summary: null,
+    explanation: null,
     title: "Test Paper",
     url: null,
     year: 2024,

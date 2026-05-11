@@ -1,4 +1,4 @@
-import type { WriteResult } from "../shared/contracts";
+import type { HealthResponse, WriteResult } from "../shared/contracts";
 import type { NativeWriteResult } from "../host/zoteroWriter";
 
 import { Component, type ErrorInfo, type ReactNode } from "react";
@@ -6,7 +6,9 @@ import type { AddonUiServices } from "./serviceTypes";
 import { ConfigPanel } from "./components/ConfigPanel";
 import { FilterEditor } from "./components/FilterEditor";
 import { HealthStatus } from "./components/HealthStatus";
+import { LibraryDoctor } from "./components/LibraryDoctor";
 import { ResultsList } from "./components/ResultsList";
+import { SourcePresets } from "./components/SourcePresets";
 import { SourceToggles } from "./components/SourceToggles";
 import { type RunPhase, useSciAgentController } from "./hooks/useSciAgentController";
 
@@ -38,11 +40,11 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
   render(): ReactNode {
     if (this.state.error !== null) {
       return (
-        <div style={{ background: "#fff", color: "#c0392b", fontFamily: "monospace", padding: "16px" }}>
-          <strong>SciAgent UI Error</strong>
-          <pre style={{ fontSize: "11px", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-            {this.state.error.message}
-          </pre>
+        <div className="agt-root agt-root--error">
+          <section className="agt-card agt-startup-error" role="alert">
+            <h2>SciAgent UI Error</h2>
+            <pre>{this.state.error.message}</pre>
+          </section>
         </div>
       );
     }
@@ -55,22 +57,41 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
 function StatusPill({
   phase,
   healthBusy,
-  healthOk,
+  healthError,
+  healthResponse,
 }: {
   phase: RunPhase;
   healthBusy: boolean;
-  healthOk: boolean;
+  healthError: string | null;
+  healthResponse: HealthResponse | null;
 }) {
+  const content = (className: string, label: string, title?: string) => (
+    <output className={`agt-status-pill ${className}`} aria-live="polite" title={title ?? label}>
+      <span className="agt-status-dot" aria-hidden="true" />
+      {label}
+    </output>
+  );
+
   if (phase === "submitting" || phase === "resuming") {
-    return <span className="agt-status-pill agt-status-pill--loading">searching…</span>;
-  }
-  if (!healthOk && !healthBusy) {
-    return <span className="agt-status-pill agt-status-pill--error">backend offline</span>;
+    return content("agt-status-pill--loading", "searching…");
   }
   if (healthBusy) {
-    return <span className="agt-status-pill agt-status-pill--loading">connecting…</span>;
+    return content("agt-status-pill--loading", "connecting…");
   }
-  return <span className="agt-status-pill agt-status-pill--ok">backend connected</span>;
+  if (healthResponse?.ok === true) {
+    return content("agt-status-pill--ok", "backend healthy");
+  }
+  if (healthResponse !== null) {
+    return content(
+      "agt-status-pill--warn",
+      "backend reachable",
+      healthResponse.preflight.message ?? healthResponse.message,
+    );
+  }
+  if (healthError !== null) {
+    return content("agt-status-pill--error", "backend offline", healthError);
+  }
+  return content("agt-status-pill--idle", "backend not checked");
 }
 
 // ── Write result helpers ────────────────────────────────────────────────────
@@ -147,7 +168,28 @@ function renderWriteResult(writeResult: WriteResult | null) {
 
 type SciAgentController = ReturnType<typeof useSciAgentController>;
 
+function searchDisabledReason(controller: SciAgentController): string | null {
+  if (controller.query.trim().length === 0) {
+    return "Enter a query before searching.";
+  }
+  if (controller.healthBusy) {
+    return "Checking the backend connection.";
+  }
+  if (controller.healthResponse?.ok === true) {
+    return null;
+  }
+  if (controller.healthResponse !== null) {
+    return null;
+  }
+  if (controller.healthError !== null) {
+    return `Backend unavailable: ${controller.healthError}`;
+  }
+  return "Backend health has not been checked yet.";
+}
+
 function IdleView({ controller }: { controller: SciAgentController }) {
+  const disabledReason = searchDisabledReason(controller);
+
   return (
     <div className="agt-state-view">
       <section className="agt-card">
@@ -155,25 +197,40 @@ function IdleView({ controller }: { controller: SciAgentController }) {
           <h2>Search</h2>
           <button
             className="agt-button agt-button--warn"
-            disabled={controller.query.trim().length === 0}
+            disabled={disabledReason !== null}
             onClick={controller.onSubmitSearch}
+            title={disabledReason ?? "Run search"}
             type="button"
           >
-            {controller.filterDraft === null ? "Search" : "Re-run Search"}
+            {controller.searchPlan === null ? "Search" : "Re-run Search"}
           </button>
         </div>
         {controller.runView.error !== null ? (
           <div className="agt-error">{controller.runView.error}</div>
         ) : null}
-        <label className="agt-field">
-          <span>Query</span>
+        <div className="agt-field">
+          <div className="agt-field-header">
+            <span>Query</span>
+            <button
+              className="agt-button agt-button--ghost agt-button--sm"
+              disabled={controller.query.trim().length === 0 || controller.extracting || controller.healthResponse === null}
+              onClick={controller.onExtractKeywords}
+              title="Extract keywords and collection name from the query text"
+              type="button"
+            >
+              {controller.extracting ? "Extracting…" : "Extract"}
+            </button>
+          </div>
           <textarea
             className="agt-textarea"
             onChange={(event) => controller.onQueryChange(event.target.value)}
             rows={3}
             value={controller.query}
           />
-        </label>
+          {controller.extractError !== null ? (
+            <span className="agt-small-note agt-small-note--error">{controller.extractError}</span>
+          ) : null}
+        </div>
         <label className="agt-field">
           <span>Collection Name</span>
           <input
@@ -183,7 +240,31 @@ function IdleView({ controller }: { controller: SciAgentController }) {
             value={controller.collectionName}
           />
         </label>
+        {controller.correctedQuery !== null ? (
+          <output className="agt-status-note agt-spell-suggestion" aria-live="polite">
+            {"Did you mean: "}
+            <button
+              className="agt-link-button"
+              onClick={controller.onAcceptCorrection}
+              type="button"
+            >
+              {controller.correctedQuery}
+            </button>
+            {"?"}
+          </output>
+        ) : null}
+        {disabledReason !== null && controller.query.trim().length > 0 ? (
+          <output className="agt-status-note agt-status-note--warn" aria-live="polite">
+            {disabledReason}
+          </output>
+        ) : null}
       </section>
+
+      <SourcePresets
+        disabled={false}
+        filterDraft={controller.filterDraft}
+        onChange={controller.onFilterDraftChange}
+      />
 
       <FilterEditor
         disabled={false}
@@ -193,42 +274,70 @@ function IdleView({ controller }: { controller: SciAgentController }) {
         searchPlan={controller.searchPlan}
       />
 
-      {controller.sourcePolicy.length > 0 ? (
-        <section className="agt-card agt-card--soft">
-          <SourceToggles sourcePolicy={controller.sourcePolicy} />
-        </section>
-      ) : null}
+      {controller.sourcePolicy.length > 0 ? <SourceToggles sourcePolicy={controller.sourcePolicy} /> : null}
+
+      <HealthStatus
+        busy={controller.healthBusy}
+        error={controller.healthError}
+        onRefresh={controller.onRefreshHealth}
+        response={controller.healthResponse}
+      />
+
+      <ConfigPanel
+        config={controller.config}
+        onChange={controller.onConfigChange}
+        onSave={controller.onSaveConfig}
+        saveError={controller.saveError}
+        saveState={controller.saveState}
+      />
+
+      <LibraryDoctor
+        collectionName={controller.collectionName}
+        error={controller.doctorError}
+        onScan={controller.onLibraryDoctor}
+        report={controller.doctorReport}
+        scanning={controller.doctorScanning}
+      />
 
       <section className="agt-card agt-card--soft">
         <div className="agt-section-heading">
-          <h2>Backend</h2>
-          <div className="agt-inline-actions">
-            <button
-              className="agt-button agt-button--ghost"
-              disabled={controller.healthBusy}
-              onClick={controller.onRefreshHealth}
-              type="button"
-            >
-              {controller.healthBusy ? "Checking…" : "Refresh"}
-            </button>
-          </div>
+          <h2>Gap Finder</h2>
+          <button
+            className="agt-button agt-button--ghost"
+            disabled={controller.gapRunning || controller.healthResponse === null}
+            onClick={controller.onGapFinder}
+            type="button"
+          >
+            {controller.gapRunning ? "Analysing…" : "Find Gaps"}
+          </button>
         </div>
-        <HealthStatus
-          busy={controller.healthBusy}
-          error={controller.healthError}
-          onRefresh={controller.onRefreshHealth}
-          response={controller.healthResponse}
-        />
-      </section>
-
-      <section className="agt-card agt-card--soft">
-        <ConfigPanel
-          config={controller.config}
-          onChange={controller.onConfigChange}
-          onSave={controller.onSaveConfig}
-          saveError={controller.saveError}
-          saveState={controller.saveState}
-        />
+        <p className="agt-small-note">
+          Suggests missing seminal papers, recent follow-ups, and reviews for the current collection.
+        </p>
+        {controller.gapError !== null ? (
+          <div className="agt-error">{controller.gapError}</div>
+        ) : null}
+        {controller.gapResult !== null ? (
+          <>
+            <p className="agt-small-note">{controller.gapResult.reasoning}</p>
+            {controller.gapResult.papers.length === 0 ? (
+              <p className="agt-empty-state">No gaps found.</p>
+            ) : (
+              <ul className="agt-gap-list">
+                {controller.gapResult.papers.map((paper, i) => (
+                  <li className="agt-gap-item" key={paper.doi ?? paper.title ?? i}>
+                    {paper.url !== null ? (
+                      <a href={paper.url} rel="noreferrer" target="_blank">{paper.title}</a>
+                    ) : (
+                      paper.title
+                    )}
+                    {paper.year !== null ? <span className="agt-gap-year"> ({paper.year})</span> : null}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        ) : null}
       </section>
     </div>
   );
@@ -369,9 +478,8 @@ function DoneView({ controller }: { controller: SciAgentController }) {
 
 // ── App root ────────────────────────────────────────────────────────────────
 
-export function App({ services }: { services: AddonUiServices }) {
+function AppContent({ services }: { services: AddonUiServices }) {
   const controller = useSciAgentController(services);
-  const healthOk = controller.healthResponse?.ok === true;
 
   const uiState: "idle" | "running" | "review" | "done" =
     controller.runView.phase === "submitting" || controller.runView.phase === "resuming"
@@ -385,24 +493,31 @@ export function App({ services }: { services: AddonUiServices }) {
           : "idle";
 
   return (
-    <ErrorBoundary>
-      <div className="agt-root">
-        <div className="agt-shell">
-          <header className="agt-titlebar">
-            <span className="agt-title">SciAgent</span>
-            <StatusPill
-              healthBusy={controller.healthBusy}
-              healthOk={healthOk}
-              phase={controller.runView.phase}
-            />
-          </header>
+    <div className="agt-root">
+      <div className="agt-shell">
+        <header className="agt-titlebar">
+          <span className="agt-title">SciAgent</span>
+          <StatusPill
+            healthError={controller.healthError}
+            healthBusy={controller.healthBusy}
+            healthResponse={controller.healthResponse}
+            phase={controller.runView.phase}
+          />
+        </header>
 
-          {uiState === "idle" && <IdleView controller={controller} />}
-          {uiState === "running" && <RunningView controller={controller} />}
-          {uiState === "review" && <ReviewView controller={controller} />}
-          {uiState === "done" && <DoneView controller={controller} />}
-        </div>
+        {uiState === "idle" && <IdleView controller={controller} />}
+        {uiState === "running" && <RunningView controller={controller} />}
+        {uiState === "review" && <ReviewView controller={controller} />}
+        {uiState === "done" && <DoneView controller={controller} />}
       </div>
+    </div>
+  );
+}
+
+export function App({ services }: { services: AddonUiServices }) {
+  return (
+    <ErrorBoundary>
+      <AppContent services={services} />
     </ErrorBoundary>
   );
 }

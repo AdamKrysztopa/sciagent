@@ -27,7 +27,7 @@ This document is **copy-paste ready**. Follow the steps in order and you will ha
 | **Add-on QA**         | `npm` scripts in `zotero-addon/`                                                                                                    | Node `>=20`         | Real package validation via `lint`, `build`, `typecheck`, and `test`                         |
 | **Docs QA**           | `markdownlint-cli2`                                                                                                                 | `npx`               | Pragmatic Markdown linting for docs and agent instructions                                   |
 | **Docs Build**        | `mkdocs-material`                                                                                                                   | latest              | Build a full navigable docs site directly from `docs/*.md`                                   |
-| **Pre-commit**        | `pre-commit`                                                                                                                        | latest              | Fast local hooks for Python; add-on and docs gates stay explicit/CI-driven                   |
+| **Pre-commit**        | `pre-commit`                                                                                                                        | latest              | Fast commit-time hooks plus a pre-push gate that mirrors the full repo checks before CI      |
 | **Extras**            | `tenacity`, `python-dotenv`, `redis` (later)                                                                                        | latest              | Rate guards, checkpoints                                                                     |
 
 **Total dependencies for MVP:** ~18 packages (kept deliberately small).
@@ -114,19 +114,57 @@ preview = true
 }
 ```
 
-**`.pre-commit-config.yaml`** (keep local hooks fast and Python-only)
+**`.pre-commit-config.yaml`** (fast commit hooks plus full pre-push parity)
 
 ```yaml
+default_install_hook_types:
+  - pre-commit
+  - pre-push
+
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.0
+    rev: v0.15.7
     hooks:
       - id: ruff
+        stages: [pre-commit]
       - id: ruff-format
-  - repo: https://github.com/RobertCraigie/pyright-pre-commit
-    rev: v1.1.390
+        stages: [pre-commit]
+  - repo: local
     hooks:
       - id: pyright
+        entry: uv run pyright
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+      - id: markdownlint
+        entry: npx --yes markdownlint-cli2 README.md docs/**/*.md examples/**/*.md .github/**/*.md zotero-addon/README.md
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+      - id: python-quality-py313
+        entry: sh -c 'uv run --isolated --python 3.13 ruff check . && uv run --isolated --python 3.13 ruff format --check . && uv run --isolated --python 3.13 pyright && uv run --isolated --python 3.13 pytest -q --vcr-record=none'
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
+      - id: python-quality-py314
+        entry: sh -c 'uv run --isolated --python 3.14 ruff check . && uv run --isolated --python 3.14 ruff format --check . && uv run --isolated --python 3.14 pyright && uv run --isolated --python 3.14 pytest -q --vcr-record=none'
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
+      - id: zotero-addon-quality
+        entry: sh -c 'cd zotero-addon && npm ci && npm run lint && npm run build && npm run typecheck && npm run test'
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
+      - id: docs-quality
+        entry: sh -c 'npx --yes markdownlint-cli2 README.md docs/**/*.md examples/**/*.md .github/**/*.md zotero-addon/README.md && uv run mkdocs build --strict'
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
 ```
 
 Install hooks:
@@ -134,6 +172,8 @@ Install hooks:
 ```bash
 uv run pre-commit install
 ```
+
+The config sets `default_install_hook_types` so plain `pre-commit install` wires both commit-time and push-time hooks.
 
 ## 5A. Repo Quality Gate
 
@@ -166,7 +206,7 @@ npx --yes markdownlint-cli2 "README.md" "docs/**/*.md" "examples/**/*.md" ".gith
 uv run mkdocs build --strict
 ```
 
-Local `pre-commit` intentionally stays lightweight and Python-only. The full add-on and docs gates are documented commands and CI jobs rather than per-commit hooks.
+Commit-time hooks stay fast and catch the cheap failures early: `ruff`, `ruff format`, `pyright`, and Markdown linting. Push-time hooks run the full Python gate twice, once on Python 3.13 and once on Python 3.14, plus the Zotero add-on and docs gates locally before network push. The Python hooks use `uv run --isolated --python ...` so they mirror the CI version matrix without rewriting the project `.venv`; on a machine missing one of those interpreters, `uv` provisions it on first use.
 
 ## 5B. Modern Markdown Workspace
 
@@ -244,7 +284,9 @@ You now have:
   - Python backend: `uv run ruff check .`, `uv run ruff format --check .`, `uv run pyright`, `uv run pytest -q --vcr-record=none`
   - Zotero add-on: `cd zotero-addon && npm ci && npm run lint && npm run build && npm run typecheck && npm run test`
   - Docs and agent instructions: `npx --yes markdownlint-cli2 "README.md" "docs/**/*.md" "examples/**/*.md" ".github/**/*.md" "zotero-addon/README.md"` and `uv run mkdocs build --strict`
-- `pre-commit` remains a fast local subset of the Python gate rather than the full repo gate.
+- `pre-commit install` wires both `pre-commit` and `pre-push` hooks via `default_install_hook_types`.
+- Commit-time hooks run `ruff`, `ruff format`, `pyright`, and Markdown linting.
+- Push-time hooks run the full Python, Zotero add-on, and docs gates before code leaves the machine.
 
 ## Provider Swap Contract
 

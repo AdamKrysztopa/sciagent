@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import tempfile
+import uuid
 from dataclasses import dataclass, field
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -8,6 +11,7 @@ from fastapi.testclient import TestClient
 import agt.api.app as api_module
 from agt.api.app import create_app
 from agt.config import get_settings
+from agt.models import DoctorReport, GapSuggestion, NormalizedPaper
 
 HTTP_OK = 200
 HTTP_UNAUTHORIZED = 401
@@ -39,6 +43,21 @@ class _Settings:
     core_api_key: _Secret | None = None
     dimensions_key: _Secret | None = None
     serpapi_key: _Secret | None = None
+    zotero_collection_name: str = "SciAgent"
+    openai_api_key: _Secret | None = None
+    anthropic_api_key: _Secret | None = None
+    xai_api_key: _Secret | None = None
+    groq_api_key: _Secret | None = None
+    resolved_session_dir: Path = field(
+        default_factory=lambda: Path(tempfile.mkdtemp()) / f"sess-{uuid.uuid4().hex}"
+    )
+    resolved_cache_dir: Path = field(
+        default_factory=lambda: Path(tempfile.mkdtemp()) / f"cache-{uuid.uuid4().hex}"
+    )
+    cache_ttl_seconds: int = 3600
+
+    def provider_api_key(self, provider: str) -> _Secret | None:
+        return getattr(self, f"{provider}_api_key", None)
 
 
 def test_health_requires_valid_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -107,17 +126,19 @@ def test_run_resume_status_flow_with_owner_isolation(monkeypatch: pytest.MonkeyP
             "search_metadata": {"mode": "regex"},
         }
 
-    async def fake_resume(
+    async def fake_resume(  # noqa: PLR0913
         checkpoint: dict[str, object],
         *,
         approved: bool,
         collection_name: str | None = None,
         selected_indices: list[int] | None = None,
         settings: object | None = None,
+        enable_pdf_imports: bool = False,
     ) -> dict[str, object]:
         _ = collection_name
         _ = selected_indices
         _ = settings
+        _ = enable_pdf_imports
         phase = "completed" if approved else "rejected"
         decision = "approved" if approved else "rejected"
         return {
@@ -201,18 +222,20 @@ def test_resume_failed_phase_maps_to_failed_status(monkeypatch: pytest.MonkeyPat
             "search_metadata": {"mode": "regex"},
         }
 
-    async def fake_resume(
+    async def fake_resume(  # noqa: PLR0913
         checkpoint: dict[str, object],
         *,
         approved: bool,
         collection_name: str | None = None,
         selected_indices: list[int] | None = None,
         settings: object | None = None,
+        enable_pdf_imports: bool = False,
     ) -> dict[str, object]:
         _ = approved
         _ = collection_name
         _ = selected_indices
         _ = settings
+        _ = enable_pdf_imports
         return {
             **checkpoint,
             "phase": "failed",
@@ -477,5 +500,204 @@ def test_run_rejects_filter_edit_query_mismatch(monkeypatch: pytest.MonkeyPatch)
         )
 
         assert response.status_code == HTTP_UNPROCESSABLE_ENTITY
+
+    app.dependency_overrides.clear()
+
+
+def test_resume_accepts_enable_pdf_imports_field(monkeypatch: pytest.MonkeyPatch) -> None:
+    """ResumeRequest accepts enable_pdf_imports and passes it to resume_workflow."""
+    app = create_app()
+
+    def fake_get_settings() -> _Settings:
+        return _Settings()
+
+    captured: dict[str, object] = {}
+
+    async def fake_search_phase(
+        query: str,
+        collection_name: str,
+        thread_id: str | None = None,
+        settings: object | None = None,
+        filter_edit: object | None = None,
+    ) -> dict[str, object]:
+        _ = query, collection_name, settings, filter_edit
+        return {
+            "request_id": "req-pdf",
+            "thread_id": thread_id or "thread-pdf",
+            "messages": ["search complete"],
+            "papers": [],
+            "collection_name": "Inbox",
+            "approved": False,
+            "decision": "pending",
+            "phase": "awaiting_approval",
+            "selected_indices": [],
+            "preflight": {"ok": True},
+            "trace_spans": [],
+            "write_result": None,
+            "search_metadata": {"mode": "regex"},
+        }
+
+    async def fake_resume(  # noqa: PLR0913
+        checkpoint: dict[str, object],
+        *,
+        approved: bool,
+        collection_name: str | None = None,
+        selected_indices: list[int] | None = None,
+        settings: object | None = None,
+        enable_pdf_imports: bool = False,
+    ) -> dict[str, object]:
+        captured["enable_pdf_imports"] = enable_pdf_imports
+        return {
+            **checkpoint,
+            "phase": "completed",
+            "decision": "approved",
+            "approved": True,
+            "write_result": {"created": 0, "unchanged": 0, "failed": 0},
+        }
+
+    monkeypatch.setattr(api_module, "run_search_phase", fake_search_phase)
+    monkeypatch.setattr(api_module, "resume_workflow", fake_resume)
+    app.dependency_overrides[get_settings] = fake_get_settings
+
+    with TestClient(app) as client:
+        headers = {"X-AGT-API-Key": "backend-key", "X-AGT-Client-ID": "owner-pdf"}
+
+        run_resp = client.post(
+            "/run",
+            headers=headers,
+            json={"query": "q", "collection_name": "Inbox", "thread_id": "thread-pdf"},
+        )
+        assert run_resp.status_code == HTTP_OK
+        run_id = run_resp.json()["run_id"]
+
+        resume_resp = client.post(
+            "/resume",
+            headers=headers,
+            json={"run_id": run_id, "approved": True, "enable_pdf_imports": True},
+        )
+        assert resume_resp.status_code == HTTP_OK
+        assert captured.get("enable_pdf_imports") is True
+
+    app.dependency_overrides.clear()
+
+
+_DOCTOR_TOTAL_ITEMS = 3
+
+
+def test_library_doctor_endpoint(monkeypatch: pytest.MonkeyPatch) -> None:
+    """POST /library-doctor returns a DoctorReport for the given collection."""
+    app = create_app()
+
+    def fake_get_settings() -> _Settings:
+        return _Settings()
+
+    async def fake_scan(collection_name: str, settings: object, **kwargs: object) -> DoctorReport:
+        return DoctorReport(
+            collection_name=collection_name,
+            total_items=_DOCTOR_TOTAL_ITEMS,
+            issues=[],
+            duplicate_pairs=[],
+        )
+
+    monkeypatch.setattr(api_module, "scan_collection", fake_scan)
+    app.dependency_overrides[get_settings] = fake_get_settings
+
+    with TestClient(app) as client:
+        resp = client.post(
+            "/library-doctor",
+            headers={"X-AGT-API-Key": "backend-key"},
+            json={"collection_name": "My Papers"},
+        )
+        assert resp.status_code == HTTP_OK
+        payload = resp.json()
+        assert payload["collection_name"] == "My Papers"
+        assert payload["total_items"] == _DOCTOR_TOTAL_ITEMS
+        assert payload["issues"] == []
+        assert payload["duplicate_pairs"] == []
+
+    app.dependency_overrides.clear()
+
+
+def test_library_doctor_requires_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    """POST /library-doctor rejects requests without a valid API key."""
+    app = create_app()
+
+    def fake_get_settings() -> _Settings:
+        return _Settings()
+
+    app.dependency_overrides[get_settings] = fake_get_settings
+
+    with TestClient(app) as client:
+        resp = client.post(
+            "/library-doctor",
+            json={"collection_name": "My Papers"},
+        )
+        assert resp.status_code == HTTP_UNAUTHORIZED
+
+    app.dependency_overrides.clear()
+
+
+def test_gap_finder_endpoint(monkeypatch: pytest.MonkeyPatch) -> None:
+    """POST /gap-finder returns a GapFinderResponse with reasoning and papers."""
+    app = create_app()
+
+    def fake_get_settings() -> _Settings:
+        return _Settings()
+
+    def fake_build_provider(settings: object) -> object:
+        class _DummyProvider:
+            def invoke(self, prompt: str) -> str:
+                return ""
+
+            async def ainvoke(self, prompt: str) -> str:
+                return ""
+
+            def bind_tools(self, tools: object) -> object:
+                return self
+
+        return _DummyProvider()
+
+    async def fake_find_gaps(
+        collection_name: str, settings: object, provider: object, **kwargs: object
+    ) -> GapSuggestion:
+        return GapSuggestion(
+            reasoning="Missing systematic reviews.",
+            papers=[NormalizedPaper(title="Gap Paper", authors=["Author A"], doi="10.1234/gap")],
+        )
+
+    monkeypatch.setattr(api_module, "find_gaps", fake_find_gaps)
+    monkeypatch.setattr(api_module, "build_provider", fake_build_provider)
+    app.dependency_overrides[get_settings] = fake_get_settings
+
+    with TestClient(app) as client:
+        resp = client.post(
+            "/gap-finder",
+            headers={"X-AGT-API-Key": "backend-key"},
+            json={"collection_name": "My Papers"},
+        )
+        assert resp.status_code == HTTP_OK
+        payload = resp.json()
+        assert payload["reasoning"] == "Missing systematic reviews."
+        assert len(payload["papers"]) == 1
+        assert payload["papers"][0]["title"] == "Gap Paper"
+
+    app.dependency_overrides.clear()
+
+
+def test_gap_finder_requires_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    """POST /gap-finder rejects requests without a valid API key."""
+    app = create_app()
+
+    def fake_get_settings() -> _Settings:
+        return _Settings()
+
+    app.dependency_overrides[get_settings] = fake_get_settings
+
+    with TestClient(app) as client:
+        resp = client.post(
+            "/gap-finder",
+            json={"collection_name": "My Papers"},
+        )
+        assert resp.status_code == HTTP_UNAUTHORIZED
 
     app.dependency_overrides.clear()

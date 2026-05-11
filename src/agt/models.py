@@ -6,6 +6,8 @@ from typing import Any, Literal, TypedDict, cast
 
 from pydantic import BaseModel, Field, model_validator
 
+LibraryStatus = Literal["new", "in_library", "possible_duplicate"]
+
 
 class HardFilters(BaseModel):
     """Filters that cannot be relaxed or overridden by LLM rewriting."""
@@ -91,6 +93,8 @@ class NormalizedPaper(BaseModel):
     open_access: bool = False
     summary: str | None = None
     score: float = 0.0
+    explanation: str | None = None
+    library_status: LibraryStatus | None = None
 
 
 class SearchMetadata(BaseModel):
@@ -141,6 +145,31 @@ class WriteResult(BaseModel):
         default_factory=lambda: cast(list[ItemWriteOutcome], [])
     )
     retry_safe_failures: int = 0
+
+
+class DoctorIssue(BaseModel):
+    """A single item-level issue found by the Library Doctor."""
+
+    item_key: str
+    title: str
+    issue_types: list[Literal["missing_doi", "missing_abstract", "missing_pdf", "duplicate"]]
+    duplicate_of: str | None = None  # item_key of the duplicate
+
+
+class DoctorReport(BaseModel):
+    """Aggregate health report for a Zotero collection (SCI-0303)."""
+
+    collection_name: str
+    total_items: int
+    issues: list[DoctorIssue]
+    duplicate_pairs: list[tuple[str, str]]  # pairs of (key, key)
+
+
+class GapSuggestion(BaseModel):
+    """LLM-suggested papers missing from a collection (SCI-0304)."""
+
+    reasoning: str
+    papers: list[NormalizedPaper]
 
 
 class AgentState(TypedDict):

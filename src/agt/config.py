@@ -305,10 +305,6 @@ class Settings(BaseSettings):
         default=False,
         validation_alias=AliasChoices("AGT_USE_KEYBERT", "USE_KEYBERT"),
     )
-    use_spell_check: bool = Field(
-        default=False,
-        validation_alias=AliasChoices("AGT_USE_SPELL_CHECK", "USE_SPELL_CHECK"),
-    )
     use_reranker: bool = Field(
         default=False,
         validation_alias=AliasChoices("AGT_USE_RERANKER", "USE_RERANKER"),
@@ -353,6 +349,22 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("AGT_ENV_OVERRIDES", "ENV_OVERRIDES"),
         description="JSON mapping of env name to runtime overrides.",
     )
+    session_dir: Path | None = Field(
+        default=None,
+        validation_alias=AliasChoices("AGT_SESSION_DIR", "SESSION_DIR"),
+        description="Directory for persistent session JSON files. Defaults to ~/.sciagent/sessions/.",
+    )
+    cache_dir: Path | None = Field(
+        default=None,
+        validation_alias=AliasChoices("AGT_CACHE_DIR", "CACHE_DIR"),
+        description="Directory for SQLite result cache. Defaults to ~/.sciagent/cache/.",
+    )
+    cache_ttl_seconds: int = Field(
+        default=86400,
+        ge=60,
+        validation_alias=AliasChoices("AGT_CACHE_TTL_SECONDS", "CACHE_TTL_SECONDS"),
+        description="TTL for cached search results in seconds (default 24 h).",
+    )
     log_level: str = Field(
         default="INFO", validation_alias=AliasChoices("AGT_LOG_LEVEL", "LOG_LEVEL")
     )
@@ -395,6 +407,14 @@ class Settings(BaseSettings):
                 return provider_name
 
         return self.llm_provider
+
+    @property
+    def resolved_session_dir(self) -> Path:
+        return self.session_dir or (Path.home() / ".sciagent" / "sessions")
+
+    @property
+    def resolved_cache_dir(self) -> Path:
+        return self.cache_dir or (Path.home() / ".sciagent" / "cache")
 
     @property
     def runtime(self) -> RuntimeConfig:

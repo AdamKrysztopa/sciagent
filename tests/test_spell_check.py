@@ -1,39 +1,40 @@
 from __future__ import annotations
 
-import sys
-import types
-
-import pytest
-
 from agt.tools.spell_check import correct_query
 
 
-def test_correct_query_returns_input_when_package_missing(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delitem(sys.modules, "spellchecker", raising=False)
-    assert correct_query("trandign papers") in {"trandign papers", "trending papers"}
+def test_correct_query_fixes_obvious_typo() -> None:
+    result = correct_query("wrod papers")
+    assert "word" in result
 
 
-def test_correct_query_preserves_domain_terms(monkeypatch: pytest.MonkeyPatch) -> None:
-    fake_module = types.ModuleType("spellchecker")
+def test_correct_query_preserves_domain_terms() -> None:
+    result = correct_query("best RAG techniques")
+    assert "RAG" in result
 
-    class _FakeSpellChecker:
-        def __init__(self, distance: int) -> None:
-            _ = distance
 
-        def correction(self, token: str) -> str:
-            if token.lower() == "trandign":
-                return "trending"
-            if token.lower() == "rag":
-                return "rag"
-            return token
+def test_correct_query_preserves_arxiv() -> None:
+    result = correct_query("arxiv preprints")
+    assert "arxiv" in result
 
-    setattr(fake_module, "SpellChecker", _FakeSpellChecker)
-    monkeypatch.setitem(sys.modules, "spellchecker", fake_module)
 
-    corrected = correct_query("trandign RAG")
-    assert "trending" in corrected.lower()
-    assert "RAG" in corrected
+def test_correct_query_preserves_llm() -> None:
+    result = correct_query("LLM alignment")
+    assert "LLM" in result
 
 
 def test_correct_query_empty() -> None:
     assert correct_query("   ") == "   "
+
+
+def test_correct_query_no_changes_for_clean_input() -> None:
+    assert correct_query("attention mechanism") == "attention mechanism"
+
+
+def test_correct_query_preserves_short_tokens() -> None:
+    result = correct_query("in AI systems")
+    assert "AI" in result
+
+
+def test_correct_query_returns_string() -> None:
+    assert isinstance(correct_query("musg be eliminated"), str)

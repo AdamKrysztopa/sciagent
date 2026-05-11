@@ -75,6 +75,9 @@ export interface FilterEditContract {
   result_limit: number;
 }
 
+// SCI-0301
+export type LibraryStatus = "new" | "in_library" | "possible_duplicate";
+
 export interface NormalizedPaper {
   title: string;
   year: number | null;
@@ -92,6 +95,8 @@ export interface NormalizedPaper {
   open_access: boolean;
   summary: string | null;
   score: number;
+  explanation: string | null;
+  library_status?: LibraryStatus | null;
 }
 
 export interface SearchMetadata {
@@ -164,6 +169,8 @@ export interface ResumeRequest {
   selected_indices?: number[];
   /** When true the backend skips pyzotero write and returns approved_papers for native JS write. */
   native_write?: boolean;
+  // SCI-0302
+  enable_pdf_imports?: boolean;
 }
 
 export interface RunAcceptedResponse {
@@ -179,6 +186,46 @@ export interface CapabilitiesResponse {
   source_policy: SourceCapability[];
   filter_support: Record<string, string[]>;
   pdf_import_supported: boolean;
+  provider_availability: Record<string, boolean>;
+  active_provider: string;
+}
+
+export interface CorrectQueryResponse {
+  original: string;
+  corrected: string;
+  changed: boolean;
+}
+
+export interface ExtractKeywordsResponse {
+  include_keywords: string[];
+  exclude_keywords: string[];
+  collection_name: string | null;
+  min_year: number | null;
+  max_year: number | null;
+  min_citations: number | null;
+  max_citations: number | null;
+  open_access_only: boolean;
+}
+
+// SCI-0303
+export interface DoctorIssue {
+  item_key: string;
+  title: string;
+  issue_types: Array<"missing_doi" | "missing_abstract" | "missing_pdf" | "duplicate">;
+  duplicate_of: string | null;
+}
+
+export interface DoctorReport {
+  collection_name: string;
+  total_items: number;
+  issues: DoctorIssue[];
+  duplicate_pairs: [string, string][];
+}
+
+// SCI-0304
+export interface GapFinderResponse {
+  reasoning: string;
+  papers: NormalizedPaper[];
 }
 
 export interface StatusResponse {

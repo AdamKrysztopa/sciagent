@@ -19,20 +19,20 @@ Backend changes are listed per-filter below.
 
 Based on what systematic-review researchers configure most:
 
-| Filter | Why it matters | Backend support needed |
-|---|---|---|
-| Year from / to | Already exists | Already in `SearchPlan.hard_filters` |
-| Document type | Preprints vs. journals is the #1 distinction in CS/AI; researchers explicitly include or exclude bioRxiv/arXiv results | New: `doc_type` field in `SearchPlan.hard_filters`; pushed to arXiv, Europe PMC, OpenAlex `type` filter |
-| Open access | Already exists | Already in `SearchPlan` |
-| Min citations | Already exists | Already in `SearchPlan` |
-| Language | Required for non-English corpora; NCBI/PubMed and OpenAlex support it natively | New: `language` field; pushed to PubMed, OpenAlex, Europe PMC |
-| Exclude terms | Already exists | Already in `SearchPlan` |
-| Required terms (must appear) | Inclusion criteria in PRISMA reviews — paper must mention a concept | New: `require_terms` field; becomes mandatory `AND` in source queries |
-| Venue quality | Q1/Q2 journals, top conferences; increasingly requested in SLR workflows | New: `venue_rank` field; checked post-merge using Scimago/CORE rank data (metadata only, no extra API call needed for papers that already have journal metadata) |
-| Result count | Already configurable via env var; needs to be per-run | New: `max_results` per-run override in `/run` request body |
-| PDF attachment | Already P1 in roadmap | Already planned (AGT-13); expose as per-run toggle |
-| Cross-encoder reranker | Already feature-flagged | Expose `use_reranker` as per-run override |
-| LLM query rewrite | Already feature-flagged | Expose `use_rewrite` as per-run override |
+| Filter                       | Why it matters                                                                                                         | Backend support needed                                                                                                                                           |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Year from / to               | Already exists                                                                                                         | Already in `SearchPlan.hard_filters`                                                                                                                             |
+| Document type                | Preprints vs. journals is the #1 distinction in CS/AI; researchers explicitly include or exclude bioRxiv/arXiv results | New: `doc_type` field in `SearchPlan.hard_filters`; pushed to arXiv, Europe PMC, OpenAlex `type` filter                                                          |
+| Open access                  | Already exists                                                                                                         | Already in `SearchPlan`                                                                                                                                          |
+| Min citations                | Already exists                                                                                                         | Already in `SearchPlan`                                                                                                                                          |
+| Language                     | Required for non-English corpora; NCBI/PubMed and OpenAlex support it natively                                         | New: `language` field; pushed to PubMed, OpenAlex, Europe PMC                                                                                                    |
+| Exclude terms                | Already exists                                                                                                         | Already in `SearchPlan`                                                                                                                                          |
+| Required terms (must appear) | Inclusion criteria in PRISMA reviews — paper must mention a concept                                                    | New: `require_terms` field; becomes mandatory `AND` in source queries                                                                                            |
+| Venue quality                | Q1/Q2 journals, top conferences; increasingly requested in SLR workflows                                               | New: `venue_rank` field; checked post-merge using Scimago/CORE rank data (metadata only, no extra API call needed for papers that already have journal metadata) |
+| Result count                 | Already configurable via env var; needs to be per-run                                                                  | New: `max_results` per-run override in `/run` request body                                                                                                       |
+| PDF attachment               | Already P1 in roadmap                                                                                                  | Already planned (AGT-13); expose as per-run toggle                                                                                                               |
+| Cross-encoder reranker       | Already feature-flagged                                                                                                | Expose `use_reranker` as per-run override                                                                                                                        |
+| LLM query rewrite            | Already feature-flagged                                                                                                | Expose `use_rewrite` as per-run override                                                                                                                         |
 
 ---
 
@@ -88,16 +88,17 @@ class RunOverrides(BaseModel):
 
 #### `doc_type` filter
 
-| Source | Pushdown mechanism |
-|---|---|
-| arXiv | Already preprint-only; if `doc_type="journal"`, skip arXiv |
-| OpenAlex | `filter=type:journal-article` or `type:preprint` |
-| Europe PMC | `resulttype=core` (peer-reviewed) or `resulttype=preprint` |
-| PubMed | `[pt]` publication type filter |
-| Crossref | `filter=type:journal-article` |
-| Semantic Scholar | `fieldsOfStudy` + post-filter on `publicationTypes` |
+| Source           | Pushdown mechanism                                         |
+| ---------------- | ---------------------------------------------------------- |
+| arXiv            | Already preprint-only; if `doc_type="journal"`, skip arXiv |
+| OpenAlex         | `filter=type:journal-article` or `type:preprint`           |
+| Europe PMC       | `resulttype=core` (peer-reviewed) or `resulttype=preprint` |
+| PubMed           | `[pt]` publication type filter                             |
+| Crossref         | `filter=type:journal-article`                              |
+| Semantic Scholar | `fieldsOfStudy` + post-filter on `publicationTypes`        |
 
 In `src/agt/tools/search_papers.py`, before fanning out to adapters:
+
 ```python
 def should_query_source(source: str, doc_type: str) -> bool:
     if doc_type == "journal" and source == "arxiv":
@@ -110,6 +111,7 @@ def should_query_source(source: str, doc_type: str) -> bool:
 #### `require_terms` filter
 
 Applied at two levels:
+
 1. Injected into the source query as mandatory AND terms (where supported)
 2. Post-merge filter: any paper whose title + abstract does not contain
    at least one of the required terms is removed before ranking.
@@ -273,12 +275,15 @@ Window is resizable so power users can expand further.
 const DEBOUNCE_MS = 600;
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
-queryInput.addEventListener('input', () => {
+queryInput.addEventListener("input", () => {
   const q = queryInput.value.trim();
   updateSearchButton(q);
 
   if (debounceTimer) clearTimeout(debounceTimer);
-  if (q.length < 15) { hideBanner(); return; }  // too short to parse
+  if (q.length < 15) {
+    hideBanner();
+    return;
+  } // too short to parse
 
   debounceTimer = setTimeout(() => parseQueryAndExtract(q), DEBOUNCE_MS);
 });
@@ -296,8 +301,8 @@ async function parseQueryAndExtract(query: string) {
   }
 
   try {
-    const res = await backendFetch('/parse-query', {
-      method: 'POST',
+    const res = await backendFetch("/parse-query", {
+      method: "POST",
       body: JSON.stringify({ query }),
     });
     const parsed: ParseQueryResponse = await res.json();
@@ -317,53 +322,74 @@ function applyExtraction(parsed: ParseQueryResponse) {
   const applied: AppliedExtraction[] = [];
 
   if (extracted.min_year) {
-    setField('f-ymin', String(extracted.min_year));
-    highlightField('fb-ymin');
-    applied.push({ field: 'f-ymin', fb: 'fb-ymin',
+    setField("f-ymin", String(extracted.min_year));
+    highlightField("fb-ymin");
+    applied.push({
+      field: "f-ymin",
+      fb: "fb-ymin",
       label: `year from: ${extracted.min_year}`,
-      note: extraction_notes[applied.length] ?? '' });
+      note: extraction_notes[applied.length] ?? "",
+    });
   }
   if (extracted.max_year) {
-    setField('f-ymax', String(extracted.max_year));
-    highlightField('fb-ymax');
-    applied.push({ field: 'f-ymax', fb: 'fb-ymax',
+    setField("f-ymax", String(extracted.max_year));
+    highlightField("fb-ymax");
+    applied.push({
+      field: "f-ymax",
+      fb: "fb-ymax",
       label: `year to: ${extracted.max_year}`,
-      note: extraction_notes[applied.length] ?? '' });
+      note: extraction_notes[applied.length] ?? "",
+    });
   }
-  if (extracted.doc_type && extracted.doc_type !== 'any') {
-    setField('f-dtype', extracted.doc_type);
-    highlightField('fb-dtype');
-    applied.push({ field: 'f-dtype', fb: 'fb-dtype',
+  if (extracted.doc_type && extracted.doc_type !== "any") {
+    setField("f-dtype", extracted.doc_type);
+    highlightField("fb-dtype");
+    applied.push({
+      field: "f-dtype",
+      fb: "fb-dtype",
       label: docTypeLabel(extracted.doc_type),
-      note: extraction_notes[applied.length] ?? '' });
+      note: extraction_notes[applied.length] ?? "",
+    });
   }
-  if (extracted.open_access && extracted.open_access !== 'any') {
-    setField('f-oa', extracted.open_access);
-    highlightField('fb-oa');
-    applied.push({ field: 'f-oa', fb: 'fb-oa',
+  if (extracted.open_access && extracted.open_access !== "any") {
+    setField("f-oa", extracted.open_access);
+    highlightField("fb-oa");
+    applied.push({
+      field: "f-oa",
+      fb: "fb-oa",
       label: `open access: ${extracted.open_access}`,
-      note: extraction_notes[applied.length] ?? '' });
+      note: extraction_notes[applied.length] ?? "",
+    });
   }
   if (extracted.exclude_terms.length) {
-    setField('f-excl', extracted.exclude_terms.join(', '));
-    highlightField('fb-excl');
-    applied.push({ field: 'f-excl', fb: 'fb-excl',
-      label: `exclude: ${extracted.exclude_terms.join(', ')}`,
-      note: extraction_notes[applied.length] ?? '' });
+    setField("f-excl", extracted.exclude_terms.join(", "));
+    highlightField("fb-excl");
+    applied.push({
+      field: "f-excl",
+      fb: "fb-excl",
+      label: `exclude: ${extracted.exclude_terms.join(", ")}`,
+      note: extraction_notes[applied.length] ?? "",
+    });
   }
   if (extracted.require_terms.length) {
-    setField('f-req', extracted.require_terms.join(', '));
-    highlightField('fb-req');
-    applied.push({ field: 'f-req', fb: 'fb-req',
-      label: `must include: ${extracted.require_terms.join(', ')}`,
-      note: extraction_notes[applied.length] ?? '' });
+    setField("f-req", extracted.require_terms.join(", "));
+    highlightField("fb-req");
+    applied.push({
+      field: "f-req",
+      fb: "fb-req",
+      label: `must include: ${extracted.require_terms.join(", ")}`,
+      note: extraction_notes[applied.length] ?? "",
+    });
   }
-  if (extracted.min_citations && extracted.min_citations !== 'any') {
-    setField('f-cit', extracted.min_citations);
-    highlightField('fb-cit');
-    applied.push({ field: 'f-cit', fb: 'fb-cit',
+  if (extracted.min_citations && extracted.min_citations !== "any") {
+    setField("f-cit", extracted.min_citations);
+    highlightField("fb-cit");
+    applied.push({
+      field: "f-cit",
+      fb: "fb-cit",
       label: `citations: ${citLabel(extracted.min_citations)}`,
-      note: extraction_notes[applied.length] ?? '' });
+      note: extraction_notes[applied.length] ?? "",
+    });
   }
 
   if (applied.length > 0) {
@@ -376,11 +402,13 @@ function applyExtraction(parsed: ParseQueryResponse) {
 
 The banner sits between the query input and the filter section.
 Each extracted value gets a dismissable tag. Dismissing a tag:
+
 - Removes the highlight from the corresponding filter box
 - Resets that field to its default value
 - The user's manual edit of the field value is then the active value
 
 Key rules:
+
 - Banner only appears if at least 1 field was extracted.
 - After the user manually edits a highlighted field, its highlight turns
   from green to amber (indicating "extracted but overridden").
@@ -392,23 +420,32 @@ function watchForManualOverride(fieldId: string, fbId: string) {
   const input = doc.getElementById(fieldId);
   const fb = doc.getElementById(fbId);
   if (!input || !fb) return;
-  input.addEventListener('input', () => {
-    // User typed into an extracted field — change highlight to "overridden"
-    fb.classList.remove('highlight');
-    fb.classList.add('highlight-override');  // amber style
-  }, { once: true });
+  input.addEventListener(
+    "input",
+    () => {
+      // User typed into an extracted field — change highlight to "overridden"
+      fb.classList.remove("highlight");
+      fb.classList.add("highlight-override"); // amber style
+    },
+    { once: true },
+  );
 }
 ```
 
 CSS for override state:
+
 ```css
 .fbox.highlight-override {
   border-color: var(--agt-amber);
   background: var(--agt-amber-dim);
 }
-.fbox.highlight-override .flabel { color: var(--agt-amber); }
+.fbox.highlight-override .flabel {
+  color: var(--agt-amber);
+}
 .fbox.highlight-override .finput,
-.fbox.highlight-override .fselect { color: var(--agt-amber); }
+.fbox.highlight-override .fselect {
+  color: var(--agt-amber);
+}
 ```
 
 ---
@@ -464,6 +501,7 @@ the feature is silently absent — no error shown.
 ## Acceptance criteria
 
 **Idle panel:**
+
 - [ ] All 8 filter controls visible in the compose panel
 - [ ] Toggles for PDF, reranker, LLM rewrite work and send per-run overrides
 - [ ] Source chips reflect backend capability metadata (keyed sources shown as off/greyed)
@@ -471,6 +509,7 @@ the feature is silently absent — no error shown.
 - [ ] Window default height updated to 780px
 
 **Agentic extraction:**
+
 - [ ] `/parse-query` endpoint exists, returns `ExtractedFilters` + `extraction_notes`
 - [ ] Extraction banner appears within 700ms of user stopping typing (600ms debounce + ~100ms round trip)
 - [ ] Each extracted tag is dismissable — dismissing resets that field to default
@@ -488,6 +527,7 @@ the feature is silently absent — no error shown.
   - "between 2022 and 2024" → `min_year: 2022, max_year: 2024`
 
 **Backend:**
+
 - [ ] `doc_type` pushed to arXiv (skip if "journal"), OpenAlex, Europe PMC
 - [ ] `require_terms` applied post-merge as hard filter
 - [ ] `language` pushed to PubMed, OpenAlex, Europe PMC; post-merge elsewhere

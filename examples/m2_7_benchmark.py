@@ -1112,11 +1112,6 @@ async def _run(
                 settings_overrides={"use_keybert": True},
             ),
             ScenarioConfig(
-                name="flag_spell_check",
-                description="Enable AGT_USE_SPELL_CHECK only",
-                settings_overrides={"use_spell_check": True},
-            ),
-            ScenarioConfig(
                 name="flag_reranker",
                 description="Enable AGT_USE_RERANKER only",
                 settings_overrides={"use_reranker": True},

@@ -96,6 +96,8 @@ if checkpoint is not None:
         )
         if is_selected:
             selected_indices.append(index)
+        if paper.get("explanation"):
+            st.caption(str(paper["explanation"]))
         st.write({
             "source": paper.get("source"),
             "year": paper.get("year"),

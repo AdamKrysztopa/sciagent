@@ -4,6 +4,12 @@ import { createRoot, type Root } from "react-dom/client";
 import { createBackendClient } from "../client/backendClient";
 import { App } from "../ui/App";
 import type { AddonUiServices } from "../ui/serviceTypes";
+import {
+  createPanelBridge,
+  installPanelBridge,
+  type PanelBridgePayload,
+  type PanelBridgeTarget,
+} from "./panelBridge";
 import { createZoteroPreferenceStore } from "./prefs";
 import type { BootstrapData, ZoteroWindow } from "./zoteroTypes";
 
@@ -160,12 +166,9 @@ export class RuntimeController {
   }
 
   private insertFTL(window: ZoteroWindow): void {
-    // insertFTLIfNeeded returns a Promise; use .catch() to handle async rejection.
-    // A sync try/catch silently misses the rejection and produces
-    // "Uncaught (in promise) undefined" in the console.
-    const result = window.MozXULElement?.insertFTLIfNeeded("agt/agt.ftl");
-    if (result instanceof Promise) {
-      result.catch((ftlError: unknown) => {
+    const result = window.MozXULElement?.insertFTLIfNeeded("agt.ftl");
+    if (result !== undefined && typeof (result as PromiseLike<void>).then === "function") {
+      void Promise.resolve(result).catch((ftlError: unknown) => {
         Zotero.debug(`[SciAgent] WARNING: FTL insertion failed (non-fatal): ${ftlError}`);
       });
     }
@@ -433,7 +436,9 @@ export class RuntimeController {
       const menuitem = document.createXULElement("menuitem");
       menuitem.id = TOOLS_MENU_ID;
       menuitem.setAttribute("label", "SciAgent");
-      menuitem.setAttribute("data-l10n-id", "agt-tools-menu-label");
+      menuitem.setAttribute("aria-label", "SciAgent");
+      menuitem.setAttribute("tooltiptext", "Open SciAgent");
+      menuitem.textContent = "SciAgent";
       menuitem.addEventListener("command", () => {
         this.handleToolsMenuCommand(window);
       });
@@ -452,6 +457,72 @@ export class RuntimeController {
     window.document.getElementById(TOOLS_MENU_SEPARATOR_ID)?.remove();
   }
 
+  private exposePanelBridge(target: unknown, bridge: PanelBridgePayload, label: string): void {
+    if ((typeof target !== "object" || target === null) && typeof target !== "function") {
+      return;
+    }
+
+    try {
+      installPanelBridge(target as PanelBridgeTarget, bridge);
+    } catch (error) {
+      Zotero.debug(`[SciAgent] WARNING: Could not expose panel bridge on ${label}: ${error}`);
+    }
+  }
+
+  private getWrappedObject(target: unknown): unknown {
+    if ((typeof target !== "object" || target === null) && typeof target !== "function") {
+      return undefined;
+    }
+
+    try {
+      return (target as { wrappedJSObject?: unknown }).wrappedJSObject;
+    } catch {
+      return undefined;
+    }
+  }
+
+  private runPanelInit(panelWin: Window): boolean {
+    const maybeInit = (target: unknown): boolean => {
+      if ((typeof target !== "object" || target === null) && typeof target !== "function") {
+        return false;
+      }
+
+      try {
+        const panel = (target as { SciAgentPanel?: { init?: unknown } }).SciAgentPanel;
+        if (typeof panel?.init === "function") {
+          panel.init();
+          return true;
+        }
+      } catch (error) {
+        Zotero.debug(`[SciAgent] Error calling panel init: ${error}`);
+        Zotero.logError(error);
+      }
+
+      return false;
+    };
+
+    return maybeInit(panelWin) || maybeInit(this.getWrappedObject(panelWin));
+  }
+
+  private renderPanelStartupError(panelWin: Window, message: string): void {
+    try {
+      const document = panelWin.document;
+      const target = document.getElementById("agt-panel-root") ?? document.body;
+      if (target === null) {
+        return;
+      }
+
+      target.replaceChildren();
+      const fallback = document.createElement("div");
+      fallback.className = "agt-panel-startup-error";
+      fallback.setAttribute("role", "alert");
+      fallback.textContent = message;
+      target.appendChild(fallback);
+    } catch (error) {
+      Zotero.debug(`[SciAgent] WARNING: Could not render panel startup fallback: ${error}`);
+    }
+  }
+
   private handleToolsMenuCommand(window: ZoteroWindow): void {
     try {
       Zotero.debug("[SciAgent] Tools menu command triggered — opening main panel");
@@ -467,6 +538,14 @@ export class RuntimeController {
     // HTML windows have no windowtype, so we track the reference manually.
     if (this.mainPanelWin !== null && this.mainPanelWin.closed !== true) {
       Zotero.debug("[SciAgent] Main panel already open — focusing");
+      const panelBridge = createPanelBridge(Zotero);
+      this.exposePanelBridge(window, panelBridge, "main window");
+      this.exposePanelBridge(this.getWrappedObject(window), panelBridge, "main window wrappedJSObject");
+      this.exposePanelBridge(this.mainPanelWin, panelBridge, "existing panel window");
+      this.exposePanelBridge(this.getWrappedObject(this.mainPanelWin), panelBridge, "existing panel window wrappedJSObject");
+      if (this.runPanelInit(this.mainPanelWin)) {
+        Zotero.debug("[SciAgent] Existing main panel React app initialized");
+      }
       (this.mainPanelWin as { focus?: () => void }).focus?.();
       return;
     }
@@ -474,12 +553,15 @@ export class RuntimeController {
 
     Zotero.debug("[SciAgent] Opening main panel window");
     const panelUrl = "chrome://agt/content/sciagent-panel.html";
-    const bundleUrl = `${this.rootURI}chrome/content/panel-entry.js`;
+    const panelBridge = createPanelBridge(Zotero);
+    this.exposePanelBridge(window, panelBridge, "main window");
+    this.exposePanelBridge(this.getWrappedObject(window), panelBridge, "main window wrappedJSObject");
 
     const panelWin = window.openDialog?.(
       panelUrl,
       "_blank",
       "chrome,dialog=no,resizable,width=720,height=820,centerscreen",
+      panelBridge,
     );
 
     if (!panelWin) {
@@ -490,26 +572,27 @@ export class RuntimeController {
     // Keep a reference so we can focus or detect closure without relying on
     // Services.wm (HTML windows have no windowtype attribute).
     this.mainPanelWin = panelWin as unknown as Window & { closed?: boolean };
+    this.exposePanelBridge(panelWin, panelBridge, "panel window");
+    this.exposePanelBridge(this.getWrappedObject(panelWin), panelBridge, "panel window wrappedJSObject");
 
-    const loadAndInit = () => {
+    const verifyPanelInit = () => {
       try {
-        Zotero.debug("[SciAgent] Loading panel-entry bundle into panel window");
-        // Inject the Zotero global into the panel window scope before the bundle
-        // runs. The panel window (sciagent-panel.html) is a separate chrome
-        // window that does not automatically inherit the Zotero global.
-        const panelScope = panelWin as unknown as Record<string, unknown>;
-        panelScope.Zotero = Zotero;
-        Services.scriptloader.loadSubScript(bundleUrl, panelWin);
-        const scopedWin = panelWin as unknown as { SciAgentPanel?: { init(): void } };
-        if (typeof scopedWin.SciAgentPanel?.init === "function") {
-          scopedWin.SciAgentPanel.init();
-          Zotero.debug("[SciAgent] Main panel React app mounted");
+        if (this.runPanelInit(panelWin)) {
+          Zotero.debug("[SciAgent] Main panel React app initialized");
         } else {
-          Zotero.debug("[SciAgent] WARNING: SciAgentPanel.init not found after bundle load");
+          Zotero.debug("[SciAgent] WARNING: SciAgentPanel.init not found; panel-entry.js may not have loaded");
+          this.renderPanelStartupError(
+            panelWin,
+            "SciAgent panel script did not load. Rebuild and reinstall the add-on, then check the Zotero Error Console.",
+          );
         }
       } catch (err) {
-        Zotero.debug(`[SciAgent] Error mounting main panel React app: ${err}`);
+        Zotero.debug(`[SciAgent] Error initializing main panel React app: ${err}`);
         Zotero.logError(err);
+        this.renderPanelStartupError(
+          panelWin,
+          "SciAgent panel failed to initialize. Check the Zotero Error Console for [SciAgent] details.",
+        );
       }
     };
 
@@ -521,9 +604,9 @@ export class RuntimeController {
     // If the panel document loaded synchronously (rare but possible), fire
     // immediately; otherwise wait for the load event.
     if ((panelWin as unknown as { document?: { readyState?: string } }).document?.readyState === "complete") {
-      loadAndInit();
+      verifyPanelInit();
     } else {
-      panelWin.addEventListener("load", loadAndInit, { once: true });
+      panelWin.addEventListener("load", verifyPanelInit, { once: true });
     }
   }
 

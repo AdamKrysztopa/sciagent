@@ -6,7 +6,8 @@
       "Bash(python3 -m json.tool)",
       "Bash(curl -s -X POST http://127.0.0.1:8000/run -H 'accept: application/json' -H 'X-AGT-Client-ID: test-client' -H 'Content-Type: application/json' -d '{ *)",
       "Bash(curl -s -X POST http://127.0.0.1:8000/resume -H 'accept: application/json' -H 'X-AGT-Client-ID: test-client' -H 'Content-Type: application/json' -d '{ *)",
-      "Bash(curl -s -X GET http://127.0.0.1:8000/status/6081ec7e-6a1e-435d-b260-cce4cbc6ed55 -H 'accept: application/json' -H 'X-AGT-Client-ID: test-client')"
+      "Bash(curl -s -X GET http://127.0.0.1:8000/status/6081ec7e-6a1e-435d-b260-cce4cbc6ed55 -H 'accept: application/json' -H 'X-AGT-Client-ID: test-client')",
+      "Bash(git *)"
     ]
   }
 }

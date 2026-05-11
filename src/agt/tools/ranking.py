@@ -11,6 +11,58 @@ from datetime import date
 from agt.models import NormalizedPaper
 
 _TITLE_SPACE_RE = re.compile(r"\s+")
+_TITLE_TOKEN_RE = re.compile(r"[^\W\d_][\w-]{3,}", re.UNICODE)
+_TITLE_DIVERSITY_THRESHOLD = 0.5
+_TITLE_DIVERSITY_PENALTY = 12.0
+_TITLE_DIVERSITY_MEMORY = 10
+_TITLE_DIVERSITY_STOPWORDS: frozenset[str] = frozenset({
+    "and",
+    "for",
+    "from",
+    "in",
+    "of",
+    "on",
+    "the",
+    "to",
+    "with",
+})
+_SEMANTIC_SCORE_HIGH = 0.75
+_SEMANTIC_SCORE_MEDIUM = 0.45
+_CITATION_HIGH = 1_000
+_CITATION_LOW = 10
+_INFLUENTIAL_MIN = 5
+_EXPLAIN_MIN_KEYWORD_HITS = 2
+
+_MIN_TITLE_SPECIFICITY_QUERY_TERMS = 3
+_MIN_TITLE_SPECIFICITY_QUERY_HITS = 2
+_MIN_TITLE_SPECIFICITY_COVERAGE = 0.75
+_TITLE_SPECIFICITY_BONUS_CAP = 0.045
+_TITLE_SPECIFICITY_BONUS_PER_TOKEN = 0.012
+_TITLE_SPECIFICITY_STOPWORDS: frozenset[str] = _TITLE_DIVERSITY_STOPWORDS | frozenset({
+    "analysis",
+    "application",
+    "applications",
+    "approach",
+    "approaches",
+    "benchmark",
+    "benchmarking",
+    "clinical",
+    "effective",
+    "framework",
+    "general",
+    "large",
+    "language",
+    "learning",
+    "method",
+    "methods",
+    "model",
+    "models",
+    "review",
+    "survey",
+    "system",
+    "systems",
+    "using",
+})
 
 
 @dataclass(frozen=True)
@@ -53,6 +105,60 @@ WEIGHTS_CITATION = RankingWeights(
 )
 
 
+def explain_paper(
+    paper: NormalizedPaper,
+    *,
+    query_terms: list[str] | None = None,
+    current_year: int | None = None,
+) -> str:
+    """Return a deterministic, human-readable explanation of why this paper ranked here.
+
+    Uses only signals already computed during ranking — no extra LLM call.
+    Format: "signal one · signal two · source · year"
+    """
+    _ = current_year  # reserved for future age-aware phrasing
+    parts: list[str] = []
+
+    if paper.semantic_score >= _SEMANTIC_SCORE_HIGH:
+        parts.append("high relevance")
+    elif paper.semantic_score >= _SEMANTIC_SCORE_MEDIUM:
+        parts.append("good relevance")
+    elif paper.semantic_score > 0:
+        parts.append("moderate relevance")
+    elif query_terms:
+        title_lower = paper.title.lower()
+        text_lower = f"{title_lower} {(paper.abstract or '').lower()}"
+        title_hits = sum(1 for t in query_terms if t.lower() in title_lower)
+        text_hits = sum(1 for t in query_terms if t.lower() in text_lower)
+        total = len(query_terms)
+        if title_hits >= _EXPLAIN_MIN_KEYWORD_HITS:
+            parts.append(f"{title_hits}/{total} query terms in title")
+        elif text_hits >= _EXPLAIN_MIN_KEYWORD_HITS:
+            parts.append(f"{text_hits}/{total} query terms matched")
+
+    if paper.citation_count >= _CITATION_LOW:
+        formatted = (
+            f"{paper.citation_count:,}"
+            if paper.citation_count >= _CITATION_HIGH
+            else str(paper.citation_count)
+        )
+        parts.append(f"{formatted} citations")
+
+    if paper.influential_citation_count >= _INFLUENTIAL_MIN:
+        parts.append(f"{paper.influential_citation_count} influential")
+
+    if paper.open_access:
+        parts.append("open access")
+
+    source = paper.source.split(":")[0].replace("_", " ")
+    parts.append(source)
+
+    if paper.year is not None:
+        parts.append(str(paper.year))
+
+    return " · ".join(parts) if parts else "academic paper"
+
+
 def _compute_keyword_relevance(paper: NormalizedPaper, query_terms: list[str]) -> float:
     """Estimate topic relevance for papers with no semantic score (score=0).
 
@@ -67,8 +173,61 @@ def _compute_keyword_relevance(paper: NormalizedPaper, query_terms: list[str]) -
     return hits / len(query_terms)
 
 
+def _compute_title_keyword_relevance(paper: NormalizedPaper, query_terms: list[str]) -> float:
+    """Estimate how directly the title matches the query terms."""
+    if not query_terms:
+        return 0.0
+    title = paper.title.lower()
+    hits = sum(1 for term in query_terms if term.lower() in title)
+    return hits / len(query_terms)
+
+
 def _normalize_title(value: str) -> str:
     return _TITLE_SPACE_RE.sub(" ", value.strip().lower())
+
+
+def _title_tokens(value: str) -> frozenset[str]:
+    tokens = {
+        token
+        for token in _TITLE_TOKEN_RE.findall(value.lower())
+        if token not in _TITLE_DIVERSITY_STOPWORDS
+    }
+    return frozenset(tokens)
+
+
+def _title_similarity(left: frozenset[str], right: frozenset[str]) -> float:
+    if not left or not right:
+        return 0.0
+    overlap = left & right
+    if not overlap:
+        return 0.0
+    union = left | right
+    return len(overlap) / len(union)
+
+
+def _title_specificity_bonus(paper: NormalizedPaper, query_terms: list[str]) -> float:
+    if len(query_terms) < _MIN_TITLE_SPECIFICITY_QUERY_TERMS:
+        return 0.0
+    title = paper.title.lower()
+    query_hits = [term.lower() for term in query_terms if term.lower() in title]
+    if len(query_hits) < min(_MIN_TITLE_SPECIFICITY_QUERY_HITS, len(query_terms)):
+        return 0.0
+    coverage = len(query_hits) / len(query_terms)
+    if coverage < _MIN_TITLE_SPECIFICITY_COVERAGE:
+        return 0.0
+
+    normalized_query_terms = {term.lower() for term in query_terms}
+    extra_tokens = [
+        token
+        for token in _title_tokens(paper.title)
+        if token not in _TITLE_SPECIFICITY_STOPWORDS
+        and not any(
+            token == term or token in term or term in token for term in normalized_query_terms
+        )
+    ]
+    if not extra_tokens:
+        return 0.0
+    return min(_TITLE_SPECIFICITY_BONUS_CAP, len(extra_tokens) * _TITLE_SPECIFICITY_BONUS_PER_TOKEN)
 
 
 def _normalized_doi(value: str | None) -> str | None:
@@ -150,12 +309,20 @@ def compute_rank_score(
     # and query terms are available, use keyword overlap as a relevance proxy.
     # This prevents citation count from dominating results from sources that
     # do not provide a native relevance signal (CrossRef, BASE, Europe PMC, …).
+    lexical_relevance = 0.0
+    title_relevance = 0.0
+    if query_terms:
+        lexical_relevance = _compute_keyword_relevance(paper, query_terms)
+        title_relevance = _compute_title_keyword_relevance(paper, query_terms)
+
     effective_semantic = semantic
-    if effective_semantic == 0.0 and query_terms:
-        effective_semantic = _compute_keyword_relevance(paper, query_terms)
+    if effective_semantic == 0.0 and lexical_relevance > 0.0:
+        effective_semantic = lexical_relevance
 
     abstract_bonus = weights.abstract_bonus if paper.abstract and paper.abstract.strip() else 0.0
     open_access_bonus = weights.open_access_bonus if paper.open_access else 0.0
+    query_match_bonus = min(0.15, lexical_relevance * 0.08 + title_relevance * 0.07)
+    title_specificity_bonus = _title_specificity_bonus(paper, query_terms or [])
 
     score = (
         effective_semantic * weights.semantic
@@ -164,6 +331,8 @@ def compute_rank_score(
         + recency * weights.recency
         + abstract_bonus
         + open_access_bonus
+        + query_match_bonus
+        + title_specificity_bonus
     )
     return score * 100.0
 
@@ -189,7 +358,7 @@ def rank_and_index_papers(
     """
 
     deduped = deduplicate_papers(papers)
-    scored: list[tuple[int, NormalizedPaper, float]] = []
+    scored: list[tuple[int, NormalizedPaper, float, frozenset[str]]] = []
     for original_idx, paper in enumerate(deduped):
         scored.append((
             original_idx,
@@ -200,19 +369,54 @@ def rank_and_index_papers(
                 query_terms=query_terms,
                 weights=weights,
             ),
+            _title_tokens(paper.title),
         ))
 
-    scored.sort(
-        key=lambda item: (
-            -item[2],
-            -(item[1].year or 0),
-            _normalize_title(item[1].title),
-            item[0],
+    ranked_with_scores: list[tuple[int, NormalizedPaper, float]]
+    if query_terms:
+        remaining = list(scored)
+        ranked_with_scores = []
+        recent_titles: list[frozenset[str]] = []
+        while remaining:
+            best_idx = 0
+            best_key: tuple[float, int, str, int] | None = None
+            best_score = 0.0
+            for idx, (original_idx, paper, base_score, title_tokens) in enumerate(remaining):
+                penalty = 0.0
+                for selected_tokens in recent_titles[-_TITLE_DIVERSITY_MEMORY:]:
+                    similarity = _title_similarity(title_tokens, selected_tokens)
+                    if similarity >= _TITLE_DIVERSITY_THRESHOLD:
+                        penalty = max(penalty, _TITLE_DIVERSITY_PENALTY * similarity)
+                adjusted_score = base_score - penalty
+                candidate_key = (
+                    adjusted_score,
+                    paper.year or 0,
+                    _normalize_title(paper.title),
+                    -original_idx,
+                )
+                if best_key is None or candidate_key > best_key:
+                    best_idx = idx
+                    best_key = candidate_key
+                    best_score = adjusted_score
+
+            original_idx, paper, _, title_tokens = remaining.pop(best_idx)
+            ranked_with_scores.append((original_idx, paper, best_score))
+            recent_titles.append(title_tokens)
+    else:
+        ranked_with_scores = [
+            (original_idx, paper, score) for original_idx, paper, score, _ in scored
+        ]
+        ranked_with_scores.sort(
+            key=lambda item: (
+                -item[2],
+                -(item[1].year or 0),
+                _normalize_title(item[1].title),
+                item[0],
+            )
         )
-    )
 
     ranked: list[NormalizedPaper] = []
-    for index, (_, paper, score) in enumerate(scored):
+    for index, (_, paper, score) in enumerate(ranked_with_scores):
         ranked.append(
             paper.model_copy(
                 update={
