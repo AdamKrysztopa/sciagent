@@ -22,6 +22,7 @@ from agt.providers.router import build_provider
 from agt.tools.search_papers import search_papers
 from agt.tools.summarize import summarize_papers
 from agt.tools.zotero_upsert import ZoteroWriteError, upsert_papers
+from agt.zotero.collection_inspector import classify_paper, fetch_library_index
 from agt.zotero.preflight import run_zotero_preflight
 
 
@@ -144,6 +145,17 @@ async def run_search_phase(
                 use_llm=active_settings.summarization_use_llm,
                 max_sentences=active_settings.summarization_max_sentences,
             )
+
+        # Tag each paper with its Zotero library status (SCI-0301).
+        # Library status is optional — search must never fail due to Zotero errors.
+        try:
+            lib_index = await fetch_library_index(active_settings, collection_name=collection_name)
+            papers = [
+                paper.model_copy(update={"library_status": classify_paper(paper, lib_index)})
+                for paper in papers
+            ]
+        except Exception:  # fmt: skip
+            pass
 
         with trace_step(trace, "approval_checkpoint", approved=False):
             logger.info("approval_checkpoint", approved=False)
@@ -304,13 +316,14 @@ async def finalize_approval(
     }
 
 
-async def resume_workflow(
+async def resume_workflow(  # noqa: PLR0913
     checkpoint: AgentState,
     *,
     approved: bool,
     collection_name: str | None = None,
     selected_indices: list[int] | None = None,
     settings: Settings | None = None,
+    enable_pdf_imports: bool = False,
 ) -> AgentState:
     """Resume from a checkpoint with deterministic retry semantics."""
 
@@ -328,13 +341,38 @@ async def resume_workflow(
             + ["Resume requested after rejection; state reused."],
         }
 
-    return await finalize_approval(
+    final_state = await finalize_approval(
         checkpoint,
         approved=approved,
         collection_name=collection_name,
         selected_indices=selected_indices,
         settings=settings,
     )
+
+    # Attach open-access PDFs after a successful upsert (SCI-0302).
+    # PDF failure must never fail metadata import.
+    if (
+        enable_pdf_imports
+        and final_state["phase"] != "failed"
+        and final_state["write_result"] is not None
+    ):
+        from agt.tools.pdf_attach import attach_pdfs_to_items  # noqa: PLC0415
+
+        active_settings = settings or get_settings()
+        papers = _deserialize_papers(final_state["papers"])
+        effective_indices = final_state["selected_indices"]
+        selected_papers = [papers[i] for i in effective_indices if 0 <= i < len(papers)]
+
+        write_result_raw = final_state["write_result"]
+        try:
+            from agt.models import WriteResult  # noqa: PLC0415
+
+            write_result = WriteResult.model_validate(write_result_raw)
+            await attach_pdfs_to_items(selected_papers, write_result, active_settings)
+        except Exception:  # fmt: skip
+            pass
+
+    return final_state
 
 
 async def run_workflow(

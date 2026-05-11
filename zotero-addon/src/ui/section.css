@@ -11,6 +11,8 @@
   --agt-amber-dim:      rgba(250,199,117,0.25);
   --agt-danger:         #c0392b;
   --agt-danger-dim:     rgba(192,57,43,0.12);
+  --agt-green:          #2d9e6b;
+  --agt-green-dim:      rgba(45,158,107,0.12);
   --agt-radius:         6px;
   --agt-radius-sm:      4px;
   --agt-button-bg:      rgba(30,40,55,0.88);
@@ -704,6 +706,25 @@
   cursor: not-allowed;
   opacity: 0.4;
 }
+
+/* ── Library status badge ─────────────────────────────────── */
+.agt-lib-badge {
+  border-radius: var(--agt-radius-sm);
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 2px 7px;
+  text-transform: uppercase;
+}
+.agt-lib-badge--new { background: var(--agt-green-dim); color: var(--agt-green); }
+.agt-lib-badge--in_library { background: var(--agt-surface-raised); color: var(--agt-text-muted); border: 0.5px solid var(--agt-border); }
+.agt-lib-badge--possible_duplicate { background: var(--agt-amber-dim); color: var(--agt-amber); }
+
+/* ── Gap Finder list ──────────────────────────────────────── */
+.agt-gap-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.agt-gap-item { font-size: 0.85rem; }
+.agt-gap-year { color: var(--agt-text-muted); }
 
 /* ── Responsive ───────────────────────────────────────────── */
 @media (max-width: 640px) {

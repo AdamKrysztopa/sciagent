@@ -12,14 +12,16 @@ from pydantic import BaseModel, Field, model_validator
 
 from agt.config import Settings, get_settings
 from agt.graph.workflow import resume_workflow, run_search_phase
-from agt.models import AgentState, FilterEditContract, SourceCapability
+from agt.models import AgentState, DoctorReport, FilterEditContract, GapSuggestion, SourceCapability
 from agt.providers.router import build_provider
 from agt.result_cache import ResultCache
 from agt.session_export import ExportFormat, export_session
 from agt.session_store import SessionStore
+from agt.tools.gap_finder import find_gaps
 from agt.tools.keyword_extract import KeywordExtraction, extract_keywords
 from agt.tools.search_papers import build_source_policy
 from agt.tools.spell_check import correct_query
+from agt.zotero.library_doctor import scan_collection
 from agt.zotero.preflight import run_zotero_preflight
 
 # Backend contract version exposed via /health for client compatibility checks.
@@ -50,6 +52,8 @@ class ResumeRequest(BaseModel):
     # When True the backend skips the pyzotero write and returns approved papers
     # so the add-on can perform ZAP-6/7/8 native Zotero JS writes.
     native_write: bool = False
+    # When True, attach open-access PDF URLs to newly-created Zotero items (SCI-0302).
+    enable_pdf_imports: bool = False
 
 
 class RunAcceptedResponse(BaseModel):
@@ -98,6 +102,19 @@ class ExtractKeywordsResponse(BaseModel):
     min_citations: int | None
     max_citations: int | None
     open_access_only: bool
+
+
+class LibraryDoctorRequest(BaseModel):
+    collection_name: str = Field(min_length=1)
+
+
+class GapFinderRequest(BaseModel):
+    collection_name: str = Field(min_length=1)
+
+
+class GapFinderResponse(BaseModel):
+    reasoning: str
+    papers: list[dict[str, Any]]
 
 
 @dataclass(slots=True)
@@ -352,6 +369,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
             collection_name=payload.collection_name,
             selected_indices=payload.selected_indices,
             settings=settings,
+            enable_pdf_imports=payload.enable_pdf_imports,
         )
         next_status: Literal["awaiting_approval", "completed", "rejected", "failed"]
         if resumed["phase"] == "completed":
@@ -565,6 +583,27 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     ) -> dict[str, Any]:
         deleted = app_state.result_cache(settings).clear(expired_only=expired_only)
         return {"deleted": deleted, "expired_only": expired_only}
+
+    @app.post("/library-doctor", response_model=DoctorReport)
+    async def _library_doctor(  # pyright: ignore[reportUnusedFunction]
+        body: LibraryDoctorRequest,
+        _: None = Depends(_require_backend_key),
+        settings: Settings = Depends(get_settings),
+    ) -> DoctorReport:
+        return await scan_collection(body.collection_name, settings)
+
+    @app.post("/gap-finder", response_model=GapFinderResponse)
+    async def _gap_finder(  # pyright: ignore[reportUnusedFunction]
+        body: GapFinderRequest,
+        _: None = Depends(_require_backend_key),
+        settings: Settings = Depends(get_settings),
+    ) -> GapFinderResponse:
+        provider = build_provider(settings)
+        suggestion: GapSuggestion = await find_gaps(body.collection_name, settings, provider)
+        return GapFinderResponse(
+            reasoning=suggestion.reasoning,
+            papers=[p.model_dump() for p in suggestion.papers],
+        )
 
     return app
 

@@ -53,6 +53,15 @@ export function ResultsList({ disabled, onToggle, papers, selectedIndices }: Res
                 </label>
                 <span className="agt-pill agt-pill--muted">{paper.source}</span>
               </div>
+              {paper.library_status != null ? (
+                <span className={`agt-lib-badge agt-lib-badge--${paper.library_status}`}>
+                  {paper.library_status === "in_library"
+                    ? "Already in library"
+                    : paper.library_status === "possible_duplicate"
+                      ? "Possible duplicate"
+                      : "New"}
+                </span>
+              ) : null}
               {paper.authors.length > 0 ? (
                 <p className="agt-result-authors">{paper.authors.join(", ")}</p>
               ) : null}

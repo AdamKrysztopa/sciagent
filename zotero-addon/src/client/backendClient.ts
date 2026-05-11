@@ -1,7 +1,9 @@
 import type {
   CapabilitiesResponse,
   CorrectQueryResponse,
+  DoctorReport,
   ExtractKeywordsResponse,
+  GapFinderResponse,
   HealthResponse,
   ResumeRequest,
   RunAcceptedResponse,
@@ -106,6 +108,20 @@ export class SciAgentBackendClient {
   async extractKeywords(query: string): Promise<ExtractKeywordsResponse> {
     return this.request<ExtractKeywordsResponse>("/extract-keywords", {
       body: JSON.stringify({ query }),
+      method: "POST",
+    });
+  }
+
+  async libraryDoctor(collectionName: string): Promise<DoctorReport> {
+    return this.request<DoctorReport>("/library-doctor", {
+      body: JSON.stringify({ collection_name: collectionName }),
+      method: "POST",
+    });
+  }
+
+  async gapFinder(collectionName: string): Promise<GapFinderResponse> {
+    return this.request<GapFinderResponse>("/gap-finder", {
+      body: JSON.stringify({ collection_name: collectionName }),
       method: "POST",
     });
   }

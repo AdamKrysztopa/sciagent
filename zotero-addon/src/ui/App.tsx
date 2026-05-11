@@ -6,6 +6,7 @@ import type { AddonUiServices } from "./serviceTypes";
 import { ConfigPanel } from "./components/ConfigPanel";
 import { FilterEditor } from "./components/FilterEditor";
 import { HealthStatus } from "./components/HealthStatus";
+import { LibraryDoctor } from "./components/LibraryDoctor";
 import { ResultsList } from "./components/ResultsList";
 import { SourcePresets } from "./components/SourcePresets";
 import { SourceToggles } from "./components/SourceToggles";
@@ -289,6 +290,55 @@ function IdleView({ controller }: { controller: SciAgentController }) {
         saveError={controller.saveError}
         saveState={controller.saveState}
       />
+
+      <LibraryDoctor
+        collectionName={controller.collectionName}
+        error={controller.doctorError}
+        onScan={controller.onLibraryDoctor}
+        report={controller.doctorReport}
+        scanning={controller.doctorScanning}
+      />
+
+      <section className="agt-card agt-card--soft">
+        <div className="agt-section-heading">
+          <h2>Gap Finder</h2>
+          <button
+            className="agt-button agt-button--ghost"
+            disabled={controller.gapRunning || controller.healthResponse === null}
+            onClick={controller.onGapFinder}
+            type="button"
+          >
+            {controller.gapRunning ? "Analysing…" : "Find Gaps"}
+          </button>
+        </div>
+        <p className="agt-small-note">
+          Suggests missing seminal papers, recent follow-ups, and reviews for the current collection.
+        </p>
+        {controller.gapError !== null ? (
+          <div className="agt-error">{controller.gapError}</div>
+        ) : null}
+        {controller.gapResult !== null ? (
+          <>
+            <p className="agt-small-note">{controller.gapResult.reasoning}</p>
+            {controller.gapResult.papers.length === 0 ? (
+              <p className="agt-empty-state">No gaps found.</p>
+            ) : (
+              <ul className="agt-gap-list">
+                {controller.gapResult.papers.map((paper, i) => (
+                  <li className="agt-gap-item" key={paper.doi ?? paper.title ?? i}>
+                    {paper.url !== null ? (
+                      <a href={paper.url} rel="noreferrer" target="_blank">{paper.title}</a>
+                    ) : (
+                      paper.title
+                    )}
+                    {paper.year !== null ? <span className="agt-gap-year"> ({paper.year})</span> : null}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        ) : null}
+      </section>
     </div>
   );
 }

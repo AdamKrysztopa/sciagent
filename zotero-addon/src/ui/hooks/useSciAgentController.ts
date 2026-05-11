@@ -12,7 +12,9 @@ import {
   filterEditFromSearchPlan,
   getPaperIndex,
   type CapabilitiesResponse,
+  type DoctorReport,
   type FilterEditContract,
+  type GapFinderResponse,
   type HealthResponse,
   type NormalizedPaper,
   type SearchMetadata,
@@ -79,6 +81,12 @@ export function useSciAgentController(services: AddonUiServices) {
   const [correctedQuery, setCorrectedQuery] = useState<string | null>(null);
   const [extracting, setExtracting] = useState(false);
   const [extractError, setExtractError] = useState<string | null>(null);
+  const [doctorReport, setDoctorReport] = useState<DoctorReport | null>(null);
+  const [doctorScanning, setDoctorScanning] = useState(false);
+  const [doctorError, setDoctorError] = useState<string | null>(null);
+  const [gapResult, setGapResult] = useState<GapFinderResponse | null>(null);
+  const [gapRunning, setGapRunning] = useState(false);
+  const [gapError, setGapError] = useState<string | null>(null);
 
   const currentState = runView.snapshot?.state ?? null;
   const papers: NormalizedPaper[] = currentState?.papers ?? [];
@@ -218,6 +226,7 @@ export function useSciAgentController(services: AddonUiServices) {
         run_id: runId,
         selected_indices: approved ? selectedIndices : undefined,
         native_write: useNative ? true : undefined,
+        enable_pdf_imports: approved && config.enablePdfImports && !useNative ? true : undefined,
       });
 
       if (useNative && approved && response.approved_papers !== undefined && response.approved_papers.length > 0) {
@@ -301,6 +310,36 @@ export function useSciAgentController(services: AddonUiServices) {
     }
   });
 
+  const runLibraryDoctor = useEffectEvent(async () => {
+    const cn = collectionName.trim() || "Inbox";
+    setDoctorScanning(true);
+    setDoctorError(null);
+    setDoctorReport(null);
+    try {
+      const result = await services.createClient(config).libraryDoctor(cn);
+      setDoctorReport(result);
+    } catch (error) {
+      setDoctorError(describeError(error));
+    } finally {
+      setDoctorScanning(false);
+    }
+  });
+
+  const runGapFinder = useEffectEvent(async () => {
+    const cn = collectionName.trim() || "Inbox";
+    setGapRunning(true);
+    setGapError(null);
+    setGapResult(null);
+    try {
+      const result = await services.createClient(config).gapFinder(cn);
+      setGapResult(result);
+    } catch (error) {
+      setGapError(describeError(error));
+    } finally {
+      setGapRunning(false);
+    }
+  });
+
   useEffect(() => {
     const trimmed = query.trim();
     if (trimmed.length === 0 || !config.spellCheckEnabled) {
@@ -360,9 +399,17 @@ export function useSciAgentController(services: AddonUiServices) {
     healthError,
     healthResponse,
     canSubmitSearch: query.trim().length > 0 && healthResponse !== null && !healthBusy,
+    doctorError,
+    doctorReport,
+    doctorScanning,
     extractError,
     extracting,
+    gapError,
+    gapResult,
+    gapRunning,
     onExtractKeywords: () => void runExtractKeywords(),
+    onLibraryDoctor: () => void runLibraryDoctor(),
+    onGapFinder: () => void runGapFinder(),
     onAcceptCorrection: () => {
       if (correctedQuery !== null) {
         const accepted = correctedQuery;

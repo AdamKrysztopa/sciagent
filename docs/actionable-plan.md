@@ -1,6 +1,6 @@
 # SciAgent Prioritized Action Plan
 
-> **Finalization audit completed: 2026-05-11** — P2 complete (2026-05-11). All quality gates green: ruff 0, pyright 0, 230 tests passing; addon lint/typecheck/build/test green; markdownlint 0.
+> **Finalization audit completed: 2026-05-11** — P3 complete (2026-05-11). All quality gates green: ruff 0, pyright 0, 274 tests passing; addon lint/typecheck/build/test green; markdownlint 0.
 > This is the canonical execution tracker for live status, overall progress, and the next implementation target.
 > Update done / not done state here first.
 > See [docs/manual.md](manual.md) for configuration & usage.
@@ -11,13 +11,14 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 ### Current Status
 
-- Current focus: P3 — Zotero-Native Value
-- Current next implementation target: SCI-0301
-- Last completed: P2 complete — SCI-0201/0202/0203/0204/0206 all shipped (2026-05-11)
+- Current focus: P4 — Retention and Recurring Workflows
+- Current next implementation target: SCI-0401
+- Last completed: P3 complete — SCI-0301/0302/0303/0304 all shipped (2026-05-11)
 - M7 (Pluggability/Infrastructure) intentionally deprioritized: settings and elastic infra add value only after users trust the product output. See Phase P0–P2 ordering below.
 
 ### Recent Progress
 
+- ✅ P3 complete (2026-05-11): SCI-0301 collection-aware search with library status badges (in_library/possible_duplicate/new); SCI-0302 PDF attachment pipeline (linked-URL, never blocks metadata import); SCI-0303 Library Doctor (missing DOI/abstract/PDF/duplicate scanner); SCI-0304 Gap Finder (LLM generates gap queries from existing collection, filters already-in-library); spell-check checkbox, keyword extraction from natural language, `GET /correct-query`, `POST /extract-keywords`, `POST /library-doctor`, `POST /gap-finder` endpoints. Addon v0.2.0. All gates: ruff 0, pyright 0, 274 tests, addon clean.
 - ✅ P2 complete (2026-05-11): SCI-0201 `/capabilities` extended with `provider_availability` + `active_provider`; SCI-0203 `SessionStore` (JSON file persistence, list/load/rerun API); SCI-0204 `ResultCache` (SQLite, TTL, stats/clear API); SCI-0206 `export_session` (Markdown PRISMA-lite, JSON, CSV via `/status/{id}/export`); SCI-0202 `SourcePresets` component in Zotero sidebar (Balanced, Open Access, Recent 5yr, Highly Cited, Quick 5, Deep 20). All gates: ruff 0, pyright 0, 230 tests, addon clean.
 - ✅ SCI-0205 complete: `NormalizedPaper.explanation` field added; `explain_paper()` in ranking.py generates deterministic, signal-based reasons (semantic score tier, keyword hit count, citations, influential citations, open access, source, year); populated by `_attach_explanations` before all result returns in search_papers; shown in Streamlit UI, Zotero sidebar (ResultsList.tsx), and m2_7_search_plan_demo (2026-05-11)
 - ✅ SCI-0104 closed: final validated run 19/22, recall@20=0.769; INTER-03 recovered via long-query prefix variant; TS-02/BIO-01/BIO-04 remain as external-API retrieval-depth limits; P1 closed by product decision (2026-05-11)
@@ -760,10 +761,10 @@ Acceptance criteria:
 
 | ID       | Story                                                                                                                                     | Owner                                     | Status |
 | -------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | ------ |
-| SCI-0301 | Add collection-aware search: inspect target collection before retrieval; badge results as Already in library / New / Possible duplicate   | python-backend-engineer + zotero-frontend | [ ]    |
-| SCI-0302 | Add PDF attachment pipeline: open-access sources only; validate before attach; PDF failure never fails metadata import                    | python-backend-engineer                   | [ ]    |
-| SCI-0303 | Add Library Doctor: read-only collection scanner for missing DOI/abstract/PDF/venue, duplicates, broken URLs; all writes require approval | python-backend-engineer + zotero-frontend | [ ]    |
-| SCI-0304 | Add collection gap finder: given existing collection, suggest missing seminal papers, recent follow-ups, reviews, negative results        | python-backend-engineer                   | [ ]    |
+| SCI-0301 | Add collection-aware search: inspect target collection before retrieval; badge results as Already in library / New / Possible duplicate   | python-backend-engineer + zotero-frontend | [x]    |
+| SCI-0302 | Add PDF attachment pipeline: open-access sources only; validate before attach; PDF failure never fails metadata import                    | python-backend-engineer                   | [x]    |
+| SCI-0303 | Add Library Doctor: read-only collection scanner for missing DOI/abstract/PDF/venue, duplicates, broken URLs; all writes require approval | python-backend-engineer + zotero-frontend | [x]    |
+| SCI-0304 | Add collection gap finder: given existing collection, suggest missing seminal papers, recent follow-ups, reviews, negative results        | python-backend-engineer                   | [x]    |
 
 **Gate:** Re-running the same search against a collection does not create duplicates. Library Doctor scan is read-only and exportable.
 
