@@ -49,7 +49,7 @@ class SessionStore:
                     "paper_count": len(state.get("papers") or []),
                     "phase": state.get("phase", ""),
                 })
-            except json.JSONDecodeError, OSError, KeyError:
+            except (json.JSONDecodeError, OSError, KeyError):  # fmt: skip
                 continue
         return summaries
 

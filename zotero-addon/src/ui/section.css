@@ -538,6 +538,22 @@
   color: var(--agt-amber);
 }
 
+.agt-spell-suggestion {
+  background: var(--agt-surface-2);
+  border: 0.5px solid var(--agt-border);
+  color: var(--agt-text-2);
+}
+
+.agt-link-button {
+  background: none;
+  border: none;
+  color: var(--agt-accent);
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  text-decoration: underline;
+}
+
 /* ── Key–value grid ───────────────────────────────────────── */
 .agt-key-value {
   display: grid;

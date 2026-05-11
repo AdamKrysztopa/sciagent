@@ -1,5 +1,6 @@
 import type {
   CapabilitiesResponse,
+  CorrectQueryResponse,
   HealthResponse,
   ResumeRequest,
   RunAcceptedResponse,
@@ -92,6 +93,13 @@ export class SciAgentBackendClient {
   async status(runId: string): Promise<StatusResponse> {
     const encodedRunId = encodeURIComponent(runId.trim());
     return this.request<StatusResponse>(`/status/${encodedRunId}`, { method: "GET" });
+  }
+
+  async correctQuery(q: string): Promise<CorrectQueryResponse> {
+    return this.request<CorrectQueryResponse>(
+      `/correct-query?q=${encodeURIComponent(q)}`,
+      { method: "GET" },
+    );
   }
 
   private buildHeaders(withJsonBody: boolean): Headers {

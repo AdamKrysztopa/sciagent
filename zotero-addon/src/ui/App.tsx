@@ -225,6 +225,19 @@ function IdleView({ controller }: { controller: SciAgentController }) {
             value={controller.collectionName}
           />
         </label>
+        {controller.correctedQuery !== null ? (
+          <output className="agt-status-note agt-spell-suggestion" aria-live="polite">
+            {"Did you mean: "}
+            <button
+              className="agt-link-button"
+              onClick={controller.onAcceptCorrection}
+              type="button"
+            >
+              {controller.correctedQuery}
+            </button>
+            {"?"}
+          </output>
+        ) : null}
         {disabledReason !== null && controller.query.trim().length > 0 ? (
           <output className="agt-status-note agt-status-note--warn" aria-live="polite">
             {disabledReason}

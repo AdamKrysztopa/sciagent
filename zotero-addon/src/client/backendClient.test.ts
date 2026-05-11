@@ -124,6 +124,26 @@ describe("SciAgentBackendClient", () => {
     expect(result.preflight.message).toBe("/docs responded successfully.");
   });
 
+  it("calls /correct-query and returns the response", async () => {
+    const calls: Array<{ url: RequestInfo | URL }> = [];
+    const fetchImpl = vi.fn(async (url: RequestInfo | URL) => {
+      calls.push({ url });
+      return jsonResponse({ original: "wrod", corrected: "word", changed: true });
+    });
+    const client = createBackendClient({
+      apiKey: "",
+      baseUrl: "http://localhost:8000",
+      clientId: "sidebar-g",
+      fetchImpl,
+    });
+
+    const result = await client.correctQuery("wrod");
+    expect(result.original).toBe("wrod");
+    expect(result.corrected).toBe("word");
+    expect(result.changed).toBe(true);
+    expect(String(calls[0]?.url)).toBe("http://localhost:8000/correct-query?q=wrod");
+  });
+
   it("calls /capabilities and returns the response", async () => {
     const capResponse = {
       api_contract_version: "2026-05",

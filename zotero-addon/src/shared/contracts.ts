@@ -184,6 +184,12 @@ export interface CapabilitiesResponse {
   active_provider: string;
 }
 
+export interface CorrectQueryResponse {
+  original: string;
+  corrected: string;
+  changed: boolean;
+}
+
 export interface StatusResponse {
   run_id: string;
   thread_id: string;

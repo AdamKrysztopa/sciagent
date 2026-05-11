@@ -76,6 +76,7 @@ export function useSciAgentController(services: AddonUiServices) {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
+  const [correctedQuery, setCorrectedQuery] = useState<string | null>(null);
 
   const currentState = runView.snapshot?.state ?? null;
   const papers: NormalizedPaper[] = currentState?.papers ?? [];
@@ -247,6 +248,31 @@ export function useSciAgentController(services: AddonUiServices) {
     }
   });
 
+  const checkSpelling = useEffectEvent(async (trimmedQuery: string) => {
+    if (healthResponse === null) {
+      setCorrectedQuery(null);
+      return;
+    }
+    try {
+      const result = await services.createClient(config).correctQuery(trimmedQuery);
+      setCorrectedQuery(result.changed ? result.corrected : null);
+    } catch {
+      setCorrectedQuery(null);
+    }
+  });
+
+  useEffect(() => {
+    const trimmed = query.trim();
+    if (trimmed.length === 0) {
+      setCorrectedQuery(null);
+      return;
+    }
+    const timer = setTimeout(() => {
+      void checkSpelling(trimmed);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [query]);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -287,12 +313,31 @@ export function useSciAgentController(services: AddonUiServices) {
     capabilities,
     collectionName,
     config,
+    correctedQuery,
     nativeWriteResult,
     filterDraft,
     healthBusy,
     healthError,
     healthResponse,
     canSubmitSearch: query.trim().length > 0 && healthResponse !== null && !healthBusy,
+    onAcceptCorrection: () => {
+      if (correctedQuery !== null) {
+        const accepted = correctedQuery;
+        setQuery(accepted);
+        setCorrectedQuery(null);
+        setFilterDraft((currentDraft) => {
+          if (currentDraft !== null) {
+            return { ...currentDraft, original_query: accepted };
+          }
+          return buildDefaultFilterEdit(
+            config.defaultMinYear,
+            config.defaultMaxYear,
+            config.defaultMinCitations,
+            config.defaultOpenAccessOnly,
+          );
+        });
+      }
+    },
     onApprove: () => void resumeRun(true),
     onCollectionChange: setCollectionName,
     onConfigChange: (field: keyof AddonConfig, value: boolean | number | null | string) => {

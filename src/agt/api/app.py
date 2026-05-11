@@ -17,6 +17,7 @@ from agt.result_cache import ResultCache
 from agt.session_export import ExportFormat, export_session
 from agt.session_store import SessionStore
 from agt.tools.search_papers import build_source_policy
+from agt.tools.spell_check import correct_query
 from agt.zotero.preflight import run_zotero_preflight
 
 # Backend contract version exposed via /health for client compatibility checks.
@@ -74,6 +75,12 @@ class StatusResponse(BaseModel):
     status: Literal["awaiting_approval", "completed", "rejected", "failed"]
     state: dict[str, Any] | None
     error: str | None = None
+
+
+class CorrectQueryResponse(BaseModel):
+    original: str
+    corrected: str
+    changed: bool
 
 
 @dataclass(slots=True)
@@ -376,6 +383,14 @@ def create_app() -> FastAPI:  # noqa: PLR0915
             provider_availability=provider_availability,
             active_provider=settings.runtime.provider,
         )
+
+    @app.get("/correct-query", response_model=CorrectQueryResponse)
+    async def _correct_query_endpoint(  # pyright: ignore[reportUnusedFunction]
+        q: str = Query(default="", description="Query to spell-check"),
+        _: None = Depends(_require_backend_key),
+    ) -> CorrectQueryResponse:
+        corrected = correct_query(q)
+        return CorrectQueryResponse(original=q, corrected=corrected, changed=corrected != q)
 
     @app.get("/status/{run_id}", response_model=StatusResponse)
     async def _status_endpoint(  # pyright: ignore[reportUnusedFunction]
