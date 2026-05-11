@@ -120,7 +120,7 @@ Core differentiators (in priority order):
 ## Already Completed (Audit)
 
 - [x] Repository bootstrap completed with uv, pyproject, lockfile, and package layout
-- [x] Local quality gates wired: pre-commit with ruff and pyright
+- [x] Local quality gates wired: fast commit hooks plus full pre-push repo gate
 - [x] CI workflow created for lint, type-check, and tests
 - [x] Core strategy docs moved to `docs/` and internal references updated
 - [x] Prioritized milestone plan created from AGT and ZAP backlogs

@@ -48,6 +48,8 @@ cp .env.example .env
 uv run pre-commit install
 ```
 
+The repo config installs both `pre-commit` and `pre-push` hooks with that single command.
+
 ### Optional: validate and build the Zotero add-on package
 
 The repository now includes a top-level Zotero 9 add-on scaffold in `zotero-addon/`.
@@ -674,7 +676,7 @@ npx --yes markdownlint-cli2 "README.md" "docs/**/*.md" "examples/**/*.md" ".gith
 uv run mkdocs build --strict
 ```
 
-`pre-commit` stays intentionally lightweight and Python-only.
+Commit-time hooks stay fast, and `pre-push` runs the full Python, Zotero add-on, and docs gates before push.
 
 ### Running Examples
 

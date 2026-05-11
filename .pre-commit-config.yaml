@@ -1,10 +1,18 @@
- # Keep local hooks fast; add-on and docs validation run via explicit commands and CI.
+# Keep commit-time hooks fast, and mirror the full CI gate before push.
+default_install_hook_types:
+  - pre-commit
+  - pre-push
+
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.7
     hooks:
       - id: ruff
+        stages:
+          - pre-commit
       - id: ruff-format
+        stages:
+          - pre-commit
   - repo: local
     hooks:
       - id: pyright
@@ -12,3 +20,61 @@ repos:
         entry: uv run pyright
         language: system
         pass_filenames: false
+        stages:
+          - pre-commit
+      - id: markdownlint
+        name: markdownlint
+        entry: npx --yes markdownlint-cli2 README.md docs/**/*.md examples/**/*.md .github/**/*.md zotero-addon/README.md
+        language: system
+        pass_filenames: false
+        files: ^(README\.md|docs/.*\.md|examples/.*\.md|\.github/.*\.md|zotero-addon/README\.md)$
+        stages:
+          - pre-commit
+      - id: python-quality-py313
+        name: python-quality (py3.13)
+        entry: >-
+          sh -c 'uv run --isolated --python 3.13 ruff check . &&
+          uv run --isolated --python 3.13 ruff format --check . &&
+          uv run --isolated --python 3.13 pyright &&
+          uv run --isolated --python 3.13 pytest -q --vcr-record=none'
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages:
+          - pre-push
+      - id: python-quality-py314
+        name: python-quality (py3.14)
+        entry: >-
+          sh -c 'uv run --isolated --python 3.14 ruff check . &&
+          uv run --isolated --python 3.14 ruff format --check . &&
+          uv run --isolated --python 3.14 pyright &&
+          uv run --isolated --python 3.14 pytest -q --vcr-record=none'
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages:
+          - pre-push
+      - id: zotero-addon-quality
+        name: zotero-addon-quality
+        entry: >-
+          sh -c 'cd zotero-addon &&
+          npm ci &&
+          npm run lint &&
+          npm run build &&
+          npm run typecheck &&
+          npm run test'
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages:
+          - pre-push
+      - id: docs-quality
+        name: docs-quality
+        entry: >-
+          sh -c 'npx --yes markdownlint-cli2 README.md docs/**/*.md examples/**/*.md .github/**/*.md zotero-addon/README.md &&
+          uv run mkdocs build --strict'
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages:
+          - pre-push

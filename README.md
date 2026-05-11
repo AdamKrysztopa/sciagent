@@ -90,7 +90,7 @@ uv run mkdocs build --strict
 
 ## CI Checks
 
-GitHub Actions runs repo-wide quality jobs for Python, the Zotero add-on, and docs. Local `pre-commit` remains intentionally lightweight and Python-only.
+GitHub Actions runs repo-wide quality jobs for Python, the Zotero add-on, and docs. Local hooks now split the same coverage across fast `pre-commit` checks and a full `pre-push` gate, so docs and add-on failures surface before push.
 
 ## Structure
 
