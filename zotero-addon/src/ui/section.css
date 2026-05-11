@@ -488,6 +488,14 @@
   margin: 0;
 }
 
+.agt-result-explanation {
+  color: var(--agt-accent);
+  font-size: 0.76rem;
+  line-height: 1.4;
+  margin: 0;
+  opacity: 0.85;
+}
+
 .agt-result-summary {
   color: var(--agt-text-muted);
   font-size: 0.82rem;
