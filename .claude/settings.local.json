@@ -7,7 +7,25 @@
       "Bash(curl -s -X POST http://127.0.0.1:8000/run -H 'accept: application/json' -H 'X-AGT-Client-ID: test-client' -H 'Content-Type: application/json' -d '{ *)",
       "Bash(curl -s -X POST http://127.0.0.1:8000/resume -H 'accept: application/json' -H 'X-AGT-Client-ID: test-client' -H 'Content-Type: application/json' -d '{ *)",
       "Bash(curl -s -X GET http://127.0.0.1:8000/status/6081ec7e-6a1e-435d-b260-cce4cbc6ed55 -H 'accept: application/json' -H 'X-AGT-Client-ID: test-client')",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(npm test *)",
+      "WebSearch",
+      "WebFetch(domain:console.groq.com)",
+      "Bash(python *)",
+      "Bash(docker build *)",
+      "Bash(echo \"Exit code: $?\")",
+      "Bash(docker info *)",
+      "Bash(open -a Docker)",
+      "Bash(docker run *)",
+      "Bash(curl -s http://localhost:8001/version)",
+      "Bash(docker stop *)",
+      "Bash(curl -s http://localhost:57321/version)",
+      "Bash(curl -s http://localhost:57321/health)",
+      "Bash(xargs kill -9)",
+      "Bash(curl -s http://localhost:57321/providers)",
+      "WebFetch(domain:localhost)",
+      "Bash(curl -s -X POST http://localhost:57321/run -H 'Content-Type: application/json' -d '{\"query\": \"transformer attention mechanism\", \"max_results\": 3}')",
+      "Bash(curl -s http://localhost:57321/status/df8aec0e-96a5-4547-8a96-e5e02d7da0a0)"
     ]
   }
 }

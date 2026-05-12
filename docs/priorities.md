@@ -1,10 +1,10 @@
 # SciAgent Priorities
 
-**Generated:** 2026-03-24
-**Purpose:** Canonical priority map tying reviewer findings to existing story IDs in `docs/core.md` and the current backlog in `docs/next-steps.md`.
+> **⚠️ ARCHIVED — 2026-05-12.** Generated 2026-03-24 when AGT-28, AGT-29, and ZAP-0 were "Not started". All priorities listed here are now implemented.
+> For current open items and priority order, see **[actionable-plan.md](actionable-plan.md)** — the P7 Open Items section.
 
-> For live status and the next item to implement, use [docs/actionable-plan.md](actionable-plan.md).
-> This file is the priority policy, not the day-to-day tracker.
+**Generated:** 2026-03-24
+**Purpose:** Historical priority map; superseded by P7 open items in `actionable-plan.md`.
 
 ## Scope
 

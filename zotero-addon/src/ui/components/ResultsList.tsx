@@ -62,6 +62,11 @@ export function ResultsList({ disabled, onToggle, papers, selectedIndices }: Res
                       : "New"}
                 </span>
               ) : null}
+              {paper.watch_status != null ? (
+                <span className={`agt-lib-badge agt-lib-badge--watch-${paper.watch_status}`}>
+                  {paper.watch_status === "new" ? "New in watch" : "Previously seen"}
+                </span>
+              ) : null}
               {paper.authors.length > 0 ? (
                 <p className="agt-result-authors">{paper.authors.join(", ")}</p>
               ) : null}

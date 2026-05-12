@@ -1,0 +1,149 @@
+name: Build Server Binaries
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            platform: linux-x86_64
+            binary: sciagent-server
+          - os: macos-14
+            platform: macos-arm64
+            binary: sciagent-server
+          - os: macos-13
+            platform: macos-x86_64
+            binary: sciagent-server
+          - os: windows-2022
+            platform: windows-x64
+            binary: sciagent-server.exe
+
+    runs-on: ${{ matrix.os }}
+    name: Build ${{ matrix.platform }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.13"
+
+      - name: Install UPX (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y upx
+
+      - name: Install UPX (macOS)
+        if: runner.os == 'macOS'
+        run: brew install upx
+
+      - name: Install UPX (Windows)
+        if: runner.os == 'Windows'
+        run: choco install upx -y
+
+      - name: Sync dependencies
+        run: uv sync --frozen
+
+      - name: Patch version into server.py
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          sed -i.bak "s/version=\"%(prog)s 0.1.0\"/version=\"%(prog)s $VERSION\"/" \
+            src/agt/server.py
+
+      - name: Build binary
+        run: |
+          uv run pyinstaller build/sciagent-server.spec \
+            --distpath build/dist \
+            --workpath build/work \
+            --clean
+
+      - name: Smoke test binary
+        shell: bash
+        run: |
+          ./build/dist/${{ matrix.binary }} --version
+          ./build/dist/${{ matrix.binary }} --port 58000 &
+          sleep 3
+          curl -f http://127.0.0.1:58000/health || true
+          kill %1 || true
+
+      - name: Rename and checksum
+        shell: bash
+        run: |
+          cp build/dist/${{ matrix.binary }} \
+            sciagent-server-${{ matrix.platform }}${{ runner.os == 'Windows' && '.exe' || '' }}
+          sha256sum sciagent-server-${{ matrix.platform }}* \
+            > sciagent-server-${{ matrix.platform }}.sha256
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.platform }}
+          path: sciagent-server-${{ matrix.platform }}*
+
+  package-xpi:
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all binaries
+        uses: actions/download-artifact@v4
+        with:
+          path: binaries/
+          merge-multiple: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build XPI
+        working-directory: zotero-addon
+        run: |
+          npm ci && npm run lint && npm run typecheck && npm run test && npm run build
+
+      - name: Generate update.rdf
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          XPI_URL="https://github.com/${{ github.repository }}/releases/download/${GITHUB_REF_NAME}/sciagent-zotero-addon.xpi"
+          SHA256=$(sha256sum zotero-addon/sciagent-zotero-addon.xpi | cut -d' ' -f1)
+          cat > update.rdf << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <RDF:RDF xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                   xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+            <RDF:Description about="urn:mozilla:extension:sciagent@sciagent.dev">
+              <em:updates>
+                <RDF:Seq>
+                  <RDF:li>
+                    <RDF:Description>
+                      <em:version>$VERSION</em:version>
+                      <em:targetApplication>
+                        <RDF:Description>
+                          <em:id>zotero@chnm.gmu.edu</em:id>
+                          <em:minVersion>7.0</em:minVersion>
+                          <em:maxVersion>*</em:maxVersion>
+                          <em:updateLink>$XPI_URL</em:updateLink>
+                          <em:updateHash>sha256:$SHA256</em:updateHash>
+                        </RDF:Description>
+                      </em:targetApplication>
+                    </RDF:Description>
+                  </RDF:li>
+                </RDF:Seq>
+              </em:updates>
+            </RDF:Description>
+          </RDF:RDF>
+          EOF
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            zotero-addon/sciagent-zotero-addon.xpi
+            update.rdf
+            binaries/**

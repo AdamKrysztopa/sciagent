@@ -10,6 +10,7 @@ import { LibraryDoctor } from "./components/LibraryDoctor";
 import { ResultsList } from "./components/ResultsList";
 import { SourcePresets } from "./components/SourcePresets";
 import { SourceToggles } from "./components/SourceToggles";
+import { WatchList } from "./components/WatchList";
 import { type RunPhase, useSciAgentController } from "./hooks/useSciAgentController";
 
 // ── Error Boundary ──────────────────────────────────────────────────────────
@@ -339,6 +340,22 @@ function IdleView({ controller }: { controller: SciAgentController }) {
           </>
         ) : null}
       </section>
+
+      <WatchList
+        canSave={controller.query.trim().length > 0}
+        error={controller.watchesError}
+        lastRerun={controller.lastWatchRerun}
+        loading={controller.watchesLoading}
+        onDelete={controller.onDeleteWatch}
+        onRerun={controller.onRerunWatch}
+        onSaveWatch={controller.onSaveWatch}
+        onWatchNameChange={controller.onWatchNameChange}
+        rerunningId={controller.rerunningWatchId}
+        saveError={controller.watchSaveError}
+        saving={controller.watchSaving}
+        watchName={controller.watchName}
+        watches={controller.watches}
+      />
     </div>
   );
 }

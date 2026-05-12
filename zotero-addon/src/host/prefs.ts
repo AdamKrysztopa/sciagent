@@ -14,6 +14,16 @@ export interface AddonConfig {
   defaultMinCitations: number;
   defaultOpenAccessOnly: boolean;
   spellCheckEnabled: boolean;
+  // LLM Provider selection (SCI-0603)
+  llmProvider: string;
+  openaiApiKey: string;
+  anthropicApiKey: string;
+  xaiApiKey: string;
+  groqApiKey: string;
+  llmBaseUrl: string;
+  llmModel: string;
+  // Backend mode — "local" spawns embedded server, "remote" connects to backendUrl (SCI-0604)
+  backendMode: string;
 }
 
 export interface PreferenceStore {
@@ -33,6 +43,16 @@ export const PREF_KEYS = {
   defaultMinCitations: "extensions.agt.defaultMinCitations",
   defaultOpenAccessOnly: "extensions.agt.defaultOpenAccessOnly",
   spellCheckEnabled: "extensions.agt.spellCheckEnabled",
+  // LLM Provider (SCI-0603)
+  llmProvider: "extensions.agt.llmProvider",
+  openaiApiKey: "extensions.agt.openaiApiKey",
+  anthropicApiKey: "extensions.agt.anthropicApiKey",
+  xaiApiKey: "extensions.agt.xaiApiKey",
+  groqApiKey: "extensions.agt.groqApiKey",
+  llmBaseUrl: "extensions.agt.llmBaseUrl",
+  llmModel: "extensions.agt.llmModel",
+  // Backend mode (SCI-0604)
+  backendMode: "extensions.agt.backendMode",
 } as const;
 
 export const DEFAULT_ADDON_CONFIG: AddonConfig = {
@@ -47,6 +67,16 @@ export const DEFAULT_ADDON_CONFIG: AddonConfig = {
   defaultMinCitations: 0,
   defaultOpenAccessOnly: false,
   spellCheckEnabled: true,
+  // LLM Provider (SCI-0603)
+  llmProvider: "openai",
+  openaiApiKey: "",
+  anthropicApiKey: "",
+  xaiApiKey: "",
+  groqApiKey: "",
+  llmBaseUrl: "",
+  llmModel: "",
+  // Backend mode (SCI-0604)
+  backendMode: "remote",
 };
 
 function normalizeBackendUrl(value: string): string {
@@ -125,6 +155,30 @@ export function createZoteroPreferenceStore(zotero: ZoteroGlobal): PreferenceSto
           PREF_KEYS.spellCheckEnabled,
           DEFAULT_ADDON_CONFIG.spellCheckEnabled,
         ),
+        llmProvider: readStringPref(
+          zotero,
+          PREF_KEYS.llmProvider,
+          DEFAULT_ADDON_CONFIG.llmProvider,
+        ),
+        openaiApiKey: readStringPref(
+          zotero,
+          PREF_KEYS.openaiApiKey,
+          DEFAULT_ADDON_CONFIG.openaiApiKey,
+        ),
+        anthropicApiKey: readStringPref(
+          zotero,
+          PREF_KEYS.anthropicApiKey,
+          DEFAULT_ADDON_CONFIG.anthropicApiKey,
+        ),
+        xaiApiKey: readStringPref(zotero, PREF_KEYS.xaiApiKey, DEFAULT_ADDON_CONFIG.xaiApiKey),
+        groqApiKey: readStringPref(zotero, PREF_KEYS.groqApiKey, DEFAULT_ADDON_CONFIG.groqApiKey),
+        llmBaseUrl: readStringPref(zotero, PREF_KEYS.llmBaseUrl, DEFAULT_ADDON_CONFIG.llmBaseUrl),
+        llmModel: readStringPref(zotero, PREF_KEYS.llmModel, DEFAULT_ADDON_CONFIG.llmModel),
+        backendMode: readStringPref(
+          zotero,
+          PREF_KEYS.backendMode,
+          DEFAULT_ADDON_CONFIG.backendMode,
+        ),
       };
     },
 
@@ -157,8 +211,44 @@ export function createZoteroPreferenceStore(zotero: ZoteroGlobal): PreferenceSto
       zotero.Prefs.set(PREF_KEYS.defaultMinCitations, nextConfig.defaultMinCitations);
       zotero.Prefs.set(PREF_KEYS.defaultOpenAccessOnly, nextConfig.defaultOpenAccessOnly);
       zotero.Prefs.set(PREF_KEYS.spellCheckEnabled, nextConfig.spellCheckEnabled);
+      zotero.Prefs.set(PREF_KEYS.llmProvider, nextConfig.llmProvider);
+      zotero.Prefs.set(PREF_KEYS.openaiApiKey, nextConfig.openaiApiKey);
+      zotero.Prefs.set(PREF_KEYS.anthropicApiKey, nextConfig.anthropicApiKey);
+      zotero.Prefs.set(PREF_KEYS.xaiApiKey, nextConfig.xaiApiKey);
+      zotero.Prefs.set(PREF_KEYS.groqApiKey, nextConfig.groqApiKey);
+      zotero.Prefs.set(PREF_KEYS.llmBaseUrl, nextConfig.llmBaseUrl);
+      zotero.Prefs.set(PREF_KEYS.llmModel, nextConfig.llmModel);
+      zotero.Prefs.set(PREF_KEYS.backendMode, nextConfig.backendMode);
 
       return nextConfig;
     },
   };
+}
+
+/**
+ * Collect LLM provider env vars from the add-on config for passing to the
+ * embedded server process (SCI-0603/0604).
+ */
+export function collectProviderEnv(config: AddonConfig): Record<string, string> {
+  const env: Record<string, string> = {};
+  const provider = config.llmProvider;
+
+  if (provider) {
+    env["AGT_LLM_PROVIDER"] = provider === "custom" ? "openai-compatible" : provider;
+  }
+
+  if (provider === "openai" && config.openaiApiKey) {
+    env["OPENAI_API_KEY"] = config.openaiApiKey;
+  } else if (provider === "anthropic" && config.anthropicApiKey) {
+    env["ANTHROPIC_API_KEY"] = config.anthropicApiKey;
+  } else if (provider === "xai" && config.xaiApiKey) {
+    env["XAI_API_KEY"] = config.xaiApiKey;
+  } else if (provider === "groq" && config.groqApiKey) {
+    env["AGT_GROQ_API_KEY"] = config.groqApiKey;
+  }
+
+  if (config.llmBaseUrl) env["AGT_LLM_BASE_URL"] = config.llmBaseUrl;
+  if (config.llmModel) env["AGT_LLM_MODEL"] = config.llmModel;
+
+  return env;
 }

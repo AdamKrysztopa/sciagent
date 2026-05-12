@@ -8,7 +8,9 @@ from agt.config import RuntimeConfig, Settings
 from agt.providers import router
 from agt.providers import xai as xai_module
 from agt.providers.anthropic import AnthropicProvider
+from agt.providers.groq import GroqProvider
 from agt.providers.openai import OpenAIProvider
+from agt.providers.openai_compatible import OpenAICompatibleProvider
 from agt.providers.protocol import ProviderRateLimitError
 from agt.providers.router import build_provider
 from agt.providers.xai import XAIProvider
@@ -83,7 +85,7 @@ async def test_xai_provider_ainvoke() -> None:
     assert await provider.ainvoke("hello") == "async:hello"
 
 
-def test_router_rejects_unimplemented_provider() -> None:
+def test_router_rejects_groq_without_key() -> None:
     settings = _settings_from({
         "AGT_ZOTERO_API_KEY": "zot-secret",
         "AGT_ZOTERO_LIBRARY_ID": "12345",
@@ -96,6 +98,32 @@ def test_router_rejects_unimplemented_provider() -> None:
     text = str(exc.value)
     assert "AGT_GROQ_API_KEY" in text
     assert "GROQ_API_KEY" in text
+
+
+def test_router_builds_groq_provider(monkeypatch: pytest.MonkeyPatch) -> None:
+    settings = _settings_from({
+        "AGT_GROQ_API_KEY": "groq-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "12345",
+        "AGT_LLM_PROVIDER": "groq",
+    })
+
+    class _Built:
+        pass
+
+    built = _Built()
+
+    def _build_stub(
+        runtime: RuntimeConfig,
+        api_key: str,
+    ) -> _Built:
+        _ = runtime
+        _ = api_key
+        return built
+
+    monkeypatch.setattr(router, "GroqProvider", _build_stub)
+
+    assert build_provider(settings) is built
 
 
 def test_router_builds_xai_provider(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -317,3 +345,79 @@ def test_anthropic_provider_bind_tools_preserves_provider_type() -> None:
     bound = provider.bind_tools([{"name": "lookup", "input_schema": {"type": "object"}}])
 
     assert isinstance(bound, AnthropicProvider)
+
+
+def test_groq_provider_bind_tools_preserves_provider_type() -> None:
+    provider = GroqProvider(
+        runtime=RuntimeConfig(provider="groq", model_name="llama-3.3-70b-versatile"),
+        api_key="groq-secret",
+        model=FakeModel(),
+    )
+
+    bound = provider.bind_tools([{"type": "function", "name": "lookup"}])
+
+    assert isinstance(bound, GroqProvider)
+
+
+# --- SCI-0601 / SCI-0602 provider tests ---
+
+
+def test_router_builds_openai_compatible_provider() -> None:
+    settings = _settings_from({
+        "AGT_LLM_PROVIDER": "openai-compatible",
+        "AGT_LLM_BASE_URL": "https://api.deepseek.com/v1",
+        "AGT_LLM_API_KEY": "ds-secret",
+        "AGT_LLM_MODEL": "deepseek-chat",
+    })
+
+    provider = build_provider(settings)
+
+    assert isinstance(provider, OpenAICompatibleProvider)
+
+
+def test_router_openai_compatible_requires_base_url() -> None:
+    settings = _settings_from({
+        "AGT_LLM_PROVIDER": "openai-compatible",
+    })
+
+    with pytest.raises(RuntimeError, match="AGT_LLM_BASE_URL"):
+        build_provider(settings)
+
+
+def test_router_builds_ollama_provider() -> None:
+    settings = _settings_from({
+        "AGT_LLM_PROVIDER": "ollama",
+    })
+
+    provider = build_provider(settings)
+
+    assert isinstance(provider, OpenAICompatibleProvider)
+
+
+def test_router_auto_detects_openai_compatible_when_base_url_set() -> None:
+    settings = _settings_from({
+        "AGT_LLM_BASE_URL": "https://api.deepseek.com/v1",
+    })
+
+    assert settings.resolved_llm_provider == "openai-compatible"
+
+
+def test_ollama_uses_custom_base_url_when_set(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured: list[str] = []
+
+    class _CapturingProvider(OpenAICompatibleProvider):
+        def __init__(
+            self, runtime: RuntimeConfig, api_key: str, base_url: str, **kwargs: object
+        ) -> None:
+            captured.append(base_url)
+            super().__init__(runtime=runtime, api_key=api_key, base_url=base_url, model=FakeModel())
+
+    monkeypatch.setattr(router, "OpenAICompatibleProvider", _CapturingProvider)
+
+    settings = _settings_from({
+        "AGT_LLM_PROVIDER": "ollama",
+        "AGT_LLM_BASE_URL": "http://custom:11434/v1",
+    })
+    build_provider(settings)
+
+    assert captured == ["http://custom:11434/v1"]

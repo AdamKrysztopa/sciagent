@@ -3,12 +3,15 @@ import type {
   CorrectQueryResponse,
   DoctorReport,
   ExtractKeywordsResponse,
+  FilterEditContract,
   GapFinderResponse,
   HealthResponse,
   ResumeRequest,
   RunAcceptedResponse,
   RunRequest,
   StatusResponse,
+  Watch,
+  WatchRerunResponse,
 } from "../shared/contracts";
 
 export class BackendClientError extends Error {
@@ -126,6 +129,40 @@ export class SciAgentBackendClient {
     });
   }
 
+  // ── Watch List (SCI-0401/0402) ─────────────────────────────────────────
+
+  async createWatch(
+    name: string,
+    query: string,
+    collectionName: string | null,
+    filterEdit: FilterEditContract | null,
+  ): Promise<Watch> {
+    return this.request<Watch>("/watches", {
+      body: JSON.stringify({
+        name,
+        query,
+        collection_name: collectionName,
+        filter_edit: filterEdit,
+      }),
+      method: "POST",
+    });
+  }
+
+  async listWatches(): Promise<Watch[]> {
+    return this.request<Watch[]>("/watches", { method: "GET" });
+  }
+
+  async deleteWatch(watchId: string): Promise<void> {
+    await this.requestVoid(`/watches/${encodeURIComponent(watchId)}`, { method: "DELETE" });
+  }
+
+  async rerunWatch(watchId: string): Promise<WatchRerunResponse> {
+    return this.request<WatchRerunResponse>(
+      `/watches/${encodeURIComponent(watchId)}/rerun`,
+      { method: "POST" },
+    );
+  }
+
   private buildHeaders(withJsonBody: boolean): Headers {
     const headers = new Headers();
     headers.set("Accept", "application/json");
@@ -137,6 +174,19 @@ export class SciAgentBackendClient {
       headers.set("Content-Type", "application/json");
     }
     return headers;
+  }
+
+  private async requestVoid(path: string, init: RequestInit): Promise<void> {
+    const hasBody = typeof init.body === "string";
+    const response = await this.fetchImpl(`${this.baseUrl}${path}`, {
+      ...init,
+      headers: this.buildHeaders(hasBody),
+    });
+    if (!response.ok) {
+      const detail = await parseErrorPayload(response);
+      const message = typeof detail === "string" ? detail : `backend_request_failed:${response.status}`;
+      throw new BackendClientError(message, response.status, detail);
+    }
   }
 
   private async request<T>(path: string, init: RequestInit): Promise<T> {

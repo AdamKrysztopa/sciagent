@@ -11,6 +11,7 @@ import {
   type PanelBridgeTarget,
 } from "./panelBridge";
 import { createZoteroPreferenceStore } from "./prefs";
+import { binaryInstalled, startServer, stopServer } from "./serverManager";
 import type { BootstrapData, ZoteroWindow } from "./zoteroTypes";
 
 const PLUGIN_ID = "agt@yourdomain.org";
@@ -73,6 +74,24 @@ export class RuntimeController {
       this.rootURI = data.rootURI;
       Zotero.debug(`[SciAgent] Root URI: ${this.rootURI}`);
 
+      // Start the embedded server if backendMode is "local" (SCI-0604)
+      const preferenceStore = createZoteroPreferenceStore(Zotero);
+      const config = preferenceStore.readConfig();
+      if (config.backendMode === "local") {
+        void binaryInstalled().then((installed) => {
+          if (!installed) {
+            Zotero.debug(
+              "[SciAgent] Server binary not installed; skipping auto-start (show FirstRunDialog).",
+            );
+            return;
+          }
+          return startServer(config).catch((err: unknown) => {
+            Zotero.debug(`[SciAgent] WARNING: Embedded server failed to start: ${err}`);
+            Zotero.logError(err);
+          });
+        });
+      }
+
       // Insert FTL into every existing window BEFORE registering the item pane
       // section. Zotero renders the section header immediately on registerSection,
       // so the FTL must already be loaded or the l10nID resolves to empty text
@@ -104,6 +123,7 @@ export class RuntimeController {
   shutdown(_data: BootstrapData, _reason: number): void {
     try {
       Zotero.debug("[SciAgent] Shutting down runtime...");
+      void stopServer();
       this.unregisterWindowObserver();
 
       if (this.sectionRegistrationId !== null) {

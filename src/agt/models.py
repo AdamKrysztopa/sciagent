@@ -7,6 +7,7 @@ from typing import Any, Literal, TypedDict, cast
 from pydantic import BaseModel, Field, model_validator
 
 LibraryStatus = Literal["new", "in_library", "possible_duplicate"]
+WatchStatus = Literal["new", "seen"]
 
 
 class HardFilters(BaseModel):
@@ -95,6 +96,7 @@ class NormalizedPaper(BaseModel):
     score: float = 0.0
     explanation: str | None = None
     library_status: LibraryStatus | None = None
+    watch_status: WatchStatus | None = None
 
 
 class SearchMetadata(BaseModel):

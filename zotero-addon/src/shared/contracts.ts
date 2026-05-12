@@ -78,6 +78,9 @@ export interface FilterEditContract {
 // SCI-0301
 export type LibraryStatus = "new" | "in_library" | "possible_duplicate";
 
+// SCI-0401
+export type WatchStatus = "new" | "seen";
+
 export interface NormalizedPaper {
   title: string;
   year: number | null;
@@ -97,6 +100,7 @@ export interface NormalizedPaper {
   score: number;
   explanation: string | null;
   library_status?: LibraryStatus | null;
+  watch_status?: WatchStatus | null;
 }
 
 export interface SearchMetadata {
@@ -226,6 +230,27 @@ export interface DoctorReport {
 export interface GapFinderResponse {
   reasoning: string;
   papers: NormalizedPaper[];
+}
+
+// SCI-0401/0402
+export interface Watch {
+  id: string;
+  name: string;
+  query: string;
+  collection_name: string | null;
+  created_at: string;
+  last_run_at: string | null;
+  seen_count: number;
+  filter_edit: FilterEditContract | null;
+}
+
+export interface WatchRerunResponse {
+  watch_id: string;
+  run_id: string;
+  thread_id: string;
+  status: RunStatus;
+  new_count: number;
+  total_count: number;
 }
 
 export interface StatusResponse {

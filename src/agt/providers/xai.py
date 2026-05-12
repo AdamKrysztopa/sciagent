@@ -195,6 +195,10 @@ class _HTTPXAIModel:
         )
 
 
+HTTPXAIModel = _HTTPXAIModel
+"""Public alias for ``_HTTPXAIModel`` for use by sibling provider adapters."""
+
+
 @dataclass(frozen=True, slots=True)
 class TokenPricing:
     """Cost rates used by workflow cost guardrails."""

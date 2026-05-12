@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from typing import cast
 
 import pytest
@@ -182,3 +183,44 @@ def test_settings_provider_routing_policy_aliases(monkeypatch: pytest.MonkeyPatc
     assert settings.llm_failover_on_rate_limit is True
     assert settings.backend_api_key is not None
     assert settings.backend_api_key.get_secret_value() == "backend-secret"
+
+
+# --- SCI-0601 / SCI-0602 / SCI-0604 config tests ---
+
+
+def test_settings_data_dir_default() -> None:
+    settings = _settings_from({})
+    assert settings.data_dir == Path.home() / ".sciagent"
+
+
+def test_settings_resolved_dirs_use_data_dir() -> None:
+    settings = _settings_from({"AGT_DATA_DIR": "/tmp/test-sciagent"})
+    assert settings.resolved_session_dir == Path("/tmp/test-sciagent/sessions")
+    assert settings.resolved_cache_dir == Path("/tmp/test-sciagent/cache")
+    assert settings.resolved_watch_dir == Path("/tmp/test-sciagent/watches")
+
+
+def test_settings_llm_base_url_field() -> None:
+    settings = _settings_from({"AGT_LLM_BASE_URL": "https://api.deepseek.com/v1"})
+    assert settings.llm_base_url == "https://api.deepseek.com/v1"
+
+
+def test_settings_llm_api_key_field() -> None:
+    settings = _settings_from({"AGT_LLM_API_KEY": "ds-key-123"})
+    assert settings.llm_api_key is not None
+    assert settings.llm_api_key.get_secret_value() == "ds-key-123"
+
+
+def test_settings_agm_llm_model_alias() -> None:
+    settings = _settings_from({"AGT_LLM_MODEL": "deepseek-chat"})
+    assert settings.model_name == "deepseek-chat"
+
+
+def test_resolved_llm_provider_auto_detects_openai_compatible() -> None:
+    settings = _settings_from({"AGT_LLM_BASE_URL": "https://api.deepseek.com/v1"})
+    assert settings.resolved_llm_provider == "openai-compatible"
+
+
+def test_resolved_llm_provider_explicit_ollama() -> None:
+    settings = _settings_from({"AGT_LLM_PROVIDER": "ollama"})
+    assert settings.resolved_llm_provider == "ollama"

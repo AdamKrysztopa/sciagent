@@ -1,10 +1,8 @@
 # SciAgent — Next Steps & Remaining Work
 
-> **Note:** This document provides a detailed backlog view and implementation guidance.
-> For live execution status, done/not done tracking, and the current implementation target, see **[actionable-plan.md](actionable-plan.md)** — that is the primary tracker.
->
-> **Generated:** 2026-03-22
-> **Baseline:** All quality gates clean — ruff 0 errors, pyright 0 errors, 132 tests passing.
+> **⚠️ ARCHIVED — 2026-05-12.** This document was generated on 2026-03-22 when M6 was "Not started" and 132 tests existed. All items listed here are now complete or superseded.
+> For live open items and the current implementation target, see **[actionable-plan.md](actionable-plan.md)**.
+> **Generated:** 2026-03-22. **Baseline at generation:** ruff 0 errors, pyright 0 errors, 132 tests passing.
 
 ---
 

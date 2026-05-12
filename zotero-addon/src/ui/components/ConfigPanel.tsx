@@ -54,6 +54,109 @@ export function ConfigPanel({ config, onChange, onSave, saveError, saveState }: 
         />
       </label>
 
+      <h3 className="agt-subsection-heading">LLM Provider</h3>
+      <p className="agt-small-note">
+        Select the LLM provider to use for query rewriting and summarization.
+        Keys are stored in Zotero preferences and passed securely to the backend.
+      </p>
+      <label className="agt-field">
+        <span>Provider</span>
+        <select
+          className="agt-input"
+          onChange={(event) => onChange("llmProvider", event.target.value)}
+          value={config.llmProvider}
+        >
+          <option value="openai">OpenAI</option>
+          <option value="anthropic">Anthropic</option>
+          <option value="xai">xAI (Grok)</option>
+          <option value="groq">Groq</option>
+          <option value="ollama">Ollama (local, no key)</option>
+          <option value="custom">Custom OpenAI-compatible</option>
+        </select>
+      </label>
+      {config.llmProvider === "openai" && (
+        <label className="agt-field">
+          <span>OpenAI API Key</span>
+          <input
+            className="agt-input"
+            onChange={(event) => onChange("openaiApiKey", event.target.value)}
+            placeholder="sk-..."
+            type="password"
+            value={config.openaiApiKey}
+          />
+        </label>
+      )}
+      {config.llmProvider === "anthropic" && (
+        <label className="agt-field">
+          <span>Anthropic API Key</span>
+          <input
+            className="agt-input"
+            onChange={(event) => onChange("anthropicApiKey", event.target.value)}
+            placeholder="sk-ant-..."
+            type="password"
+            value={config.anthropicApiKey}
+          />
+        </label>
+      )}
+      {config.llmProvider === "xai" && (
+        <label className="agt-field">
+          <span>xAI API Key</span>
+          <input
+            className="agt-input"
+            onChange={(event) => onChange("xaiApiKey", event.target.value)}
+            placeholder="xai-..."
+            type="password"
+            value={config.xaiApiKey}
+          />
+        </label>
+      )}
+      {config.llmProvider === "groq" && (
+        <label className="agt-field">
+          <span>Groq API Key</span>
+          <input
+            className="agt-input"
+            onChange={(event) => onChange("groqApiKey", event.target.value)}
+            placeholder="gsk_..."
+            type="password"
+            value={config.groqApiKey}
+          />
+        </label>
+      )}
+      {config.llmProvider === "ollama" && (
+        <p className="agt-small-note">
+          No API key required. Ollama must be running at localhost:11434 (or set a custom base URL
+          below).
+        </p>
+      )}
+      {(config.llmProvider === "ollama" || config.llmProvider === "custom") && (
+        <label className="agt-field">
+          <span>Base URL</span>
+          <input
+            className="agt-input"
+            onChange={(event) => onChange("llmBaseUrl", event.target.value)}
+            placeholder={
+              config.llmProvider === "ollama"
+                ? "http://localhost:11434/v1"
+                : "https://api.deepseek.com/v1"
+            }
+            type="url"
+            value={config.llmBaseUrl}
+          />
+        </label>
+      )}
+      {(config.llmProvider === "ollama" || config.llmProvider === "custom") && (
+        <label className="agt-field">
+          <span>Model</span>
+          <input
+            className="agt-input"
+            onChange={(event) => onChange("llmModel", event.target.value)}
+            placeholder={config.llmProvider === "ollama" ? "llama3.2" : "deepseek-chat"}
+            type="text"
+            value={config.llmModel}
+          />
+        </label>
+      )}
+
       <h3 className="agt-subsection-heading">Search Defaults</h3>
       <p className="agt-small-note">
         These defaults pre-fill the pre-search filter composer. They are sent with every initial search request.

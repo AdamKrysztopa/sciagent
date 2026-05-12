@@ -2,17 +2,30 @@
 
 from __future__ import annotations
 
+import importlib.metadata
 import uuid
 from dataclasses import dataclass
 from typing import Any, Literal, cast
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse, RedirectResponse
 from pydantic import BaseModel, Field, model_validator
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+from slowapi.util import get_remote_address
 
 from agt.config import Settings, get_settings
 from agt.graph.workflow import resume_workflow, run_search_phase
-from agt.models import AgentState, DoctorReport, FilterEditContract, GapSuggestion, SourceCapability
+from agt.models import (
+    AgentState,
+    DoctorReport,
+    FilterEditContract,
+    GapSuggestion,
+    NormalizedPaper,
+    SourceCapability,
+)
 from agt.providers.router import build_provider
 from agt.result_cache import ResultCache
 from agt.session_export import ExportFormat, export_session
@@ -21,6 +34,8 @@ from agt.tools.gap_finder import find_gaps
 from agt.tools.keyword_extract import KeywordExtraction, extract_keywords
 from agt.tools.search_papers import build_source_policy
 from agt.tools.spell_check import correct_query
+from agt.tools.zotero_upsert import normalize_doi, title_author_fingerprint
+from agt.watch_store import Watch, WatchStore, create_watch
 from agt.zotero.library_doctor import scan_collection
 from agt.zotero.preflight import run_zotero_preflight
 
@@ -117,6 +132,53 @@ class GapFinderResponse(BaseModel):
     papers: list[dict[str, Any]]
 
 
+class CreateWatchRequest(BaseModel):
+    name: str = Field(min_length=1)
+    query: str = Field(min_length=1)
+    collection_name: str | None = None
+    filter_edit: FilterEditContract | None = None
+
+
+class WatchSummary(BaseModel):
+    id: str
+    name: str
+    query: str
+    collection_name: str | None
+    created_at: str
+    last_run_at: str | None
+    seen_count: int
+    filter_edit: dict[str, Any] | None
+
+
+class WatchRerunResponse(BaseModel):
+    watch_id: str
+    run_id: str
+    thread_id: str
+    status: Literal["awaiting_approval", "completed", "rejected", "failed"]
+    new_count: int
+    total_count: int
+
+
+def _watch_to_summary(watch: Watch) -> WatchSummary:
+    return WatchSummary(
+        id=watch.id,
+        name=watch.name,
+        query=watch.query,
+        collection_name=watch.collection_name,
+        created_at=watch.created_at,
+        last_run_at=watch.last_run_at,
+        seen_count=len(watch.seen_fingerprints),
+        filter_edit=watch.filter_edit,
+    )
+
+
+def _paper_fingerprints(paper: NormalizedPaper) -> tuple[str | None, str]:
+    """Return (normalized_doi_or_None, title_author_fp) for a paper."""
+    doi = normalize_doi(paper.doi)
+    fp = title_author_fingerprint(paper.title, paper.authors)
+    return doi, fp
+
+
 @dataclass(slots=True)
 class _RunRecord:
     run_id: str
@@ -168,6 +230,7 @@ class _AppState:
     def __init__(self) -> None:
         self._session_store: SessionStore | None = None
         self._result_cache: ResultCache | None = None
+        self._watch_store: WatchStore | None = None
 
     def session_store(self, settings: Settings) -> SessionStore:
         if self._session_store is None:
@@ -181,9 +244,29 @@ class _AppState:
             )
         return self._result_cache
 
+    def watch_store(self, settings: Settings) -> WatchStore:
+        if self._watch_store is None:
+            self._watch_store = WatchStore(settings.resolved_watch_dir)
+        return self._watch_store
+
 
 def create_app() -> FastAPI:  # noqa: PLR0915
     app = FastAPI(title="SciAgent API", version="0.1.0")
+    _settings = get_settings()
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=_settings.cors_allowed_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    _limiter = Limiter(
+        key_func=get_remote_address,
+        default_limits=[_settings.api_rate_limit],
+    )
+    app.state.limiter = _limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
+    app.add_middleware(SlowAPIMiddleware)
     store = _RunStore()
     app_state = _AppState()
 
@@ -205,6 +288,14 @@ def create_app() -> FastAPI:  # noqa: PLR0915
             "fallback_provider": settings.llm_fallback_provider,
             "api_contract_version": API_CONTRACT_VERSION,
         }
+
+    @app.get("/version")
+    async def _version() -> dict[str, str]:  # pyright: ignore[reportUnusedFunction]
+        try:
+            version = importlib.metadata.version("sciagent")
+        except importlib.metadata.PackageNotFoundError:
+            version = "0.0.0"
+        return {"version": version}
 
     @app.post("/run", response_model=RunAcceptedResponse)
     async def _run(  # pyright: ignore[reportUnusedFunction]
@@ -603,6 +694,136 @@ def create_app() -> FastAPI:  # noqa: PLR0915
         return GapFinderResponse(
             reasoning=suggestion.reasoning,
             papers=[p.model_dump() for p in suggestion.papers],
+        )
+
+    # ── Watch List (SCI-0401/0402) ──────────────────────────────────────────
+
+    @app.post("/watches", response_model=WatchSummary, status_code=status.HTTP_201_CREATED)
+    async def _create_watch(  # pyright: ignore[reportUnusedFunction]
+        body: CreateWatchRequest,
+        _: None = Depends(_require_backend_key),
+        settings: Settings = Depends(get_settings),
+    ) -> WatchSummary:
+        watch = create_watch(
+            body.name,
+            body.query,
+            collection_name=body.collection_name,
+            filter_edit=body.filter_edit.model_dump() if body.filter_edit is not None else None,
+        )
+        app_state.watch_store(settings).save(watch)
+        return _watch_to_summary(watch)
+
+    @app.get("/watches", response_model=list[WatchSummary])
+    async def _list_watches(  # pyright: ignore[reportUnusedFunction]
+        _: None = Depends(_require_backend_key),
+        settings: Settings = Depends(get_settings),
+    ) -> list[WatchSummary]:
+        return [_watch_to_summary(w) for w in app_state.watch_store(settings).list_watches()]
+
+    @app.get("/watches/{watch_id}", response_model=WatchSummary)
+    async def _get_watch(  # pyright: ignore[reportUnusedFunction]
+        watch_id: str,
+        _: None = Depends(_require_backend_key),
+        settings: Settings = Depends(get_settings),
+    ) -> WatchSummary:
+        try:
+            watch = app_state.watch_store(settings).load(watch_id)
+        except KeyError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="watch_not_found"
+            ) from exc
+        return _watch_to_summary(watch)
+
+    @app.delete("/watches/{watch_id}", status_code=status.HTTP_204_NO_CONTENT)
+    async def _delete_watch(  # pyright: ignore[reportUnusedFunction]
+        watch_id: str,
+        _: None = Depends(_require_backend_key),
+        settings: Settings = Depends(get_settings),
+    ) -> None:
+        try:
+            app_state.watch_store(settings).delete(watch_id)
+        except KeyError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="watch_not_found"
+            ) from exc
+
+    @app.post("/watches/{watch_id}/rerun", response_model=WatchRerunResponse)
+    async def _rerun_watch(  # pyright: ignore[reportUnusedFunction]
+        watch_id: str,
+        _: None = Depends(_require_backend_key),
+        settings: Settings = Depends(get_settings),
+        client_id: str = Depends(_client_id_header),
+    ) -> WatchRerunResponse:
+        ws = app_state.watch_store(settings)
+        try:
+            watch = ws.load(watch_id)
+        except KeyError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="watch_not_found"
+            ) from exc
+
+        filter_edit: FilterEditContract | None = (
+            FilterEditContract.model_validate(watch.filter_edit)
+            if watch.filter_edit is not None
+            else None
+        )
+        collection = watch.collection_name or settings.zotero_collection_name
+        try:
+            state = await run_search_phase(
+                query=watch.query,
+                collection_name=collection,
+                settings=settings,
+                filter_edit=filter_edit,
+            )
+        except RuntimeError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=f"run_failed:{exc}"
+            ) from exc
+
+        # Tag papers as new vs seen and update the watch's seen_fingerprints.
+        seen_set: set[str] = set(watch.seen_fingerprints)
+        new_fps: list[str] = []
+        raw_papers: list[dict[str, Any]] = state.get("papers", [])
+        tagged_papers: list[dict[str, Any]] = []
+        new_count = 0
+
+        for raw in raw_papers:
+            paper = NormalizedPaper.model_validate(raw)
+            doi, fp = _paper_fingerprints(paper)
+            is_new = (doi is None or doi not in seen_set) and fp not in seen_set
+            watch_status_val = "new" if is_new else "seen"
+            if is_new:
+                new_count += 1
+                if doi is not None:
+                    new_fps.append(doi)
+                new_fps.append(fp)
+            tagged_papers.append({**raw, "watch_status": watch_status_val})
+
+        # Persist updated watch.
+        from datetime import UTC, datetime  # noqa: PLC0415
+
+        watch.seen_fingerprints = list(dict.fromkeys(watch.seen_fingerprints + new_fps))
+        watch.last_run_at = datetime.now(tz=UTC).isoformat(timespec="seconds")
+        ws.save(watch)
+
+        run_id: str = state["thread_id"]
+        updated_state = {**cast(dict[str, Any], state), "papers": tagged_papers}
+        store.put(
+            _RunRecord(
+                run_id=run_id,
+                owner=client_id,
+                thread_id=run_id,
+                status="awaiting_approval",
+                state=updated_state,
+            )
+        )
+        return WatchRerunResponse(
+            watch_id=watch_id,
+            run_id=run_id,
+            thread_id=run_id,
+            status="awaiting_approval",
+            new_count=new_count,
+            total_count=len(tagged_papers),
         )
 
     return app

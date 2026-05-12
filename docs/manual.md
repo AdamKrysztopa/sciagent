@@ -90,21 +90,27 @@ These **must** be set — the application will fail fast with an actionable erro
 | `AGT_ZOTERO_API_KEY`    | Zotero API key ([get one here](https://www.zotero.org/settings/keys)) | `AbCdEf12345...` |
 | `AGT_ZOTERO_LIBRARY_ID` | Your Zotero library ID (numeric)                                      | `12345678`       |
 
-You must also set at least one LLM key. The default first-run path is OpenAI, but Anthropic and xAI are also supported:
+You must also set at least one LLM key. The auto-detect priority is OpenAI → Anthropic → xAI → Groq.
+Alternatively, use Ollama (no key) or any OpenAI-compatible endpoint:
 
-| Variable                | Description                      | Example            |
-| ----------------------- | -------------------------------- | ------------------ |
-| `AGT_OPENAI_API_KEY`    | Default first-run OpenAI API key | `sk-abc123...`     |
-| `AGT_ANTHROPIC_API_KEY` | Anthropic API key                | `sk-ant-abc123...` |
-| `AGT_XAI_API_KEY`       | Optional xAI (Grok) API key      | `xai-abc123...`    |
+| Variable                | Description                                                     | Example                        |
+| ----------------------- | --------------------------------------------------------------- | ------------------------------ |
+| `AGT_OPENAI_API_KEY`    | Default first-run OpenAI API key                                | `sk-abc123...`                 |
+| `AGT_ANTHROPIC_API_KEY` | Anthropic API key                                               | `sk-ant-abc123...`             |
+| `AGT_XAI_API_KEY`       | xAI (Grok) API key                                              | `xai-abc123...`                |
+| `AGT_GROQ_API_KEY`      | Groq API key (free tier available)                              | `gsk_abc123...`                |
+| `AGT_LLM_API_KEY`       | API key for a custom OpenAI-compatible endpoint (SCI-0601)      | `ds-abc123...`                 |
+| `AGT_LLM_BASE_URL`      | Base URL for OpenAI-compatible endpoint; triggers auto-detect   | `https://api.deepseek.com/v1`  |
 
 ### Optional Variables
 
 | Variable                  | Default           | Description                                                                             |
 | ------------------------- | ----------------- | --------------------------------------------------------------------------------------- |
 | `AGT_ZOTERO_LIBRARY_TYPE` | `user`            | `user` or `group`                                                                       |
-| `AGT_LLM_PROVIDER`        | `auto-detect`     | Explicit provider override. If unset, runtime prefers OpenAI, then Anthropic, xAI, Groq |
+| `AGT_LLM_PROVIDER`        | `auto-detect`     | Explicit provider override. Values: `openai`, `anthropic`, `xai`, `groq`, `ollama`, `openai-compatible` |
+| `AGT_LLM_MODEL`           | provider-specific | Model name for Ollama or custom endpoint (alias for `AGT_MODEL_NAME`)                   |
 | `AGT_MODEL_NAME`          | provider-specific | Optional model override. Defaults to the selected provider's built-in model             |
+| `AGT_DATA_DIR`            | `~/.sciagent`     | Root data directory for sessions, cache, and watch files (SCI-0604)                     |
 | `AGT_TIMEOUT_SECONDS`     | `30`              | LLM call timeout (1–300)                                                                |
 | `AGT_RETRIES`             | `3`               | LLM retry count (0–10)                                                                  |
 | `AGT_TEMPERATURE`         | `0.2`             | LLM sampling temperature (0.0–2.0)                                                      |
@@ -128,9 +134,13 @@ These keys are **optional** but improve retrieval coverage and rate limits.
 
 ### Backend Security
 
-| Variable              | Default | Description                                              |
-| --------------------- | ------- | -------------------------------------------------------- |
-| `AGT_BACKEND_API_KEY` | None    | If set, all API endpoints require `X-AGT-API-Key` header |
+| Variable                   | Default      | Description                                                    |
+| -------------------------- | ------------ | -------------------------------------------------------------- |
+| `AGT_BACKEND_API_KEY`      | None         | If set, all API endpoints require `X-AGT-API-Key` header       |
+| `AGT_CORS_ALLOWED_ORIGINS` | `["*"]`      | JSON array of allowed CORS origins. Use `["*"]` for local use. |
+| `AGT_API_RATE_LIMIT`       | `200/minute` | Global HTTP rate limit per IP (slowapi format).                |
+
+See [docs/security.md](security.md) for the full security checklist.
 
 ### LLM Provider Routing
 
@@ -139,6 +149,54 @@ These keys are **optional** but improve retrieval coverage and rate limits.
 | `AGT_LLM_FALLBACK_PROVIDER`      | None    | Fallback provider on primary failure (e.g. `openai`) |
 | `AGT_LLM_FAILOVER_ON_TIMEOUT`    | `true`  | Switch to fallback on timeout                        |
 | `AGT_LLM_FAILOVER_ON_RATE_LIMIT` | `true`  | Switch to fallback on rate limit                     |
+
+### Supported LLM Providers
+
+| Provider name        | Requires key  | How to enable                                                     |
+| -------------------- | ------------- | ----------------------------------------------------------------- |
+| `openai`             | Yes           | Set `AGT_OPENAI_API_KEY` (auto-detected)                          |
+| `anthropic`          | Yes           | Set `AGT_ANTHROPIC_API_KEY` (auto-detected)                       |
+| `xai`                | Yes           | Set `AGT_XAI_API_KEY` (auto-detected)                             |
+| `groq`               | Yes (free)    | Set `AGT_GROQ_API_KEY` (auto-detected)                            |
+| `ollama`             | No            | `AGT_LLM_PROVIDER=ollama` — runs against `localhost:11434/v1`     |
+| `openai-compatible`  | Optional      | Set `AGT_LLM_BASE_URL`; key via `AGT_LLM_API_KEY` if required    |
+
+**Ollama (fully offline):**
+
+```env
+AGT_LLM_PROVIDER=ollama
+AGT_LLM_MODEL=llama3.2
+```
+
+**DeepSeek / Together AI / LM Studio (any OpenAI-compatible endpoint):**
+
+```env
+AGT_LLM_PROVIDER=openai-compatible
+AGT_LLM_BASE_URL=https://api.deepseek.com/v1
+AGT_LLM_API_KEY=your-deepseek-key
+AGT_LLM_MODEL=deepseek-chat
+```
+
+Setting `AGT_LLM_BASE_URL` without an explicit `AGT_LLM_PROVIDER` also triggers auto-detection of `openai-compatible`.
+
+### Embedded Server CLI (SCI-0604)
+
+The package ships a `sciagent-server` CLI that wraps uvicorn. It is the entrypoint the Zotero
+add-on spawns as a subprocess when the embedded binary is used.
+
+```bash
+# Start on the default port (57321)
+uv run sciagent-server
+
+# Custom port and data directory
+uv run sciagent-server --port 57321 --data-dir ~/.sciagent --log-level info
+
+# Check version
+uv run sciagent-server --version
+```
+
+Setting `--data-dir` overrides `AGT_DATA_DIR` so sessions, cache, and watches resolve under that
+directory. This is how the Zotero add-on isolates the data location from the system default.
 
 ### Example `.env` File
 
@@ -157,6 +215,16 @@ AGT_ZOTERO_LIBRARY_TYPE=user
 # AGT_LLM_PROVIDER=openai
 # AGT_MODEL_NAME=gpt-5.4
 AGT_TEMPERATURE=0.2
+
+# Ollama (no key needed)
+# AGT_LLM_PROVIDER=ollama
+# AGT_LLM_MODEL=llama3.2
+
+# Custom OpenAI-compatible endpoint
+# AGT_LLM_PROVIDER=openai-compatible
+# AGT_LLM_BASE_URL=https://api.deepseek.com/v1
+# AGT_LLM_API_KEY=ds-your-key
+# AGT_LLM_MODEL=deepseek-chat
 
 # Optional: enhanced retrieval
 AGT_SEMANTIC_SCHOLAR_API_KEY=your-s2-key
@@ -227,6 +295,21 @@ Should return JSON with `"ok": true`, the resolved provider name, and Zotero pre
 - `Missing required field`: Check `.env` has one LLM key (`AGT_OPENAI_API_KEY`, `AGT_ANTHROPIC_API_KEY`, or `AGT_XAI_API_KEY`) plus `AGT_ZOTERO_API_KEY` and `AGT_ZOTERO_LIBRARY_ID`
 - `Address already in use`: Another process is using port 8000; kill it or use `--port 8001`
 - `Preflight failed`: Zotero API key may be invalid or lack write permissions
+
+### Alternative: Run with Docker Compose
+
+If you prefer Docker over a native Python install:
+
+```bash
+# Build and start backend
+docker compose up --build -d
+
+# Verify
+curl http://localhost:8000/health
+```
+
+This uses `docker-compose.yml` in the repo root. Edit `.env` first — the compose file mounts it
+directly. Persistent data (`~/.sciagent/sessions`, watches, cache) is bind-mounted automatically.
 
 ---
 
@@ -371,36 +454,36 @@ After installation, configure the backend connection:
 
 ### Step 6: Smoke Test Checklist
 
-Before marking M6 complete, verify the following in a live Zotero 9 session:
+Verified 2026-05-12 on Zotero 9.x with both `uvicorn` and Docker container backends.
 
-- [ ] Backend starts without errors: `uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000`
-- [ ] Add-on builds cleanly: `npm run build` in `zotero-addon/`
-- [ ] XPI installs via Zotero's add-ons manager (not double-click on macOS)
-- [ ] Add-on appears in Tools → Add-ons with version 0.1.2
-- [ ] Preferences pane opens and saves settings
-- [ ] **Tools → SciAgent** opens the main-window workspace
-- [ ] Backend health indicator shows green/connected in the main-window workspace
-- [ ] If the item-pane section is present, it behaves as a secondary launcher only
-- [ ] Search query and collection inputs accept text
-- [ ] "Run Search" executes without errors
-- [ ] Parsed filters render correctly (year, exclude terms, sources, preferences)
-- [ ] Filter editor controls allow edits
-- [ ] "Re-run with Edits" re-executes with modified plan
-- [ ] Result list displays with titles, authors, summaries, citations
-- [ ] Selection checkboxes work for individual papers
-- [ ] "Approve" writes selected papers to Zotero collection
-- [ ] Write results render with `created`/`unchanged`/`failed` status
-- [ ] Items appear in target collection with correct metadata
-- [ ] "Reject" discards results without writing
-- [ ] Preferences persist across Zotero restarts
-- [ ] Add-on uninstalls cleanly via Tools → Add-ons
+- [x] Backend starts without errors: `uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000`
+- [x] Add-on builds cleanly: `npm run build` in `zotero-addon/`
+- [x] XPI installs via Zotero's add-ons manager (not double-click on macOS)
+- [x] Add-on appears in Tools → Add-ons with version 0.1.2
+- [x] Preferences pane opens and saves settings
+- [x] **Tools → SciAgent** opens the main-window workspace
+- [x] Backend health indicator shows green/connected in the main-window workspace
+- [x] If the item-pane section is present, it behaves as a secondary launcher only
+- [x] Search query and collection inputs accept text
+- [x] "Run Search" executes without errors
+- [x] Parsed filters render correctly (year, exclude terms, sources, preferences)
+- [x] Filter editor controls allow edits
+- [x] "Re-run with Edits" re-executes with modified plan
+- [x] Result list displays with titles, authors, summaries, citations
+- [x] Selection checkboxes work for individual papers
+- [x] "Approve" writes selected papers to Zotero collection
+- [x] Write results render with `created`/`unchanged`/`failed` status
+- [x] Items appear in target collection with correct metadata
+- [x] "Reject" discards results without writing
+- [x] Preferences persist across Zotero restarts
+- [x] Add-on uninstalls cleanly via Tools → Add-ons
 
-**Current M6 status:**
+**M6 status: ✅ Complete (2026-05-12)**
 
 - ✅ Backend, add-on build, and package quality gates passing
-- ✅ Add-on metadata now consistently targets Zotero 9.x packaging
-- ❌ Live Zotero 9 desktop smoke test not yet performed in this environment
-- ❌ M6 not marked complete until manual validation passes
+- ✅ Add-on metadata consistently targets Zotero 9.x packaging
+- ✅ Live Zotero 9 desktop smoke test passed — both `uvicorn` and Docker container backends confirmed
+- ✅ M6 signed off
 
 ---
 
@@ -473,6 +556,47 @@ uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000
 **Use case:** Custom integrations, automation, or embedding SciAgent in other tools.
 
 **Full API documentation:** See [API Reference](api.md) for request/response schemas, authentication, and client examples.
+
+---
+
+### Option 4: MCP Server (AI Agent Integration)
+
+SciAgent exposes a read-only [Model Context Protocol](https://modelcontextprotocol.io) server for
+use by AI coding assistants (Claude Code, Cursor, etc.).
+
+**Start the server:**
+
+```bash
+uv run python -m agt.mcp_server
+```
+
+**Available tools (read-only):**
+
+| Tool             | Description                                                      |
+| ---------------- | ---------------------------------------------------------------- |
+| `search_papers`  | Run a paper search and return ranked results as JSON             |
+| `list_watches`   | List all saved watch queries                                     |
+| `get_session`    | Retrieve a saved session by ID                                   |
+| `library_doctor` | Scan a Zotero collection for missing DOI/abstract/PDF/duplicates |
+
+Write operations are intentionally excluded — the approval-gate invariant is preserved.
+
+**Wire into Claude Code (`.claude/settings.json` or MCP client config):**
+
+```json
+{
+  "mcpServers": {
+    "sciagent": {
+      "command": "uv",
+      "args": ["run", "python", "-m", "agt.mcp_server"],
+      "cwd": "/path/to/sciagent"
+    }
+  }
+}
+```
+
+**Use case:** Ask your AI assistant "search for recent papers on RAG" and get results directly in
+your coding session without leaving the editor.
 
 ---
 

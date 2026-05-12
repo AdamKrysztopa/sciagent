@@ -56,49 +56,61 @@ npm run build
 
 ---
 
-### Docker (Partially Implemented)
+### Docker and Docker Compose
 
-The repository includes a `Dockerfile` for containerized deployment.
+The repository ships a `Dockerfile` and `docker-compose.yml` for containerized deployment.
 
-**Current Status:**
+**Current Status (P5):**
 
 - ✅ Dockerfile builds a Python 3.14 image with `uv sync`
-- ✅ Can run Streamlit UI: `docker run -p 8501:8501 --env-file .env sciagent`
-- ✅ Can run FastAPI backend: `docker run -p 8000:8000 --env-file .env sciagent uv run uvicorn agt.api.app:app --host 0.0.0.0 --port 8000`
-- ❌ No persistent volume mounts for run state
-- ❌ No health check or restart policy
-- ❌ No multi-container orchestration (e.g., backend + worker + database)
+- ✅ FastAPI backend is the default CMD: `uvicorn agt.api.app:app --host 0.0.0.0 --port 8000`
+- ✅ `docker-compose.yml` mounts `.env` and `~/.sciagent` for persistent data
+- ✅ CORS and rate limiting configurable via `AGT_CORS_ALLOWED_ORIGINS` / `AGT_API_RATE_LIMIT`
+- ❌ No multi-container orchestration (backend + worker + database) — local only
 - ❌ No secrets management integration (Vault, AWS Secrets Manager)
 
-**Example Docker Run:**
+**Quickstart with Docker Compose:**
 
 ```bash
-# Build
-docker build -t sciagent:latest .
+# Copy environment template and fill in credentials
+cp .env.example .env
+# Edit .env: add AGT_OPENAI_API_KEY (or Groq/Anthropic), AGT_ZOTERO_API_KEY, AGT_ZOTERO_LIBRARY_ID
 
-# Run backend
+# Build and start
+docker compose up --build -d
+
+# Verify
+curl http://localhost:8000/health
+```
+
+Sessions, watches, and cache are persisted to `~/.sciagent` on the host via volume mount.
+
+**Manual Docker Run (without Compose):**
+
+```bash
+docker build -t sciagent:latest .
 docker run -d \
   --name sciagent-backend \
   -p 8000:8000 \
   --env-file .env \
   --restart unless-stopped \
-  sciagent:latest \
-  uv run uvicorn agt.api.app:app --host 0.0.0.0 --port 8000
+  -v "${HOME}/.sciagent:/root/.sciagent" \
+  sciagent:latest
 ```
 
 **Use Case:**
 
 - Self-hosted deployment on a VPS or internal server
-- Easier dependency management vs bare-metal Python
 - Reproducible environment across development and production
+- Privacy-first: all data stays on your infrastructure
 
 **Missing for Production Self-Hosting:**
 
-1. **Persistent State**: No database or durable checkpoint store (AGT-24)
-2. **Authentication**: `AGT_BACKEND_API_KEY` is basic; no OAuth, JWT, or user roles (AGT-21)
-3. **Secrets**: Environment variables passed via `--env-file`; no integration with secret stores
-4. **Monitoring**: No built-in metrics, alerting, or observability hooks
-5. **Async Workers**: Long-running workflows block the API server; no background job queue
+1. **Persistent State**: In-memory `_RunStore` cleared on restart; file-backed sessions/watches
+   survive (mounted via volume)
+2. **Authentication**: Set `AGT_BACKEND_API_KEY` + TLS termination via reverse proxy
+3. **Async Workers**: Long-running workflows run in-process; no background job queue (AGT-25)
+4. **Multi-user**: Single shared API key; no per-user isolation beyond `X-AGT-Client-ID`
 
 ---
 
@@ -352,11 +364,12 @@ For organizations that want to self-host without the full SaaS stack:
 
 **Minimal Production Setup:**
 
-1. Run backend in Docker with persistent volume for logs
-2. Set `AGT_BACKEND_API_KEY` for basic auth
-3. Use a reverse proxy (Nginx, Caddy) with TLS
+1. Run backend with `docker compose up -d` (mounts `~/.sciagent` for persistence)
+2. Set `AGT_BACKEND_API_KEY` and a restrictive `AGT_CORS_ALLOWED_ORIGINS`
+3. Use a reverse proxy (Nginx, Caddy) for TLS termination
 4. Restrict network access to internal users only
-5. Manually distribute signed XPI to users
+5. See [Security](security.md) for the full pre-production checklist
+6. Manually distribute the signed XPI to users
 
 **What You Lose:**
 

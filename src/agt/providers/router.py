@@ -7,15 +7,22 @@ from typing import Any
 
 from agt.config import LLMProviderName, Settings, provider_env_aliases
 from agt.providers.anthropic import AnthropicProvider
+from agt.providers.groq import GroqProvider
 from agt.providers.openai import OpenAIProvider
+from agt.providers.openai_compatible import OpenAICompatibleProvider
 from agt.providers.protocol import LLMProvider, ProviderRateLimitError, ProviderTimeoutError
 from agt.providers.xai import TokenPricing, XAIProvider
 
 ProviderBuilder = Callable[[Settings], LLMProvider]
 
 
+_OLLAMA_BASE_URL = "http://localhost:11434/v1"
+
+
 def _required_env_message(provider_name: LLMProviderName) -> str:
     env_names = provider_env_aliases(provider_name)
+    if not env_names:
+        return "no API key required"
     return " or ".join(env_names)
 
 
@@ -113,9 +120,44 @@ def _build_anthropic(settings: Settings) -> LLMProvider:
     )
 
 
+def _build_groq(settings: Settings) -> LLMProvider:
+    if settings.groq_api_key is None:
+        raise _missing_provider_key_error("groq")
+    return GroqProvider(
+        runtime=settings.runtime,
+        api_key=settings.groq_api_key.get_secret_value(),
+    )
+
+
+def _build_openai_compatible(settings: Settings) -> LLMProvider:
+    if settings.llm_base_url is None:
+        raise RuntimeError(
+            "openai-compatible provider requires AGT_LLM_BASE_URL to be set. "
+            "Set it to your provider's base URL (e.g. https://api.deepseek.com/v1)."
+        )
+    api_key = settings.llm_api_key.get_secret_value() if settings.llm_api_key else ""
+    return OpenAICompatibleProvider(
+        runtime=settings.runtime,
+        api_key=api_key,
+        base_url=settings.llm_base_url,
+    )
+
+
+def _build_ollama(settings: Settings) -> LLMProvider:
+    base_url = settings.llm_base_url or _OLLAMA_BASE_URL
+    return OpenAICompatibleProvider(
+        runtime=settings.runtime,
+        api_key="",  # Ollama does not require an API key
+        base_url=base_url,
+    )
+
+
 _PROVIDER_BUILDERS: dict[str, ProviderBuilder] = {
     "anthropic": _build_anthropic,
+    "groq": _build_groq,
     "openai": _build_openai,
+    "openai-compatible": _build_openai_compatible,
+    "ollama": _build_ollama,
     "xai": _build_xai,
 }
 
@@ -139,7 +181,7 @@ def unregister_provider_builder(provider_name: str) -> None:
 
 
 def _build_single_provider(settings: Settings, provider_name: LLMProviderName) -> LLMProvider:
-    builder = _PROVIDER_BUILDERS.get(provider_name)
+    builder = _PROVIDER_BUILDERS.get(str(provider_name))
     if builder is None:
         raise _unimplemented_provider_error(provider_name)
     return builder(settings)
