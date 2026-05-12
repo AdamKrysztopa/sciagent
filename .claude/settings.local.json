@@ -25,7 +25,18 @@
       "Bash(curl -s http://localhost:57321/providers)",
       "WebFetch(domain:localhost)",
       "Bash(curl -s -X POST http://localhost:57321/run -H 'Content-Type: application/json' -d '{\"query\": \"transformer attention mechanism\", \"max_results\": 3}')",
-      "Bash(curl -s http://localhost:57321/status/df8aec0e-96a5-4547-8a96-e5e02d7da0a0)"
+      "Bash(curl -s http://localhost:57321/status/df8aec0e-96a5-4547-8a96-e5e02d7da0a0)",
+      "Bash(./build/dist/sciagent-server *)",
+      "Bash(python3 *)",
+      "Bash(docker compose *)",
+      "Bash(curl -s http://localhost:8000/health)",
+      "Bash(curl -s -X POST http://localhost:8000/run -H 'Content-Type: application/json' -d '{\"query\": \"attention is all you need 1706.03762\", \"collection_name\": \"SciAgent Test\", \"approved\": false}')",
+      "Bash(curl -s \"http://localhost:8000/status/bd21696b-bbe0-4699-ba34-f85c8afee5a9\")",
+      "Bash(curl -s \"http://localhost:8000/status/6d5c4d0f-0382-4f66-b7e8-7050b6a9a5a7\")",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(echo \"LINT: $?\")",
+      "Bash(echo \"LINT:$?\")",
+      "Bash(docker-compose up *)"
     ]
   }
 }
