@@ -11,7 +11,14 @@ from typing import Any, cast
 import httpx
 from tenacity import AsyncRetrying, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from agt.models import NormalizedPaper
+from agt.models import ItemType, NormalizedPaper
+
+_OPENALEX_TYPE_MAP: dict[str, ItemType] = {
+    "journal-article": "journal_article",
+    "preprint": "preprint",
+    "conference-paper": "conference_paper",
+    "book-chapter": "book_chapter",
+}
 
 
 class OpenAlexResponseError(RuntimeError):
@@ -114,7 +121,7 @@ class OpenAlexClient:
         raise OpenAlexResponseError("OpenAlex request failed")
 
     @staticmethod
-    def _normalize_item(item: dict[str, Any]) -> NormalizedPaper | None:
+    def _normalize_item(item: dict[str, Any]) -> NormalizedPaper | None:  # noqa: PLR0915
         title = re.sub(r"<[^>]+>", "", str(item.get("title") or "")).strip()
         if not title:
             return None
@@ -149,10 +156,35 @@ class OpenAlexClient:
                 url = landing.strip()
 
         open_access = False
+        pdf_url: str | None = None
         open_access_data = item.get("open_access")
         if isinstance(open_access_data, dict):
             open_access_mapping = cast(dict[str, Any], open_access_data)
             open_access = bool(open_access_mapping.get("is_oa") is True)
+            oa_url = open_access_mapping.get("oa_url")
+            if isinstance(oa_url, str) and oa_url.strip():
+                pdf_url = oa_url.strip()
+
+        if pdf_url is None and isinstance(primary_location, dict):
+            loc_pdf = cast(dict[str, Any], primary_location).get("pdf_url")
+            if isinstance(loc_pdf, str) and loc_pdf.strip():
+                pdf_url = loc_pdf.strip()
+
+        if pdf_url is None:
+            best_oa = item.get("best_oa_location")
+            if isinstance(best_oa, dict):
+                best_oa_pdf = cast(dict[str, Any], best_oa).get("pdf_url")
+                if isinstance(best_oa_pdf, str) and best_oa_pdf.strip():
+                    pdf_url = best_oa_pdf.strip()
+
+        if pdf_url is None:
+            for loc_obj in cast(list[object], item.get("locations") or []):
+                if not isinstance(loc_obj, dict):
+                    continue
+                loc_pdf = cast(dict[str, Any], loc_obj).get("pdf_url")
+                if isinstance(loc_pdf, str) and loc_pdf.strip():
+                    pdf_url = loc_pdf.strip()
+                    break
 
         semantic_score = 0.0
         relevance_value = item.get("relevance_score")
@@ -161,6 +193,35 @@ class OpenAlexClient:
 
         citation_count = OpenAlexClient._extract_citation_count(item)
 
+        venue: str | None = None
+        if isinstance(primary_location, dict):
+            source_data = cast(dict[str, Any], primary_location).get("source")
+            if isinstance(source_data, dict):
+                dn = cast(dict[str, Any], source_data).get("display_name")
+                if isinstance(dn, str) and dn.strip():
+                    venue = dn.strip()
+
+        item_type: ItemType | None = _OPENALEX_TYPE_MAP.get(str(item.get("type") or ""))
+
+        volume: str | None = None
+        issue: str | None = None
+        pages: str | None = None
+        biblio = item.get("biblio")
+        if isinstance(biblio, dict):
+            bib = cast(dict[str, Any], biblio)
+            vol_val = bib.get("volume")
+            if isinstance(vol_val, str) and vol_val.strip():
+                volume = vol_val.strip()
+            iss_val = bib.get("issue")
+            if isinstance(iss_val, str) and iss_val.strip():
+                issue = iss_val.strip()
+            first_page = bib.get("first_page")
+            last_page = bib.get("last_page")
+            if isinstance(first_page, str) and first_page.strip():
+                pages = first_page.strip()
+                if isinstance(last_page, str) and last_page.strip():
+                    pages = f"{first_page.strip()}-{last_page.strip()}"
+
         return NormalizedPaper(
             title=title,
             year=year,
@@ -168,10 +229,16 @@ class OpenAlexClient:
             abstract=abstract,
             authors=authors,
             url=url,
+            pdf_url=pdf_url,
             source="openalex",
             semantic_score=semantic_score,
             citation_count=citation_count,
             open_access=open_access,
+            venue=venue,
+            item_type=item_type,
+            volume=volume,
+            issue=issue,
+            pages=pages,
         )
 
     @staticmethod

@@ -1,5 +1,8 @@
 site_name: SciAgent Docs
 site_description: SciAgent documentation site built from Markdown sources in the repository.
+site_url: https://adamkrysztopa.github.io/sciagent/
+repo_url: https://github.com/AdamKrysztopa/sciagent
+repo_name: AdamKrysztopa/sciagent
 docs_dir: docs
 theme:
   name: material

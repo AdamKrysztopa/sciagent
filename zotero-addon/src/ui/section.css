@@ -189,6 +189,21 @@
   border: 0.5px solid var(--agt-accent);
 }
 
+/* ── PDF badge (clickable link) ───────────────────────────── */
+.agt-pdf-badge {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(29, 100, 200, 0.12);
+  color: #1d64c8;
+  border: 0.5px solid #1d64c8;
+  text-decoration: none;
+  cursor: pointer;
+}
+.agt-pdf-badge:hover {
+  opacity: 0.75;
+}
+
 /* ── Legacy header ────────────────────────────────────────── */
 .agt-header {
   align-items: center;
@@ -342,6 +357,84 @@
   padding: 7px 10px;
 }
 
+.agt-select {
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+  cursor: pointer;
+}
+
+/* ── Custom select (replaces native <select> to avoid Gecko double-popup) ── */
+.agt-custom-select {
+  position: relative;
+}
+
+.agt-custom-select__trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--agt-surface);
+  border: 0.5px solid var(--agt-border-strong);
+  border-radius: var(--agt-radius-sm);
+  color: var(--agt-text);
+  font: inherit;
+  padding: 7px 10px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.agt-custom-select__trigger:focus {
+  outline: 2px solid var(--agt-accent);
+  outline-offset: 1px;
+}
+
+.agt-custom-select__trigger svg {
+  flex-shrink: 0;
+}
+
+.agt-custom-select__list {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--agt-surface);
+  border: 0.5px solid var(--agt-border-strong);
+  border-radius: var(--agt-radius-sm);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.agt-custom-select__option {
+  display: block;
+  width: 100%;
+  padding: 7px 10px;
+  cursor: pointer;
+  color: var(--agt-text);
+  font: inherit;
+  background: none;
+  border: none;
+  text-align: left;
+}
+
+.agt-custom-select__option:hover {
+  background: var(--agt-surface-raised);
+}
+
+.agt-custom-select__option--active {
+  color: var(--agt-accent);
+  font-weight: 500;
+}
+
 .agt-input:focus,
 .agt-textarea:focus,
 .agt-number:focus,
@@ -413,6 +506,41 @@
   background: var(--agt-accent-dim);
   color: var(--agt-accent);
   border-color: var(--agt-accent);
+}
+
+/* ── Search Coverage Panel ────────────────────────────────── */
+.agt-section-heading--clickable {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  width: 100%;
+}
+
+.agt-expand-icon {
+  color: var(--agt-text-muted);
+  font-size: 0.7rem;
+  margin-left: auto;
+}
+
+.agt-coverage-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.agt-coverage-row {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.agt-coverage-name {
+  color: var(--agt-text);
+  font-size: 0.82rem;
 }
 
 /* ── Buttons ──────────────────────────────────────────────── */
@@ -738,6 +866,10 @@
 .agt-gap-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .agt-gap-item { font-size: 0.85rem; }
 .agt-gap-year { color: var(--agt-text-muted); }
+
+/* ── First-run download progress ─────────────────────────── */
+.agt-progress-bar { background: var(--agt-border); border-radius: 4px; height: 8px; margin: 8px 0; overflow: hidden; }
+.agt-progress-fill { background: var(--agt-accent, #d47b37); height: 100%; transition: width 0.15s ease; }
 
 /* ── Responsive ───────────────────────────────────────────── */
 @media (max-width: 640px) {

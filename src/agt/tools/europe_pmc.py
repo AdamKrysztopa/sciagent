@@ -122,6 +122,16 @@ class EuropePMCClient:
         open_access_raw = item.get("isOpenAccess")
         open_access = bool(isinstance(open_access_raw, str) and open_access_raw.upper() == "Y")
 
+        pmcid_raw = item.get("pmcid")
+        pmcid = pmcid_raw.strip() if isinstance(pmcid_raw, str) and pmcid_raw.strip() else None
+        pdf_url = (
+            f"https://europepmc.org/backend/ptpmcrender.fcgi?accid={pmcid}&blobtype=pdf"
+            if pmcid
+            else None
+        )
+        if pmcid:
+            open_access = True
+
         citation_count = 0
         cited_by = item.get("citedByCount")
         if isinstance(cited_by, int):
@@ -136,6 +146,7 @@ class EuropePMCClient:
             abstract=abstract,
             authors=authors,
             url=url,
+            pdf_url=pdf_url,
             source="europe_pmc",
             semantic_score=0.0,
             citation_count=citation_count,

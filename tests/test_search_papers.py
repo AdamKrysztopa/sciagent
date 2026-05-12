@@ -8,8 +8,9 @@ from typing import Any
 import pytest
 
 from agt.config import Settings
-from agt.models import FilterEditContract, NormalizedPaper
+from agt.models import FilterEditContract, NormalizedPaper, SourceTerminalState
 from agt.tools import search_papers as search_module
+from agt.tools.search_papers import _depth_max_pages  # pyright: ignore[reportPrivateUsage]
 from agt.tools.semantic_scholar import SemanticScholarResponseError
 
 
@@ -385,6 +386,45 @@ async def test_search_papers_uses_deterministic_query_expansions(
     assert "retrieval augmented" in captured_queries
     assert metadata.search_plan is not None
     assert "retrieval augmented" in metadata.search_plan.rewritten_queries
+
+
+# ── _depth_max_pages unit tests ────────────────────────────────────────────
+
+
+def _make_settings(max_pages: int = 2) -> Settings:
+    return Settings.model_validate({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "123",
+        "AGT_SEARCH_MAX_PAGES": max_pages,
+    })
+
+
+def test_depth_max_pages_quick_always_returns_one() -> None:
+    settings = _make_settings(max_pages=3)
+    assert _depth_max_pages("quick", settings) == 1
+
+
+def test_depth_max_pages_balanced_returns_settings_value() -> None:
+    settings = _make_settings(max_pages=2)
+    assert _depth_max_pages("balanced", settings) == 2
+
+
+def test_depth_max_pages_none_returns_settings_value() -> None:
+    settings = _make_settings(max_pages=2)
+    assert _depth_max_pages(None, settings) == 2
+
+
+def test_depth_max_pages_deep_returns_capped_triple() -> None:
+    # settings.search_max_pages=2 → 2*3=6, within cap of 10
+    settings = _make_settings(max_pages=2)
+    assert _depth_max_pages("deep", settings) == 6
+
+
+def test_depth_max_pages_deep_caps_at_ten() -> None:
+    # settings.search_max_pages=5 → 5*3=15, capped at 10
+    settings = _make_settings(max_pages=5)
+    assert _depth_max_pages("deep", settings) == 10
 
 
 @pytest.mark.anyio
@@ -1617,3 +1657,61 @@ async def test_search_papers_populates_explanation(monkeypatch: pytest.MonkeyPat
     assert ranked[0].explanation != ""
     assert "semantic scholar" in ranked[0].explanation
     assert "2017" in ranked[0].explanation
+
+
+@pytest.mark.anyio
+async def test_source_states_populated_for_queried_and_skipped_no_key(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = Settings.model_validate({
+        "AGT_XAI_API_KEY": "xai-secret",
+        "AGT_ZOTERO_API_KEY": "zot-secret",
+        "AGT_ZOTERO_LIBRARY_ID": "123",
+        "AGT_SUMMARIZATION_USE_LLM": False,
+        # core/dimensions/google_scholar keys intentionally absent
+    })
+    papers = [
+        NormalizedPaper(title="Queried paper", semantic_score=0.9, year=2024),
+    ]
+
+    monkeypatch.setattr(search_module, "get_guardrails", _fake_get_guardrails)
+    monkeypatch.setattr(search_module, "SemanticScholarClient", _fake_client_factory(papers))
+    monkeypatch.setattr(search_module, "OpenAlexClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "CrossrefClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "PubMedClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+
+    _, metadata = await search_module.search_papers(
+        query="source state test",
+        settings=settings,
+        thread_id="thread-states",
+    )
+
+    states = metadata.source_states
+    # semantic_scholar returned papers → queried
+    assert states.get("semantic_scholar") == "queried"
+    # other primary sources returned nothing → zero_results
+    for name in ("openalex", "crossref", "pubmed", "europe_pmc", "arxiv", "base"):
+        assert states.get(name) == "zero_results", (
+            f"{name} expected zero_results, got {states.get(name)}"
+        )
+    # key-absent fallback sources → skipped_no_key
+    for name in ("core", "dimensions", "google_scholar"):
+        assert states.get(name) == "skipped_no_key", (
+            f"{name} expected skipped_no_key, got {states.get(name)}"
+        )
+    # all expected sources present
+    assert len(states) == 10
+    # all values are valid SourceTerminalState literals
+    valid: set[SourceTerminalState] = {
+        "queried",
+        "skipped_no_key",
+        "skipped_disabled",
+        "rate_limited",
+        "zero_results",
+        "failed",
+    }
+    for name, state in states.items():
+        assert state in valid, f"{name}: unexpected state {state!r}"

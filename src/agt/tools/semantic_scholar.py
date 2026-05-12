@@ -10,7 +10,15 @@ from typing import Any, cast
 import httpx
 from tenacity import AsyncRetrying, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from agt.models import NormalizedPaper
+from agt.models import ItemType, NormalizedPaper
+
+_SS_PUBLICATION_TYPE_MAP: dict[str, ItemType] = {
+    "JournalArticle": "journal_article",
+    "Review": "journal_article",
+    "Conference": "conference_paper",
+    "Preprint": "preprint",
+    "Book": "book_chapter",
+}
 
 # Maximum word count sent to the Semantic Scholar query param.
 # Long constraint-heavy queries (>10 words) produce 400 errors from the API.
@@ -44,8 +52,8 @@ class SemanticScholarClient:
     """Small bounded client for Semantic Scholar Graph API."""
 
     _fields = (
-        "title,year,abstract,url,isOpenAccess,authors,externalIds,"
-        "citationCount,influentialCitationCount"
+        "title,year,abstract,url,isOpenAccess,openAccessPdf,authors,externalIds,"
+        "citationCount,influentialCitationCount,venue,publicationTypes"
     )
 
     # Semantic Scholar free-tier: 1 request/second.  Keeping some margin.
@@ -187,7 +195,7 @@ class SemanticScholarClient:
             raise SemanticScholarResponseError("Semantic Scholar request failed")
 
     @staticmethod
-    def _normalize_item(item: dict[str, Any]) -> NormalizedPaper | None:
+    def _normalize_item(item: dict[str, Any]) -> NormalizedPaper | None:  # noqa: PLR0912, PLR0915
         title = str(item.get("title") or "").strip()
         if not title:
             return None
@@ -242,6 +250,30 @@ class SemanticScholarClient:
 
         open_access = bool(item.get("isOpenAccess") is True)
 
+        pdf_url: str | None = None
+        oa_pdf = item.get("openAccessPdf")
+        if isinstance(oa_pdf, dict):
+            oa_url = cast(dict[str, Any], oa_pdf).get("url")
+            if isinstance(oa_url, str) and oa_url.strip():
+                pdf_url = oa_url.strip()
+        if pdf_url is None and arxiv_id:
+            pdf_url = f"https://arxiv.org/pdf/{arxiv_id}"
+
+        venue: str | None = None
+        venue_value = item.get("venue")
+        if isinstance(venue_value, str) and venue_value.strip():
+            venue = venue_value.strip()
+
+        item_type: ItemType | None = None
+        pub_types = item.get("publicationTypes")
+        if isinstance(pub_types, list):
+            for pt_obj in cast(list[object], pub_types):
+                if isinstance(pt_obj, str):
+                    mapped = _SS_PUBLICATION_TYPE_MAP.get(pt_obj)
+                    if mapped is not None:
+                        item_type = mapped
+                        break
+
         return NormalizedPaper(
             title=title,
             year=year,
@@ -250,9 +282,12 @@ class SemanticScholarClient:
             abstract=abstract,
             authors=authors,
             url=url,
+            pdf_url=pdf_url,
             source="semantic_scholar",
             semantic_score=semantic_score,
             citation_count=citation_count,
             influential_citation_count=influential_citation_count,
             open_access=open_access,
+            venue=venue,
+            item_type=item_type,
         )

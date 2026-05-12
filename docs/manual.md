@@ -10,11 +10,12 @@
 2. [Installation](#installation)
 3. [Configuration](#configuration)
 4. [Running Locally: Complete Guide](#running-locally-complete-guide)
-5. [Other Interfaces](#other-interfaces)
-6. [Retrieval Sources](#retrieval-sources)
-7. [Advanced Configuration](#advanced-configuration)
-8. [Troubleshooting](#troubleshooting)
-9. [Development](#development)
+5. [Standalone Binary](#standalone-binary)
+6. [Other Interfaces](#other-interfaces)
+7. [Retrieval Sources](#retrieval-sources)
+8. [Advanced Configuration](#advanced-configuration)
+9. [Troubleshooting](#troubleshooting)
+10. [Development](#development)
 
 ---
 
@@ -50,9 +51,22 @@ uv run pre-commit install
 
 The repo config installs both `pre-commit` and `pre-push` hooks with that single command.
 
-### Optional: validate and build the Zotero add-on package
+### Option A: Install the Add-on from GitHub Releases (end-user path)
 
-The repository now includes a top-level Zotero 9 add-on scaffold in `zotero-addon/`.
+If a pre-built release exists, skip the source build entirely:
+
+1. Go to the [GitHub Releases page](https://github.com/AdamKrysztopa/sciagent/releases)
+2. Download `sciagent-zotero-addon.xpi` from the latest release
+3. In Zotero 9: **Tools → Add-ons → gear icon → Install Add-on From File...**
+4. Select the downloaded XPI
+
+The add-on will self-update automatically: Zotero polls
+`https://raw.githubusercontent.com/AdamKrysztopa/sciagent/main/zotero-addon/update.rdf`
+on each startup and prompts when a new version is available.
+
+### Option B: Build and validate the Zotero add-on from source (developer path)
+
+The repository includes a Zotero 9 add-on in `zotero-addon/`.
 
 ```bash
 cd zotero-addon
@@ -487,6 +501,143 @@ Verified 2026-05-12 on Zotero 9.x with both `uvicorn` and Docker container backe
 
 ---
 
+## Standalone Binary
+
+The repo ships a PyInstaller build that packages the entire Python backend into a single
+executable. No Python install is required at runtime — the binary bundles all dependencies.
+
+The Zotero add-on spawns this binary automatically. End users never run it directly.
+Developers and CI use it to verify the frozen artifact before publishing a release.
+
+### What It Is
+
+`sciagent-server` is the same `agt.api.app` FastAPI application, frozen by PyInstaller.
+It accepts identical CLI flags and exposes the same REST API as the dev server started
+via `uv run uvicorn`.
+
+### Build Requirements
+
+| Requirement | Notes                                      |
+| ----------- | ------------------------------------------ |
+| `uv`        | Must be installed (see Prerequisites)      |
+| UPX         | Optional; reduces binary size by ~30–40%   |
+| ~5 min      | First build (subsequent builds are faster) |
+
+Install UPX before building if you want the smaller artifact:
+
+```bash
+# macOS
+brew install upx
+
+# Ubuntu / Debian
+sudo apt-get install upx
+
+# Windows
+choco install upx -y
+```
+
+### Build Command
+
+From the repository root:
+
+```bash
+uv run pyinstaller build/sciagent-server.spec \
+  --distpath build/dist \
+  --workpath build/work \
+  --clean
+```
+
+**Verified output (macOS arm64, 2026-05-12):**
+
+```text
+37 MB  build/dist/sciagent-server  (Mach-O 64-bit arm64, UPX-compressed)
+```
+
+The binary is written to `build/dist/sciagent-server` (or `.exe` on Windows). The
+`build/work/` directory contains intermediate artifacts and can be ignored.
+
+### Verify the Binary Works
+
+```bash
+# Version check (no credentials needed)
+./build/dist/sciagent-server --version
+# → sciagent-server 0.1.0
+
+# Start on a test port — no credentials means ok:false body but HTTP 200
+./build/dist/sciagent-server --port 58000 &
+sleep 2
+curl http://127.0.0.1:58000/health
+# → {"ok": false, "provider": "openai", "can_read": false, ...}
+kill %1
+
+# Start with credentials loaded from .env
+env $(grep -v '^#' .env | xargs) ./build/dist/sciagent-server --port 57321 &
+sleep 2
+curl http://127.0.0.1:57321/health
+# → {"ok": true, "can_read": true, "can_write": true, "key_valid": true, ...}
+
+# Full workflow — requires Zotero + LLM credentials in .env
+curl -s -X POST http://127.0.0.1:57321/run \
+  -H "Content-Type: application/json" \
+  -d '{"query": "retrieval augmented generation 2024+", "collection_name": "RAG"}' | python3 -m json.tool
+# → {"run_id": "...", "status": "awaiting_approval", ...}
+
+kill %1
+```
+
+Health returns HTTP 200 regardless of whether credentials are present. The `ok` field
+in the body indicates credential validity, not server liveness — CI smoke tests that
+use `curl -f` (check HTTP status only) will pass even without credentials.
+
+### macOS Gatekeeper
+
+The binary is unsigned. On first launch, macOS blocks it:
+
+> "sciagent-server" can't be opened because Apple cannot check it for malicious
+> software.
+
+**Workaround (Finder):** Right-click the binary → Open → confirm once. From then on
+macOS runs it without prompting.
+
+**Workaround (Terminal):** Clear the quarantine attribute before running:
+
+```bash
+xattr -d com.apple.quarantine build/dist/sciagent-server
+```
+
+This is a development/beta limitation. Production releases will be codesigned with an
+Apple Developer ID (tracked as OPN-03 / ZAP-11).
+
+### How the Zotero Add-on Uses It
+
+When the add-on is in local-backend mode, `serverManager.ts` handles the full lifecycle:
+
+1. **Zotero starts** — checks `~/.sciagent/bin/sciagent-server-<platform>` exists
+2. **First run** — shows a download dialog; fetches the platform binary from the GitHub
+   Release and marks it executable
+3. **Spawn** — calls `Subprocess.call()` with `--port 57321 --data-dir ~/.sciagent`
+   and all provider env vars from Zotero preferences
+4. **Health poll** — polls `/health` every 300 ms for up to 15 s; shows a visible error
+   if the server does not start in time
+5. **Zotero shuts down** — calls `_proc.kill()`
+
+Provider credentials pass to the binary as environment variables:
+
+| Env var              | Source                            |
+| -------------------- | --------------------------------- |
+| `OPENAI_API_KEY`     | Zotero pref `openai_api_key`      |
+| `ANTHROPIC_API_KEY`  | Zotero pref `anthropic_api_key`   |
+| `XAI_API_KEY`        | Zotero pref `xai_api_key`         |
+| `GROQ_API_KEY`       | Zotero pref `groq_api_key`        |
+| `AGT_LLM_PROVIDER`   | Zotero pref `llmProvider`         |
+| `AGT_LLM_BASE_URL`   | Zotero pref `llmBaseUrl`          |
+| `AGT_LLM_MODEL`      | Zotero pref `llmModel`            |
+
+The binary reads these the same way it reads `.env` — pydantic-settings checks the
+process environment before falling back to `.env`.
+
+---
+
 ## Other Interfaces
 
 ### Option 1: Command-Line Interface
@@ -836,6 +987,43 @@ The real add-on scaffold lives in `zotero-addon/` and packages the primary Zoter
 - native main-window workspace + preference pane registration boundaries
 - optional item-pane registration as a secondary launcher
 - React MVP for query, parsed filter review/edit, selection, approval, reject, and result rendering
+
+### Publishing a Release
+
+The CI workflow `build-binaries.yml` builds all artifacts and publishes a GitHub Release when
+a tag matching `v*` is pushed. Steps:
+
+1. **Bump versions** — update `manifest.json` and `package.json` in `zotero-addon/` to the new
+   version (e.g. `0.3.0`).
+
+2. **Update `zotero-addon/update.rdf`** — set `em:version` to the new version and
+   `em:updateLink` to the expected release download URL:
+
+   ```
+   https://github.com/AdamKrysztopa/sciagent/releases/download/v0.3.0/sciagent-zotero-addon.xpi
+   ```
+
+3. **Bump the server version** — update the `--version` string in `src/agt/server.py` to match.
+
+4. **Commit and tag**:
+
+   ```bash
+   git add zotero-addon/manifest.json zotero-addon/package.json \
+           zotero-addon/update.rdf src/agt/server.py
+   git commit -m "chore: release v0.3.0"
+   git tag v0.3.0
+   git push origin main --tags
+   ```
+
+5. **CI takes over** — `build-binaries.yml` runs on the tag push and:
+   - Builds Python binaries for all four platforms (macOS arm64/x86\_64, Linux x86\_64, Windows x64)
+   - Builds the XPI (with full lint + typecheck + test gates)
+   - Computes the XPI SHA256 and rewrites `zotero-addon/update.rdf` with the hash
+   - Commits the updated `update.rdf` back to `main` (so Zotero auto-update kicks in)
+   - Creates a GitHub Release with the XPI, `update.rdf`, and all four platform binaries
+
+6. **Verify** — check the Release page; confirm Zotero detects the update from
+   `https://raw.githubusercontent.com/AdamKrysztopa/sciagent/main/zotero-addon/update.rdf`.
 
 ### Docker
 

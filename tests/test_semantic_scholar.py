@@ -132,3 +132,78 @@ async def test_semantic_scholar_search_paginates_with_offset(
     papers = await client.search("test", limit=1, max_pages=2)
     assert [paper.title for paper in papers] == ["P1", "P2"]
     assert offsets == ["0", "1"]
+
+
+@pytest.mark.anyio
+async def test_semantic_scholar_extracts_venue_and_item_type(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    client = SemanticScholarClient(api_key=None, timeout_seconds=5, retries=1)
+
+    async def _fake_request_json(
+        *,
+        path: str,
+        params: dict[str, str],
+        headers: dict[str, str],
+    ) -> dict[str, Any]:
+        _ = path
+        _ = params
+        _ = headers
+        return {
+            "data": [
+                {
+                    "title": "A Study",
+                    "venue": "Nature",
+                    "publicationTypes": ["JournalArticle"],
+                }
+            ]
+        }
+
+    monkeypatch.setattr(client, "_request_json", _fake_request_json)
+    papers = await client.search("x", limit=1)
+    assert papers[0].venue == "Nature"
+    assert papers[0].item_type == "journal_article"
+
+
+@pytest.mark.anyio
+async def test_semantic_scholar_conference_item_type(monkeypatch: pytest.MonkeyPatch) -> None:
+    client = SemanticScholarClient(api_key=None, timeout_seconds=5, retries=1)
+
+    async def _fake_request_json(
+        *,
+        path: str,
+        params: dict[str, str],
+        headers: dict[str, str],
+    ) -> dict[str, Any]:
+        _ = path
+        _ = params
+        _ = headers
+        return {"data": [{"title": "Conf Paper", "publicationTypes": ["Conference"]}]}
+
+    monkeypatch.setattr(client, "_request_json", _fake_request_json)
+    papers = await client.search("x", limit=1)
+    assert papers[0].item_type == "conference_paper"
+
+
+@pytest.mark.anyio
+async def test_semantic_scholar_venue_fields_included_in_request(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    client = SemanticScholarClient(api_key=None, timeout_seconds=5, retries=1)
+    captured_params: dict[str, str] = {}
+
+    async def _fake_request_json(
+        *,
+        path: str,
+        params: dict[str, str],
+        headers: dict[str, str],
+    ) -> dict[str, Any]:
+        _ = path
+        _ = headers
+        captured_params.update(params)
+        return {"data": []}
+
+    monkeypatch.setattr(client, "_request_json", _fake_request_json)
+    await client.search("x", limit=1)
+    assert "venue" in captured_params["fields"]
+    assert "publicationTypes" in captured_params["fields"]

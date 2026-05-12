@@ -24,6 +24,11 @@ function makePaper(overrides?: Partial<NormalizedPaper>): NormalizedPaper {
     title: "Test Paper",
     url: null,
     year: 2024,
+    venue: null,
+    item_type: null,
+    volume: null,
+    issue: null,
+    pages: null,
     ...overrides,
   };
 }

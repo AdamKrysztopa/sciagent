@@ -8,6 +8,10 @@ from pydantic import BaseModel, Field, model_validator
 
 LibraryStatus = Literal["new", "in_library", "possible_duplicate"]
 WatchStatus = Literal["new", "seen"]
+ItemType = Literal["journal_article", "preprint", "conference_paper", "book_chapter", "other"]
+SourceTerminalState = Literal[
+    "queried", "skipped_no_key", "skipped_disabled", "rate_limited", "zero_results", "failed"
+]
 
 
 class HardFilters(BaseModel):
@@ -97,6 +101,11 @@ class NormalizedPaper(BaseModel):
     explanation: str | None = None
     library_status: LibraryStatus | None = None
     watch_status: WatchStatus | None = None
+    venue: str | None = None
+    item_type: ItemType | None = None
+    volume: str | None = None
+    issue: str | None = None
+    pages: str | None = None
 
 
 class SearchMetadata(BaseModel):
@@ -107,6 +116,7 @@ class SearchMetadata(BaseModel):
     regex_query: str
     sources_used: list[str] = Field(default_factory=list)
     sources_failed: list[str] = Field(default_factory=list)
+    source_states: dict[str, SourceTerminalState] = Field(default_factory=dict)
     mode: Literal["llm_rewrite", "regex"] = "regex"
     retry_count: int = 0
     total_fetched: int = 0

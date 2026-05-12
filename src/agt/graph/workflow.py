@@ -88,12 +88,13 @@ def _build_write_failure_result(
     )
 
 
-async def run_search_phase(
+async def run_search_phase(  # noqa: PLR0913
     query: str,
     collection_name: str,
     thread_id: str | None = None,
     settings: Settings | None = None,
     filter_edit: FilterEditContract | None = None,
+    search_depth: Literal["quick", "balanced", "deep"] | None = None,
 ) -> AgentState:
     """Run startup, retrieval, and summarization up to the approval checkpoint."""
 
@@ -128,6 +129,7 @@ async def run_search_phase(
                     query=query,
                     settings=active_settings,
                     thread_id=trace.thread_id,
+                    search_depth=search_depth,
                 )
             else:
                 papers, search_metadata = await search_papers(
@@ -136,6 +138,7 @@ async def run_search_phase(
                     settings=active_settings,
                     thread_id=trace.thread_id,
                     filter_edit=filter_edit,
+                    search_depth=search_depth,
                 )
 
         with trace_step(trace, "summarize", paper_count=len(papers)):
@@ -364,6 +367,10 @@ async def resume_workflow(  # noqa: PLR0913
         from agt.tools.pdf_attach import attach_pdfs_to_items  # noqa: PLC0415
 
         active_settings = settings or get_settings()
+        # enable_pdf_imports from the client request overrides the server default so
+        # the Zotero "Enable PDF Imports" checkbox always downloads the binary.
+        if not active_settings.enable_pdf_attachment:
+            active_settings = active_settings.model_copy(update={"enable_pdf_attachment": True})
         papers = _deserialize_papers(final_state["papers"])
         effective_indices = final_state["selected_indices"]
         selected_papers = [papers[i] for i in effective_indices if 0 <= i < len(papers)]

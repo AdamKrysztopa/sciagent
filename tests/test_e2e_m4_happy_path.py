@@ -76,10 +76,12 @@ async def test_m4_end_to_end_happy_path_with_mocked_externals(
         *,
         settings: object | None = None,
         thread_id: str | None = None,
+        **kwargs: object,
     ) -> tuple[list[NormalizedPaper], SearchMetadata]:
         _ = limit
         _ = settings
         _ = thread_id
+        _ = kwargs
         return (
             [
                 NormalizedPaper(title=f"{query}-A", doi="10.1000/a", authors=["Ada Lovelace"]),

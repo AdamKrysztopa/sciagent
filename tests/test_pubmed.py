@@ -127,3 +127,50 @@ async def test_pubmed_search_raises_on_malformed_esearch_payload(
 
     with pytest.raises(PubMedResponseError):
         await client.search("x", limit=3)
+
+
+@pytest.mark.anyio
+async def test_pubmed_extracts_venue_volume_issue_pages(monkeypatch: pytest.MonkeyPatch) -> None:
+    client = PubMedClient(timeout_seconds=5, retries=1)
+
+    async def _fake_esearch(*, query: str, limit: int) -> list[str]:
+        _ = query
+        _ = limit
+        return ["99999"]
+
+    async def _fake_efetch(*, ids: list[str]) -> ET.Element:
+        _ = ids
+        return ET.fromstring(
+            """
+            <PubmedArticleSet>
+              <PubmedArticle>
+                <MedlineCitation>
+                  <PMID>99999</PMID>
+                  <Article>
+                    <ArticleTitle>Test Article</ArticleTitle>
+                    <Journal>
+                      <Title>Journal of Testing</Title>
+                      <JournalIssue>
+                        <Volume>10</Volume>
+                        <Issue>4</Issue>
+                        <PubDate><Year>2023</Year></PubDate>
+                      </JournalIssue>
+                    </Journal>
+                    <Pagination><MedlinePgn>200-210</MedlinePgn></Pagination>
+                  </Article>
+                </MedlineCitation>
+              </PubmedArticle>
+            </PubmedArticleSet>
+            """
+        )
+
+    monkeypatch.setattr(client, "_esearch", _fake_esearch)
+    monkeypatch.setattr(client, "_efetch", _fake_efetch)
+
+    papers = await client.search("test", limit=3)
+    assert len(papers) == 1
+    assert papers[0].venue == "Journal of Testing"
+    assert papers[0].item_type == "journal_article"
+    assert papers[0].volume == "10"
+    assert papers[0].issue == "4"
+    assert papers[0].pages == "200-210"

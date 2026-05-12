@@ -101,7 +101,20 @@ export interface NormalizedPaper {
   explanation: string | null;
   library_status?: LibraryStatus | null;
   watch_status?: WatchStatus | null;
+  venue: string | null;
+  item_type: "journal_article" | "preprint" | "conference_paper" | "book_chapter" | "other" | null;
+  volume: string | null;
+  issue: string | null;
+  pages: string | null;
 }
+
+export type SourceTerminalState =
+  | "queried"
+  | "skipped_no_key"
+  | "skipped_disabled"
+  | "rate_limited"
+  | "zero_results"
+  | "failed";
 
 export interface SearchMetadata {
   original_query: string;
@@ -109,6 +122,7 @@ export interface SearchMetadata {
   regex_query: string;
   sources_used: string[];
   sources_failed: string[];
+  source_states: Record<string, SourceTerminalState>;
   mode: "llm_rewrite" | "regex";
   retry_count: number;
   total_fetched: number;
@@ -164,6 +178,7 @@ export interface RunRequest {
   collection_name: string;
   thread_id?: string;
   filter_edit?: FilterEditContract;
+  search_depth?: "quick" | "balanced" | "deep";
 }
 
 export interface ResumeRequest {

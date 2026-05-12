@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass
-from typing import Any, Literal, cast
+from typing import Any, cast
 
 import httpx
 
@@ -57,7 +57,7 @@ def _title_author_fingerprint(title: str, authors: list[str]) -> str:
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
-# Public re-exports for intra-package use (collection_inspector, library_doctor, gap_finder).
+# Public re-exports for intra-package use and testing.
 normalize_doi = _normalize_doi
 title_author_fingerprint = _title_author_fingerprint
 library_prefix = _library_prefix
@@ -75,7 +75,18 @@ def _split_creator_name(full_name: str) -> tuple[str, str]:
     return " ".join(parts[:-1]), parts[-1]
 
 
-def _map_item_type(paper: NormalizedPaper) -> Literal["journalArticle", "preprint"]:
+_ITEM_TYPE_TO_ZOTERO: dict[str, str] = {
+    "journal_article": "journalArticle",
+    "preprint": "preprint",
+    "conference_paper": "conferencePaper",
+    "book_chapter": "bookSection",
+    "other": "journalArticle",
+}
+
+
+def _map_item_type(paper: NormalizedPaper) -> str:
+    if paper.item_type is not None:
+        return _ITEM_TYPE_TO_ZOTERO.get(paper.item_type, "journalArticle")
     if paper.source in {"arxiv", "europe_pmc_preprint"}:
         return "preprint"
     return "journalArticle"
@@ -103,10 +114,32 @@ def _map_paper_to_item(paper: NormalizedPaper, collection_key: str) -> dict[str,
         "collections": [collection_key],
         "extra": f"SciAgent source: {paper.source}",
     }
+
+    if paper.venue:
+        if item_type == "preprint":
+            item["repository"] = paper.venue
+        elif item_type == "conferencePaper":
+            item["conferenceName"] = paper.venue
+        else:
+            item["publicationTitle"] = paper.venue
+
+    if paper.volume:
+        item["volume"] = paper.volume
+    if paper.issue:
+        item["issue"] = paper.issue
+    if paper.pages:
+        item["pages"] = paper.pages
+
     if item_type == "preprint":
-        item["archive"] = paper.source
+        item.setdefault("repository", paper.source)
         item["archiveID"] = paper.arxiv_id or ""
     return item
+
+
+# Public aliases for testing — avoids private-usage warnings.
+split_creator_name = _split_creator_name
+map_item_type = _map_item_type
+map_paper_to_item = _map_paper_to_item
 
 
 def _validate_item_payload(item: dict[str, Any], paper: NormalizedPaper) -> str | None:

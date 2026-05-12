@@ -49,6 +49,7 @@ class RunRequest(BaseModel):
     collection_name: str | None = Field(default=None, min_length=1)
     thread_id: str | None = None
     filter_edit: FilterEditContract | None = None
+    search_depth: Literal["quick", "balanced", "deep"] | None = None
 
     @model_validator(mode="after")
     def validate_filter_edit_query(self) -> RunRequest:
@@ -348,6 +349,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
                     collection_name=collection_name,
                     thread_id=payload.thread_id,
                     settings=settings,
+                    search_depth=payload.search_depth,
                 )
             else:
                 state = await run_search_phase(
@@ -356,6 +358,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
                     thread_id=payload.thread_id,
                     settings=settings,
                     filter_edit=payload.filter_edit,
+                    search_depth=payload.search_depth,
                 )
         except RuntimeError as exc:
             run_id = payload.thread_id or "pending-run"

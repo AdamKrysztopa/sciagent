@@ -13,6 +13,7 @@ import type {
   ZoteroCollections,
   ZoteroGlobal,
   ZoteroItem,
+  ZoteroItemCreateData,
   ZoteroItems,
   ZoteroLibraries,
 } from "./zoteroTypes";
@@ -91,6 +92,29 @@ async function resolveOrCreateCollection(
 
 // --- ZAP-7: Idempotent item creation ---
 
+const ITEM_TYPE_MAP: Record<string, string> = {
+  journal_article: "journalArticle",
+  preprint: "preprint",
+  conference_paper: "conferencePaper",
+  book_chapter: "bookSection",
+  other: "journalArticle",
+};
+
+function mapItemType(paper: NormalizedPaper): string {
+  return paper.item_type !== null ? (ITEM_TYPE_MAP[paper.item_type] ?? "journalArticle") : "journalArticle";
+}
+
+function splitCreatorName(name: string): { firstName: string; lastName: string } {
+  const trimmed = name.trim();
+  const lastSpace = trimmed.lastIndexOf(" ");
+  if (lastSpace === -1) return { firstName: "", lastName: trimmed };
+  return { firstName: trimmed.slice(0, lastSpace), lastName: trimmed.slice(lastSpace + 1) };
+}
+
+function buildCreators(authors: string[]): Array<{ creatorType: string; firstName: string; lastName: string }> {
+  return authors.map((author) => ({ creatorType: "author", ...splitCreatorName(author) }));
+}
+
 /**
  * Creates items in Zotero from normalized papers.
  * Skips duplicates identified by DOI or title+first-author hash.
@@ -137,17 +161,31 @@ async function createItemsNative(
     }
 
     try {
-      const item = await services.items.add(
-        {
-          itemType: "journalArticle",
-          title: paper.title,
-          DOI: paper.doi ?? "",
-          abstractNote: paper.abstract ?? "",
-          year: paper.year ?? "",
-          url: paper.url ?? "",
-        },
-        libraryID,
-      );
+      const itemType = mapItemType(paper);
+      const payload: ZoteroItemCreateData = {
+        itemType,
+        title: paper.title,
+        DOI: paper.doi ?? "",
+        abstractNote: paper.abstract ?? "",
+        year: paper.year ?? "",
+        url: paper.url ?? "",
+        creators: buildCreators(paper.authors),
+      };
+
+      if (paper.venue) {
+        if (itemType === "preprint") {
+          payload.repository = paper.venue;
+        } else if (itemType === "conferencePaper") {
+          payload.conferenceName = paper.venue;
+        } else {
+          payload.publicationTitle = paper.venue;
+        }
+      }
+      if (paper.volume) payload.volume = paper.volume;
+      if (paper.issue) payload.issue = paper.issue;
+      if (paper.pages) payload.pages = paper.pages;
+
+      const item = await services.items.add(payload, libraryID);
       item.addToCollection(collectionId);
       await item.save();
       outcomes.push({ paper, status: "created", itemKey: item.key, reason: null, pdfStatus: null });

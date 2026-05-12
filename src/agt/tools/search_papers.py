@@ -23,6 +23,7 @@ from agt.models import (
     SearchPlan,
     SoftPreferences,
     SourceCapability,
+    SourceTerminalState,
 )
 from agt.providers.protocol import LLMProvider
 from agt.tools.arxiv_api import ArxivClient
@@ -175,6 +176,17 @@ _LONG_TERM_QUERY_MARKERS: frozenset[str] = frozenset({"long-term", "long"})
 ProgressReporter = Callable[[str], None]
 
 
+def _depth_max_pages(
+    depth: Literal["quick", "balanced", "deep"] | None,
+    settings: Settings,
+) -> int:
+    if depth == "quick":
+        return 1
+    if depth == "deep":
+        return min(settings.search_max_pages * 3, 10)
+    return settings.search_max_pages
+
+
 @dataclass(slots=True)
 class _SourceFetchResult:
     name: str
@@ -190,6 +202,11 @@ class _RetrievalProvider:
     tier: Literal["primary", "fallback"]
     enabled: bool
     fetcher: Callable[[], Awaitable[list[NormalizedPaper]]]
+    skip_reason: Literal["no_key", "disabled"] | None = None
+
+
+async def _disabled_fetcher() -> list[NormalizedPaper]:
+    return []
 
 
 def _emit_progress(progress: ProgressReporter | None, message: str) -> None:
@@ -247,6 +264,7 @@ def _build_retrieval_registry(
     rewritten: RewrittenQuery | None,
     *,
     openalex_max_pages: int | None = None,
+    max_pages: int | None = None,
 ) -> list[_RetrievalProvider]:
     semantic_api_key = None
     if settings.semantic_scholar_api_key is not None:
@@ -290,6 +308,7 @@ def _build_retrieval_registry(
         retries=settings.semantic_scholar_retries,
     )
 
+    effective_max_pages = max_pages if max_pages is not None else settings.search_max_pages
     registry: list[_RetrievalProvider] = [
         _RetrievalProvider(
             name="semantic_scholar",
@@ -300,7 +319,7 @@ def _build_retrieval_registry(
                 limit=limit,
                 year_min=constraints.year.min_year,
                 year_max=constraints.year.max_year,
-                max_pages=settings.search_max_pages,
+                max_pages=effective_max_pages,
             ),
         ),
         _RetrievalProvider(
@@ -312,9 +331,7 @@ def _build_retrieval_registry(
                 limit=limit,
                 year_min=constraints.year.min_year,
                 max_pages=(
-                    openalex_max_pages
-                    if openalex_max_pages is not None
-                    else settings.search_max_pages
+                    openalex_max_pages if openalex_max_pages is not None else effective_max_pages
                 ),
             ),
         ),
@@ -325,7 +342,7 @@ def _build_retrieval_registry(
             fetcher=lambda: crossref_client.search(
                 query=query,
                 limit=limit,
-                max_pages=settings.search_max_pages,
+                max_pages=effective_max_pages,
             ),
         ),
         _RetrievalProvider(
@@ -372,6 +389,16 @@ def _build_retrieval_registry(
                 fetcher=lambda: core_client.search(query=query, limit=limit),
             )
         )
+    else:
+        registry.append(
+            _RetrievalProvider(
+                name="core",
+                tier="fallback",
+                enabled=False,
+                fetcher=_disabled_fetcher,
+                skip_reason="no_key",
+            )
+        )
 
     if settings.dimensions_key is not None:
         dimensions_client = DimensionsClient(
@@ -385,6 +412,16 @@ def _build_retrieval_registry(
                 tier="fallback",
                 enabled=True,
                 fetcher=lambda: dimensions_client.search(query=query, limit=limit),
+            )
+        )
+    else:
+        registry.append(
+            _RetrievalProvider(
+                name="dimensions",
+                tier="fallback",
+                enabled=False,
+                fetcher=_disabled_fetcher,
+                skip_reason="no_key",
             )
         )
 
@@ -402,6 +439,16 @@ def _build_retrieval_registry(
                 fetcher=lambda: google_client.search(query=query, limit=limit),
             )
         )
+    else:
+        registry.append(
+            _RetrievalProvider(
+                name="google_scholar",
+                tier="fallback",
+                enabled=False,
+                fetcher=_disabled_fetcher,
+                skip_reason="no_key",
+            )
+        )
 
     return registry
 
@@ -416,13 +463,17 @@ async def _fetch_from_sources(
     *,
     tier: Literal["primary", "fallback", "all"] = "all",
     openalex_max_pages: int | None = None,
-) -> tuple[list[NormalizedPaper], list[str], list[str], dict[str, float]]:
+    max_pages: int | None = None,
+) -> tuple[
+    list[NormalizedPaper], list[str], list[str], dict[str, float], dict[str, SourceTerminalState]
+]:
     """Fetch papers from configured academic sources in parallel."""
 
     results: list[NormalizedPaper] = []
     failures: list[str] = []
     sources_used: list[str] = []
     timings: dict[str, float] = {}
+    source_states: dict[str, SourceTerminalState] = {}
 
     registry = _build_retrieval_registry(
         query,
@@ -431,13 +482,19 @@ async def _fetch_from_sources(
         settings,
         rewritten,
         openalex_max_pages=openalex_max_pages,
+        max_pages=max_pages,
     )
 
     source_tasks: list[asyncio.Task[_SourceFetchResult]] = []
     for provider in registry:
         if not provider.enabled:
+            skip_state: SourceTerminalState = (
+                "skipped_no_key" if provider.skip_reason == "no_key" else "skipped_disabled"
+            )
+            source_states[provider.name] = skip_state
             continue
         if tier not in ("all", provider.tier):
+            source_states.setdefault(provider.name, "skipped_disabled")
             continue
         source_name = f"{provider.name}:{provider.tier}"
         source_tasks.append(
@@ -448,14 +505,23 @@ async def _fetch_from_sources(
 
     fetched = await asyncio.gather(*source_tasks)
     for item in fetched:
+        base_name = item.name.split(":")[0]
         if item.used:
             sources_used.append(item.name)
         timings[item.name] = timings.get(item.name, 0.0) + item.timing_seconds
         if item.failure is not None:
             failures.append(item.failure)
+            terminal: SourceTerminalState = (
+                "rate_limited" if "rate limit" in item.failure.lower() else "failed"
+            )
+        elif not item.papers:
+            terminal = "zero_results"
+        else:
+            terminal = "queried"
+        source_states[base_name] = terminal
         results.extend(item.papers)
 
-    return results, failures, sources_used, timings
+    return results, failures, sources_used, timings, source_states
 
 
 async def _fetch_query_with_optional_fallback(
@@ -471,14 +537,24 @@ async def _fetch_query_with_optional_fallback(
     progress: ProgressReporter | None = None,
     *,
     openalex_max_pages: int | None = None,
-) -> tuple[list[NormalizedPaper], list[str], list[str], dict[str, float]]:
+    max_pages: int | None = None,
+) -> tuple[
+    list[NormalizedPaper], list[str], list[str], dict[str, float], dict[str, SourceTerminalState]
+]:
     results: list[NormalizedPaper] = []
     failures: list[str] = []
     sources_used: list[str] = []
     timings: dict[str, float] = {}
+    source_states: dict[str, SourceTerminalState] = {}
 
     _emit_progress(progress, "retrieving primary sources")
-    primary_results, primary_failures, primary_sources, primary_timings = await _fetch_from_sources(
+    (
+        primary_results,
+        primary_failures,
+        primary_sources,
+        primary_timings,
+        primary_states,
+    ) = await _fetch_from_sources(
         query,
         fetch_limit,
         constraints,
@@ -487,11 +563,13 @@ async def _fetch_query_with_optional_fallback(
         rewritten,
         tier="primary",
         openalex_max_pages=openalex_max_pages,
+        max_pages=max_pages,
     )
     results.extend(primary_results)
     failures.extend(primary_failures)
     sources_used.extend(primary_sources)
     timings.update(primary_timings)
+    source_states.update(primary_states)
 
     should_fetch_fallback = fallback_mode == "force"
     if fallback_mode == "auto":
@@ -519,6 +597,7 @@ async def _fetch_query_with_optional_fallback(
             fallback_failures,
             fallback_sources,
             fallback_timings,
+            fallback_states,
         ) = await _fetch_from_sources(
             query,
             fetch_limit,
@@ -528,6 +607,7 @@ async def _fetch_query_with_optional_fallback(
             rewritten,
             tier="fallback",
             openalex_max_pages=openalex_max_pages,
+            max_pages=max_pages,
         )
         results.extend(fallback_results)
         failures.extend(fallback_failures)
@@ -536,8 +616,16 @@ async def _fetch_query_with_optional_fallback(
                 sources_used.append(source)
         for source, value in fallback_timings.items():
             timings[source] = timings.get(source, 0.0) + value
+        for source, state in fallback_states.items():
+            existing = source_states.get(source)
+            if (
+                existing is None
+                or existing in ("skipped_no_key", "skipped_disabled")
+                or state not in ("skipped_no_key", "skipped_disabled")
+            ):
+                source_states[source] = state
 
-    return results, failures, sources_used, timings
+    return results, failures, sources_used, timings, source_states
 
 
 async def _enrich_citations(
@@ -1145,6 +1233,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
     fallback_mode: Literal["auto", "force", "off"] | None = None,
     progress: ProgressReporter | None = None,
     filter_edit: FilterEditContract | None = None,
+    search_depth: Literal["quick", "balanced", "deep"] | None = None,
 ) -> tuple[list[NormalizedPaper], SearchMetadata]:
     """Search multiple academic sources and return ranked normalized papers + metadata."""
 
@@ -1158,6 +1247,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
 
     active_settings = settings or get_settings()
     active_thread = thread_id or current_thread_id()
+    depth_max_pages = _depth_max_pages(search_depth, active_settings)
     effective_fallback_mode: Literal["auto", "force", "off"]
     if fallback_mode is not None:
         effective_fallback_mode = fallback_mode
@@ -1219,6 +1309,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
     all_failures: list[str] = []
     all_sources_used: list[str] = []
     all_timings: dict[str, float] = {}
+    all_source_states: dict[str, SourceTerminalState] = {}
     retry_count = 0
     executed_queries: set[str] = set()
     executed_query_sequence: list[str] = []
@@ -1229,6 +1320,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
         failures: list[str],
         sources_used: list[str],
         timings: dict[str, float],
+        states: dict[str, SourceTerminalState],
     ) -> None:
         all_failures.extend(failures)
         for source in sources_used:
@@ -1236,6 +1328,14 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                 all_sources_used.append(source)
         for source, value in timings.items():
             all_timings[source] = all_timings.get(source, 0.0) + value
+        for source, state in states.items():
+            existing = all_source_states.get(source)
+            if (
+                existing is None
+                or existing in ("skipped_no_key", "skipped_disabled")
+                or state not in ("skipped_no_key", "skipped_disabled")
+            ):
+                all_source_states[source] = state
 
     results: list[NormalizedPaper] = []
     for index, active_query in enumerate(retrieval_queries):
@@ -1246,7 +1346,13 @@ async def search_papers(  # noqa: PLR0912, PLR0915
         executed_queries.add(active_query)
         executed_query_sequence.append(active_query)
         ranking_terms = _merge_ranking_terms(ranking_terms, active_query)
-        query_results, failures, sources_used, timings = await _fetch_query_with_optional_fallback(
+        (
+            query_results,
+            failures,
+            sources_used,
+            timings,
+            states,
+        ) = await _fetch_query_with_optional_fallback(
             active_query,
             fetch_limit,
             constraints,
@@ -1257,9 +1363,10 @@ async def search_papers(  # noqa: PLR0912, PLR0915
             capped_limit,
             corrected_query,
             progress,
+            max_pages=depth_max_pages,
         )
         results.extend(query_results)
-        _merge_telemetry(failures, sources_used, timings)
+        _merge_telemetry(failures, sources_used, timings, states)
         if provider is None and query_results:
             refinement_candidate = _build_refinement_query(query_results, constraints, active_query)
             if refinement_candidate is not None:
@@ -1287,6 +1394,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                 refinement_failures,
                 refinement_sources,
                 refinement_timings,
+                refinement_states,
             ) = await _fetch_query_with_optional_fallback(
                 refinement_query,
                 fetch_limit,
@@ -1298,10 +1406,13 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                 capped_limit,
                 corrected_query,
                 progress,
-                openalex_max_pages=max(active_settings.search_max_pages, 2),
+                openalex_max_pages=max(depth_max_pages, 2),
+                max_pages=depth_max_pages,
             )
             results.extend(refinement_results)
-            _merge_telemetry(refinement_failures, refinement_sources, refinement_timings)
+            _merge_telemetry(
+                refinement_failures, refinement_sources, refinement_timings, refinement_states
+            )
             break
 
     if results:
@@ -1330,6 +1441,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                         retry_failures,
                         retry_sources,
                         retry_timings,
+                        retry_states,
                     ) = await _fetch_query_with_optional_fallback(
                         validation.suggested_query,
                         fetch_limit,
@@ -1341,8 +1453,9 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                         capped_limit,
                         corrected_query,
                         progress,
+                        max_pages=depth_max_pages,
                     )
-                    _merge_telemetry(retry_failures, retry_sources, retry_timings)
+                    _merge_telemetry(retry_failures, retry_sources, retry_timings, retry_states)
                     if retry_results:
                         _emit_progress(progress, "enriching citations")
                         retry_results = await _enrich_citations(
@@ -1371,6 +1484,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                 regex_query=regex_query,
                 sources_used=all_sources_used,
                 sources_failed=all_failures,
+                source_states=all_source_states,
                 mode="llm_rewrite" if mode == "llm_rewrite" else "regex",
                 retry_count=retry_count,
                 total_fetched=len(results),
@@ -1390,6 +1504,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
             fallback_failures,
             fallback_sources,
             fallback_timings,
+            fallback_states,
         ) = await _fetch_query_with_optional_fallback(
             regex_query,
             fetch_limit,
@@ -1401,8 +1516,9 @@ async def search_papers(  # noqa: PLR0912, PLR0915
             capped_limit,
             corrected_query,
             progress,
+            max_pages=depth_max_pages,
         )
-        _merge_telemetry(fallback_failures, fallback_sources, fallback_timings)
+        _merge_telemetry(fallback_failures, fallback_sources, fallback_timings, fallback_states)
         if fallback_results:
             _emit_progress(progress, "enriching citations")
             fallback_results = await _enrich_citations(
@@ -1426,6 +1542,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                     regex_query=regex_query,
                     sources_used=all_sources_used,
                     sources_failed=all_failures,
+                    source_states=all_source_states,
                     mode="llm_rewrite" if mode == "llm_rewrite" else "regex",
                     retry_count=retry_count,
                     total_fetched=len(fallback_results),
@@ -1449,6 +1566,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
         regex_query=regex_query,
         sources_used=all_sources_used,
         sources_failed=all_failures,
+        source_states=all_source_states,
         mode="llm_rewrite" if mode == "llm_rewrite" else "regex",
         retry_count=retry_count,
         total_fetched=len(results),

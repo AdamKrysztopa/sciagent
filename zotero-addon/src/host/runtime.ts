@@ -11,7 +11,7 @@ import {
   type PanelBridgeTarget,
 } from "./panelBridge";
 import { createZoteroPreferenceStore } from "./prefs";
-import { binaryInstalled, startServer, stopServer } from "./serverManager";
+import { binaryInstalled, downloadBinary, startServer, stopServer } from "./serverManager";
 import type { BootstrapData, ZoteroWindow } from "./zoteroTypes";
 
 const PLUGIN_ID = "agt@yourdomain.org";
@@ -53,6 +53,19 @@ function createUiServices(): AddonUiServices {
     async saveConfig(update) {
       return preferenceStore.writeConfig(update);
     },
+
+    async checkBinaryInstalled() {
+      return binaryInstalled();
+    },
+
+    async downloadBinary(version, onProgress) {
+      return downloadBinary(version, onProgress);
+    },
+
+    async startServerAfterDownload() {
+      const config = preferenceStore.readConfig();
+      await startServer(config);
+    },
   };
 }
 
@@ -80,9 +93,7 @@ export class RuntimeController {
       if (config.backendMode === "local") {
         void binaryInstalled().then((installed) => {
           if (!installed) {
-            Zotero.debug(
-              "[SciAgent] Server binary not installed; skipping auto-start (show FirstRunDialog).",
-            );
+            Zotero.debug("[SciAgent] Server binary not installed; FirstRunDialog will prompt download.");
             return;
           }
           return startServer(config).catch((err: unknown) => {

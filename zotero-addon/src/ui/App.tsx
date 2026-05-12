@@ -1,13 +1,17 @@
 import type { HealthResponse, WriteResult } from "../shared/contracts";
 import type { NativeWriteResult } from "../host/zoteroWriter";
 
-import { Component, type ErrorInfo, type ReactNode } from "react";
+import { Component, type ErrorInfo, type ReactNode, useEffect, useRef, useState } from "react";
 import type { AddonUiServices } from "./serviceTypes";
+import { BackendFailurePanel } from "./components/BackendFailurePanel";
+import { CapabilityBanner } from "./components/CapabilityBanner";
 import { ConfigPanel } from "./components/ConfigPanel";
 import { FilterEditor } from "./components/FilterEditor";
+import { FirstRunDialog } from "./components/FirstRunDialog";
 import { HealthStatus } from "./components/HealthStatus";
 import { LibraryDoctor } from "./components/LibraryDoctor";
 import { ResultsList } from "./components/ResultsList";
+import { SearchCoveragePanel } from "./components/SearchCoveragePanel";
 import { SourcePresets } from "./components/SourcePresets";
 import { SourceToggles } from "./components/SourceToggles";
 import { WatchList } from "./components/WatchList";
@@ -193,6 +197,13 @@ function IdleView({ controller }: { controller: SciAgentController }) {
 
   return (
     <div className="agt-state-view">
+      {controller.healthError !== null && controller.healthResponse === null ? (
+        <BackendFailurePanel
+          error={controller.healthError}
+          onRetry={controller.onRefreshHealth}
+        />
+      ) : null}
+
       <section className="agt-card">
         <div className="agt-section-heading">
           <h2>Search</h2>
@@ -261,10 +272,26 @@ function IdleView({ controller }: { controller: SciAgentController }) {
         ) : null}
       </section>
 
+      {!controller.config.bannerDismissed &&
+      (controller.healthResponse !== null || controller.healthError !== null) ? (
+        <CapabilityBanner
+          backendOk={controller.healthResponse !== null && controller.healthError === null}
+          llmProviderOk={
+            controller.capabilities?.active_provider !== undefined &&
+            controller.capabilities.active_provider !== ""
+          }
+          zoteroWriteOk={controller.healthResponse?.preflight.can_write === true}
+          pdfImportOk={controller.capabilities?.pdf_import_supported === true}
+          onDismiss={controller.onDismissBanner}
+        />
+      ) : null}
+
       <SourcePresets
         disabled={false}
         filterDraft={controller.filterDraft}
         onChange={controller.onFilterDraftChange}
+        searchDepth={controller.searchDepth}
+        onDepthChange={controller.onDepthChange}
       />
 
       <FilterEditor
@@ -406,6 +433,30 @@ function ReviewView({ controller }: { controller: SciAgentController }) {
         searchPlan={controller.searchPlan}
       />
 
+      {controller.searchMetadata !== null ? (
+        <section className="agt-card agt-card--soft">
+          <div className="agt-section-heading">
+            <h2>Search Info</h2>
+            <span className="agt-pill agt-pill--muted">
+              {controller.searchMetadata.mode === "llm_rewrite" ? "LLM rewrite" : "regex"}
+            </span>
+          </div>
+          <div className="agt-key-value">
+            {controller.searchMetadata.rewritten_query !== null &&
+            controller.searchMetadata.rewritten_query !== controller.searchMetadata.original_query ? (
+              <>
+                <span>Rewritten query</span>
+                <span>{controller.searchMetadata.rewritten_query}</span>
+              </>
+            ) : null}
+            <span>Fetched</span>
+            <span>{controller.searchMetadata.total_fetched}</span>
+            <span>After filters</span>
+            <span>{controller.searchMetadata.total_after_filter}</span>
+          </div>
+        </section>
+      ) : null}
+
       <ResultsList
         disabled={controller.runView.phase === "resuming"}
         onToggle={controller.onToggleSelection}
@@ -413,29 +464,9 @@ function ReviewView({ controller }: { controller: SciAgentController }) {
         selectedIndices={controller.selectedIndices}
       />
 
-      {controller.sourceBuckets !== null ? (
-        <section className="agt-card agt-card--soft">
-          <div className="agt-section-heading">
-            <h2>Sources</h2>
-            {controller.runView.snapshot !== null ? (
-              <span className="agt-pill agt-pill--muted">{controller.runView.snapshot.run_id}</span>
-            ) : null}
-          </div>
-          <div className="agt-chip-list">
-            {controller.sourceBuckets.used.map((source) => (
-              <span className="agt-chip agt-chip--ok" key={`used-${source}`}>used: {source}</span>
-            ))}
-            {controller.sourceBuckets.failed.map((source) => (
-              <span className="agt-chip agt-chip--danger" key={`failed-${source}`}>failed: {source}</span>
-            ))}
-            {controller.sourceBuckets.skipped.map((source) => (
-              <span className="agt-chip agt-chip--warn" key={`skipped-${source}`}>skipped: {source}</span>
-            ))}
-            {controller.sourceBuckets.unavailable_optional.map((source) => (
-              <span className="agt-chip" key={`missing-${source}`}>optional key missing: {source}</span>
-            ))}
-          </div>
-        </section>
+      {controller.searchMetadata !== null &&
+      Object.keys(controller.searchMetadata.source_states).length > 0 ? (
+        <SearchCoveragePanel sourceStates={controller.searchMetadata.source_states} />
       ) : null}
 
       {currentState !== null ? (
@@ -497,6 +528,42 @@ function DoneView({ controller }: { controller: SciAgentController }) {
 
 function AppContent({ services }: { services: AddonUiServices }) {
   const controller = useSciAgentController(services);
+
+  // Binary check: runs once when backendMode is confirmed as "local".
+  // Default config has backendMode="remote", so the check fires only after
+  // prefs load and the value changes to "local".
+  const [binarySetup, setBinarySetup] = useState<"ready" | "needed">("ready");
+  const binaryCheckDoneRef = useRef(false);
+
+  useEffect(() => {
+    if (binaryCheckDoneRef.current) return;
+    if (controller.config.backendMode !== "local") return;
+    if (services.checkBinaryInstalled === undefined) {
+      binaryCheckDoneRef.current = true;
+      return;
+    }
+    binaryCheckDoneRef.current = true;
+    void services.checkBinaryInstalled().then((installed) => {
+      if (!installed) setBinarySetup("needed");
+    });
+  }, [controller.config.backendMode, services]);
+
+  if (binarySetup === "needed") {
+    return (
+      <div className="agt-root">
+        <div className="agt-shell">
+          <header className="agt-titlebar">
+            <span className="agt-title">SciAgent</span>
+          </header>
+          <FirstRunDialog
+            onComplete={() => setBinarySetup("ready")}
+            onSkip={() => setBinarySetup("ready")}
+            services={services}
+          />
+        </div>
+      </div>
+    );
+  }
 
   const uiState: "idle" | "running" | "review" | "done" =
     controller.runView.phase === "submitting" || controller.runView.phase === "resuming"
