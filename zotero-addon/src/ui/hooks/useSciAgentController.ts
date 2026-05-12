@@ -80,6 +80,7 @@ export function useSciAgentController(services: AddonUiServices) {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
+  const [searchDepth, setSearchDepth] = useState<"quick" | "balanced" | "deep">("balanced");
   const [correctedQuery, setCorrectedQuery] = useState<string | null>(null);
   const [extracting, setExtracting] = useState(false);
   const [extractError, setExtractError] = useState<string | null>(null);
@@ -185,6 +186,15 @@ export function useSciAgentController(services: AddonUiServices) {
     }
   });
 
+  const dismissBanner = useEffectEvent(async () => {
+    try {
+      const next = await services.saveConfig({ ...config, bannerDismissed: true });
+      setConfig(next);
+    } catch {
+      // non-fatal
+    }
+  });
+
   const fetchStatus = useEffectEvent(async (runId: string) => {
     const snapshot = await services.createClient(config).status(runId);
     applySnapshot(snapshot);
@@ -207,6 +217,7 @@ export function useSciAgentController(services: AddonUiServices) {
             ? filterDraft
             : undefined,
         query: trimmedQuery,
+        search_depth: searchDepth,
       });
       await fetchStatus(response.run_id);
     } catch (error) {
@@ -482,6 +493,7 @@ export function useSciAgentController(services: AddonUiServices) {
     gapError,
     gapResult,
     gapRunning,
+    onDismissBanner: () => void dismissBanner(),
     onExtractKeywords: () => void runExtractKeywords(),
     onLibraryDoctor: () => void runLibraryDoctor(),
     onGapFinder: () => void runGapFinder(),
@@ -560,6 +572,8 @@ export function useSciAgentController(services: AddonUiServices) {
     },
     onSaveConfig: () => void saveConfig(),
     onSubmitSearch: () => void submitSearch(),
+    onDepthChange: setSearchDepth,
+    searchDepth,
     onToggleSelection: (index: number) => {
       setSelectedIndices((currentSelection) => {
         if (currentSelection.includes(index)) {

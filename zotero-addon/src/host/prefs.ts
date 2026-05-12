@@ -24,6 +24,8 @@ export interface AddonConfig {
   llmModel: string;
   // Backend mode — "local" spawns embedded server, "remote" connects to backendUrl (SCI-0604)
   backendMode: string;
+  // First-run capability banner (OPN-16)
+  bannerDismissed: boolean;
 }
 
 export interface PreferenceStore {
@@ -53,6 +55,8 @@ export const PREF_KEYS = {
   llmModel: "extensions.agt.llmModel",
   // Backend mode (SCI-0604)
   backendMode: "extensions.agt.backendMode",
+  // First-run capability banner (OPN-16)
+  bannerDismissed: "extensions.agt.bannerDismissed",
 } as const;
 
 export const DEFAULT_ADDON_CONFIG: AddonConfig = {
@@ -77,6 +81,8 @@ export const DEFAULT_ADDON_CONFIG: AddonConfig = {
   llmModel: "",
   // Backend mode (SCI-0604)
   backendMode: "remote",
+  // First-run capability banner (OPN-16)
+  bannerDismissed: false,
 };
 
 function normalizeBackendUrl(value: string): string {
@@ -179,6 +185,11 @@ export function createZoteroPreferenceStore(zotero: ZoteroGlobal): PreferenceSto
           PREF_KEYS.backendMode,
           DEFAULT_ADDON_CONFIG.backendMode,
         ),
+        bannerDismissed: readBooleanPref(
+          zotero,
+          PREF_KEYS.bannerDismissed,
+          DEFAULT_ADDON_CONFIG.bannerDismissed,
+        ),
       };
     },
 
@@ -219,6 +230,7 @@ export function createZoteroPreferenceStore(zotero: ZoteroGlobal): PreferenceSto
       zotero.Prefs.set(PREF_KEYS.llmBaseUrl, nextConfig.llmBaseUrl);
       zotero.Prefs.set(PREF_KEYS.llmModel, nextConfig.llmModel);
       zotero.Prefs.set(PREF_KEYS.backendMode, nextConfig.backendMode);
+      zotero.Prefs.set(PREF_KEYS.bannerDismissed, nextConfig.bannerDismissed);
 
       return nextConfig;
     },
