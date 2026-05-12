@@ -138,13 +138,24 @@ dev = [
 
 ### 2.2 Create `build/sciagent-server.spec`
 
+The working spec (verified 2026-05-12 on macOS arm64). Three things are required beyond the
+bare minimum: `pathex=["../src"]` so PyInstaller finds the `agt` package; `collect_submodules("agt")`
+because `uvicorn.run("agt.api.app:app", ...)` passes the module as a string; and
+`collect_data_files("spellchecker")` because `spell_check.py` calls `pkgutil.get_data` at
+import time.
+
 ```python
 # build/sciagent-server.spec
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
-block_cipher = None
+# Collect the full agt package (uvicorn.run receives it as a string so
+# PyInstaller cannot auto-detect it via import analysis).
+agt_submodules = collect_submodules("agt")
+agt_datas = collect_data_files("agt")
+# spellchecker loads en.json.gz via pkgutil.get_data at import time; must be bundled.
+spell_datas = collect_data_files("spellchecker")
 
-hidden_imports = [
+hidden_imports = agt_submodules + [
     "uvicorn.logging",
     "uvicorn.loops",
     "uvicorn.loops.auto",
@@ -158,25 +169,28 @@ hidden_imports = [
     "anyio._backends._asyncio",
     "anyio._backends._trio",
     "pydantic_settings",
-    # add more if you hit ImportError at runtime
+    "pydantic_settings.env_settings",
+    "pydantic_settings.main",
+    "structlog",
+    "structlog.stdlib",
+    "fastapi",
+    "slowapi",
+    "slowapi.extension",
 ]
-
-datas = []
 
 a = Analysis(
     ["../src/agt/server.py"],
-    pathex=[],
+    pathex=["../src"],
     binaries=[],
-    datas=datas,
+    datas=agt_datas + spell_datas,
     hiddenimports=hidden_imports,
     hookspath=["./hooks"],
     runtime_hooks=[],
-    excludes=["streamlit", "matplotlib", "PIL", "tkinter", "keybert"],
-    cipher=block_cipher,
+    excludes=["streamlit", "matplotlib", "PIL", "tkinter", "keybert", "pytest", "vcrpy"],
     noarchive=False,
 )
 
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+pyz = PYZ(a.pure, a.zipped_data)
 
 exe = EXE(
     pyz, a.scripts, a.binaries, a.zipfiles, a.datas, [],
@@ -185,9 +199,11 @@ exe = EXE(
     strip=False,
     upx=True,
     console=True,
-    cipher=block_cipher,
 )
 ```
+
+> **PyInstaller 6.x note.** The `block_cipher` / `cipher=` parameters were removed in
+> PyInstaller 6.0. Do not add them back — they will cause a build error.
 
 ### 2.3 Create `build/hooks/hook-pydantic_settings.py`
 
@@ -206,16 +222,28 @@ uv run pyinstaller build/sciagent-server.spec \
 # Output: build/dist/sciagent-server  (or .exe on Windows)
 ```
 
-Expect 2–4 iterations fixing `ModuleNotFoundError` by adding to `hidden_imports`.
+**Verified output (macOS arm64, 2026-05-12):**
+
+```bash
+./build/dist/sciagent-server --version
+# → sciagent-server 0.1.0
+
+./build/dist/sciagent-server --port 58000 &
+sleep 2 && curl http://127.0.0.1:58000/health
+# → {"ok": false, "provider": "openai", ...}  (HTTP 200; ok:false without credentials is expected)
+kill %1
+```
+
+The spec in §2.2 is complete and working — no iteration should be needed.
 
 ### 2.5 Expected binary sizes (with UPX compression)
 
-| Platform      | Approx size |
-| ------------- | ----------- |
-| Linux x86\_64 | 55–75 MB    |
-| macOS arm64   | 60–80 MB    |
-| macOS x86\_64 | 60–80 MB    |
-| Windows x64   | 65–85 MB    |
+| Platform      | Approx size | Verified           |
+| ------------- | ----------- | ------------------ |
+| macOS arm64   | ~37 MB      | ✅ 2026-05-12       |
+| Linux x86\_64 | ~45–60 MB   | estimated          |
+| macOS x86\_64 | ~45–60 MB   | estimated          |
+| Windows x64   | ~50–65 MB   | estimated          |
 
 These are one-time downloads. Zotero itself is ~150 MB. Researchers accept this.
 

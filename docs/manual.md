@@ -10,11 +10,12 @@
 2. [Installation](#installation)
 3. [Configuration](#configuration)
 4. [Running Locally: Complete Guide](#running-locally-complete-guide)
-5. [Other Interfaces](#other-interfaces)
-6. [Retrieval Sources](#retrieval-sources)
-7. [Advanced Configuration](#advanced-configuration)
-8. [Troubleshooting](#troubleshooting)
-9. [Development](#development)
+5. [Standalone Binary](#standalone-binary)
+6. [Other Interfaces](#other-interfaces)
+7. [Retrieval Sources](#retrieval-sources)
+8. [Advanced Configuration](#advanced-configuration)
+9. [Troubleshooting](#troubleshooting)
+10. [Development](#development)
 
 ---
 
@@ -484,6 +485,143 @@ Verified 2026-05-12 on Zotero 9.x with both `uvicorn` and Docker container backe
 - ✅ Add-on metadata consistently targets Zotero 9.x packaging
 - ✅ Live Zotero 9 desktop smoke test passed — both `uvicorn` and Docker container backends confirmed
 - ✅ M6 signed off
+
+---
+
+## Standalone Binary
+
+The repo ships a PyInstaller build that packages the entire Python backend into a single
+executable. No Python install is required at runtime — the binary bundles all dependencies.
+
+The Zotero add-on spawns this binary automatically. End users never run it directly.
+Developers and CI use it to verify the frozen artifact before publishing a release.
+
+### What It Is
+
+`sciagent-server` is the same `agt.api.app` FastAPI application, frozen by PyInstaller.
+It accepts identical CLI flags and exposes the same REST API as the dev server started
+via `uv run uvicorn`.
+
+### Build Requirements
+
+| Requirement | Notes                                      |
+| ----------- | ------------------------------------------ |
+| `uv`        | Must be installed (see Prerequisites)      |
+| UPX         | Optional; reduces binary size by ~30–40%   |
+| ~5 min      | First build (subsequent builds are faster) |
+
+Install UPX before building if you want the smaller artifact:
+
+```bash
+# macOS
+brew install upx
+
+# Ubuntu / Debian
+sudo apt-get install upx
+
+# Windows
+choco install upx -y
+```
+
+### Build Command
+
+From the repository root:
+
+```bash
+uv run pyinstaller build/sciagent-server.spec \
+  --distpath build/dist \
+  --workpath build/work \
+  --clean
+```
+
+**Verified output (macOS arm64, 2026-05-12):**
+
+```text
+37 MB  build/dist/sciagent-server  (Mach-O 64-bit arm64, UPX-compressed)
+```
+
+The binary is written to `build/dist/sciagent-server` (or `.exe` on Windows). The
+`build/work/` directory contains intermediate artifacts and can be ignored.
+
+### Verify the Binary Works
+
+```bash
+# Version check (no credentials needed)
+./build/dist/sciagent-server --version
+# → sciagent-server 0.1.0
+
+# Start on a test port — no credentials means ok:false body but HTTP 200
+./build/dist/sciagent-server --port 58000 &
+sleep 2
+curl http://127.0.0.1:58000/health
+# → {"ok": false, "provider": "openai", "can_read": false, ...}
+kill %1
+
+# Start with credentials loaded from .env
+env $(grep -v '^#' .env | xargs) ./build/dist/sciagent-server --port 57321 &
+sleep 2
+curl http://127.0.0.1:57321/health
+# → {"ok": true, "can_read": true, "can_write": true, "key_valid": true, ...}
+
+# Full workflow — requires Zotero + LLM credentials in .env
+curl -s -X POST http://127.0.0.1:57321/run \
+  -H "Content-Type: application/json" \
+  -d '{"query": "retrieval augmented generation 2024+", "collection_name": "RAG"}' | python3 -m json.tool
+# → {"run_id": "...", "status": "awaiting_approval", ...}
+
+kill %1
+```
+
+Health returns HTTP 200 regardless of whether credentials are present. The `ok` field
+in the body indicates credential validity, not server liveness — CI smoke tests that
+use `curl -f` (check HTTP status only) will pass even without credentials.
+
+### macOS Gatekeeper
+
+The binary is unsigned. On first launch, macOS blocks it:
+
+> "sciagent-server" can't be opened because Apple cannot check it for malicious
+> software.
+
+**Workaround (Finder):** Right-click the binary → Open → confirm once. From then on
+macOS runs it without prompting.
+
+**Workaround (Terminal):** Clear the quarantine attribute before running:
+
+```bash
+xattr -d com.apple.quarantine build/dist/sciagent-server
+```
+
+This is a development/beta limitation. Production releases will be codesigned with an
+Apple Developer ID (tracked as OPN-03 / ZAP-11).
+
+### How the Zotero Add-on Uses It
+
+When the add-on is in local-backend mode, `serverManager.ts` handles the full lifecycle:
+
+1. **Zotero starts** — checks `~/.sciagent/bin/sciagent-server-<platform>` exists
+2. **First run** — shows a download dialog; fetches the platform binary from the GitHub
+   Release and marks it executable
+3. **Spawn** — calls `Subprocess.call()` with `--port 57321 --data-dir ~/.sciagent`
+   and all provider env vars from Zotero preferences
+4. **Health poll** — polls `/health` every 300 ms for up to 15 s; shows a visible error
+   if the server does not start in time
+5. **Zotero shuts down** — calls `_proc.kill()`
+
+Provider credentials pass to the binary as environment variables:
+
+| Env var              | Source                            |
+| -------------------- | --------------------------------- |
+| `OPENAI_API_KEY`     | Zotero pref `openai_api_key`      |
+| `ANTHROPIC_API_KEY`  | Zotero pref `anthropic_api_key`   |
+| `XAI_API_KEY`        | Zotero pref `xai_api_key`         |
+| `GROQ_API_KEY`       | Zotero pref `groq_api_key`        |
+| `AGT_LLM_PROVIDER`   | Zotero pref `llmProvider`         |
+| `AGT_LLM_BASE_URL`   | Zotero pref `llmBaseUrl`          |
+| `AGT_LLM_MODEL`      | Zotero pref `llmModel`            |
+
+The binary reads these the same way it reads `.env` — pydantic-settings checks the
+process environment before falling back to `.env`.
 
 ---
 
