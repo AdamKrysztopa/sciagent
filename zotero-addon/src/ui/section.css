@@ -721,6 +721,19 @@
 .agt-lib-badge--in_library { background: var(--agt-surface-raised); color: var(--agt-text-muted); border: 0.5px solid var(--agt-border); }
 .agt-lib-badge--possible_duplicate { background: var(--agt-amber-dim); color: var(--agt-amber); }
 
+/* ── Watch status badges ──────────────────────────────────── */
+.agt-lib-badge--watch-new { background: var(--agt-accent-dim); color: var(--agt-accent); }
+.agt-lib-badge--watch-seen { background: var(--agt-surface-raised); color: var(--agt-text-muted); border: 0.5px solid var(--agt-border); }
+
+/* ── Watch List component ─────────────────────────────────── */
+.agt-watch-save-row { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+.agt-watch-save-row .agt-input { flex: 1; }
+.agt-watch-item { flex-direction: column; align-items: flex-start; gap: 4px; }
+.agt-watch-meta { display: flex; flex-direction: column; gap: 2px; width: 100%; }
+.agt-watch-query { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.agt-watch-actions { display: flex; gap: 6px; }
+.agt-watch-rerun-banner { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+
 /* ── Gap Finder list ──────────────────────────────────────── */
 .agt-gap-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .agt-gap-item { font-size: 0.85rem; }

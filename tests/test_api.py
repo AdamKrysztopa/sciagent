@@ -54,6 +54,9 @@ class _Settings:
     resolved_cache_dir: Path = field(
         default_factory=lambda: Path(tempfile.mkdtemp()) / f"cache-{uuid.uuid4().hex}"
     )
+    resolved_watch_dir: Path = field(
+        default_factory=lambda: Path(tempfile.mkdtemp()) / f"watches-{uuid.uuid4().hex}"
+    )
     cache_ttl_seconds: int = 3600
 
     def provider_api_key(self, provider: str) -> _Secret | None:

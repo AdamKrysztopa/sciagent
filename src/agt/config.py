@@ -365,6 +365,11 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("AGT_CACHE_TTL_SECONDS", "CACHE_TTL_SECONDS"),
         description="TTL for cached search results in seconds (default 24 h).",
     )
+    watch_dir: Path | None = Field(
+        default=None,
+        validation_alias=AliasChoices("AGT_WATCH_DIR", "WATCH_DIR"),
+        description="Directory for persistent watch JSON files. Defaults to ~/.sciagent/watches/.",
+    )
     log_level: str = Field(
         default="INFO", validation_alias=AliasChoices("AGT_LOG_LEVEL", "LOG_LEVEL")
     )
@@ -415,6 +420,10 @@ class Settings(BaseSettings):
     @property
     def resolved_cache_dir(self) -> Path:
         return self.cache_dir or (Path.home() / ".sciagent" / "cache")
+
+    @property
+    def resolved_watch_dir(self) -> Path:
+        return self.watch_dir or (Path.home() / ".sciagent" / "watches")
 
     @property
     def runtime(self) -> RuntimeConfig:

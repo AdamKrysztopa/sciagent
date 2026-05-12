@@ -21,6 +21,8 @@ import {
   type SearchPlan,
   type SourceCapability,
   type StatusResponse,
+  type Watch,
+  type WatchRerunResponse,
   uniqueSortedIndices,
 } from "../../shared/contracts";
 import type { AddonUiServices } from "../serviceTypes";
@@ -87,6 +89,14 @@ export function useSciAgentController(services: AddonUiServices) {
   const [gapResult, setGapResult] = useState<GapFinderResponse | null>(null);
   const [gapRunning, setGapRunning] = useState(false);
   const [gapError, setGapError] = useState<string | null>(null);
+  const [watches, setWatches] = useState<Watch[]>([]);
+  const [watchesLoading, setWatchesLoading] = useState(false);
+  const [watchesError, setWatchesError] = useState<string | null>(null);
+  const [watchName, setWatchName] = useState("");
+  const [watchSaving, setWatchSaving] = useState(false);
+  const [watchSaveError, setWatchSaveError] = useState<string | null>(null);
+  const [rerunningWatchId, setRerunningWatchId] = useState<string | null>(null);
+  const [lastWatchRerun, setLastWatchRerun] = useState<WatchRerunResponse | null>(null);
 
   const currentState = runView.snapshot?.state ?? null;
   const papers: NormalizedPaper[] = currentState?.papers ?? [];
@@ -340,6 +350,67 @@ export function useSciAgentController(services: AddonUiServices) {
     }
   });
 
+  const loadWatches = useEffectEvent(async () => {
+    setWatchesLoading(true);
+    setWatchesError(null);
+    try {
+      const loaded = await services.createClient(config).listWatches();
+      setWatches(loaded);
+    } catch (error) {
+      setWatchesError(describeError(error));
+    } finally {
+      setWatchesLoading(false);
+    }
+  });
+
+  const saveWatch = useEffectEvent(async () => {
+    const trimmed = query.trim();
+    const name = watchName.trim();
+    if (trimmed.length === 0 || name.length === 0) return;
+    setWatchSaving(true);
+    setWatchSaveError(null);
+    try {
+      await services.createClient(config).createWatch(
+        name,
+        trimmed,
+        collectionName.trim() || null,
+        filterDraft,
+      );
+      setWatchName("");
+      await loadWatches();
+    } catch (error) {
+      setWatchSaveError(describeError(error));
+    } finally {
+      setWatchSaving(false);
+    }
+  });
+
+  const deleteWatchById = useEffectEvent(async (watchId: string) => {
+    try {
+      await services.createClient(config).deleteWatch(watchId);
+      setWatches((current) => current.filter((w) => w.id !== watchId));
+    } catch (error) {
+      setWatchesError(describeError(error));
+    }
+  });
+
+  const rerunWatchById = useEffectEvent(async (watchId: string) => {
+    setRerunningWatchId(watchId);
+    setLastWatchRerun(null);
+    setNativeWriteResult(null);
+    setRunView({ error: null, phase: "submitting", snapshot: runView.snapshot });
+    try {
+      const rerunResp = await services.createClient(config).rerunWatch(watchId);
+      setLastWatchRerun(rerunResp);
+      await fetchStatus(rerunResp.run_id);
+      await loadWatches();
+    } catch (error) {
+      setRunView({ error: describeError(error), phase: "error", snapshot: runView.snapshot });
+    } finally {
+      setRerunningWatchId(null);
+    }
+  });
+
   useEffect(() => {
     const trimmed = query.trim();
     if (trimmed.length === 0 || !config.spellCheckEnabled) {
@@ -387,6 +458,10 @@ export function useSciAgentController(services: AddonUiServices) {
     };
   }, [services]);
 
+  useEffect(() => {
+    void loadWatches();
+  }, []);
+
   return {
     canApprove: selectedIndices.length > 0 && runView.phase === "awaiting_approval",
     capabilities,
@@ -410,6 +485,18 @@ export function useSciAgentController(services: AddonUiServices) {
     onExtractKeywords: () => void runExtractKeywords(),
     onLibraryDoctor: () => void runLibraryDoctor(),
     onGapFinder: () => void runGapFinder(),
+    lastWatchRerun,
+    onDeleteWatch: (watchId: string) => void deleteWatchById(watchId),
+    onRerunWatch: (watchId: string) => void rerunWatchById(watchId),
+    onSaveWatch: () => void saveWatch(),
+    onWatchNameChange: setWatchName,
+    rerunningWatchId,
+    watchName,
+    watchSaveError,
+    watchSaving,
+    watches,
+    watchesError,
+    watchesLoading,
     onAcceptCorrection: () => {
       if (correctedQuery !== null) {
         const accepted = correctedQuery;

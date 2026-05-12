@@ -1,6 +1,6 @@
 # SciAgent Prioritized Action Plan
 
-> **Finalization audit completed: 2026-05-11** — P3 complete (2026-05-11). All quality gates green: ruff 0, pyright 0, 274 tests passing; addon lint/typecheck/build/test green; markdownlint 0.
+> **Finalization audit completed: 2026-05-12** — P4 complete (2026-05-12). All quality gates green: ruff 0, pyright 0, 298 tests passing; addon lint/typecheck/build/test green; markdownlint 0.
 > This is the canonical execution tracker for live status, overall progress, and the next implementation target.
 > Update done / not done state here first.
 > See [docs/manual.md](manual.md) for configuration & usage.
@@ -11,13 +11,14 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 ### Current Status
 
-- Current focus: P4 — Retention and Recurring Workflows
-- Current next implementation target: SCI-0401
-- Last completed: P3 complete — SCI-0301/0302/0303/0304 all shipped (2026-05-11)
+- Current focus: P5 — External Interfaces and Deployment
+- Current next implementation target: AGT-21 (security checklist/auth hardening)
+- Last completed: P4 complete — SCI-0401/0402/0403 all shipped (2026-05-12)
 - M7 (Pluggability/Infrastructure) intentionally deprioritized: settings and elastic infra add value only after users trust the product output. See Phase P0–P2 ordering below.
 
 ### Recent Progress
 
+- ✅ P4 complete (2026-05-12): SCI-0401 WatchStore (JSON-backed per-watch files, `~/.sciagent/watches/`), CRUD API (`POST/GET/DELETE /watches`); SCI-0402 watch rerun (`POST /watches/{id}/rerun`) — runs search, tags new vs seen papers by DOI+fingerprint, extends seen_fingerprints, returns run_id for normal approve/reject flow; SCI-0403 Zotero sidebar WatchList.tsx component, watch_status badge in ResultsList.tsx, backendClient methods, useSciAgentController state. All gates: ruff 0, pyright 0, 298 tests, addon clean.
 - ✅ P3 complete (2026-05-11): SCI-0301 collection-aware search with library status badges (in_library/possible_duplicate/new); SCI-0302 PDF attachment pipeline (linked-URL, never blocks metadata import); SCI-0303 Library Doctor (missing DOI/abstract/PDF/duplicate scanner); SCI-0304 Gap Finder (LLM generates gap queries from existing collection, filters already-in-library); spell-check checkbox, keyword extraction from natural language, `GET /correct-query`, `POST /extract-keywords`, `POST /library-doctor`, `POST /gap-finder` endpoints. Addon v0.2.0. All gates: ruff 0, pyright 0, 274 tests, addon clean.
 - ✅ P2 complete (2026-05-11): SCI-0201 `/capabilities` extended with `provider_availability` + `active_provider`; SCI-0203 `SessionStore` (JSON file persistence, list/load/rerun API); SCI-0204 `ResultCache` (SQLite, TTL, stats/clear API); SCI-0206 `export_session` (Markdown PRISMA-lite, JSON, CSV via `/status/{id}/export`); SCI-0202 `SourcePresets` component in Zotero sidebar (Balanced, Open Access, Recent 5yr, Highly Cited, Quick 5, Deep 20). All gates: ruff 0, pyright 0, 230 tests, addon clean.
 - ✅ SCI-0205 complete: `NormalizedPaper.explanation` field added; `explain_paper()` in ranking.py generates deterministic, signal-based reasons (semantic score tier, keyword hit count, citations, influential citations, open access, source, year); populated by `_attach_explanations` before all result returns in search_papers; shown in Streamlit UI, Zotero sidebar (ResultsList.tsx), and m2_7_search_plan_demo (2026-05-11)
@@ -54,11 +55,11 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 - [x] P1 — Evidence Before Expansion _(closed at 19/22 by product decision; 2026-05-11)_
 - [x] P2 — Differentiating Core _(sessions, cache, export, capability endpoint, source presets; 2026-05-11)_
 - [x] P3 — Zotero-Native Value _(collection-aware search, PDF attach, Library Doctor, Gap Finder; addon v0.2.0; 2026-05-11)_
+- [x] P4 — Retention and Recurring Workflows _(watch list CRUD, watch rerun with new-paper detection, WatchList sidebar UI; 2026-05-12)_
 
 ### Not Done Milestones
 
 > Ordered from fastest path to final product. P0 (trust) before P1 (evidence) before P2 (differentiation) before P3 (Zotero-native) before P4 (retention) before P5 (scale). M7 infrastructure moved to P5.
-- [ ] P4 — Retention and Recurring Workflows _(watch lists, scheduled reruns; weeks)_
 - [ ] P5 — External Interfaces and Deployment, M7 _(MCP, hosted backend, elastic infra; months)_
 
 ### Next Items In Order
@@ -78,6 +79,9 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 - [x] SCI-0302 — PDF attachment pipeline: attach_pdfs_to_items POSTs linked_url child to /items with parentItem; open-access only; failure never blocks metadata import; enable_pdf_imports flag on ResumeRequest
 - [x] SCI-0303 — Library Doctor: scan_collection reads collection for missing_doi/abstract/pdf and duplicate pairs; POST /library-doctor; LibraryDoctor.tsx component in Zotero sidebar; read-only, no writes
 - [x] SCI-0304 — Gap Finder: find_gaps LLM generates 3–5 search queries from existing collection titles, searches, filters already-in-library results, deduplicates; POST /gap-finder; Gap Finder section in sidebar
+- [x] SCI-0401 — Watch List CRUD: WatchStore (JSON-backed, ~/.sciagent/watches/), Watch dataclass (id/name/query/filter_edit/seen_fingerprints), POST/GET/DELETE /watches endpoints, resolved_watch_dir in config
+- [x] SCI-0402 — Watch Rerun: POST /watches/{id}/rerun runs search, tags papers new vs seen by DOI+title_author_fingerprint, extends seen_fingerprints on each run, updates last_run_at; returns run_id for normal approve/reject flow; 7 API tests
+- [x] SCI-0403 — Zotero Sidebar WatchList: WatchList.tsx component (save-as-watch form, watch list with Rerun/Delete, rerun banner), watch_status badge in ResultsList.tsx (new in watch / previously seen), backendClient.ts createWatch/listWatches/deleteWatch/rerunWatch, useSciAgentController watch state, WatchList integrated into IdleView
 - [ ] AGT-21 follow-up — Security checklist and auth hardening
 - [ ] AGT-24 — Durable distributed checkpointing (P5 / M7)
 
