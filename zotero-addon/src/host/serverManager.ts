@@ -8,6 +8,16 @@
 import { collectProviderEnv } from "./prefs";
 import type { AddonConfig } from "./prefs";
 
+export class ServerStartError extends Error {
+  constructor(
+    public readonly reason: "timeout" | "binary_missing" | "port_unavailable",
+    message: string,
+  ) {
+    super(message);
+    this.name = "ServerStartError";
+  }
+}
+
 // Zotero XPCOM / platform globals — declared here so TypeScript resolves them.
 declare const Services: {
   appinfo: { OS: string; XPCOMABI: string };
@@ -121,7 +131,7 @@ async function _findFreePort(): Promise<number> {
   for (const port of SERVER_PORTS) {
     if (await _isPortFree(port)) return port;
   }
-  throw new Error("No free port found for SciAgent server");
+  throw new ServerStartError("port_unavailable", "No free port found for SciAgent server");
 }
 
 export async function isServerRunning(): Promise<boolean> {
@@ -138,6 +148,17 @@ export async function startServer(config: AddonConfig): Promise<void> {
 
   _resolvedPort = await _findFreePort();
   const binPath = await getBinaryPath();
+
+  let binExists = false;
+  try {
+    binExists = await IOUtils.stat(binPath).then(() => true);
+  } catch {
+    binExists = false;
+  }
+  if (!binExists) {
+    throw new ServerStartError("binary_missing", `SciAgent server binary not found at: ${binPath}`);
+  }
+
   const dataDir = _getDataDir();
 
   _proc = await Subprocess.call({
@@ -152,7 +173,7 @@ export async function startServer(config: AddonConfig): Promise<void> {
     if (await isServerRunning()) return;
     await new Promise((r) => setTimeout(r, 300));
   }
-  throw new Error("SciAgent server did not start within 15 seconds");
+  throw new ServerStartError("timeout", "SciAgent server did not respond to health checks within 15 seconds");
 }
 
 export async function stopServer(): Promise<void> {
