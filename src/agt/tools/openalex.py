@@ -11,7 +11,14 @@ from typing import Any, cast
 import httpx
 from tenacity import AsyncRetrying, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from agt.models import NormalizedPaper
+from agt.models import ItemType, NormalizedPaper
+
+_OPENALEX_TYPE_MAP: dict[str, ItemType] = {
+    "journal-article": "journal_article",
+    "preprint": "preprint",
+    "conference-paper": "conference_paper",
+    "book-chapter": "book_chapter",
+}
 
 
 class OpenAlexResponseError(RuntimeError):
@@ -186,6 +193,35 @@ class OpenAlexClient:
 
         citation_count = OpenAlexClient._extract_citation_count(item)
 
+        venue: str | None = None
+        if isinstance(primary_location, dict):
+            source_data = cast(dict[str, Any], primary_location).get("source")
+            if isinstance(source_data, dict):
+                dn = cast(dict[str, Any], source_data).get("display_name")
+                if isinstance(dn, str) and dn.strip():
+                    venue = dn.strip()
+
+        item_type: ItemType | None = _OPENALEX_TYPE_MAP.get(str(item.get("type") or ""))
+
+        volume: str | None = None
+        issue: str | None = None
+        pages: str | None = None
+        biblio = item.get("biblio")
+        if isinstance(biblio, dict):
+            bib = cast(dict[str, Any], biblio)
+            vol_val = bib.get("volume")
+            if isinstance(vol_val, str) and vol_val.strip():
+                volume = vol_val.strip()
+            iss_val = bib.get("issue")
+            if isinstance(iss_val, str) and iss_val.strip():
+                issue = iss_val.strip()
+            first_page = bib.get("first_page")
+            last_page = bib.get("last_page")
+            if isinstance(first_page, str) and first_page.strip():
+                pages = first_page.strip()
+                if isinstance(last_page, str) and last_page.strip():
+                    pages = f"{first_page.strip()}-{last_page.strip()}"
+
         return NormalizedPaper(
             title=title,
             year=year,
@@ -198,6 +234,11 @@ class OpenAlexClient:
             semantic_score=semantic_score,
             citation_count=citation_count,
             open_access=open_access,
+            venue=venue,
+            item_type=item_type,
+            volume=volume,
+            issue=issue,
+            pages=pages,
         )
 
     @staticmethod

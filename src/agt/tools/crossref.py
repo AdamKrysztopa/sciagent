@@ -7,7 +7,14 @@ from typing import Any, cast
 import httpx
 from tenacity import AsyncRetrying, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from agt.models import NormalizedPaper
+from agt.models import ItemType, NormalizedPaper
+
+_CROSSREF_TYPE_MAP: dict[str, ItemType] = {
+    "journal-article": "journal_article",
+    "proceedings-article": "conference_paper",
+    "book-chapter": "book_chapter",
+    "posted-content": "preprint",
+}
 
 
 class CrossrefResponseError(RuntimeError):
@@ -138,7 +145,7 @@ class CrossrefClient:
         return authors
 
     @staticmethod
-    def _normalize_item(item: dict[str, Any]) -> NormalizedPaper | None:  # noqa: PLR0912
+    def _normalize_item(item: dict[str, Any]) -> NormalizedPaper | None:  # noqa: PLR0912, PLR0915
         title = CrossrefClient._extract_title(item)
         if not title:
             return None
@@ -189,6 +196,30 @@ class CrossrefClient:
                     open_access = True
                     break
 
+        venue: str | None = None
+        container_title = item.get("container-title")
+        if isinstance(container_title, list) and container_title:
+            first_ct = cast(object, container_title[0])
+            if isinstance(first_ct, str) and first_ct.strip():
+                venue = first_ct.strip()
+
+        item_type: ItemType | None = _CROSSREF_TYPE_MAP.get(str(item.get("type") or ""))
+
+        volume: str | None = None
+        vol_val = item.get("volume")
+        if isinstance(vol_val, str) and vol_val.strip():
+            volume = vol_val.strip()
+
+        issue: str | None = None
+        iss_val = item.get("issue")
+        if isinstance(iss_val, str) and iss_val.strip():
+            issue = iss_val.strip()
+
+        pages: str | None = None
+        page_val = item.get("page")
+        if isinstance(page_val, str) and page_val.strip():
+            pages = page_val.strip()
+
         return NormalizedPaper(
             title=title,
             year=year,
@@ -201,4 +232,9 @@ class CrossrefClient:
             semantic_score=0.0,
             citation_count=citation_count,
             open_access=open_access,
+            venue=venue,
+            item_type=item_type,
+            volume=volume,
+            issue=issue,
+            pages=pages,
         )

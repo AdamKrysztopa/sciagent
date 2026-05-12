@@ -10,7 +10,7 @@ from typing import Any, cast
 import httpx
 from tenacity import AsyncRetrying, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from agt.models import NormalizedPaper
+from agt.models import NormalizedPaper  # ItemType not needed: PubMed is always journal_article
 
 _YEAR_RE = re.compile(r"(?:19|20)\d{2}")
 
@@ -142,6 +142,18 @@ class PubMedClient:
         url = f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/" if pmid else None
         pdf_url = f"https://www.ncbi.nlm.nih.gov/pmc/articles/{pmc_id}/pdf/" if pmc_id else None
 
+        venue_text = article.findtext(".//Journal/Title")
+        venue = venue_text.strip() if venue_text and venue_text.strip() else None
+
+        volume_text = article.findtext(".//JournalIssue/Volume")
+        volume = volume_text.strip() if volume_text and volume_text.strip() else None
+
+        issue_text = article.findtext(".//JournalIssue/Issue")
+        issue = issue_text.strip() if issue_text and issue_text.strip() else None
+
+        pages_text = article.findtext(".//MedlinePgn")
+        pages = pages_text.strip() if pages_text and pages_text.strip() else None
+
         return NormalizedPaper(
             title=title,
             year=year,
@@ -154,6 +166,11 @@ class PubMedClient:
             semantic_score=0.0,
             citation_count=0,
             open_access=pmc_id is not None,
+            venue=venue,
+            item_type="journal_article",
+            volume=volume,
+            issue=issue,
+            pages=pages,
         )
 
     @staticmethod

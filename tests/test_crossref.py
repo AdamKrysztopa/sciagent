@@ -149,3 +149,66 @@ async def test_crossref_search_paginates_with_offset(monkeypatch: pytest.MonkeyP
     papers = await client.search("x", limit=1, max_pages=2)
     assert [paper.title for paper in papers] == ["P1", "P2"]
     assert offsets == ["0", "1"]
+
+
+@pytest.mark.anyio
+async def test_crossref_extracts_venue_volume_issue_pages(monkeypatch: pytest.MonkeyPatch) -> None:
+    client = CrossrefClient(timeout_seconds=5, retries=1)
+
+    async def _fake_request_json(*, path: str, params: dict[str, str]) -> dict[str, Any]:
+        _ = path
+        _ = params
+        return {
+            "message": {
+                "items": [
+                    {
+                        "title": ["Full Paper"],
+                        "type": "journal-article",
+                        "container-title": ["Journal of Science"],
+                        "volume": "5",
+                        "issue": "2",
+                        "page": "101-115",
+                        "DOI": "10.1/x",
+                    }
+                ]
+            }
+        }
+
+    monkeypatch.setattr(client, "_request_json", _fake_request_json)
+
+    papers = await client.search("x", limit=1)
+    assert papers[0].venue == "Journal of Science"
+    assert papers[0].item_type == "journal_article"
+    assert papers[0].volume == "5"
+    assert papers[0].issue == "2"
+    assert papers[0].pages == "101-115"
+
+
+@pytest.mark.anyio
+async def test_crossref_posted_content_maps_to_preprint(monkeypatch: pytest.MonkeyPatch) -> None:
+    client = CrossrefClient(timeout_seconds=5, retries=1)
+
+    async def _fake_request_json(*, path: str, params: dict[str, str]) -> dict[str, Any]:
+        _ = path
+        _ = params
+        return {"message": {"items": [{"title": ["Draft"], "type": "posted-content"}]}}
+
+    monkeypatch.setattr(client, "_request_json", _fake_request_json)
+
+    papers = await client.search("x", limit=1)
+    assert papers[0].item_type == "preprint"
+
+
+@pytest.mark.anyio
+async def test_crossref_unknown_type_gives_none(monkeypatch: pytest.MonkeyPatch) -> None:
+    client = CrossrefClient(timeout_seconds=5, retries=1)
+
+    async def _fake_request_json(*, path: str, params: dict[str, str]) -> dict[str, Any]:
+        _ = path
+        _ = params
+        return {"message": {"items": [{"title": ["T"], "type": "report"}]}}
+
+    monkeypatch.setattr(client, "_request_json", _fake_request_json)
+
+    papers = await client.search("x", limit=1)
+    assert papers[0].item_type is None

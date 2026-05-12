@@ -144,3 +144,84 @@ async def test_openalex_search_paginates_with_cursor(monkeypatch: pytest.MonkeyP
     assert [paper.title for paper in papers] == ["P1", "P2"]
     assert calls[0]["cursor"] == "*"
     assert calls[1]["cursor"] == "abc"
+
+
+@pytest.mark.anyio
+async def test_openalex_extracts_venue_and_item_type(monkeypatch: pytest.MonkeyPatch) -> None:
+    client = OpenAlexClient(timeout_seconds=5, retries=1)
+
+    async def _fake_request_json(*, path: str, params: dict[str, str]) -> dict[str, Any]:
+        _ = path
+        _ = params
+        return {
+            "results": [
+                {
+                    "title": "A Study",
+                    "type": "journal-article",
+                    "primary_location": {
+                        "landing_page_url": "https://example.org",
+                        "source": {"display_name": "Nature"},
+                    },
+                    "biblio": {
+                        "volume": "12",
+                        "issue": "3",
+                        "first_page": "100",
+                        "last_page": "110",
+                    },
+                }
+            ]
+        }
+
+    monkeypatch.setattr(client, "_request_json", _fake_request_json)
+
+    papers = await client.search("x", limit=1)
+    assert papers[0].venue == "Nature"
+    assert papers[0].item_type == "journal_article"
+    assert papers[0].volume == "12"
+    assert papers[0].issue == "3"
+    assert papers[0].pages == "100-110"
+
+
+@pytest.mark.anyio
+async def test_openalex_item_type_preprint(monkeypatch: pytest.MonkeyPatch) -> None:
+    client = OpenAlexClient(timeout_seconds=5, retries=1)
+
+    async def _fake_request_json(*, path: str, params: dict[str, str]) -> dict[str, Any]:
+        _ = path
+        _ = params
+        return {"results": [{"title": "Draft", "type": "preprint"}]}
+
+    monkeypatch.setattr(client, "_request_json", _fake_request_json)
+
+    papers = await client.search("x", limit=1)
+    assert papers[0].item_type == "preprint"
+
+
+@pytest.mark.anyio
+async def test_openalex_unknown_type_gives_none(monkeypatch: pytest.MonkeyPatch) -> None:
+    client = OpenAlexClient(timeout_seconds=5, retries=1)
+
+    async def _fake_request_json(*, path: str, params: dict[str, str]) -> dict[str, Any]:
+        _ = path
+        _ = params
+        return {"results": [{"title": "T", "type": "dissertation"}]}
+
+    monkeypatch.setattr(client, "_request_json", _fake_request_json)
+
+    papers = await client.search("x", limit=1)
+    assert papers[0].item_type is None
+
+
+@pytest.mark.anyio
+async def test_openalex_pages_single_page_when_no_last(monkeypatch: pytest.MonkeyPatch) -> None:
+    client = OpenAlexClient(timeout_seconds=5, retries=1)
+
+    async def _fake_request_json(*, path: str, params: dict[str, str]) -> dict[str, Any]:
+        _ = path
+        _ = params
+        return {"results": [{"title": "T", "biblio": {"first_page": "42"}}]}
+
+    monkeypatch.setattr(client, "_request_json", _fake_request_json)
+
+    papers = await client.search("x", limit=1)
+    assert papers[0].pages == "42"
