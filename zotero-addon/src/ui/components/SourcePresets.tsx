@@ -61,13 +61,21 @@ const PRESETS: Preset[] = [
   },
 ];
 
+const DEPTH_OPTIONS: Array<{ value: "quick" | "balanced" | "deep"; label: string; description: string }> = [
+  { value: "quick", label: "Quick", description: "Fetches 1 page per source — fastest results." },
+  { value: "balanced", label: "Balanced", description: "Default page budget — good coverage." },
+  { value: "deep", label: "Deep", description: "Up to 3× more pages per source — thorough coverage." },
+];
+
 interface SourcePresetsProps {
   disabled: boolean;
   filterDraft: FilterEditContract | null;
   onChange(nextDraft: FilterEditContract): void;
+  searchDepth: "quick" | "balanced" | "deep";
+  onDepthChange(depth: "quick" | "balanced" | "deep"): void;
 }
 
-export function SourcePresets({ disabled, filterDraft, onChange }: SourcePresetsProps) {
+export function SourcePresets({ disabled, filterDraft, onChange, searchDepth, onDepthChange }: SourcePresetsProps) {
   if (filterDraft === null) {
     return null;
   }
@@ -85,6 +93,19 @@ export function SourcePresets({ disabled, filterDraft, onChange }: SourcePresets
           type="button"
         >
           {preset.label}
+        </button>
+      ))}
+      <span className="agt-presets-label">Depth:</span>
+      {DEPTH_OPTIONS.map((opt) => (
+        <button
+          className={`agt-preset-chip${searchDepth === opt.value ? " agt-preset-chip--active" : ""}`}
+          disabled={disabled}
+          key={opt.value}
+          onClick={() => onDepthChange(opt.value)}
+          title={opt.description}
+          type="button"
+        >
+          {opt.label}
         </button>
       ))}
     </div>

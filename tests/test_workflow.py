@@ -93,10 +93,12 @@ async def test_workflow_contains_ids_preflight_and_spans(monkeypatch: pytest.Mon
         *,
         settings: object | None = None,
         thread_id: str | None = None,
+        **kwargs: object,
     ) -> tuple[list[NormalizedPaper], SearchMetadata]:
         _ = limit
         _ = settings
         _ = thread_id
+        _ = kwargs
         return (
             [NormalizedPaper(title=f"result:{query}")],
             SearchMetadata(original_query=query, regex_query=query),
@@ -178,11 +180,13 @@ async def test_finalize_reject_skips_write(monkeypatch: pytest.MonkeyPatch) -> N
         *,
         settings: object | None = None,
         thread_id: str | None = None,
+        **kwargs: object,
     ) -> tuple[list[NormalizedPaper], SearchMetadata]:
         _ = query
         _ = limit
         _ = settings
         _ = thread_id
+        _ = kwargs
         return (
             [NormalizedPaper(title="paper-1"), NormalizedPaper(title="paper-2")],
             SearchMetadata(original_query="q", regex_query="q"),
@@ -235,11 +239,13 @@ async def test_finalize_approval_supports_selection_and_collection_rename(
         *,
         settings: object | None = None,
         thread_id: str | None = None,
+        **kwargs: object,
     ) -> tuple[list[NormalizedPaper], SearchMetadata]:
         _ = query
         _ = limit
         _ = settings
         _ = thread_id
+        _ = kwargs
         return (
             [
                 NormalizedPaper(title="paper-1"),
@@ -306,12 +312,14 @@ async def test_run_search_phase_forwards_filter_edit_to_search(
         settings: object | None = None,
         thread_id: str | None = None,
         filter_edit: FilterEditContract | None = None,
+        **kwargs: object,
     ) -> tuple[list[NormalizedPaper], SearchMetadata]:
         captured["query"] = query
         captured["limit"] = limit
         captured["settings"] = settings
         captured["thread_id"] = thread_id
         captured["filter_edit"] = filter_edit
+        _ = kwargs
         return (
             [NormalizedPaper(title="paper-1")],
             SearchMetadata(original_query=query, regex_query=query),
@@ -353,11 +361,13 @@ async def test_resume_completed_checkpoint_reuses_state_without_write(
         *,
         settings: object | None = None,
         thread_id: str | None = None,
+        **kwargs: object,
     ) -> tuple[list[NormalizedPaper], SearchMetadata]:
         _ = query
         _ = limit
         _ = settings
         _ = thread_id
+        _ = kwargs
         return (
             [NormalizedPaper(title="paper-1")],
             SearchMetadata(original_query="q", regex_query="q"),
@@ -411,11 +421,13 @@ async def test_finalize_write_error_returns_deterministic_retry_safe_failure(
         *,
         settings: object | None = None,
         thread_id: str | None = None,
+        **kwargs: object,
     ) -> tuple[list[NormalizedPaper], SearchMetadata]:
         _ = query
         _ = limit
         _ = settings
         _ = thread_id
+        _ = kwargs
         return (
             [NormalizedPaper(title="paper-1")],
             SearchMetadata(original_query="q", regex_query="q"),
@@ -459,11 +471,13 @@ async def test_finalize_partial_write_failure_keeps_completed_phase(
         *,
         settings: object | None = None,
         thread_id: str | None = None,
+        **kwargs: object,
     ) -> tuple[list[NormalizedPaper], SearchMetadata]:
         _ = query
         _ = limit
         _ = settings
         _ = thread_id
+        _ = kwargs
         return (
             [NormalizedPaper(title="paper-1"), NormalizedPaper(title="paper-2")],
             SearchMetadata(original_query="q", regex_query="q"),
@@ -522,11 +536,13 @@ async def test_resume_after_failed_write_retries_and_can_complete(
         *,
         settings: object | None = None,
         thread_id: str | None = None,
+        **kwargs: object,
     ) -> tuple[list[NormalizedPaper], SearchMetadata]:
         _ = query
         _ = limit
         _ = settings
         _ = thread_id
+        _ = kwargs
         return (
             [NormalizedPaper(title="paper-1")],
             SearchMetadata(original_query="q", regex_query="q"),

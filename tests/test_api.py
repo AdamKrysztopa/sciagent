@@ -112,10 +112,12 @@ def test_run_resume_status_flow_with_owner_isolation(monkeypatch: pytest.MonkeyP
         collection_name: str,
         thread_id: str | None = None,
         settings: object | None = None,
+        **kwargs: object,
     ) -> dict[str, object]:
         _ = query
         _ = collection_name
         _ = settings
+        _ = kwargs
         return {
             "request_id": "req-1",
             "thread_id": thread_id or "thread-1",
@@ -208,10 +210,12 @@ def test_resume_failed_phase_maps_to_failed_status(monkeypatch: pytest.MonkeyPat
         collection_name: str,
         thread_id: str | None = None,
         settings: object | None = None,
+        **kwargs: object,
     ) -> dict[str, object]:
         _ = query
         _ = collection_name
         _ = settings
+        _ = kwargs
         return {
             "request_id": "req-1",
             "thread_id": thread_id or "thread-1",
@@ -299,8 +303,10 @@ def test_run_accepts_filter_edit_and_forwards_it(monkeypatch: pytest.MonkeyPatch
         thread_id: str | None = None,
         settings: object | None = None,
         filter_edit: object | None = None,
+        **kwargs: object,
     ) -> dict[str, object]:
         _ = settings
+        _ = kwargs
         captured["query"] = query
         captured["collection_name"] = collection_name
         captured["thread_id"] = thread_id
@@ -429,8 +435,9 @@ def test_resume_native_write_returns_approved_papers(monkeypatch: pytest.MonkeyP
         thread_id: str | None = None,
         settings: object | None = None,
         filter_edit: object | None = None,
+        **kwargs: object,
     ) -> dict[str, object]:
-        _ = query, collection_name, settings, filter_edit
+        _ = query, collection_name, settings, filter_edit, kwargs
         return {
             "request_id": "req-nw",
             "thread_id": thread_id or "thread-nw",
@@ -525,8 +532,9 @@ def test_resume_accepts_enable_pdf_imports_field(monkeypatch: pytest.MonkeyPatch
         thread_id: str | None = None,
         settings: object | None = None,
         filter_edit: object | None = None,
+        **kwargs: object,
     ) -> dict[str, object]:
-        _ = query, collection_name, settings, filter_edit
+        _ = query, collection_name, settings, filter_edit, kwargs
         return {
             "request_id": "req-pdf",
             "thread_id": thread_id or "thread-pdf",

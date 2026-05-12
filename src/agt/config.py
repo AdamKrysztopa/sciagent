@@ -295,6 +295,10 @@ class Settings(BaseSettings):
         le=5,
         validation_alias=AliasChoices("AGT_SEARCH_MAX_PAGES", "SEARCH_MAX_PAGES"),
     )
+    search_depth: Literal["quick", "balanced", "deep"] = Field(
+        "balanced",
+        validation_alias=AliasChoices("AGT_SEARCH_DEPTH", "SEARCH_DEPTH"),
+    )
     citation_threshold_most_cited: int = Field(
         default=10,
         ge=0,
