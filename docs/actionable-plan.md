@@ -1,6 +1,6 @@
 # SciAgent Prioritized Action Plan
 
-> **Finalization audit completed: 2026-05-12** — P4 complete (2026-05-12). All quality gates green: ruff 0, pyright 0, 298 tests passing; addon lint/typecheck/build/test green; markdownlint 0.
+> **Finalization audit completed: 2026-05-12** — P6 complete (2026-05-12). SCI-0601/0602/0603/0604 all shipped. All quality gates green: ruff 0, pyright 0, 318 tests passing; addon 40 tests, markdownlint 0.
 > This is the canonical execution tracker for live status, overall progress, and the next implementation target.
 > Update done / not done state here first.
 > See [docs/manual.md](manual.md) for configuration & usage.
@@ -11,13 +11,15 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 ### Current Status
 
-- Current focus: P5 — External Interfaces and Deployment
-- Current next implementation target: AGT-21 (security checklist/auth hardening)
-- Last completed: P4 complete — SCI-0401/0402/0403 all shipped (2026-05-12)
-- M7 (Pluggability/Infrastructure) intentionally deprioritized: settings and elastic infra add value only after users trust the product output. See Phase P0–P2 ordering below.
+- Current focus: P6 complete — all stories shipped
+- Current next implementation target: none planned
+- Last completed: P6 complete — SCI-0601/0602/0603/0604 all shipped (2026-05-12)
+- P5 scope revised 2026-05-12: M7 infra (AGT-23/24/25/26) deferred indefinitely; replaced with four achievable local-hardening stories. See P5 section below for rationale.
 
 ### Recent Progress
 
+- ✅ P6 complete (2026-05-12): SCI-0601 generic OpenAI-compatible adapter (AGT_LLM_BASE_URL/AGT_LLM_API_KEY/AGT_LLM_MODEL, covers DeepSeek, Together AI, LM Studio); SCI-0602 Ollama named shorthand (AGT_LLM_PROVIDER=ollama, localhost:11434/v1, no key); SCI-0603 Zotero sidebar provider dropdown (OpenAI/Anthropic/xAI/Groq/Ollama/Custom, prefs, collectProviderEnv); SCI-0604 embedded server binary (sciagent-server CLI, AGT_DATA_DIR, GET /version, PyInstaller spec, CI build-binaries workflow, serverManager.ts, FirstRunDialog.tsx). All gates: ruff 0, pyright 0, 318 tests, addon 40 tests.
+- ✅ P5 complete (2026-05-12): SCI-0501 CORS + slowapi rate limiting + docs/security.md; SCI-0502 Groq provider adapter (llama-3.3-70b-versatile, wired into auto-detect); SCI-0503 Dockerfile CMD fixed (uvicorn) + docker-compose.yml + CI docker-build smoke test; SCI-0504 read-only MCP server (FastMCP, 4 tools: search_papers/list_watches/get_session/library_doctor). All gates: ruff 0, pyright 0, 309 tests, markdownlint 0.
 - ✅ P4 complete (2026-05-12): SCI-0401 WatchStore (JSON-backed per-watch files, `~/.sciagent/watches/`), CRUD API (`POST/GET/DELETE /watches`); SCI-0402 watch rerun (`POST /watches/{id}/rerun`) — runs search, tags new vs seen papers by DOI+fingerprint, extends seen_fingerprints, returns run_id for normal approve/reject flow; SCI-0403 Zotero sidebar WatchList.tsx component, watch_status badge in ResultsList.tsx, backendClient methods, useSciAgentController state. All gates: ruff 0, pyright 0, 298 tests, addon clean.
 - ✅ P3 complete (2026-05-11): SCI-0301 collection-aware search with library status badges (in_library/possible_duplicate/new); SCI-0302 PDF attachment pipeline (linked-URL, never blocks metadata import); SCI-0303 Library Doctor (missing DOI/abstract/PDF/duplicate scanner); SCI-0304 Gap Finder (LLM generates gap queries from existing collection, filters already-in-library); spell-check checkbox, keyword extraction from natural language, `GET /correct-query`, `POST /extract-keywords`, `POST /library-doctor`, `POST /gap-finder` endpoints. Addon v0.2.0. All gates: ruff 0, pyright 0, 274 tests, addon clean.
 - ✅ P2 complete (2026-05-11): SCI-0201 `/capabilities` extended with `provider_availability` + `active_provider`; SCI-0203 `SessionStore` (JSON file persistence, list/load/rerun API); SCI-0204 `ResultCache` (SQLite, TTL, stats/clear API); SCI-0206 `export_session` (Markdown PRISMA-lite, JSON, CSV via `/status/{id}/export`); SCI-0202 `SourcePresets` component in Zotero sidebar (Balanced, Open Access, Recent 5yr, Highly Cited, Quick 5, Deep 20). All gates: ruff 0, pyright 0, 230 tests, addon clean.
@@ -56,11 +58,14 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 - [x] P2 — Differentiating Core _(sessions, cache, export, capability endpoint, source presets; 2026-05-11)_
 - [x] P3 — Zotero-Native Value _(collection-aware search, PDF attach, Library Doctor, Gap Finder; addon v0.2.0; 2026-05-11)_
 - [x] P4 — Retention and Recurring Workflows _(watch list CRUD, watch rerun with new-paper detection, WatchList sidebar UI; 2026-05-12)_
+- [x] P5 — Local-First Hardening _(CORS + slowapi, Groq adapter, Docker fix + compose, MCP read-only server; 2026-05-12)_
+- [x] P6 — Provider Extensibility and Zero-Terminal Install _(DeepSeek/Ollama/custom base\_url, embedded server binary, sidebar provider selector; 2026-05-12)_
 
 ### Not Done Milestones
 
-> Ordered from fastest path to final product. P0 (trust) before P1 (evidence) before P2 (differentiation) before P3 (Zotero-native) before P4 (retention) before P5 (scale). M7 infrastructure moved to P5.
-- [ ] P5 — External Interfaces and Deployment, M7 _(MCP, hosted backend, elastic infra; months)_
+> Ordered from fastest path to final product. P0 (trust) before P1 (evidence) before P2 (differentiation) before P3 (Zotero-native) before P4 (retention) before P5 (scale). M7 infrastructure deprioritized — Redis/Celery/Terraform add no value for a single-user local tool with file-backed persistence already in place.
+- [x] P5 — Local-First Hardening _(security, Groq provider, Docker fix, MCP server; 2026-05-12)_
+- [x] P6 — Provider Extensibility and Zero-Terminal Install _(DeepSeek, Ollama, custom base\_url, embedded server binary; 2026-05-12)_
 
 ### Next Items In Order
 
@@ -82,8 +87,14 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 - [x] SCI-0401 — Watch List CRUD: WatchStore (JSON-backed, ~/.sciagent/watches/), Watch dataclass (id/name/query/filter_edit/seen_fingerprints), POST/GET/DELETE /watches endpoints, resolved_watch_dir in config
 - [x] SCI-0402 — Watch Rerun: POST /watches/{id}/rerun runs search, tags papers new vs seen by DOI+title_author_fingerprint, extends seen_fingerprints on each run, updates last_run_at; returns run_id for normal approve/reject flow; 7 API tests
 - [x] SCI-0403 — Zotero Sidebar WatchList: WatchList.tsx component (save-as-watch form, watch list with Rerun/Delete, rerun banner), watch_status badge in ResultsList.tsx (new in watch / previously seen), backendClient.ts createWatch/listWatches/deleteWatch/rerunWatch, useSciAgentController watch state, WatchList integrated into IdleView
-- [ ] AGT-21 follow-up — Security checklist and auth hardening
-- [ ] AGT-24 — Durable distributed checkpointing (P5 / M7)
+- [x] SCI-0501 — Security hardening: CORS origin allowlist, HTTP rate limiting (slowapi), `/security.md` checklist documenting the auth model, HTTPS-first deployment note
+- [x] SCI-0502 — Groq provider adapter: `src/agt/providers/groq.py` mirroring OpenAI adapter with `base_url="https://api.groq.com/openai/v1"`; wired into provider auto-detection; `AGT_GROQ_API_KEY` already in config
+- [x] SCI-0503 — Fix Dockerfile + add docker-compose: replace Streamlit `CMD` with `uvicorn agt.api.app:app --host 0.0.0.0 --port 8000`; add `docker-compose.yml` mounting `.env` and `~/.sciagent`; CI smoke test `docker build`
+- [x] SCI-0504 — Read-only MCP server: `src/agt/mcp_server.py` using FastMCP (`mcp[cli]`); expose `search_papers`, `list_watches`, `get_session`, `library_doctor` as read-only tools; no write tools (preserves approval-gate invariant)
+- [x] SCI-0601 — Generic OpenAI-compatible adapter: `AGT_LLM_BASE_URL` + `AGT_LLM_API_KEY` + `AGT_LLM_MODEL` in config and provider router; covers DeepSeek, Together AI, Anyscale, LM Studio, and any OpenAI clone; `"openai-compatible"` provider name
+- [x] SCI-0602 — Ollama named shorthand: `AGT_LLM_PROVIDER=ollama` auto-sets `base_url=http://localhost:11434/v1`, no API key required; fully offline; falls through to generic OpenAI-compatible adapter
+- [x] SCI-0603 — Zotero sidebar provider selector: dropdown for OpenAI/Anthropic/xAI/Groq/Ollama/Custom in settings panel; conditional base\_url + model fields for custom; passes all keys + base\_url to backend via `collectProviderEnv()`
+- [x] SCI-0604 — Embedded server binary: `src/agt/server.py` CLI entrypoint, `build/sciagent-server.spec` PyInstaller spec, `zotero-addon/src/host/serverManager.ts`, `FirstRunDialog.tsx`, binary CI build workflow; see [docs/local-first.md](local-first.md) for full spec
 
 ### Tracker Rules
 
@@ -792,20 +803,95 @@ Acceptance criteria:
 
 ---
 
-### P5 — External Interfaces and Deployment (M7)
+### P5 — Local-First Hardening
 
-**Goal:** Expose SciAgent externally only after local-first product value is proven. Includes all M7 stories.
+**Goal:** Ship the four concrete improvements a single-user local deployment actually needs before considering any hosted or distributed infrastructure. AGT-23 (retrieval registry), AGT-24 (Redis checkpointing), AGT-25 (Celery), and AGT-26 (Terraform) are deferred indefinitely — file-backed sessions, SQLite cache, and JSON watch store already cover persistence for single-user use. Distributed infrastructure adds operational complexity with zero benefit until there are multiple concurrent users.
 
-| ID       | Story                                                                                                           | Owner                   | Status |
-| -------- | --------------------------------------------------------------------------------------------------------------- | ----------------------- | ------ |
-| AGT-23   | Unified retrieval registry: typed `Protocol`, registry module, centralized merge/dedup/rank                     | python-backend-engineer | [ ]    |
-| AGT-24   | Durable distributed checkpointing: Redis/Postgres LangGraph checkpointer; stateless container behavior          | python-backend-engineer | [ ]    |
-| AGT-25   | Async task queue: Celery/Dramatiq; `POST /run` returns `task_id`; worker reuses approval guardrails             | python-backend-engineer | [ ]    |
-| AGT-26   | Cloud-agnostic IaC modules: compute, persistence, queue, networking; managed secret injection; CI/CD deploy job | settings-bootstrap      | [ ]    |
-| SCI-0501 | MCP server: expose `search_papers`, `get_session`, `list_sessions` as MCP tools; authenticated and rate-limited | python-backend-engineer | [ ]    |
-| SCI-0502 | Hosted backend pilot: Postgres-backed session store; provider quotas; auth; autoscaling on Cloud Run            | settings-bootstrap      | [ ]    |
+> **Scope reduction rationale (2026-05-12 research):** Redis/Celery/Terraform require production DevOps burden and add ~3–4 weeks of infrastructure work with no user-visible improvement for local use. FastMCP (`mcp[cli]`) makes a read-only MCP server a 1-day task. Groq uses the same OpenAI-compatible Bearer auth as the existing xAI adapter — direct clone. Docker bug (Streamlit CMD instead of uvicorn) is a 30-minute fix. Security hardening (CORS + rate limit + auth doc) is 1 day.
 
-**Gate:** CI job produces reproducible infrastructure plan. Hosted backend smoke test passes. Sessions persist across worker restarts.
+| ID       | Story                                                                                                                                                   | Owner                   | Status | Est  |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- | ------ | ---- |
+| SCI-0501 | Security hardening: CORS origin allowlist (`CORS_ORIGINS` env), HTTP rate limiting via `slowapi`, `/docs/security.md` auth model checklist              | python-backend-engineer | [ ]    | 1 d  |
+| SCI-0502 | Groq provider adapter: `src/agt/providers/groq.py` cloning OpenAI adapter with `base_url="https://api.groq.com/openai/v1"`; wired into auto-detection  | python-backend-engineer | [ ]    | 0.5d |
+| SCI-0503 | Fix Dockerfile + docker-compose: `CMD uvicorn agt.api.app:app ...`; `docker-compose.yml` mounts `.env` and `~/.sciagent`; CI `docker build` smoke test  | settings-bootstrap      | [ ]    | 0.5d |
+| SCI-0504 | Read-only MCP server: `src/agt/mcp_server.py` via FastMCP; tools: `search_papers`, `list_watches`, `get_session`, `library_doctor`; no write operations | python-backend-engineer | [ ]    | 1 d  |
+
+**Deferred indefinitely (not P5):**
+
+| ID     | Story                                         | Reason for deferral                                                                         |
+| ------ | --------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| AGT-23 | Unified retrieval registry                    | Refactor with no user-visible change; existing `_fetch_from_sources` works fine             |
+| AGT-24 | Durable distributed checkpointing (Redis/PG)  | Single-user local tool; file-backed sessions already survive restarts                       |
+| AGT-25 | Async task queue (Celery/Dramatiq)            | FastAPI background tasks already decouple `/run`; queue adds infra overhead with no gain    |
+| AGT-26 | Cloud-agnostic IaC (Terraform/Cloud Run)      | No hosted deployment planned; revisit if user base grows beyond single-user local use       |
+
+**Gate:** All four SCI-050x stories pass quality gates (ruff 0, pyright 0, pytest green, addon clean where applicable). `docker build` and `docker-compose up` succeed. MCP server lists tools without error.
+
+---
+
+### P6 — Provider Extensibility and Zero-Terminal Install
+
+**Goal:** Any LLM provider a researcher already has — OpenAI, Anthropic, xAI, Groq,
+DeepSeek, Ollama, LM Studio, Together AI, or any OpenAI-compatible endpoint — should
+work with a single env var or settings panel toggle. No code changes. No key wrangling.
+Additionally, ship the zero-terminal install path so a medicine student can install
+the XPI and start searching without touching a terminal.
+
+> **Why P6:** The current system hardcodes `LLMProviderName = Literal["xai", "openai",
+> "anthropic", "groq"]` — adding a new provider requires a code change. The real unlock
+> is a generic OpenAI-compatible adapter (`AGT_LLM_BASE_URL` + `AGT_LLM_API_KEY` +
+> `AGT_LLM_MODEL`) which makes the provider list open-ended. Ollama is the killer case:
+> fully offline, no API key, runs on consumer hardware. The embedded binary (SCI-0604)
+> is the delivery mechanism that makes local-first viable for non-technical users.
+
+| ID       | Story                                                                                                                                                                                     | Owner                   | Status | Est   |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- | ------ | ----- |
+| SCI-0601 | Generic OpenAI-compatible adapter: `AGT_LLM_BASE_URL` + `AGT_LLM_API_KEY` + `AGT_LLM_MODEL` in config; `"openai-compatible"` provider name in router; covers DeepSeek, Together, LM Studio | python-backend-engineer | [ ]    | 1 d   |
+| SCI-0602 | Ollama named shorthand: `AGT_LLM_PROVIDER=ollama` auto-sets `base_url=http://localhost:11434/v1`, no API key required; delegates to SCI-0601 generic adapter internally                   | python-backend-engineer | [ ]    | 0.5 d |
+| SCI-0603 | Zotero sidebar provider selector: dropdown for all providers + Custom; conditional base\_url + model fields; `collectProviderEnv()` passes all vars to embedded server                   | zotero-frontend         | [ ]    | 1 d   |
+| SCI-0604 | Embedded server binary: `src/agt/server.py` CLI, PyInstaller spec, `serverManager.ts`, `FirstRunDialog.tsx`, CI binary build; full spec in [docs/local-first.md](local-first.md)         | python-backend-engineer | [ ]    | 1 w   |
+
+**SCI-0601 config additions:**
+
+```python
+# src/agt/config.py
+llm_base_url: str | None = Field(
+    default=None,
+    validation_alias=AliasChoices("AGT_LLM_BASE_URL", "LLM_BASE_URL"),
+)
+llm_model: str | None = Field(
+    default=None,
+    validation_alias=AliasChoices("AGT_LLM_MODEL", "LLM_MODEL"),
+)
+```
+
+`LLMProviderName` becomes `str` (open-ended) rather than a `Literal`. The router
+checks for known named providers first (`openai`, `anthropic`, `xai`, `groq`,
+`ollama`) and falls back to the generic OpenAI-compatible adapter when
+`AGT_LLM_BASE_URL` is set.
+
+**SCI-0602 Ollama shorthand:**
+
+```bash
+AGT_LLM_PROVIDER=ollama
+AGT_LLM_MODEL=llama3.2          # any model pulled with `ollama pull`
+# No API key needed — localhost:11434/v1 requires none
+```
+
+**SCI-0603 sidebar dropdown options:**
+
+| Option     | Shows fields                          | Notes                                  |
+| ---------- | ------------------------------------- | -------------------------------------- |
+| OpenAI     | API key                               | Default; auto-detects if key present   |
+| Anthropic  | API key                               |                                        |
+| xAI        | API key                               |                                        |
+| Groq       | API key                               |                                        |
+| Ollama     | Model name (default: llama3.2)        | No key needed; localhost only          |
+| Custom     | Base URL + API key + model name       | Any OpenAI-compatible endpoint         |
+
+**Gate:** `uv run pytest -q` green. `AGT_LLM_PROVIDER=ollama AGT_LLM_MODEL=llama3.2 uv run python -m agt.server --port 57321` starts and responds to `/health`. Provider selector renders in sidebar with correct conditional fields. Binary smoke test passes on at least one platform.
+
+**Full local-first delivery spec:** [docs/local-first.md](local-first.md)
 
 ---
 
@@ -878,10 +964,11 @@ Acceptance criteria:
 - [ ] Add API contract tests for health/run/resume/status payload schemas
 - [ ] Add security checklist section and release gate in documentation
 - [ ] Add plugin-backend contract versioning before ZAP-3 implementation starts
-- [ ] Implement AGT-23 retrieval registry abstraction with provider contract tests
-- [ ] Implement AGT-24 distributed checkpoint backend (Redis/Postgres) and cross-instance resume test
-- [ ] Implement AGT-25 async worker queue and task_id API/status contracts
-- [ ] Implement AGT-26 IaC modules and staging deployment smoke validation
+- [ ] Implement SCI-0501 security hardening (CORS allowlist, slowapi rate limiting, /docs/security.md)
+- [ ] Implement SCI-0502 Groq provider adapter (src/agt/providers/groq.py, auto-detection)
+- [ ] Implement SCI-0503 Dockerfile fix + docker-compose.yml + CI docker build smoke test
+- [ ] Implement SCI-0504 read-only MCP server (FastMCP, search_papers/list_watches/get_session/library_doctor)
+- [ ] AGT-23/24/25/26 — deferred indefinitely (see P5 deferral rationale in P5 section)
 
 ## Multi-Provider Rollout Checklist
 

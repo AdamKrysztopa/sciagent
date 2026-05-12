@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
+from slowapi import Limiter
 
 import agt.api.app as api_module
 from agt.api.app import create_app
@@ -58,6 +59,8 @@ class _Settings:
         default_factory=lambda: Path(tempfile.mkdtemp()) / f"watches-{uuid.uuid4().hex}"
     )
     cache_ttl_seconds: int = 3600
+    cors_allowed_origins: list[str] = field(default_factory=lambda: ["*"])
+    api_rate_limit: str = "200/minute"
 
     def provider_api_key(self, provider: str) -> _Secret | None:
         return getattr(self, f"{provider}_api_key", None)
@@ -704,3 +707,48 @@ def test_gap_finder_requires_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
         assert resp.status_code == HTTP_UNAUTHORIZED
 
     app.dependency_overrides.clear()
+
+
+def test_cors_headers_present(monkeypatch: pytest.MonkeyPatch) -> None:
+    def _fake_get_settings() -> _Settings:
+        return _Settings()
+
+    monkeypatch.setattr(api_module, "get_settings", _fake_get_settings)
+    app = create_app()
+    client = TestClient(app, raise_server_exceptions=False)
+    # Use OPTIONS preflight — handled entirely by CORSMiddleware before any endpoint runs.
+    response = client.options(
+        "/health",
+        headers={
+            "Origin": "http://localhost:3000",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+    assert response.headers.get("access-control-allow-origin") in ("*", "http://localhost:3000")
+
+
+def test_rate_limiter_configured(monkeypatch: pytest.MonkeyPatch) -> None:
+    def _fake_get_settings() -> _Settings:
+        return _Settings()
+
+    monkeypatch.setattr(api_module, "get_settings", _fake_get_settings)
+    app = create_app()
+    # SlowAPIMiddleware with default_limits does not inject per-response headers;
+    # verify the limiter is wired onto app.state instead.
+    assert isinstance(app.state.limiter, Limiter)
+
+
+def test_get_version(monkeypatch: pytest.MonkeyPatch) -> None:
+    def _fake_get_settings() -> _Settings:
+        return _Settings()
+
+    monkeypatch.setattr(api_module, "get_settings", _fake_get_settings)
+    app = create_app()
+
+    with TestClient(app) as client:
+        response = client.get("/version")
+
+    assert response.status_code == HTTP_OK
+    payload = response.json()
+    assert "version" in payload
+    assert isinstance(payload["version"], str)

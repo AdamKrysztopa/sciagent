@@ -10,18 +10,23 @@ dependencies = [
   "httpx>=0.28.0",
   "langgraph>=0.2.0",
   "langsmith",
+  "mcp[cli]>=1.0.0",
   "pydantic>=2.6",
   "pydantic-settings>=2.6",
   "pyspellchecker>=0.8.1",
   "pyzotero",
   "responses",
   "semanticscholar",
+  "slowapi>=0.1.9",
   "streamlit>=1.40",
   "structlog",
   "tenacity",
   "uvicorn>=0.33.0",
   "vcrpy"
 ]
+
+[project.scripts]
+sciagent-server = "agt.server:main"
 
 [project.optional-dependencies]
 keywords = [
@@ -40,8 +45,10 @@ dev = [
   "mkdocs>=1.6.0",
   "mkdocs-material>=9.5.0",
   "pre-commit",
+  "pyinstaller>=6.0",
   "pyright",
   "pytest",
+  "pytest-asyncio",
   "pytest-vcr",
   "ruff"
 ]

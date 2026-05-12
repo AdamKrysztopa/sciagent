@@ -103,3 +103,14 @@ jobs:
 
       - name: Build docs site
         run: uv run mkdocs build --strict
+
+  docker-build:
+    name: Docker Build Smoke Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t sciagent:ci .

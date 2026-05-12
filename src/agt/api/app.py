@@ -2,13 +2,19 @@
 
 from __future__ import annotations
 
+import importlib.metadata
 import uuid
 from dataclasses import dataclass
 from typing import Any, Literal, cast
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse, RedirectResponse
 from pydantic import BaseModel, Field, model_validator
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+from slowapi.util import get_remote_address
 
 from agt.config import Settings, get_settings
 from agt.graph.workflow import resume_workflow, run_search_phase
@@ -246,6 +252,21 @@ class _AppState:
 
 def create_app() -> FastAPI:  # noqa: PLR0915
     app = FastAPI(title="SciAgent API", version="0.1.0")
+    _settings = get_settings()
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=_settings.cors_allowed_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    _limiter = Limiter(
+        key_func=get_remote_address,
+        default_limits=[_settings.api_rate_limit],
+    )
+    app.state.limiter = _limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
+    app.add_middleware(SlowAPIMiddleware)
     store = _RunStore()
     app_state = _AppState()
 
@@ -267,6 +288,14 @@ def create_app() -> FastAPI:  # noqa: PLR0915
             "fallback_provider": settings.llm_fallback_provider,
             "api_contract_version": API_CONTRACT_VERSION,
         }
+
+    @app.get("/version")
+    async def _version() -> dict[str, str]:  # pyright: ignore[reportUnusedFunction]
+        try:
+            version = importlib.metadata.version("sciagent")
+        except importlib.metadata.PackageNotFoundError:
+            version = "0.0.0"
+        return {"version": version}
 
     @app.post("/run", response_model=RunAcceptedResponse)
     async def _run(  # pyright: ignore[reportUnusedFunction]

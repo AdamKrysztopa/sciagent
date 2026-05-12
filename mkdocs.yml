@@ -34,8 +34,10 @@ nav:
   - Manuals:
       - Configuration & Usage: manual.md
       - Deployment & Hosting: deployment.md
+      - Local-First Install: local-first.md
   - Reference:
       - P1 Benchmark: benchmark.md
       - REST API: api.md
       - Settings: settings.md
+      - Security: security.md
       - Zotero Add-on: zotero.md

@@ -15,7 +15,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
 
-LLMProviderName = Literal["xai", "openai", "anthropic", "groq"]
+LLMProviderName = Literal["xai", "openai", "anthropic", "groq", "openai-compatible", "ollama"]
 LibraryType = Literal["user", "group"]
 RuntimeEnvironment = Literal["local", "staging", "production"]
 
@@ -25,12 +25,16 @@ _PROVIDER_DEFAULT_MODELS: dict[LLMProviderName, str] = {
     "anthropic": "claude-opus-4-6",
     "xai": "grok-4",
     "groq": "llama-3.3-70b-versatile",
+    "openai-compatible": "gpt-4o-mini",
+    "ollama": "llama3.2",
 }
 _PROVIDER_ENV_ALIASES: dict[LLMProviderName, tuple[str, ...]] = {
     "openai": ("AGT_OPENAI_API_KEY", "OPENAI_API_KEY"),
     "anthropic": ("AGT_ANTHROPIC_API_KEY", "ANTHROPIC_API_KEY"),
     "xai": ("AGT_XAI_API_KEY", "XAI_API_KEY"),
     "groq": ("AGT_GROQ_API_KEY", "GROQ_API_KEY"),
+    "openai-compatible": ("AGT_LLM_API_KEY", "LLM_API_KEY"),
+    "ollama": (),
 }
 
 
@@ -123,6 +127,16 @@ class Settings(BaseSettings):
         default=None,
         validation_alias=AliasChoices("AGT_GROQ_API_KEY", "GROQ_API_KEY"),
     )
+    llm_api_key: SecretStr | None = Field(
+        default=None,
+        validation_alias=AliasChoices("AGT_LLM_API_KEY", "LLM_API_KEY"),
+        description="API key for openai-compatible provider (SCI-0601).",
+    )
+    llm_base_url: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("AGT_LLM_BASE_URL", "LLM_BASE_URL"),
+        description="Custom OpenAI-compatible base URL (DeepSeek, LM Studio, etc.) (SCI-0601).",
+    )
 
     env: RuntimeEnvironment = Field(
         default="local", validation_alias=AliasChoices("AGT_ENV", "ENV")
@@ -148,7 +162,8 @@ class Settings(BaseSettings):
         ),
     )
     model_name: str | None = Field(
-        default=None, validation_alias=AliasChoices("AGT_MODEL_NAME", "MODEL_NAME")
+        default=None,
+        validation_alias=AliasChoices("AGT_MODEL_NAME", "MODEL_NAME", "AGT_LLM_MODEL", "LLM_MODEL"),
     )
     timeout_seconds: int = Field(
         default=30,
@@ -370,6 +385,21 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("AGT_WATCH_DIR", "WATCH_DIR"),
         description="Directory for persistent watch JSON files. Defaults to ~/.sciagent/watches/.",
     )
+    data_dir: Path = Field(
+        default_factory=lambda: Path.home() / ".sciagent",
+        validation_alias=AliasChoices("AGT_DATA_DIR", "DATA_DIR"),
+        description="Root data directory; overridden by --data-dir in embedded server mode (SCI-0604).",
+    )
+    cors_allowed_origins: list[str] = Field(
+        default_factory=lambda: ["*"],
+        validation_alias=AliasChoices("AGT_CORS_ALLOWED_ORIGINS", "CORS_ALLOWED_ORIGINS"),
+        description="CORS allowed origins (JSON array). Default '*' for local use.",
+    )
+    api_rate_limit: str = Field(
+        default="200/minute",
+        validation_alias=AliasChoices("AGT_API_RATE_LIMIT", "API_RATE_LIMIT"),
+        description="slowapi global rate limit per IP (e.g. '200/minute').",
+    )
     log_level: str = Field(
         default="INFO", validation_alias=AliasChoices("AGT_LOG_LEVEL", "LOG_LEVEL")
     )
@@ -400,12 +430,20 @@ class Settings(BaseSettings):
             return self.anthropic_api_key
         if provider_name == "xai":
             return self.xai_api_key
-        return self.groq_api_key
+        if provider_name == "groq":
+            return self.groq_api_key
+        if provider_name == "openai-compatible":
+            return self.llm_api_key
+        return None  # ollama needs no key
 
     @property
     def resolved_llm_provider(self) -> LLMProviderName:
         if "llm_provider" in self.model_fields_set:
             return self.llm_provider
+
+        # Auto-detect openai-compatible when a custom base URL is configured
+        if self.llm_base_url is not None:
+            return "openai-compatible"
 
         for provider_name in _PROVIDER_AUTO_PRIORITY:
             if self.provider_api_key(provider_name) is not None:
@@ -415,15 +453,15 @@ class Settings(BaseSettings):
 
     @property
     def resolved_session_dir(self) -> Path:
-        return self.session_dir or (Path.home() / ".sciagent" / "sessions")
+        return self.session_dir or (self.data_dir / "sessions")
 
     @property
     def resolved_cache_dir(self) -> Path:
-        return self.cache_dir or (Path.home() / ".sciagent" / "cache")
+        return self.cache_dir or (self.data_dir / "cache")
 
     @property
     def resolved_watch_dir(self) -> Path:
-        return self.watch_dir or (Path.home() / ".sciagent" / "watches")
+        return self.watch_dir or (self.data_dir / "watches")
 
     @property
     def runtime(self) -> RuntimeConfig:
