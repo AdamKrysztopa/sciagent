@@ -364,6 +364,10 @@ async def resume_workflow(  # noqa: PLR0913
         from agt.tools.pdf_attach import attach_pdfs_to_items  # noqa: PLC0415
 
         active_settings = settings or get_settings()
+        # enable_pdf_imports from the client request overrides the server default so
+        # the Zotero "Enable PDF Imports" checkbox always downloads the binary.
+        if not active_settings.enable_pdf_attachment:
+            active_settings = active_settings.model_copy(update={"enable_pdf_attachment": True})
         papers = _deserialize_papers(final_state["papers"])
         effective_indices = final_state["selected_indices"]
         selected_papers = [papers[i] for i in effective_indices if 0 <= i < len(papers)]

@@ -149,10 +149,22 @@ class OpenAlexClient:
                 url = landing.strip()
 
         open_access = False
+        pdf_url: str | None = None
         open_access_data = item.get("open_access")
         if isinstance(open_access_data, dict):
             open_access_mapping = cast(dict[str, Any], open_access_data)
             open_access = bool(open_access_mapping.get("is_oa") is True)
+            if open_access:
+                oa_url = open_access_mapping.get("oa_url")
+                if isinstance(oa_url, str) and oa_url.strip():
+                    pdf_url = oa_url.strip()
+
+        # Also check primary_location.pdf_url which can be a direct PDF link
+        if pdf_url is None and isinstance(primary_location, dict):
+            location = cast(dict[str, Any], primary_location)
+            loc_pdf = location.get("pdf_url")
+            if isinstance(loc_pdf, str) and loc_pdf.strip():
+                pdf_url = loc_pdf.strip()
 
         semantic_score = 0.0
         relevance_value = item.get("relevance_score")
@@ -168,6 +180,7 @@ class OpenAlexClient:
             abstract=abstract,
             authors=authors,
             url=url,
+            pdf_url=pdf_url,
             source="openalex",
             semantic_score=semantic_score,
             citation_count=citation_count,

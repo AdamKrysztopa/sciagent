@@ -75,6 +75,16 @@ export function ResultsList({ disabled, onToggle, papers, selectedIndices }: Res
                 <span>Citations: {paper.citation_count}</span>
                 <span>Score: {paper.score.toFixed(2)}</span>
                 {paper.open_access ? <span className="agt-oa-badge">Open Access</span> : null}
+                {paper.pdf_url !== null ? (
+                  <a
+                    className="agt-pdf-badge"
+                    href={paper.pdf_url}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    PDF ↗
+                  </a>
+                ) : null}
               </div>
               <div className="agt-score-bar">
                 <div className="agt-score-fill" style={{ width: `${scorePercent}%` }} />

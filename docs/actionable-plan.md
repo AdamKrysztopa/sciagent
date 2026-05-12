@@ -1,6 +1,6 @@
 # SciAgent Prioritized Action Plan
 
-> **Last audit: 2026-05-12** — P6 complete. All quality gates green: ruff 0, pyright 0, 318 Python tests, 40 add-on tests, markdownlint 0, mkdocs --strict 0, Docker build ✓, `sciagent-server --version` ✓.
+> **Last audit: 2026-05-12** — OPN-09 complete. All quality gates green: ruff 0, pyright 0, 333 Python tests, 40 add-on tests. Docker container rebuilt.
 > This is the canonical execution tracker for live status, overall progress, and the next implementation target.
 > Update done / not done state here first.
 > See [docs/manual.md](manual.md) for configuration & usage.
@@ -13,11 +13,12 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 - **All P0–P6 milestones shipped. M6 fully signed off (2026-05-12).** Next phase is P7 — Validate, Sign, and Publish.
 - Current next target: **OPN-04** — Docs site deployment (GitHub Pages)
-- Last completed: OPN-03 — CI release pipeline fixed; `update.rdf` stable URL live; GitHub Releases install + auto-update mechanism documented (2026-05-12)
+- Last completed: OPN-09 — real PDF binary download + Zotero imported_file upload; `enable_pdf_imports` now downloads the binary; arXiv pdf_url bug fixed; OpenAlex + Semantic Scholar pdf_url populated; container rebuilt (2026-05-12)
 - M7 infra (AGT-23/24/25/26) deferred indefinitely; see P8 section for rationale.
 
 ### Recent Progress
 
+- ✅ OPN-09 complete (2026-05-12): Real PDF download pipeline — `fetch_pdf_bytes` (httpx + follow_redirects + magic-byte validation), `sha256_hex`, `is_valid_pdf`, `save_pdf`; 4-step Zotero `imported_file` upload (auth → S3 raw-body → register); `enable_pdf_imports=True` from Zotero UI now forces `enable_pdf_attachment=True` in settings; ArXiv `pdf_url` bug fixed (was going to `url=`); OpenAlex `open_access.oa_url` + `primary_location.pdf_url` populated; Semantic Scholar `openAccessPdf.url` added to fields + parsed; Docker container rebuilt and verified — `pdf_url` present in `/status` results; integration test downloads "Attention Is All You Need" (1706.03762) and verifies 2MB valid PDF. 333 tests pass.
 - ✅ OPN-03 complete (2026-05-12): CI release pipeline corrected — wrong addon ID (`sciagent@sciagent.dev` → `agt@yourdomain.org`), wrong XPI path (`zotero-addon/` → `zotero-addon/build/`), wrong Zotero version range (`7.0/*` → `9.0.0/9.*`), SHA256 added, `Commit update.rdf to main` step added, all release steps guarded on `github.ref_type == 'tag'`; `update.rdf` stable raw URL live at main branch; GitHub Releases install path and release process documented in `docs/manual.md`.
 - ✅ OPN-02 complete (2026-05-12): PyInstaller binary built and verified on macOS arm64 — 37 MB UPX-compressed; `--version` returns `0.1.0`; `/health` HTTP 200 (ok:false without creds, ok:true with); `POST /run` returns real paper search results; `serverManager.ts` spawn contract validated; manual added to `docs/manual.md` §Standalone Binary; stale spec example in `docs/local-first.md` corrected.
 - ✅ OPN-01 complete (2026-05-12): Live Zotero 9 desktop smoke test passed — full search→filter→approve→write verified; both `uvicorn` and Docker container backends confirmed; M6 fully signed off.
@@ -82,7 +83,7 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 | OPN-06 | **SCI-0102 external baseline comparison** — run the 22-query benchmark panel against OpenAlex direct, Semantic Scholar direct, and a ChatGPT web-search baseline; report delta vs SciAgent default; publish in `docs/benchmark.md` | ~1d    | P1 gap |
 | OPN-07 | **Retrieval recall for TS-02/BIO-01/BIO-04** — three benchmark queries still below reviewed baseline due to external API depth limits; test whether `AGT_SEARCH_MAX_PAGES=2` or additional source tuning recovers them | ~0.5d  | P1 gap |
 | OPN-08 | **M6.1-B backend capability contract** — normalize per-source terminal states (`unavailable_missing_key` vs `disabled_by_user` vs `failed`); structured filter payload in initial `/run` request; update `docs/api.md` and `contracts.ts` | ~1-2d  | ZAP-4A |
-| OPN-09 | **AGT-13 backend PDF pipeline** — `src/agt/tools/pdf_attach.py` with httpx async download, SHA256 checksum, `AGT_ENABLE_PDF_ATTACHMENT` flag; integrate with upsert; attachment failure never corrupts item write | ~2d    | ZAP-8 completeness |
+| OPN-09 | ~~**AGT-13 backend PDF pipeline** — `src/agt/tools/pdf_attach.py` with httpx async download, SHA256 checksum, `AGT_ENABLE_PDF_ATTACHMENT` flag; integrate with upsert; attachment failure never corrupts item write~~ **DONE 2026-05-12** — real PDF download via `fetch_pdf_bytes` + SHA256 + Zotero 4-step `imported_file` upload; `enable_pdf_imports=True` forces download path; arXiv `pdf_url` bug fixed; OpenAlex + Semantic Scholar `pdf_url` populated; container rebuilt + verified | ~2d    | ZAP-8 completeness ✓ |
 
 ### Completed: Next Items History
 

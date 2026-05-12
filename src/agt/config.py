@@ -385,6 +385,23 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("AGT_WATCH_DIR", "WATCH_DIR"),
         description="Directory for persistent watch JSON files. Defaults to ~/.sciagent/watches/.",
     )
+    pdf_dir: Path | None = Field(
+        default=None,
+        validation_alias=AliasChoices("AGT_PDF_DIR", "PDF_DIR"),
+        description="Directory for cached PDF downloads. Defaults to ~/.sciagent/pdfs/.",
+    )
+    enable_pdf_attachment: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("AGT_ENABLE_PDF_ATTACHMENT", "ENABLE_PDF_ATTACHMENT"),
+        description="Download and upload PDFs as imported_file attachments in Zotero.",
+    )
+    pdf_download_timeout: int = Field(
+        default=60,
+        ge=5,
+        le=300,
+        validation_alias=AliasChoices("AGT_PDF_DOWNLOAD_TIMEOUT", "PDF_DOWNLOAD_TIMEOUT"),
+        description="HTTP timeout in seconds for PDF downloads.",
+    )
     data_dir: Path = Field(
         default_factory=lambda: Path.home() / ".sciagent",
         validation_alias=AliasChoices("AGT_DATA_DIR", "DATA_DIR"),
@@ -462,6 +479,10 @@ class Settings(BaseSettings):
     @property
     def resolved_watch_dir(self) -> Path:
         return self.watch_dir or (self.data_dir / "watches")
+
+    @property
+    def resolved_pdf_dir(self) -> Path:
+        return self.pdf_dir or (self.data_dir / "pdfs")
 
     @property
     def runtime(self) -> RuntimeConfig:

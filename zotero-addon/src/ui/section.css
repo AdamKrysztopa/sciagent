@@ -189,6 +189,21 @@
   border: 0.5px solid var(--agt-accent);
 }
 
+/* ── PDF badge (clickable link) ───────────────────────────── */
+.agt-pdf-badge {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(29, 100, 200, 0.12);
+  color: #1d64c8;
+  border: 0.5px solid #1d64c8;
+  text-decoration: none;
+  cursor: pointer;
+}
+.agt-pdf-badge:hover {
+  opacity: 0.75;
+}
+
 /* ── Legacy header ────────────────────────────────────────── */
 .agt-header {
   align-items: center;

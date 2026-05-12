@@ -44,7 +44,7 @@ class SemanticScholarClient:
     """Small bounded client for Semantic Scholar Graph API."""
 
     _fields = (
-        "title,year,abstract,url,isOpenAccess,authors,externalIds,"
+        "title,year,abstract,url,isOpenAccess,openAccessPdf,authors,externalIds,"
         "citationCount,influentialCitationCount"
     )
 
@@ -187,7 +187,7 @@ class SemanticScholarClient:
             raise SemanticScholarResponseError("Semantic Scholar request failed")
 
     @staticmethod
-    def _normalize_item(item: dict[str, Any]) -> NormalizedPaper | None:
+    def _normalize_item(item: dict[str, Any]) -> NormalizedPaper | None:  # noqa: PLR0912
         title = str(item.get("title") or "").strip()
         if not title:
             return None
@@ -242,6 +242,14 @@ class SemanticScholarClient:
 
         open_access = bool(item.get("isOpenAccess") is True)
 
+        pdf_url: str | None = None
+        if open_access:
+            oa_pdf = item.get("openAccessPdf")
+            if isinstance(oa_pdf, dict):
+                oa_url = cast(dict[str, Any], oa_pdf).get("url")
+                if isinstance(oa_url, str) and oa_url.strip():
+                    pdf_url = oa_url.strip()
+
         return NormalizedPaper(
             title=title,
             year=year,
@@ -250,6 +258,7 @@ class SemanticScholarClient:
             abstract=abstract,
             authors=authors,
             url=url,
+            pdf_url=pdf_url,
             source="semantic_scholar",
             semantic_score=semantic_score,
             citation_count=citation_count,
