@@ -36,7 +36,11 @@
       "Bash(echo \"EXIT: $?\")",
       "Bash(echo \"LINT: $?\")",
       "Bash(echo \"LINT:$?\")",
-      "Bash(docker-compose up *)"
+      "Bash(docker-compose up *)",
+      "Bash(gtimeout 8 uv run python -m agt.mcp_server)",
+      "Bash(gtimeout 5 uv run python -m agt.mcp_server)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(echo \"LINT EXIT: $?\")"
     ]
   }
 }

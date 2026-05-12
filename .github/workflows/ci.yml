@@ -65,6 +65,14 @@ jobs:
       - name: Lint add-on
         run: npm run lint
 
+      - name: Check add-on identity
+        working-directory: .
+        run: |
+          if grep -r "yourdomain" zotero-addon/manifest.json zotero-addon/update.rdf; then
+            echo "ERROR: placeholder add-on ID found — replace 'yourdomain' before release"
+            exit 1
+          fi
+
       - name: Build add-on
         run: npm run build
 

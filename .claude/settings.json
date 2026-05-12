@@ -19,5 +19,18 @@
       "Bash(ls *)",
       "Bash(wc *)"
     ]
+  },
+  "mcpServers": {
+    "sciagent": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "/Users/adamkrysztopa/projects/papers/sciagent",
+        "python",
+        "-m",
+        "agt.mcp_server"
+      ]
+    }
   }
 }
