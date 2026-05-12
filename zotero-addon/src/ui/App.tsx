@@ -1,12 +1,13 @@
 import type { HealthResponse, WriteResult } from "../shared/contracts";
 import type { NativeWriteResult } from "../host/zoteroWriter";
 
-import { Component, type ErrorInfo, type ReactNode } from "react";
+import { Component, type ErrorInfo, type ReactNode, useEffect, useRef, useState } from "react";
 import type { AddonUiServices } from "./serviceTypes";
 import { BackendFailurePanel } from "./components/BackendFailurePanel";
 import { CapabilityBanner } from "./components/CapabilityBanner";
 import { ConfigPanel } from "./components/ConfigPanel";
 import { FilterEditor } from "./components/FilterEditor";
+import { FirstRunDialog } from "./components/FirstRunDialog";
 import { HealthStatus } from "./components/HealthStatus";
 import { LibraryDoctor } from "./components/LibraryDoctor";
 import { ResultsList } from "./components/ResultsList";
@@ -527,6 +528,42 @@ function DoneView({ controller }: { controller: SciAgentController }) {
 
 function AppContent({ services }: { services: AddonUiServices }) {
   const controller = useSciAgentController(services);
+
+  // Binary check: runs once when backendMode is confirmed as "local".
+  // Default config has backendMode="remote", so the check fires only after
+  // prefs load and the value changes to "local".
+  const [binarySetup, setBinarySetup] = useState<"ready" | "needed">("ready");
+  const binaryCheckDoneRef = useRef(false);
+
+  useEffect(() => {
+    if (binaryCheckDoneRef.current) return;
+    if (controller.config.backendMode !== "local") return;
+    if (services.checkBinaryInstalled === undefined) {
+      binaryCheckDoneRef.current = true;
+      return;
+    }
+    binaryCheckDoneRef.current = true;
+    void services.checkBinaryInstalled().then((installed) => {
+      if (!installed) setBinarySetup("needed");
+    });
+  }, [controller.config.backendMode, services]);
+
+  if (binarySetup === "needed") {
+    return (
+      <div className="agt-root">
+        <div className="agt-shell">
+          <header className="agt-titlebar">
+            <span className="agt-title">SciAgent</span>
+          </header>
+          <FirstRunDialog
+            onComplete={() => setBinarySetup("ready")}
+            onSkip={() => setBinarySetup("ready")}
+            services={services}
+          />
+        </div>
+      </div>
+    );
+  }
 
   const uiState: "idle" | "running" | "review" | "done" =
     controller.runView.phase === "submitting" || controller.runView.phase === "resuming"

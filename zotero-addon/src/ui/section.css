@@ -867,6 +867,10 @@
 .agt-gap-item { font-size: 0.85rem; }
 .agt-gap-year { color: var(--agt-text-muted); }
 
+/* ── First-run download progress ─────────────────────────── */
+.agt-progress-bar { background: var(--agt-border); border-radius: 4px; height: 8px; margin: 8px 0; overflow: hidden; }
+.agt-progress-fill { background: var(--agt-accent, #d47b37); height: 100%; transition: width 0.15s ease; }
+
 /* ── Responsive ───────────────────────────────────────────── */
 @media (max-width: 640px) {
   .agt-grid,

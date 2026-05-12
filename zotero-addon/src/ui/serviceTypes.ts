@@ -17,4 +17,10 @@ export interface AddonUiServices {
     collectionName: string,
     enablePdf: boolean,
   ): Promise<NativeWriteResult>;
+  /** Check whether the embedded server binary is present on disk. */
+  checkBinaryInstalled?(): Promise<boolean>;
+  /** Download the embedded server binary, reporting progress 0–100. */
+  downloadBinary?(version: string, onProgress: (pct: number) => void): Promise<void>;
+  /** Start the embedded server after a successful download. */
+  startServerAfterDownload?(): Promise<void>;
 }

@@ -40,6 +40,8 @@ declare const Subprocess: {
   }): Promise<{ kill(): void }>;
 };
 
+export const SCIAGENT_SERVER_VERSION = "0.2.0";
+
 const SERVER_PORT_DEFAULT = 57321;
 const SERVER_PORTS = [57321, 57322, 57323, 57324, 57325];
 let _resolvedPort = SERVER_PORT_DEFAULT;
