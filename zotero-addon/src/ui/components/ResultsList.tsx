@@ -70,11 +70,35 @@ export function ResultsList({ disabled, onToggle, papers, selectedIndices }: Res
               {paper.authors.length > 0 ? (
                 <p className="agt-result-authors">{paper.authors.join(", ")}</p>
               ) : null}
+              {paper.venue !== null ? (
+                <p className="agt-result-venue">
+                  {paper.venue}
+                  {paper.volume !== null ? `, vol. ${paper.volume}` : null}
+                  {paper.issue !== null ? ` no. ${paper.issue}` : null}
+                  {paper.pages !== null ? `, pp. ${paper.pages}` : null}
+                </p>
+              ) : null}
+              {paper.abstract !== null ? (
+                <p className="agt-result-abstract">{paper.abstract}</p>
+              ) : null}
               <div className="agt-result-meta">
                 {paper.year !== null ? <span>Year: {paper.year}</span> : null}
                 <span>Citations: {paper.citation_count}</span>
+                {paper.influential_citation_count > 0 ? (
+                  <span>{paper.influential_citation_count} influential</span>
+                ) : null}
                 <span>Score: {paper.score.toFixed(2)}</span>
                 {paper.open_access ? <span className="agt-oa-badge">Open Access</span> : null}
+                {paper.doi !== null ? (
+                  <a
+                    className="agt-doi-badge"
+                    href={`https://doi.org/${paper.doi}`}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    DOI ↗
+                  </a>
+                ) : null}
                 {paper.pdf_url !== null ? (
                   <a
                     className="agt-pdf-badge"

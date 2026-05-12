@@ -230,7 +230,18 @@ export function ConfigPanel({ config, onChange, onSave, saveError, saveState }: 
         <span>Spell-check queries before search</span>
       </label>
 
-      <h3 className="agt-subsection-heading">PDF Imports</h3>
+      <h3 className="agt-subsection-heading">Write Path</h3>
+      <label className="agt-checkbox-row">
+        <input
+          checked={config.nativeWriteEnabled}
+          onChange={(event) => onChange("nativeWriteEnabled", event.target.checked)}
+          type="checkbox"
+        />
+        <span>Use native Zotero write (ZAP path)</span>
+      </label>
+      <p className="agt-small-note">
+        When enabled, approved items are written directly via the Zotero JS API instead of the backend pyzotero path. Faster and works offline once results are loaded.
+      </p>
       <label className="agt-checkbox-row">
         <input
           checked={config.enablePdfImports}
@@ -239,9 +250,6 @@ export function ConfigPanel({ config, onChange, onSave, saveError, saveState }: 
         />
         <span>Enable PDF import after write</span>
       </label>
-      <p className="agt-small-note">
-        The MVP saves this toggle, but all writes still stay on the backend through <code>/resume</code>.
-      </p>
       {saveState === "saved" ? <span className="agt-pill agt-pill--ok">Preferences saved</span> : null}
       {saveError !== null ? <div className="agt-error">{saveError}</div> : null}
     </section>
