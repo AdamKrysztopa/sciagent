@@ -264,12 +264,33 @@ async def attach_pdfs_to_items(  # noqa: PLR0912, PLR0915
                         failed += 1
                 except Exception as exc:
                     _logger.warning(
-                        "pdf_download_attach_failed",
+                        "pdf_download_failed_fallback_to_linked_url",
                         item_key=item_key,
                         pdf_url=paper.pdf_url,
                         error=str(exc),
                     )
-                    failed += 1
+                    try:
+                        fallback_payload = [
+                            {
+                                "itemType": "attachment",
+                                "linkMode": "linked_url",
+                                "url": paper.pdf_url,
+                                "title": "PDF",
+                                "contentType": "application/pdf",
+                                "parentItem": item_key,
+                            }
+                        ]
+                        resp = await api_client.post(
+                            f"{lib_prefix}/items",
+                            headers=zotero_headers,
+                            json=fallback_payload,
+                        )
+                        if resp.status_code in {HTTP_OK, HTTP_CREATED}:
+                            attached += 1
+                        else:
+                            failed += 1
+                    except Exception:
+                        failed += 1
             else:
                 attachment_payload = [
                     {
