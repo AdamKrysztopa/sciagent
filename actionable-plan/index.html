@@ -522,6 +522,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#open-items-p71-ux-metadata-fidelity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Open Items (P7.1 — UX &amp; Metadata Fidelity)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#completed-next-items-history" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1040,6 +1051,17 @@
     <span class="md-ellipsis">
       
         P7 — Validate, Sign, and Publish
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p71-ux-metadata-fidelity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P7.1 — UX &amp; Metadata Fidelity
       
     </span>
   </a>
@@ -1851,6 +1873,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#open-items-p71-ux-metadata-fidelity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Open Items (P7.1 — UX &amp; Metadata Fidelity)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#completed-next-items-history" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2376,6 +2409,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#p71-ux-metadata-fidelity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P7.1 — UX &amp; Metadata Fidelity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#p8-infrastructure-deferred-indefinitely" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2690,7 +2734,7 @@
 
 <h1 id="sciagent-prioritized-action-plan">SciAgent Prioritized Action Plan<a class="headerlink" href="#sciagent-prioritized-action-plan" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p><strong>Last audit: 2026-05-12</strong> — OPN-09 complete. All quality gates green: ruff 0, pyright 0, 333 Python tests, 40 add-on tests. Docker container rebuilt.
+<p><strong>Last audit: 2026-05-12</strong> — OPN-12 through OPN-17 complete. NormalizedPaper venue/item_type/volume/issue/pages fields + Zotero write mapping; result card DOI badge/abstract/venue/citations (OPN-13); AGT_SEARCH_DEPTH quick/balanced/deep (OPN-14); ServerStartError + BackendFailurePanel (OPN-15); CapabilityBanner first-run checklist (OPN-16); SourceTerminalState per-source normalization + SearchCoveragePanel collapsed section (OPN-17). 386 Python tests + 40 add-on tests green. ruff 0, pyright 0.
 This is the canonical execution tracker for live status, overall progress, and the next implementation target.
 Update done / not done state here first.
 See <a href="../manual/">docs/manual.md</a> for configuration &amp; usage.</p>
@@ -2699,13 +2743,16 @@ See <a href="../manual/">docs/manual.md</a> for configuration &amp; usage.</p>
 <h2 id="execution-tracker">Execution Tracker<a class="headerlink" href="#execution-tracker" title="Permanent link">&para;</a></h2>
 <h3 id="current-status">Current Status<a class="headerlink" href="#current-status" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>All P0–P6 milestones shipped. M6 fully signed off (2026-05-12).</strong> Next phase is P7 — Validate, Sign, and Publish.</li>
-<li>Current next target: <strong>OPN-05</strong> — Wire MCP server into Claude Code</li>
-<li>Last completed: OPN-04 — GitHub Pages deploy job added to CI (<code>mkdocs gh-deploy --force</code>); <code>site_url</code>/<code>repo_url</code> added to <code>mkdocs.yml</code>; docs publish automatically on push to <code>main</code> (2026-05-12)</li>
+<li><strong>All P0–P6 milestones shipped. M6 fully signed off (2026-05-12).</strong> P7.1 UX &amp; Metadata Fidelity complete (OPN-10 through OPN-17 all done).</li>
+<li>Current next target: <strong>OPN-06</strong> — external baseline comparison (or OPN-07 retrieval recall improvement)</li>
+<li>Last completed: OPN-17 — source terminal state normalization + SearchCoveragePanel (2026-05-12)</li>
 <li>M7 infra (AGT-23/24/25/26) deferred indefinitely; see P8 section for rationale.</li>
 </ul>
 <h3 id="recent-progress">Recent Progress<a class="headerlink" href="#recent-progress" title="Permanent link">&para;</a></h3>
 <ul>
+<li>✅ OPN-17 complete (2026-05-12): Source terminal state normalization — <code>SourceTerminalState</code> literal (queried/zero_results/rate_limited/failed/skipped_no_key/skipped_disabled); <code>SearchMetadata.source_states</code> dict populated on every search; key-absent fallback sources (CORE/Dimensions/Google Scholar) now tagged <code>skipped_no_key</code> instead of silently absent; <code>SearchCoveragePanel.tsx</code> collapsed section in ReviewView with per-source state chips. 386 Python tests + 40 add-on tests.</li>
+<li>✅ OPN-12/13 complete (2026-05-12): <code>venue</code>, <code>item_type</code>, <code>volume</code>, <code>issue</code>, <code>pages</code> fields added to <code>NormalizedPaper</code>; populated from OpenAlex, Semantic Scholar, Crossref, PubMed; mapped to Zotero <code>itemType</code> in both upsert and ZAP write paths; <code>ResultsList.tsx</code> shows venue+vol/issue/pages inline, DOI badge, abstract, influential citation count; <code>nativeWriteEnabled</code> checkbox added to ConfigPanel.</li>
+<li>✅ OPN-05 complete (2026-05-12): MCP server wired into Claude Code — <code>mcpServers.sciagent</code> entry added to <code>.claude/settings.json</code>; runs <code>uv run --directory &lt;repo&gt; python -m agt.mcp_server</code>; all four tools confirmed (<code>search_papers</code>, <code>list_watches</code>, <code>get_session</code>, <code>library_doctor</code>); Docker rebuilt.</li>
 <li>✅ OPN-04 complete (2026-05-12): GitHub Pages deploy — <code>deploy-docs</code> job added to <code>ci.yml</code>; runs <code>mkdocs gh-deploy --force</code> on push to <code>main</code>, gated on <code>docs-quality</code> passing; <code>site_url: https://adamkrysztopa.github.io/sciagent/</code> and <code>repo_url</code> added to <code>mkdocs.yml</code> so canonical links resolve correctly.</li>
 <li>✅ OPN-09 complete (2026-05-12): Real PDF download pipeline — <code>fetch_pdf_bytes</code> (httpx + follow_redirects + magic-byte validation), <code>sha256_hex</code>, <code>is_valid_pdf</code>, <code>save_pdf</code>; 4-step Zotero <code>imported_file</code> upload (auth → S3 raw-body → register); <code>enable_pdf_imports=True</code> from Zotero UI now forces <code>enable_pdf_attachment=True</code> in settings; ArXiv <code>pdf_url</code> bug fixed (was going to <code>url=</code>); OpenAlex <code>open_access.oa_url</code> + <code>primary_location.pdf_url</code> populated; Semantic Scholar <code>openAccessPdf.url</code> added to fields + parsed; Docker container rebuilt and verified — <code>pdf_url</code> present in <code>/status</code> results; integration test downloads "Attention Is All You Need" (1706.03762) and verifies 2MB valid PDF. 333 tests pass.</li>
 <li>✅ OPN-03 complete (2026-05-12): CI release pipeline corrected — wrong addon ID (<code>sciagent@sciagent.dev</code> → <code>agt@yourdomain.org</code>), wrong XPI path (<code>zotero-addon/</code> → <code>zotero-addon/build/</code>), wrong Zotero version range (<code>7.0/*</code> → <code>9.0.0/9.*</code>), SHA256 added, <code>Commit update.rdf to main</code> step added, all release steps guarded on <code>github.ref_type == 'tag'</code>; <code>update.rdf</code> stable raw URL live at main branch; GitHub Releases install path and release process documented in <code>docs/manual.md</code>.</li>
@@ -2798,9 +2845,9 @@ See <a href="../manual/">docs/manual.md</a> for configuration &amp; usage.</p>
 </tr>
 <tr>
 <td>OPN-05</td>
-<td><strong>Wire MCP server into Claude Code</strong> — add <code>agt.mcp_server</code> entry to <code>.claude/settings.json</code> so <code>search_papers</code>, <code>list_watches</code>, <code>get_session</code>, and <code>library_doctor</code> are available as tools in this session</td>
+<td>~~<strong>Wire MCP server into Claude Code</strong> — add <code>agt.mcp_server</code> entry to <code>.claude/settings.json</code> so <code>search_papers</code>, <code>list_watches</code>, <code>get_session</code>, and <code>library_doctor</code> are available as tools in this session~~ <strong>DONE 2026-05-12</strong> — <code>mcpServers.sciagent</code> in <code>.claude/settings.json</code>; all 4 tools verified; Docker rebuilt</td>
 <td>~0.25d</td>
-<td>MCP usability</td>
+<td>MCP usability ✓</td>
 </tr>
 <tr>
 <td>OPN-06</td>
@@ -2825,6 +2872,70 @@ See <a href="../manual/">docs/manual.md</a> for configuration &amp; usage.</p>
 <td>~~<strong>AGT-13 backend PDF pipeline</strong> — <code>src/agt/tools/pdf_attach.py</code> with httpx async download, SHA256 checksum, <code>AGT_ENABLE_PDF_ATTACHMENT</code> flag; integrate with upsert; attachment failure never corrupts item write~~ <strong>DONE 2026-05-12</strong> — real PDF download via <code>fetch_pdf_bytes</code> + SHA256 + Zotero 4-step <code>imported_file</code> upload; <code>enable_pdf_imports=True</code> forces download path; arXiv <code>pdf_url</code> bug fixed; OpenAlex + Semantic Scholar <code>pdf_url</code> populated; container rebuilt + verified</td>
 <td>~2d</td>
 <td>ZAP-8 completeness ✓</td>
+</tr>
+</tbody>
+</table>
+<h3 id="open-items-p71-ux-metadata-fidelity">Open Items (P7.1 — UX &amp; Metadata Fidelity)<a class="headerlink" href="#open-items-p71-ux-metadata-fidelity" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>All OPN-10 through OPN-17 complete as of 2026-05-12.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Story</th>
+<th>Effort</th>
+<th>Blocking</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OPN-10</td>
+<td>~~<strong>Finalize add-on identity</strong>~~ <strong>DONE 2026-05-12</strong> — <code>sciagent@adamkrysztopa.github.io</code> stable ID; versions aligned across manifest/package/pyproject/update.rdf</td>
+<td>~0.25d</td>
+<td>release gate ✓</td>
+</tr>
+<tr>
+<td>OPN-11</td>
+<td>~~<strong>Zotero write-field mapping tests</strong>~~ <strong>DONE 2026-05-12</strong> — <code>tests/test_zotero_upsert.py</code> covers creators, DOI, abstract, year, URL, item type for all author edge cases</td>
+<td>~0.5d</td>
+<td>write correctness ✓</td>
+</tr>
+<tr>
+<td>OPN-12</td>
+<td>~~<strong>Add venue and item_type to NormalizedPaper</strong>~~ <strong>DONE 2026-05-12</strong> — <code>venue</code>, <code>item_type</code>, <code>volume</code>, <code>issue</code>, <code>pages</code> fields added to <code>models.py</code>; populated from OpenAlex, Semantic Scholar, Crossref, PubMed; mapped to Zotero <code>itemType</code> in upsert and ZAP native write</td>
+<td>~1d</td>
+<td>metadata fidelity ✓</td>
+</tr>
+<tr>
+<td>OPN-13</td>
+<td>~~<strong>Result card metadata improvements</strong>~~ <strong>DONE 2026-05-12</strong> — <code>ResultsList.tsx</code> shows venue+volume/issue/pages, DOI badge (linked), abstract, influential citation count; <code>nativeWriteEnabled</code> toggle added to ConfigPanel Write Path section</td>
+<td>~0.75d</td>
+<td>UX ✓</td>
+</tr>
+<tr>
+<td>OPN-14</td>
+<td>~~<strong>Search depth modes</strong>~~ <strong>DONE 2026-05-12</strong> — <code>AGT_SEARCH_DEPTH</code> config; <code>_depth_max_pages</code> multiplier (quick=1, balanced=default, deep=min(3×,10)); depth chip row in SourcePresets; <code>search_depth</code> in RunRequest; threaded through workflow → search_papers</td>
+<td>~0.5d</td>
+<td>UX ✓</td>
+</tr>
+<tr>
+<td>OPN-15</td>
+<td>~~<strong>Backend startup failure UX</strong>~~ <strong>DONE 2026-05-12</strong> — <code>ServerStartError</code> typed class (<code>timeout</code>/<code>binary_missing</code>/<code>port_unavailable</code>); <code>BackendFailurePanel.tsx</code> shown when <code>healthError !== null &amp;&amp; healthResponse === null</code></td>
+<td>~0.5d</td>
+<td>adoption ✓</td>
+</tr>
+<tr>
+<td>OPN-16</td>
+<td>~~<strong>First-run capability banner</strong>~~ <strong>DONE 2026-05-12</strong> — <code>CapabilityBanner.tsx</code> with 4 checks (backend/LLM/write/PDF); <code>bannerDismissed</code> pref; <code>onDismissBanner</code> via <code>useEffectEvent</code></td>
+<td>~0.5d</td>
+<td>adoption ✓</td>
+</tr>
+<tr>
+<td>OPN-17</td>
+<td>~~<strong>Source terminal state normalization</strong>~~ <strong>DONE 2026-05-12</strong> — <code>SourceTerminalState</code> literal type; <code>SearchMetadata.source_states</code> populated per-source; key-absent fallbacks tagged <code>skipped_no_key</code>; <code>SearchCoveragePanel.tsx</code> collapsed section in ReviewView</td>
+<td>~1d</td>
+<td>transparency ✓</td>
 </tr>
 </tbody>
 </table>
@@ -4135,6 +4246,82 @@ checks for known named providers first (<code>openai</code>, <code>anthropic</co
 </table>
 <p><strong>Gate:</strong> OPN-01 passes smoke test. XPI is installable without "Install from File" workaround. Docs site live. Binary artifact produced and tested.</p>
 <hr />
+<h3 id="p71-ux-metadata-fidelity">P7.1 — UX &amp; Metadata Fidelity<a class="headerlink" href="#p71-ux-metadata-fidelity" title="Permanent link">&para;</a></h3>
+<p><strong>Goal:</strong> Make the product trustworthy for daily researcher use. A Zotero item written by SciAgent should be complete enough that a researcher wouldn't edit it. A first-time user should understand what is and isn't working without reading docs.</p>
+<blockquote>
+<p><strong>Dropped from source proposals (reasons noted):</strong>
+- Vector database / semantic search store — not the product thesis; existing ranking serves the use case
+- Next.js migration — adds infra complexity, zero user-visible gain for the Zotero-native path
+- Celery / Redis task queue — already deferred as P8; FastAPI background tasks sufficient
+- react-flow / d3.js reasoning graph — expansive, not aligned with sidebar constraints
+- HITL upvote/downvote Knowledge Graph — repositions product as a chatbot, not an intake tool
+- BibTeX/RIS export — already have Markdown/JSON/CSV; not the bottleneck
+- "Safe demo mode without credentials" — nice but not a release blocker
+- Session diffing / side-by-side comparison — valid P4+ feature, not P7.1</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Story</th>
+<th>Priority</th>
+<th>Acceptance Criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OPN-10</td>
+<td>Finalize add-on identity</td>
+<td>P0</td>
+<td>No <code>yourdomain</code> in any release artifact; CI lint step fails if present; versions aligned</td>
+</tr>
+<tr>
+<td>OPN-11</td>
+<td>Zotero write-field mapping tests</td>
+<td>P0</td>
+<td><code>tests/test_zotero_upsert.py</code> covers all field mappings; creators test covers edge cases</td>
+</tr>
+<tr>
+<td>OPN-12</td>
+<td>Add venue and item_type to NormalizedPaper</td>
+<td>P1</td>
+<td><code>pyright</code> clean; providers populate where available; <code>_map_paper_to_item</code> writes <code>itemType</code></td>
+</tr>
+<tr>
+<td>OPN-13</td>
+<td>Result card metadata improvements</td>
+<td>P1</td>
+<td>Venue, DOI badge, OA badge, source chip visible in sidebar without layout overflow</td>
+</tr>
+<tr>
+<td>OPN-14</td>
+<td>Search depth modes</td>
+<td>P1</td>
+<td><code>AGT_SEARCH_DEPTH</code> setting works; sidebar exposes quick/balanced/deep; tests cover page budget</td>
+</tr>
+<tr>
+<td>OPN-15</td>
+<td>Backend startup failure UX</td>
+<td>P0</td>
+<td>Timeout → actionable error panel; no silent spinner; recovery steps reachable in 2 clicks</td>
+</tr>
+<tr>
+<td>OPN-16</td>
+<td>First-run capability banner</td>
+<td>P1</td>
+<td>Checklist visible on fresh install; each ✗ links to fix; dismisses after success</td>
+</tr>
+<tr>
+<td>OPN-17</td>
+<td>Source terminal state normalization</td>
+<td>P1</td>
+<td>Typed <code>SourceTerminalState</code> per source in API response; sidebar "Search coverage" section</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Quality gates:</strong> same as always — ruff 0, pyright 0, all tests pass, addon lint/typecheck/test/build clean.</p>
+<p><strong>Done when:</strong> a researcher can install the add-on, see what's working on first run, perform a search, read author/venue/DOI on result cards, select papers, write them to Zotero, and receive a clear summary of what succeeded or failed — without opening the manual.</p>
+<hr />
 <h3 id="p8-infrastructure-deferred-indefinitely">P8 — Infrastructure <em>(Deferred Indefinitely)</em><a class="headerlink" href="#p8-infrastructure-deferred-indefinitely" title="Permanent link">&para;</a></h3>
 <blockquote>
 <p><strong>Not planned.</strong> No user-visible improvement for single-user local use. Revisit when hosted multi-user deployment is targeted.</p>
@@ -4208,17 +4395,31 @@ checks for known named providers first (<code>openai</code>, <code>anthropic</co
 <blockquote>
 <p>This section tracks concrete actionable items. For the full open-item registry, see the <strong>P7 Open Items</strong> table in the Execution Tracker above.</p>
 </blockquote>
-<p><strong>Genuinely Open (unblocked):</strong></p>
+<p><strong>P7 — Done:</strong></p>
 <ul>
-<li>[ ] <strong>OPN-01</strong> — Live Zotero 9 desktop smoke test (check off <code>docs/manual.md</code> smoke test checklist)</li>
-<li>[x] <strong>OPN-02</strong> — PyInstaller binary: <code>pyinstaller build/sciagent-server.spec</code>; test binary (not <code>uv run</code>) starts and serves <code>/health</code> <em>(done 2026-05-12)</em></li>
-<li>[x] <strong>OPN-03</strong> — XPI signing + <code>update.rdf</code>: publish to GitHub Releases; generate <code>update.rdf</code> at stable URL <em>(done 2026-05-12)</em></li>
-<li>[ ] <strong>OPN-04</strong> — Docs site: add <code>mkdocs gh-deploy</code> job to CI; publish GitHub Pages on push to <code>main</code></li>
-<li>[ ] <strong>OPN-05</strong> — Wire MCP server: add <code>agt.mcp_server</code> to <code>.claude/settings.json</code> for local tool access</li>
+<li>[x] <strong>OPN-01</strong> — Live Zotero 9 desktop smoke test <em>(done 2026-05-12)</em></li>
+<li>[x] <strong>OPN-02</strong> — PyInstaller binary verified on macOS arm64 <em>(done 2026-05-12)</em></li>
+<li>[x] <strong>OPN-03</strong> — XPI signing + <code>update.rdf</code> at stable URL <em>(done 2026-05-12)</em></li>
+<li>[x] <strong>OPN-04</strong> — Docs site: <code>mkdocs gh-deploy</code> job in CI <em>(done 2026-05-12)</em></li>
+<li>[x] <strong>OPN-05</strong> — MCP server wired into Claude Code <em>(done 2026-05-12)</em></li>
+<li>[x] <strong>OPN-09</strong> — Backend PDF attachment pipeline <em>(done 2026-05-12)</em></li>
+</ul>
+<p><strong>P7 — Still Open:</strong></p>
+<ul>
 <li>[ ] <strong>OPN-06</strong> — SCI-0102: external baseline comparison for 22-query benchmark panel</li>
 <li>[ ] <strong>OPN-07</strong> — Retrieval recall: test <code>AGT_SEARCH_MAX_PAGES=2</code> on TS-02/BIO-01/BIO-04 queries</li>
-<li>[ ] <strong>OPN-08</strong> — M6.1-B: per-source terminal-state normalization + structured filter in <code>/run</code> payload</li>
-<li>[ ] <strong>OPN-09</strong> — AGT-13: backend PDF attachment pipeline (<code>src/agt/tools/pdf_attach.py</code>)</li>
+<li>[ ] <strong>OPN-08</strong> — M6.1-B: per-source terminal-state normalization <em>(absorbed into OPN-17)</em></li>
+</ul>
+<p><strong>P7.1 — UX &amp; Metadata Fidelity (next):</strong></p>
+<ul>
+<li>[x] <strong>OPN-10</strong> — Finalize add-on ID: <code>sciagent@adamkrysztopa.github.io</code>; author updated; CI lint gate blocks <code>yourdomain</code> <em>(done 2026-05-12)</em></li>
+<li>[x] <strong>OPN-11</strong> — Zotero write-field mapping tests: 24 unit tests covering <code>map_paper_to_item</code>, <code>map_item_type</code>, <code>split_creator_name</code> <em>(done 2026-05-12)</em></li>
+<li>[x] <strong>OPN-12</strong> — <code>venue</code>, <code>item_type</code>, <code>volume</code>, <code>issue</code>, <code>pages</code> added to <code>NormalizedPaper</code>; populated from OpenAlex/SS/Crossref/PubMed; Zotero mapper routes venue to <code>publicationTitle</code>/<code>repository</code>/<code>conferenceName</code> by type <em>(done 2026-05-12)</em></li>
+<li>[x] <strong>OPN-13</strong> — Result card: venue+volume/issue/pages, abstract, DOI badge, influential citations, nativeWriteEnabled toggle, Search Info in ReviewView <em>(done 2026-05-12)</em></li>
+<li>[ ] <strong>OPN-14</strong> — Search depth modes: <code>AGT_SEARCH_DEPTH</code> (quick/balanced/deep) in config + sidebar toggle</li>
+<li>[ ] <strong>OPN-15</strong> — Backend startup failure UX: timeout → actionable error panel in sidebar</li>
+<li>[ ] <strong>OPN-16</strong> — First-run capability banner: backend / LLM key / Zotero write / PDF attach checklist</li>
+<li>[ ] <strong>OPN-17</strong> — Source terminal states: typed <code>SourceTerminalState</code> per source; sidebar "Search coverage" section</li>
 </ul>
 <p><strong>Infrastructure — Deferred Indefinitely (P8):</strong></p>
 <ul>
