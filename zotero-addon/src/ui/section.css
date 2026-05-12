@@ -508,6 +508,41 @@
   border-color: var(--agt-accent);
 }
 
+/* ── Search Coverage Panel ────────────────────────────────── */
+.agt-section-heading--clickable {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  width: 100%;
+}
+
+.agt-expand-icon {
+  color: var(--agt-text-muted);
+  font-size: 0.7rem;
+  margin-left: auto;
+}
+
+.agt-coverage-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.agt-coverage-row {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.agt-coverage-name {
+  color: var(--agt-text);
+  font-size: 0.82rem;
+}
+
 /* ── Buttons ──────────────────────────────────────────────── */
 .agt-button {
   background: var(--agt-button-bg);
