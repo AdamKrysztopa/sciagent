@@ -61,6 +61,7 @@ class BaseSearchClient:
             authors = [creator] if creator else []
             access = (record.findtext("accessRights", default="") or "").lower()
             open_access = "open" in access or "free" in access
+            pdf_url = url if url and url.lower().endswith(".pdf") else None
             papers.append(
                 NormalizedPaper(
                     title=title,
@@ -69,6 +70,7 @@ class BaseSearchClient:
                     abstract=abstract,
                     authors=authors,
                     url=url,
+                    pdf_url=pdf_url,
                     source="base",
                     semantic_score=0.0,
                     citation_count=0,

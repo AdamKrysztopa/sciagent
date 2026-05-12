@@ -138,7 +138,7 @@ class CrossrefClient:
         return authors
 
     @staticmethod
-    def _normalize_item(item: dict[str, Any]) -> NormalizedPaper | None:
+    def _normalize_item(item: dict[str, Any]) -> NormalizedPaper | None:  # noqa: PLR0912
         title = CrossrefClient._extract_title(item)
         if not title:
             return None
@@ -158,6 +158,37 @@ class CrossrefClient:
         if isinstance(references_count_value, int):
             citation_count = max(0, references_count_value)
 
+        pdf_url: str | None = None
+        link_raw = item.get("link")
+        if isinstance(link_raw, list):
+            best: str | None = None
+            vor: str | None = None
+            for link_obj in cast(list[object], link_raw):
+                if not isinstance(link_obj, dict):
+                    continue
+                link = cast(dict[str, Any], link_obj)
+                if link.get("content-type") != "application/pdf":
+                    continue
+                link_url = link.get("URL")
+                if not isinstance(link_url, str) or not link_url.strip():
+                    continue
+                if best is None:
+                    best = link_url.strip()
+                if link.get("content-version") in ("vor", "am") and vor is None:
+                    vor = link_url.strip()
+            pdf_url = vor or best
+
+        open_access = False
+        license_raw = item.get("license")
+        if isinstance(license_raw, list):
+            for lic_obj in cast(list[object], license_raw):
+                if not isinstance(lic_obj, dict):
+                    continue
+                lic_url = cast(dict[str, Any], lic_obj).get("URL")
+                if isinstance(lic_url, str) and "creativecommons.org" in lic_url.lower():
+                    open_access = True
+                    break
+
         return NormalizedPaper(
             title=title,
             year=year,
@@ -165,8 +196,9 @@ class CrossrefClient:
             abstract=None,
             authors=authors,
             url=url,
+            pdf_url=pdf_url,
             source="crossref",
             semantic_score=0.0,
             citation_count=citation_count,
-            open_access=False,
+            open_access=open_access,
         )

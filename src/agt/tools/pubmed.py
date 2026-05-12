@@ -138,7 +138,9 @@ class PubMedClient:
         abstract = PubMedClient._extract_abstract(article)
         authors = PubMedClient._extract_authors(article)
         doi = PubMedClient._extract_doi(article)
+        pmc_id = PubMedClient._extract_pmc_id(article)
         url = f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/" if pmid else None
+        pdf_url = f"https://www.ncbi.nlm.nih.gov/pmc/articles/{pmc_id}/pdf/" if pmc_id else None
 
         return NormalizedPaper(
             title=title,
@@ -147,11 +149,21 @@ class PubMedClient:
             abstract=abstract,
             authors=authors,
             url=url,
+            pdf_url=pdf_url,
             source="pubmed",
             semantic_score=0.0,
             citation_count=0,
-            open_access=False,
+            open_access=pmc_id is not None,
         )
+
+    @staticmethod
+    def _extract_pmc_id(article: ET.Element) -> str | None:
+        for node in article.findall(".//ArticleIdList/ArticleId"):
+            if node.attrib.get("IdType", "").lower() == "pmc":
+                text = "".join(node.itertext()).strip()
+                if text:
+                    return text
+        return None
 
     @staticmethod
     def _extract_year(article: ET.Element) -> int | None:

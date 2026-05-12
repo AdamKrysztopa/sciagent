@@ -114,7 +114,7 @@ class OpenAlexClient:
         raise OpenAlexResponseError("OpenAlex request failed")
 
     @staticmethod
-    def _normalize_item(item: dict[str, Any]) -> NormalizedPaper | None:
+    def _normalize_item(item: dict[str, Any]) -> NormalizedPaper | None:  # noqa: PLR0915
         title = re.sub(r"<[^>]+>", "", str(item.get("title") or "")).strip()
         if not title:
             return None
@@ -154,17 +154,30 @@ class OpenAlexClient:
         if isinstance(open_access_data, dict):
             open_access_mapping = cast(dict[str, Any], open_access_data)
             open_access = bool(open_access_mapping.get("is_oa") is True)
-            if open_access:
-                oa_url = open_access_mapping.get("oa_url")
-                if isinstance(oa_url, str) and oa_url.strip():
-                    pdf_url = oa_url.strip()
+            oa_url = open_access_mapping.get("oa_url")
+            if isinstance(oa_url, str) and oa_url.strip():
+                pdf_url = oa_url.strip()
 
-        # Also check primary_location.pdf_url which can be a direct PDF link
         if pdf_url is None and isinstance(primary_location, dict):
-            location = cast(dict[str, Any], primary_location)
-            loc_pdf = location.get("pdf_url")
+            loc_pdf = cast(dict[str, Any], primary_location).get("pdf_url")
             if isinstance(loc_pdf, str) and loc_pdf.strip():
                 pdf_url = loc_pdf.strip()
+
+        if pdf_url is None:
+            best_oa = item.get("best_oa_location")
+            if isinstance(best_oa, dict):
+                best_oa_pdf = cast(dict[str, Any], best_oa).get("pdf_url")
+                if isinstance(best_oa_pdf, str) and best_oa_pdf.strip():
+                    pdf_url = best_oa_pdf.strip()
+
+        if pdf_url is None:
+            for loc_obj in cast(list[object], item.get("locations") or []):
+                if not isinstance(loc_obj, dict):
+                    continue
+                loc_pdf = cast(dict[str, Any], loc_obj).get("pdf_url")
+                if isinstance(loc_pdf, str) and loc_pdf.strip():
+                    pdf_url = loc_pdf.strip()
+                    break
 
         semantic_score = 0.0
         relevance_value = item.get("relevance_score")
