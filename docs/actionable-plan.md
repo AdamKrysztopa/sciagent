@@ -11,13 +11,15 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 ### Current Status
 
-- **All P0–P6 milestones shipped. M6 fully signed off (2026-05-12).** P7.1 UX & Metadata Fidelity complete (OPN-10 through OPN-17 all done).
+- **All P0–P6 milestones shipped. M6 fully signed off (2026-05-12).** P7.1 UX & Metadata Fidelity complete (OPN-10 through OPN-17 all done). OPN-08 and FirstRunDialog also complete.
 - Current next target: **OPN-06** — external baseline comparison (or OPN-07 retrieval recall improvement)
-- Last completed: OPN-17 — source terminal state normalization + SearchCoveragePanel (2026-05-12)
+- Last completed: OPN-08 — `docs/api.md` full rewrite (correct schemas for all endpoints) + FirstRunDialog (2026-05-12)
 - M7 infra (AGT-23/24/25/26) deferred indefinitely; see P8 section for rationale.
 
 ### Recent Progress
 
+- ✅ OPN-08 complete (2026-05-12): `docs/api.md` full rewrite — all 20+ endpoints documented with accurate schemas; `FilterEditContract` / `HardFilters` / `NormalizedPaper` / `SearchMetadata` / `SourceTerminalState` / `SearchPlan` reference section added; `search_depth`, `native_write`, `enable_pdf_imports` documented; `/capabilities`, watch list, sessions, cache endpoints all documented.
+- ✅ FirstRunDialog complete (2026-05-12): local-first binary-missing path wired — `checkBinaryInstalled` / `downloadBinary` / `startServerAfterDownload` in `AddonUiServices`; `FirstRunDialog.tsx` with progress bar; `App.tsx` binary check triggers when `backendMode="local"`.
 - ✅ OPN-17 complete (2026-05-12): Source terminal state normalization — `SourceTerminalState` literal (queried/zero_results/rate_limited/failed/skipped_no_key/skipped_disabled); `SearchMetadata.source_states` dict populated on every search; key-absent fallback sources (CORE/Dimensions/Google Scholar) now tagged `skipped_no_key` instead of silently absent; `SearchCoveragePanel.tsx` collapsed section in ReviewView with per-source state chips. 386 Python tests + 40 add-on tests.
 - ✅ OPN-12/13 complete (2026-05-12): `venue`, `item_type`, `volume`, `issue`, `pages` fields added to `NormalizedPaper`; populated from OpenAlex, Semantic Scholar, Crossref, PubMed; mapped to Zotero `itemType` in both upsert and ZAP write paths; `ResultsList.tsx` shows venue+vol/issue/pages inline, DOI badge, abstract, influential citation count; `nativeWriteEnabled` checkbox added to ConfigPanel.
 - ✅ OPN-05 complete (2026-05-12): MCP server wired into Claude Code — `mcpServers.sciagent` entry added to `.claude/settings.json`; runs `uv run --directory <repo> python -m agt.mcp_server`; all four tools confirmed (`search_papers`, `list_watches`, `get_session`, `library_doctor`); Docker rebuilt.
@@ -86,7 +88,7 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 | OPN-05 | ~~**Wire MCP server into Claude Code** — add `agt.mcp_server` entry to `.claude/settings.json` so `search_papers`, `list_watches`, `get_session`, and `library_doctor` are available as tools in this session~~ **DONE 2026-05-12** — `mcpServers.sciagent` in `.claude/settings.json`; all 4 tools verified; Docker rebuilt | ~0.25d | MCP usability ✓ |
 | OPN-06 | **SCI-0102 external baseline comparison** — run the 22-query benchmark panel against OpenAlex direct, Semantic Scholar direct, and a ChatGPT web-search baseline; report delta vs SciAgent default; publish in `docs/benchmark.md` | ~1d    | P1 gap |
 | OPN-07 | **Retrieval recall for TS-02/BIO-01/BIO-04** — three benchmark queries still below reviewed baseline due to external API depth limits; test whether `AGT_SEARCH_MAX_PAGES=2` or additional source tuning recovers them | ~0.5d  | P1 gap |
-| OPN-08 | **M6.1-B backend capability contract** — normalize per-source terminal states (`unavailable_missing_key` vs `disabled_by_user` vs `failed`); structured filter payload in initial `/run` request; update `docs/api.md` and `contracts.ts` | ~1-2d  | ZAP-4A |
+| OPN-08 | ~~**M6.1-B backend capability contract** — normalize per-source terminal states; structured filter payload in `/run`; update `docs/api.md` and `contracts.ts`~~ **DONE 2026-05-12** — `SourceTerminalState` done in OPN-17; `FilterEditContract` in `RunRequest` done; `docs/api.md` fully rewritten with correct schemas for all 20+ endpoints, `HardFilters`, `NormalizedPaper`, `SearchMetadata`, `SourceTerminalState`, `SearchPlan` | ~1-2d  | ZAP-4A ✓ |
 | OPN-09 | ~~**AGT-13 backend PDF pipeline** — `src/agt/tools/pdf_attach.py` with httpx async download, SHA256 checksum, `AGT_ENABLE_PDF_ATTACHMENT` flag; integrate with upsert; attachment failure never corrupts item write~~ **DONE 2026-05-12** — real PDF download via `fetch_pdf_bytes` + SHA256 + Zotero 4-step `imported_file` upload; `enable_pdf_imports=True` forces download path; arXiv `pdf_url` bug fixed; OpenAlex + Semantic Scholar `pdf_url` populated; container rebuilt + verified | ~2d    | ZAP-8 completeness ✓ |
 
 ### Open Items (P7.1 — UX & Metadata Fidelity)

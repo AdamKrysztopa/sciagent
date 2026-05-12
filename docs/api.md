@@ -1,6 +1,7 @@
 # SciAgent REST API Reference
 
-The SciAgent backend exposes a FastAPI REST API as the contract behind the primary Zotero add-on and as a developer/support interface for automation, debugging, and custom clients.
+The SciAgent backend exposes a FastAPI REST API as the contract behind the primary Zotero add-on
+and as a developer/support interface for automation, debugging, and custom clients.
 
 ## Base URL
 
@@ -10,28 +11,34 @@ http://localhost:8000
 
 ## Authentication
 
-All endpoints support optional authentication via headers:
-
 | Header            | Required | Description                                                     |
 | ----------------- | -------- | --------------------------------------------------------------- |
 | `X-AGT-API-Key`   | Optional | Backend API key (required if `AGT_BACKEND_API_KEY` set)         |
-| `X-AGT-Client-ID` | Optional | Client identifier for multi-user isolation (default: anonymous) |
+| `X-AGT-Client-ID` | Optional | Client identifier for per-user isolation (default: `anonymous`) |
 
-When `AGT_BACKEND_API_KEY` is configured, all requests must include a matching `X-AGT-API-Key` header.
+When `AGT_BACKEND_API_KEY` is configured, all requests must include a matching `X-AGT-API-Key`
+header. Workflows are scoped by `X-AGT-Client-ID` — each client can only access its own runs.
 
-Client isolation: workflows are scoped by `X-AGT-Client-ID`. Each client can only access their own runs.
+## Contract Versioning
+
+The current API contract version is **`2026-05`**, returned by both `GET /health` and
+`GET /capabilities` as `api_contract_version`. Clients should verify this value on startup
+against `REQUIRED_API_CONTRACT_VERSION` in `contracts.ts`.
+
+Stability rules:
+
+1. Endpoint paths are stable within a contract version.
+2. Required request fields will not be removed.
+3. Optional fields may be added to requests and responses.
+4. Breaking changes require a contract-version bump.
+
+---
 
 ## Endpoints
 
 ### `GET /health`
 
-Check system health, Zotero connectivity, and provider status.
-
-**Request:**
-
-```bash
-curl http://localhost:8000/health
-```
+Check system health, Zotero connectivity, and LLM provider status.
 
 **Response:**
 
@@ -46,30 +53,87 @@ curl http://localhost:8000/health
     "key_valid": true,
     "message": "Library access verified"
   },
-  "provider": "xai",
+  "provider": "openai",
   "fallback_provider": null,
   "api_contract_version": "2026-05"
 }
 ```
 
-**Response Fields:**
+| Field                  | Type           | Description                                                      |
+| ---------------------- | -------------- | ---------------------------------------------------------------- |
+| `ok`                   | boolean        | Overall health — true only when Zotero write is accessible       |
+| `message`              | string         | Human-readable status summary                                    |
+| `preflight.ok`         | boolean        | Zotero library access functional                                 |
+| `preflight.can_read`   | boolean        | Zotero read permission verified                                  |
+| `preflight.can_write`  | boolean        | Zotero write permission verified                                 |
+| `preflight.key_valid`  | boolean        | Zotero API key accepted                                          |
+| `preflight.message`    | string         | Human-readable preflight detail                                  |
+| `provider`             | string         | Active LLM provider name                                         |
+| `fallback_provider`    | string \| null | Fallback LLM provider (null if not configured)                   |
+| `api_contract_version` | string         | Backend contract version string (format: `YYYY-MM`)              |
 
-- `ok`: Overall health status (boolean)
-- `message`: Human-readable status message
-- `preflight.ok`: Whether Zotero library access is functional
-- `preflight.can_read`: Zotero read permission verified
-- `preflight.can_write`: Zotero write permission verified
-- `preflight.key_valid`: Zotero API key is valid
-- `preflight.message`: Human-readable status message
-- `provider`: Current LLM provider name
-- `fallback_provider`: Optional fallback LLM provider name (null if not configured)
-- `api_contract_version`: Backend contract version string (format: `YYYY-MM`) for client compatibility checks
+---
+
+### `GET /version`
+
+Return the installed backend package version.
+
+**Response:**
+
+```json
+{ "version": "0.1.0" }
+```
+
+---
+
+### `GET /capabilities`
+
+Return source policy, filter support, and provider availability. The Zotero add-on calls this
+on startup to drive `SourceToggles`, the capability banner, and PDF import controls.
+
+**Response:**
+
+```json
+{
+  "api_contract_version": "2026-05",
+  "source_policy": [
+    {
+      "name": "semantic_scholar",
+      "tier": "primary",
+      "enabled": true,
+      "supports_year_filter": false,
+      "supports_open_access_filter": false
+    }
+  ],
+  "filter_support": {
+    "year_filter": ["openalex", "pubmed"],
+    "open_access_filter": ["openalex"]
+  },
+  "pdf_import_supported": true,
+  "provider_availability": {
+    "openai": true,
+    "anthropic": false,
+    "xai": false,
+    "groq": false
+  },
+  "active_provider": "openai"
+}
+```
+
+| Field                  | Type                          | Description                                          |
+| ---------------------- | ----------------------------- | ---------------------------------------------------- |
+| `api_contract_version` | string                        | Backend contract version                             |
+| `source_policy`        | SourceCapability[]            | Per-source capabilities and tier                     |
+| `filter_support`       | Record\<string, string[]\>    | Maps filter name to sources that enforce it API-side |
+| `pdf_import_supported` | boolean                       | Backend supports PDF attachment via `pdf_url`        |
+| `provider_availability`| Record\<string, boolean\>     | Whether each LLM provider has a key configured       |
+| `active_provider`      | string                        | Currently active LLM provider                        |
 
 ---
 
 ### `POST /run`
 
-Start a new search workflow. Returns when papers are ready at the approval checkpoint.
+Start a new search workflow. Blocks until papers are ready at the approval checkpoint.
 
 **Request:**
 
@@ -77,45 +141,19 @@ Start a new search workflow. Returns when papers are ready at the approval check
 {
   "query": "retrieval augmented generation",
   "collection_name": "RAG Papers",
-  "thread_id": "optional-thread-id",
+  "thread_id": null,
+  "search_depth": "balanced",
   "filter_edit": null
 }
 ```
 
-**Request Fields:**
-
-| Field             | Type                       | Required | Description                                                 |
-| ----------------- | -------------------------- | -------- | ----------------------------------------------------------- |
-| `query`           | string                     | Yes      | Natural-language search query (min 1 character)             |
-| `collection_name` | string                     | Yes      | Target Zotero collection name (min 1 character)             |
-| `thread_id`       | string \| null             | No       | Optional thread ID for resumption/context                   |
-| `filter_edit`     | FilterEditContract \| null | No       | Optional filter edits for re-runs with modified search plan |
-
-**FilterEditContract Schema:**
-
-When provided, allows editing the backend's parsed search plan before re-running.
-
-```json
-{
-  "original_query": "retrieval augmented generation",
-  "min_year": 2020,
-  "max_year": null,
-  "open_access": null,
-  "exclude_terms": ["healthcare"],
-  "source_policy": "default",
-  "soft_preferences": {
-    "most_cited": false,
-    "recent": false
-  }
-}
-```
-
-**Filter Edit Rules:**
-
-- `filter_edit.original_query` must match `query` exactly
-- Backend validates filter constraints before execution
-- Hard filters (`min_year`, `exclude_terms`) are respected strictly
-- Soft preferences (`most_cited`, `recent`) adjust ranking but don't exclude results
+| Field             | Type                            | Required | Description                                                      |
+| ----------------- | ------------------------------- | -------- | ---------------------------------------------------------------- |
+| `query`           | string                          | Yes      | Natural-language search query (min 1 character)                  |
+| `collection_name` | string \| null                  | No       | Target Zotero collection (defaults to `AGT_ZOTERO_COLLECTION`)   |
+| `thread_id`       | string \| null                  | No       | Optional thread ID for resumption continuity                     |
+| `search_depth`    | `"quick"` \| `"balanced"` \| `"deep"` \| null | No | Retrieval depth; `null` uses the backend default (`balanced`) |
+| `filter_edit`     | [FilterEditContract](#filteredit-contract) \| null | No | Pre-search filter overrides; `original_query` must equal `query` |
 
 **Response:**
 
@@ -127,178 +165,27 @@ When provided, allows editing the backend's parsed search plan before re-running
 }
 ```
 
-**Response Fields:**
-
-- `run_id`: Unique workflow run identifier
-- `thread_id`: Thread ID for state continuity
-- `status`: Current workflow status (see Status Values)
-
-**Example with Authentication:**
-
-```bash
-curl -X POST http://localhost:8000/run \
-  -H "Content-Type: application/json" \
-  -H "X-AGT-API-Key: my-secret-backend-key" \
-  -H "X-AGT-Client-ID: user-1" \
-  -d '{
-    "query": "retrieval augmented generation",
-    "collection_name": "RAG Papers"
-  }'
-```
-
-**Example with Filter Edit:**
-
-```bash
-curl -X POST http://localhost:8000/run \
-  -H "Content-Type: application/json" \
-  -H "X-AGT-API-Key: my-secret-backend-key" \
-  -H "X-AGT-Client-ID: user-1" \
-  -d '{
-    "query": "retrieval augmented generation",
-    "collection_name": "RAG Papers",
-    "filter_edit": {
-      "original_query": "retrieval augmented generation",
-      "min_year": 2020,
-      "max_year": null,
-      "open_access": null,
-      "exclude_terms": ["healthcare"],
-      "source_policy": "default",
-      "soft_preferences": {
-        "most_cited": false,
-        "recent": false
-      }
-    }
-  }'
-```
-
----
-
-### `GET /status/{run_id}`
-
-Retrieve the current state of a workflow run.
-
-**Request:**
-
-```bash
-curl http://localhost:8000/status/abc-123 \
-  -H "X-AGT-API-Key: my-secret-backend-key" \
-  -H "X-AGT-Client-ID: user-1"
-```
-
-**Response:**
-
-```json
-{
-  "run_id": "abc-123",
-  "thread_id": "thread-456",
-  "status": "awaiting_approval",
-  "state": {
-    "query": "retrieval augmented generation",
-    "collection_name": "RAG Papers",
-    "papers": [
-      {
-        "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
-        "authors": ["Patrick Lewis", "Ethan Perez", "et al."],
-        "year": 2020,
-        "doi": "10.48550/arXiv.2005.11401",
-        "arxiv_id": "2005.11401",
-        "summary": "RAG models combine pre-trained parametric and non-parametric memory...",
-        "citations": 1234,
-        "source": "arxiv"
-      }
-    ],
-    "search_plan": {
-      "topic": "retrieval augmented generation",
-      "min_year": null,
-      "max_year": null,
-      "open_access": null,
-      "exclude_terms": [],
-      "source_policy": "default",
-      "soft_preferences": {
-        "most_cited": false,
-        "recent": false
-      }
-    },
-    "write_results": null,
-    "error": null
-  },
-  "error": null
-}
-```
-
-**Response Fields:**
-
-- `run_id`: Workflow run identifier
-- `thread_id`: Thread ID for continuity
-- `status`: Current workflow status
-- `state`: Full workflow state including papers, search plan, and write results (if available)
-- `error`: Error message if workflow failed
-
-**State Schema:**
-
-The `state` object contains:
-
-- `query`: Original search query
-- `collection_name`: Target collection name
-- `papers`: Array of normalized paper objects
-- `search_plan`: Parsed filter contract showing backend's search constraints
-- `write_results`: Array of write outcomes (available after approval)
-- `error`: Error message if any step failed
-
-**Paper Object Schema:**
-
-```json
-{
-  "title": "string",
-  "authors": ["string"],
-  "year": 2020,
-  "doi": "string | null",
-  "arxiv_id": "string | null",
-  "summary": "string",
-  "citations": 1234,
-  "influential_citations": 56,
-  "source": "arxiv",
-  "url": "https://...",
-  "is_open_access": true,
-  "venue": "NeurIPS 2020"
-}
-```
-
-**Search Plan Schema:**
-
-```json
-{
-  "topic": "retrieval augmented generation",
-  "min_year": 2020,
-  "max_year": null,
-  "open_access": null,
-  "exclude_terms": ["healthcare"],
-  "source_policy": "default",
-  "soft_preferences": {
-    "most_cited": false,
-    "recent": true
-  }
-}
-```
-
 ---
 
 ### `POST /resume`
 
-Approve or reject a workflow at the approval checkpoint. On approval, writes selected papers to Zotero.
+Approve or reject the workflow at the approval checkpoint. On approval, writes selected papers
+to Zotero (or returns them for native add-on write when `native_write=true`).
 
-**Request (Approve):**
+**Request (approve):**
 
 ```json
 {
   "run_id": "abc-123",
   "approved": true,
   "collection_name": "RAG Papers",
-  "selected_indices": [0, 2, 4]
+  "selected_indices": [0, 2, 4],
+  "native_write": false,
+  "enable_pdf_imports": false
 }
 ```
 
-**Request (Reject):**
+**Request (reject):**
 
 ```json
 {
@@ -307,14 +194,14 @@ Approve or reject a workflow at the approval checkpoint. On approval, writes sel
 }
 ```
 
-**Request Fields:**
-
-| Field              | Type           | Required | Description                                               |
-| ------------------ | -------------- | -------- | --------------------------------------------------------- |
-| `run_id`           | string         | Yes      | Workflow run identifier from `/run` response              |
-| `approved`         | boolean        | Yes      | `true` to write to Zotero, `false` to discard             |
-| `collection_name`  | string \| null | No       | Override collection name (uses original if not provided)  |
-| `selected_indices` | int[] \| null  | No       | Array of paper indices to write (defaults to all if null) |
+| Field               | Type           | Required | Description                                                                              |
+| ------------------- | -------------- | -------- | ---------------------------------------------------------------------------------------- |
+| `run_id`            | string         | Yes      | Workflow run ID from `/run`                                                              |
+| `approved`          | boolean        | Yes      | `true` to write, `false` to discard                                                      |
+| `collection_name`   | string \| null | No       | Override target collection name                                                          |
+| `selected_indices`  | int[] \| null  | No       | Indices of papers to write (defaults to all if null)                                     |
+| `native_write`      | boolean        | No       | When `true`, skip pyzotero and return `approved_papers` for native JS write (ZAP-6/7/8) |
+| `enable_pdf_imports`| boolean        | No       | When `true`, attach open-access PDF URLs to newly created Zotero items                   |
 
 **Response:**
 
@@ -322,57 +209,425 @@ Approve or reject a workflow at the approval checkpoint. On approval, writes sel
 {
   "run_id": "abc-123",
   "thread_id": "thread-456",
-  "status": "completed"
+  "status": "completed",
+  "approved_papers": null
 }
 ```
 
-**Status on Approval:**
+`approved_papers` is populated only when `native_write=true` — it is the list of
+[NormalizedPaper](#normalizedpaper) dicts for the add-on to write directly.
 
-- `completed`: All selected papers written successfully
-- `failed`: Write operation encountered errors
+---
 
-**Status on Rejection:**
+### `GET /status/{run_id}`
 
-- `rejected`: Workflow discarded without writes
+Retrieve the current state of a workflow run.
 
-**Example with Selection:**
+**Response:**
 
-```bash
-curl -X POST http://localhost:8000/resume \
-  -H "Content-Type: application/json" \
-  -H "X-AGT-API-Key: my-secret-backend-key" \
-  -H "X-AGT-Client-ID: user-1" \
-  -d '{
-    "run_id": "abc-123",
-    "approved": true,
-    "selected_indices": [0, 2, 4],
-    "collection_name": "My RAG Collection"
-  }'
+```json
+{
+  "run_id": "abc-123",
+  "thread_id": "thread-456",
+  "status": "awaiting_approval",
+  "state": { },
+  "error": null
+}
 ```
 
-**Example Rejection:**
+| Field       | Type           | Description                              |
+| ----------- | -------------- | ---------------------------------------- |
+| `run_id`    | string         | Workflow run identifier                  |
+| `thread_id` | string         | Thread ID for continuity                 |
+| `status`    | RunStatus      | Current workflow status (see below)      |
+| `state`     | AgentState \| null | Full workflow state (see below)      |
+| `error`     | string \| null | Error message if workflow failed         |
 
-```bash
-curl -X POST http://localhost:8000/resume \
-  -H "Content-Type: application/json" \
-  -H "X-AGT-API-Key: my-secret-backend-key" \
-  -H "X-AGT-Client-ID: user-1" \
-  -d '{
-    "run_id": "abc-123",
-    "approved": false
-  }'
+**AgentState schema** (the `state` object):
+
+| Field              | Type                           | Description                                              |
+| ------------------ | ------------------------------ | -------------------------------------------------------- |
+| `request_id`       | string                         | Internal request identifier                              |
+| `thread_id`        | string                         | Thread ID                                                |
+| `messages`         | string[]                       | LangGraph message log                                    |
+| `papers`           | NormalizedPaper[]              | Retrieved and ranked papers                              |
+| `collection_name`  | string \| null                 | Target Zotero collection name                            |
+| `approved`         | boolean                        | Whether the workflow has been approved                   |
+| `decision`         | `"approved"` \| `"rejected"` \| `"pending"` | Current decision state                  |
+| `phase`            | `"search_complete"` \| `"awaiting_approval"` \| `"completed"` \| `"rejected"` \| `"failed"` | Workflow phase |
+| `selected_indices` | int[]                          | Indices of papers selected for write                     |
+| `preflight`        | PreflightStatus                | Zotero preflight result at run time                      |
+| `write_result`     | WriteResult \| null            | Zotero write outcomes (after approval)                   |
+| `search_metadata`  | [SearchMetadata](#searchmetadata) \| null | Retrieval execution metadata including `source_states` |
+
+---
+
+### `GET /status/{run_id}/export`
+
+Export a run in Markdown, JSON, or CSV.
+
+**Query parameters:**
+
+| Parameter | Type                              | Default    | Description     |
+| --------- | --------------------------------- | ---------- | --------------- |
+| `format`  | `"markdown"` \| `"json"` \| `"csv"` | `markdown` | Export format |
+
+Returns the export as `text/markdown`, `application/json`, or `text/csv` respectively.
+
+---
+
+### `GET /correct-query`
+
+Spell-check a query string.
+
+**Query parameters:** `?q=trandign+timeseries`
+
+**Response:**
+
+```json
+{
+  "original": "trandign timeseries",
+  "corrected": "trending timeseries",
+  "changed": true
+}
 ```
+
+---
+
+### `POST /extract-keywords`
+
+Extract structured filter parameters from a natural-language query using the LLM provider.
+
+**Request:**
+
+```json
+{ "query": "recent transformers for NLP, not older than 2022, open access only" }
+```
+
+**Response:**
+
+```json
+{
+  "include_keywords": ["transformers", "NLP"],
+  "exclude_keywords": [],
+  "collection_name": null,
+  "min_year": 2022,
+  "max_year": null,
+  "min_citations": null,
+  "max_citations": null,
+  "open_access_only": true
+}
+```
+
+---
+
+### `POST /library-doctor`
+
+Scan a Zotero collection for missing metadata (DOI, abstract, PDF) and duplicates.
+
+**Request:** `{ "collection_name": "My Papers" }`
+
+**Response:**
+
+```json
+{
+  "collection_name": "My Papers",
+  "total_items": 42,
+  "issues": [
+    {
+      "item_key": "ABCD1234",
+      "title": "Some Paper",
+      "issue_types": ["missing_doi", "missing_abstract"],
+      "duplicate_of": null
+    }
+  ],
+  "duplicate_pairs": [["KEY1", "KEY2"]]
+}
+```
+
+`issue_types` values: `"missing_doi"`, `"missing_abstract"`, `"missing_pdf"`, `"duplicate"`.
+
+---
+
+### `POST /gap-finder`
+
+Ask the LLM to suggest papers missing from an existing Zotero collection.
+
+**Request:** `{ "collection_name": "My Papers" }`
+
+**Response:**
+
+```json
+{
+  "reasoning": "The collection covers X well but lacks coverage of Y...",
+  "papers": [ ]
+}
+```
+
+`papers` is an array of [NormalizedPaper](#normalizedpaper) objects.
+
+---
+
+### Watch List Endpoints
+
+Watches are saved searches that can be re-run to detect new papers since the last run.
+
+#### `POST /watches`
+
+Create a watch.
+
+**Request:**
+
+```json
+{
+  "name": "Weekly RAG digest",
+  "query": "retrieval augmented generation",
+  "collection_name": "RAG Papers",
+  "filter_edit": null
+}
+```
+
+Returns a `WatchSummary` object (see below) with HTTP 201.
+
+#### `GET /watches`
+
+List all watches. Returns `WatchSummary[]`.
+
+#### `GET /watches/{watch_id}`
+
+Get a single watch by ID. Returns `WatchSummary`.
+
+#### `DELETE /watches/{watch_id}`
+
+Delete a watch. Returns HTTP 204.
+
+#### `POST /watches/{watch_id}/rerun`
+
+Re-run a watch search and detect new papers since last run.
+
+**Response:**
+
+```json
+{
+  "watch_id": "watch-uuid",
+  "run_id": "run-uuid",
+  "thread_id": "thread-uuid",
+  "status": "awaiting_approval",
+  "new_count": 3,
+  "total_count": 10
+}
+```
+
+The resulting run enters the normal approval flow via `POST /resume`. Papers include a
+`watch_status` field: `"new"` (not seen before) or `"seen"` (already in the seen fingerprint set).
+
+**WatchSummary schema:**
+
+| Field             | Type                  | Description                                           |
+| ----------------- | --------------------- | ----------------------------------------------------- |
+| `id`              | string                | Watch UUID                                            |
+| `name`            | string                | Human-readable label                                  |
+| `query`           | string                | Saved search query                                    |
+| `collection_name` | string \| null        | Target collection (null uses backend default)         |
+| `created_at`      | string (ISO 8601)     | Creation timestamp                                    |
+| `last_run_at`     | string \| null        | Last rerun timestamp                                  |
+| `seen_count`      | int                   | Number of paper fingerprints already seen             |
+| `filter_edit`     | FilterEditContract \| null | Saved filter overrides                           |
+
+---
+
+### Session Endpoints
+
+Sessions persist run state to disk for export and rerun after the in-memory store is cleared.
+
+#### `GET /sessions`
+
+List saved sessions. Returns a list of session summary dicts.
+
+#### `GET /sessions/{session_id}`
+
+Load a full session state dict.
+
+#### `POST /sessions/{session_id}/rerun`
+
+Re-run a saved session with the same query and filters. Returns `RunAcceptedResponse`.
+
+---
+
+### Cache Endpoints
+
+#### `GET /cache/stats`
+
+Return hit/miss/size statistics for the result cache.
+
+#### `DELETE /cache/clear`
+
+Clear the result cache.
+
+**Query parameter:** `?expired_only=true` — only delete entries past their TTL (default: `false`).
+
+**Response:** `{ "deleted": 12, "expired_only": false }`
+
+---
+
+## Shared Schemas
+
+### FilterEditContract {#filteredit-contract}
+
+Structured filter payload sent in `/run` and saved in watches. When provided, `original_query`
+must exactly match the top-level `query` field.
+
+```json
+{
+  "original_query": "retrieval augmented generation",
+  "hard_filters": {
+    "min_year": 2020,
+    "max_year": null,
+    "min_citations": 0,
+    "max_citations": null,
+    "open_access_only": false,
+    "include_keywords": ["RAG"],
+    "exclude_keywords": ["healthcare"]
+  },
+  "soft_preferences": {
+    "require_positive_community_perception": false,
+    "min_semantic_score": 0.0
+  },
+  "result_limit": 10
+}
+```
+
+**HardFilters:**
+
+| Field              | Type          | Description                                                     |
+| ------------------ | ------------- | --------------------------------------------------------------- |
+| `min_year`         | int \| null   | Reject papers published before this year                        |
+| `max_year`         | int \| null   | Reject papers published after this year                         |
+| `min_citations`    | int           | Reject papers with fewer citations (default: 0)                 |
+| `max_citations`    | int \| null   | Reject papers with more citations                               |
+| `open_access_only` | boolean       | Restrict to open-access papers (default: false)                 |
+| `include_keywords` | string[]      | Papers must contain at least one of these terms                 |
+| `exclude_keywords` | string[]      | Papers containing any of these terms are excluded               |
+
+Hard filters are pushed down to source APIs where supported and re-applied post-merge.
+LLM query rewriting cannot remove or weaken them.
+
+**SoftPreferences:**
+
+| Field                               | Type    | Description                                              |
+| ----------------------------------- | ------- | -------------------------------------------------------- |
+| `require_positive_community_perception` | boolean | Boost papers with high community engagement           |
+| `min_semantic_score`                | float   | Minimum semantic relevance score (0.0–1.0, default 0.0) |
+
+---
+
+### NormalizedPaper
+
+All endpoints that return papers use this schema.
+
+| Field                        | Type           | Description                                              |
+| ---------------------------- | -------------- | -------------------------------------------------------- |
+| `title`                      | string         | Paper title                                              |
+| `year`                       | int \| null    | Publication year                                         |
+| `doi`                        | string \| null | DOI (normalized, without `https://doi.org/` prefix)      |
+| `arxiv_id`                   | string \| null | arXiv ID (e.g. `2005.11401`)                             |
+| `abstract`                   | string \| null | Paper abstract                                           |
+| `authors`                    | string[]       | Author names                                             |
+| `url`                        | string \| null | Landing page URL                                         |
+| `pdf_url`                    | string \| null | Direct PDF URL (used for attachment)                     |
+| `source`                     | string         | Source provider name (e.g. `semantic_scholar`, `openalex`) |
+| `index`                      | int \| null    | Stable 0-based result index                              |
+| `semantic_score`             | float          | Semantic relevance score (0.0–1.0)                       |
+| `citation_count`             | int            | Total citations                                          |
+| `influential_citation_count` | int            | Influential citations (Semantic Scholar signal)          |
+| `open_access`                | boolean        | Whether a free version is available                      |
+| `summary`                    | string \| null | LLM-generated 3–4 sentence summary                      |
+| `score`                      | float          | Final ranking score (composite)                          |
+| `explanation`                | string \| null | Human-readable ranking explanation                       |
+| `library_status`             | `"new"` \| `"in_library"` \| `"possible_duplicate"` \| null | Zotero library match |
+| `watch_status`               | `"new"` \| `"seen"` \| null | Watch rerun novelty tag                     |
+| `venue`                      | string \| null | Journal, conference, or preprint server name             |
+| `item_type`                  | `"journal_article"` \| `"preprint"` \| `"conference_paper"` \| `"book_chapter"` \| `"other"` \| null | Publication type |
+| `volume`                     | string \| null | Journal volume                                           |
+| `issue`                      | string \| null | Journal issue                                            |
+| `pages`                      | string \| null | Page range                                               |
+
+---
+
+### SearchMetadata
+
+Returned in `state.search_metadata` from `GET /status/{run_id}`.
+
+| Field               | Type                                          | Description                                             |
+| ------------------- | --------------------------------------------- | ------------------------------------------------------- |
+| `original_query`    | string                                        | Query as submitted by the user                          |
+| `rewritten_query`   | string \| null                                | LLM-rewritten query (null if regex mode)                |
+| `regex_query`       | string                                        | Keyword query string used for retrieval                 |
+| `sources_used`      | string[]                                      | Names of sources that returned results                  |
+| `sources_failed`    | string[]                                      | Names of sources that encountered errors                |
+| `source_states`     | Record\<string, [SourceTerminalState](#sourceterminalstate)\> | Per-source terminal state |
+| `mode`              | `"llm_rewrite"` \| `"regex"`                  | Query mode used                                         |
+| `retry_count`       | int                                           | Number of LLM-guided retries performed                  |
+| `total_fetched`     | int                                           | Total papers fetched across all sources before filtering |
+| `total_after_filter`| int                                           | Papers remaining after hard-filter enforcement          |
+| `source_timings`    | Record\<string, float\>                       | Per-source wall-clock time in seconds                   |
+| `search_plan`       | [SearchPlan](#searchplan) \| null             | Typed search plan produced before retrieval             |
+
+---
+
+### SearchPlan
+
+The structured plan produced before retrieval runs. Returned in `search_metadata.search_plan`.
+
+| Field                        | Type                  | Description                                                  |
+| ---------------------------- | --------------------- | ------------------------------------------------------------ |
+| `original_query`             | string                | Original user query                                          |
+| `topic_query`                | string                | Cleaned topic string used as the retrieval seed              |
+| `rewritten_queries`          | string[]              | LLM-generated query variants                                 |
+| `hard_filters`               | HardFilters           | Parsed deterministic filter constraints                      |
+| `soft_preferences`           | SoftPreferences       | Parsed ranking preferences                                   |
+| `source_policy`              | SourceCapability[]    | Per-source policy at plan time                               |
+| `filters_pushed_down`        | Record\<string, string[]\> | Filters applied at the source API level per source      |
+| `filters_enforced_post_merge`| string[]              | Filters enforced after cross-source merge                    |
+
+---
+
+### SourceCapability
+
+| Field                       | Type                      | Description                                          |
+| --------------------------- | ------------------------- | ---------------------------------------------------- |
+| `name`                      | string                    | Source identifier (e.g. `openalex`, `pubmed`)        |
+| `tier`                      | `"primary"` \| `"fallback"` | Whether the source runs by default or as optional  |
+| `enabled`                   | boolean                   | Whether the source is active for this run            |
+| `supports_year_filter`      | boolean                   | Source API supports server-side year filtering       |
+| `supports_open_access_filter` | boolean                 | Source API supports server-side OA filtering         |
+
+---
+
+### SourceTerminalState {#sourceterminalstate}
+
+Every source that was considered for a run ends in exactly one of these states, reported in
+`search_metadata.source_states` as `Record<string, SourceTerminalState>`.
+
+| Value              | Meaning                                                              |
+| ------------------ | -------------------------------------------------------------------- |
+| `queried`          | Source was queried and returned at least one result                  |
+| `zero_results`     | Source was queried but returned no results                           |
+| `rate_limited`     | Source returned a rate-limit error                                   |
+| `failed`           | Source encountered a non-rate-limit error                            |
+| `skipped_no_key`   | Source requires an API key that is not configured (opt-in sources only) |
+| `skipped_disabled` | Source was disabled by tier policy or depth setting for this run     |
 
 ---
 
 ## Status Values
 
-| Status              | Description                                                       |
+| Value               | Description                                                       |
 | ------------------- | ----------------------------------------------------------------- |
-| `awaiting_approval` | Papers ready for review; workflow paused at approval checkpoint   |
-| `completed`         | Workflow finished successfully; selected papers written to Zotero |
+| `awaiting_approval` | Papers ready for review; workflow paused at the approval gate     |
+| `completed`         | Workflow finished; selected papers written to Zotero              |
 | `rejected`          | User rejected the workflow; no writes performed                   |
-| `failed`            | Workflow encountered an error                                     |
+| `failed`            | Workflow encountered an unrecoverable error                       |
 
 ---
 
@@ -380,141 +635,71 @@ curl -X POST http://localhost:8000/resume \
 
 ### 401 Unauthorized
 
-Returned when `AGT_BACKEND_API_KEY` is set but the provided `X-AGT-API-Key` header is missing or invalid.
+`AGT_BACKEND_API_KEY` is set but the `X-AGT-API-Key` header is missing or wrong.
 
 ```json
-{
-  "detail": "invalid_api_key"
-}
+{ "detail": "invalid_api_key" }
+```
+
+### 403 Forbidden
+
+Requesting a run that belongs to a different `X-AGT-Client-ID`.
+
+```json
+{ "detail": "run_forbidden" }
 ```
 
 ### 404 Not Found
 
-Returned when requesting status for a run ID that doesn't exist or belongs to a different client.
-
 ```json
-{
-  "detail": "run_id_not_found"
-}
+{ "detail": "run_not_found" }
 ```
 
-### 422 Validation Error
+Also returned as `"session_not_found"`, `"watch_not_found"` for those resources.
 
-Returned when request payload fails validation.
+### 422 Validation Error
 
 ```json
 {
   "detail": [
-    {
-      "loc": ["body", "query"],
-      "msg": "field required",
-      "type": "value_error.missing"
-    }
+    { "loc": ["body", "query"], "msg": "field required", "type": "value_error.missing" }
   ]
 }
 ```
 
----
+### 429 Too Many Requests
 
-## Contract Versioning
-
-The current client contract is **2026-05** and follows these stability rules:
-
-1. Endpoint paths (`/health`, `/run`, `/status/{run_id}`, `/resume`) are stable
-2. Required request fields will not be removed in minor versions
-3. Optional fields may be added to requests/responses in minor versions
-4. Breaking changes (removing fields, changing field types) require a major version bump
-5. The `FilterEditContract` schema is considered stable for M6; extensions planned for M7
-
-Future compatibility:
-
-- M7 may introduce `/v1/` prefixed endpoints with enhanced multi-user isolation
-- M7 may add async job polling for long-running workflows
-- M7 may introduce webhook support for approval notifications
+Rate limit exceeded. Retry with exponential back-off.
 
 ---
 
-## Client Implementation Notes
+## Client Integration Notes
 
-### Zotero Add-on Integration
+### Zotero Add-on Flow
 
-The Zotero 9 add-on is the primary researcher interface and uses this API with the following flow:
+1. `GET /health` — verify backend and display `StatusPill`
+2. `GET /capabilities` — drive `SourceToggles`, capability banner, and PDF controls
+3. `POST /run` with optional `filter_edit` and `search_depth`
+4. `GET /status/{run_id}` — retrieve `papers` and `search_metadata` for display
+5. User reviews papers; `SearchCoveragePanel` uses `source_states` to show per-source outcomes
+6. `POST /resume` with `approved=true`, `selected_indices`, and `native_write=true` for ZAP-6/7/8
+7. Add-on writes papers via `approved_papers` array returned from step 6
 
-1. **Health Check**: `GET /health` on startup to verify backend connectivity
-2. **Run Search**: `POST /run` with query and collection name
-3. **Poll Status**: `GET /status/{run_id}` to retrieve papers and search plan
-4. **Display Filters**: Render parsed search plan for user review/edit
-5. **Re-run with Edits**: `POST /run` with `filter_edit` payload if user modifies filters
-6. **Approve/Reject**: `POST /resume` with selection and approval decision
-
-### Error Handling
-
-Clients should implement:
-
-- Retry logic for transient errors (network, timeout)
-- Exponential backoff for rate limit errors
-- Clear error messages for authentication failures
-- Graceful degradation when backend is unreachable
-
-### Performance
-
-- `/run` typically completes in 5-15 seconds for 10-20 sources
-- `/status/{run_id}` response size varies with paper count (typically 10-50 KB)
-- `/resume` with approval may take 2-5 seconds per paper for Zotero writes
-- No built-in pagination yet; large result sets may exceed client memory
-
----
-
-## Development and Testing
-
-### Local Backend Setup
+### Development Setup
 
 ```bash
 uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000
 ```
 
-### Testing Authentication
+Interactive docs:
 
-```bash
-# Set backend API key in environment
-export AGT_BACKEND_API_KEY=test-key-123
-
-# Start backend
-uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000
-
-# Test with valid key
-curl http://localhost:8000/health \
-  -H "X-AGT-API-Key: test-key-123"
-
-# Test with missing/invalid key (should return 401)
-curl http://localhost:8000/health
-```
-
-### Testing Client Isolation
-
-```bash
-# Client 1 creates a run
-curl -X POST http://localhost:8000/run \
-  -H "Content-Type: application/json" \
-  -H "X-AGT-Client-ID: client-1" \
-  -d '{"query": "test", "collection_name": "Test"}'
-
-# Client 2 cannot access client-1's run
-curl http://localhost:8000/status/abc-123 \
-  -H "X-AGT-Client-ID: client-2"
-```
-
-### API Documentation
-
-FastAPI auto-generates interactive docs:
-
-- Swagger UI: <http://localhost:8000/docs>
-- ReDoc: <http://localhost:8000/redoc>
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
 
 ---
 
 ## See Also
 
-- [Configuration & Usage Manual](manual.md) — End-to-end setup and configuration
-- [Deployment Guide](deployment.md) — Local, Docker, and SaaS deployment options
-- [Zotero Add-on Roadmap](zotero.md) — Add-on architecture and roadmap
+- [Configuration & Usage Manual](manual.md)
+- [Deployment Guide](deployment.md)
+- [Zotero Add-on Roadmap](zotero.md)
