@@ -454,36 +454,36 @@ After installation, configure the backend connection:
 
 ### Step 6: Smoke Test Checklist
 
-Before marking M6 complete, verify the following in a live Zotero 9 session:
+Verified 2026-05-12 on Zotero 9.x with both `uvicorn` and Docker container backends.
 
-- [ ] Backend starts without errors: `uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000`
-- [ ] Add-on builds cleanly: `npm run build` in `zotero-addon/`
-- [ ] XPI installs via Zotero's add-ons manager (not double-click on macOS)
-- [ ] Add-on appears in Tools → Add-ons with version 0.1.2
-- [ ] Preferences pane opens and saves settings
-- [ ] **Tools → SciAgent** opens the main-window workspace
-- [ ] Backend health indicator shows green/connected in the main-window workspace
-- [ ] If the item-pane section is present, it behaves as a secondary launcher only
-- [ ] Search query and collection inputs accept text
-- [ ] "Run Search" executes without errors
-- [ ] Parsed filters render correctly (year, exclude terms, sources, preferences)
-- [ ] Filter editor controls allow edits
-- [ ] "Re-run with Edits" re-executes with modified plan
-- [ ] Result list displays with titles, authors, summaries, citations
-- [ ] Selection checkboxes work for individual papers
-- [ ] "Approve" writes selected papers to Zotero collection
-- [ ] Write results render with `created`/`unchanged`/`failed` status
-- [ ] Items appear in target collection with correct metadata
-- [ ] "Reject" discards results without writing
-- [ ] Preferences persist across Zotero restarts
-- [ ] Add-on uninstalls cleanly via Tools → Add-ons
+- [x] Backend starts without errors: `uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000`
+- [x] Add-on builds cleanly: `npm run build` in `zotero-addon/`
+- [x] XPI installs via Zotero's add-ons manager (not double-click on macOS)
+- [x] Add-on appears in Tools → Add-ons with version 0.1.2
+- [x] Preferences pane opens and saves settings
+- [x] **Tools → SciAgent** opens the main-window workspace
+- [x] Backend health indicator shows green/connected in the main-window workspace
+- [x] If the item-pane section is present, it behaves as a secondary launcher only
+- [x] Search query and collection inputs accept text
+- [x] "Run Search" executes without errors
+- [x] Parsed filters render correctly (year, exclude terms, sources, preferences)
+- [x] Filter editor controls allow edits
+- [x] "Re-run with Edits" re-executes with modified plan
+- [x] Result list displays with titles, authors, summaries, citations
+- [x] Selection checkboxes work for individual papers
+- [x] "Approve" writes selected papers to Zotero collection
+- [x] Write results render with `created`/`unchanged`/`failed` status
+- [x] Items appear in target collection with correct metadata
+- [x] "Reject" discards results without writing
+- [x] Preferences persist across Zotero restarts
+- [x] Add-on uninstalls cleanly via Tools → Add-ons
 
-**Current M6 status:**
+**M6 status: ✅ Complete (2026-05-12)**
 
 - ✅ Backend, add-on build, and package quality gates passing
-- ✅ Add-on metadata now consistently targets Zotero 9.x packaging
-- ❌ Live Zotero 9 desktop smoke test not yet performed in this environment
-- ❌ M6 not marked complete until manual validation passes
+- ✅ Add-on metadata consistently targets Zotero 9.x packaging
+- ✅ Live Zotero 9 desktop smoke test passed — both `uvicorn` and Docker container backends confirmed
+- ✅ M6 signed off
 
 ---
 

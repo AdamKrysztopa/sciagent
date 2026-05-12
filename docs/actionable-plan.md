@@ -1,6 +1,6 @@
 # SciAgent Prioritized Action Plan
 
-> **Finalization audit completed: 2026-05-12** — P6 complete (2026-05-12). SCI-0601/0602/0603/0604 all shipped. All quality gates green: ruff 0, pyright 0, 318 tests passing; addon 40 tests, markdownlint 0.
+> **Last audit: 2026-05-12** — P6 complete. All quality gates green: ruff 0, pyright 0, 318 Python tests, 40 add-on tests, markdownlint 0, mkdocs --strict 0, Docker build ✓, `sciagent-server --version` ✓.
 > This is the canonical execution tracker for live status, overall progress, and the next implementation target.
 > Update done / not done state here first.
 > See [docs/manual.md](manual.md) for configuration & usage.
@@ -11,13 +11,14 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 ### Current Status
 
-- Current focus: P6 complete — all stories shipped
-- Current next implementation target: none planned
-- Last completed: P6 complete — SCI-0601/0602/0603/0604 all shipped (2026-05-12)
-- P5 scope revised 2026-05-12: M7 infra (AGT-23/24/25/26) deferred indefinitely; replaced with four achievable local-hardening stories. See P5 section below for rationale.
+- **All P0–P6 milestones shipped. M6 fully signed off (2026-05-12).** Next phase is P7 — Validate, Sign, and Publish.
+- Current next target: **OPN-02** — PyInstaller binary artifact
+- Last completed: OPN-01 — Live Zotero 9 desktop smoke test passed (2026-05-12); both `uvicorn` and Docker container confirmed working
+- M7 infra (AGT-23/24/25/26) deferred indefinitely; see P8 section for rationale.
 
 ### Recent Progress
 
+- ✅ OPN-01 complete (2026-05-12): Live Zotero 9 desktop smoke test passed — full search→filter→approve→write verified; both `uvicorn` and Docker container backends confirmed; M6 fully signed off.
 - ✅ P6 complete (2026-05-12): SCI-0601 generic OpenAI-compatible adapter (AGT_LLM_BASE_URL/AGT_LLM_API_KEY/AGT_LLM_MODEL, covers DeepSeek, Together AI, LM Studio); SCI-0602 Ollama named shorthand (AGT_LLM_PROVIDER=ollama, localhost:11434/v1, no key); SCI-0603 Zotero sidebar provider dropdown (OpenAI/Anthropic/xAI/Groq/Ollama/Custom, prefs, collectProviderEnv); SCI-0604 embedded server binary (sciagent-server CLI, AGT_DATA_DIR, GET /version, PyInstaller spec, CI build-binaries workflow, serverManager.ts, FirstRunDialog.tsx). All gates: ruff 0, pyright 0, 318 tests, addon 40 tests.
 - ✅ P5 complete (2026-05-12): SCI-0501 CORS + slowapi rate limiting + docs/security.md; SCI-0502 Groq provider adapter (llama-3.3-70b-versatile, wired into auto-detect); SCI-0503 Dockerfile CMD fixed (uvicorn) + docker-compose.yml + CI docker-build smoke test; SCI-0504 read-only MCP server (FastMCP, 4 tools: search_papers/list_watches/get_session/library_doctor). All gates: ruff 0, pyright 0, 309 tests, markdownlint 0.
 - ✅ P4 complete (2026-05-12): SCI-0401 WatchStore (JSON-backed per-watch files, `~/.sciagent/watches/`), CRUD API (`POST/GET/DELETE /watches`); SCI-0402 watch rerun (`POST /watches/{id}/rerun`) — runs search, tags new vs seen papers by DOI+fingerprint, extends seen_fingerprints, returns run_id for normal approve/reject flow; SCI-0403 Zotero sidebar WatchList.tsx component, watch_status badge in ResultsList.tsx, backendClient methods, useSciAgentController state. All gates: ruff 0, pyright 0, 298 tests, addon clean.
@@ -63,38 +64,27 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 ### Not Done Milestones
 
-> Ordered from fastest path to final product. P0 (trust) before P1 (evidence) before P2 (differentiation) before P3 (Zotero-native) before P4 (retention) before P5 (scale). M7 infrastructure deprioritized — Redis/Celery/Terraform add no value for a single-user local tool with file-backed persistence already in place.
-- [x] P5 — Local-First Hardening _(security, Groq provider, Docker fix, MCP server; 2026-05-12)_
-- [x] P6 — Provider Extensibility and Zero-Terminal Install _(DeepSeek, Ollama, custom base\_url, embedded server binary; 2026-05-12)_
+> All P0–P6 milestones shipped. Open work is in **P7** below.
 
-### Next Items In Order
+### Open Items (P7 — Validate, Sign, and Publish)
 
-> Ordered by fastest path to a product a Zotero researcher would trust and recommend.
+> Ordered by blocking dependency. OPN-01 blocks all others.
 
-- [x] SCI-0101 — Build retrieval benchmark panel (20–30 queries, recall@10, hard-filter compliance)
-- [x] SCI-0103 — Measure benchmarked feature flags and assign dispositions (retire, keep experimental, or promote)
-- [x] SCI-0104 — Closed at 19/22 (INTER-03 recovered; TS-02/BIO-01/BIO-04 are external-API retrieval limits); P1 closed by product decision
-- [x] SCI-0205 — "Why this paper?" explanations: deterministic, signal-based (relevance, citations, source, year, open access); shown in Streamlit UI, Zotero sidebar, and demo output; NormalizedPaper.explanation field populated at ranking time
-- [x] SCI-0203 — Persistent sessions: SessionStore (JSON files in ~/.sciagent/sessions/), auto-save on run, /sessions + /sessions/{id} + /sessions/{id}/rerun API endpoints
-- [x] SCI-0204 — Local result cache: ResultCache (SQLite, configurable TTL, /cache/stats, /cache/clear), auto-populate on run, cache-hit bypass of search phase
-- [x] SCI-0201 — Backend capability endpoint extended: provider_availability + active_provider added to /capabilities response; CapabilitiesResponse in contracts.ts updated
-- [x] SCI-0206 — Export: export_session() in session_export.py (Markdown PRISMA-lite, JSON, CSV); /status/{run_id}/export?format= endpoint
-- [x] SCI-0202 — Source presets: SourcePresets.tsx component (Balanced, Open Access, Recent 5yr, Highly Cited, Quick 5, Deep 20); rendered above FilterEditor in Zotero sidebar; CSS styles added
-- [x] SCI-0301 — Collection-aware search: library_status badge (in_library/possible_duplicate/new) on every result; collection_inspector fetches Zotero library before retrieval; workflow.py tags papers; sidebar shows badges; addon v0.2.0
-- [x] SCI-0302 — PDF attachment pipeline: attach_pdfs_to_items POSTs linked_url child to /items with parentItem; open-access only; failure never blocks metadata import; enable_pdf_imports flag on ResumeRequest
-- [x] SCI-0303 — Library Doctor: scan_collection reads collection for missing_doi/abstract/pdf and duplicate pairs; POST /library-doctor; LibraryDoctor.tsx component in Zotero sidebar; read-only, no writes
-- [x] SCI-0304 — Gap Finder: find_gaps LLM generates 3–5 search queries from existing collection titles, searches, filters already-in-library results, deduplicates; POST /gap-finder; Gap Finder section in sidebar
-- [x] SCI-0401 — Watch List CRUD: WatchStore (JSON-backed, ~/.sciagent/watches/), Watch dataclass (id/name/query/filter_edit/seen_fingerprints), POST/GET/DELETE /watches endpoints, resolved_watch_dir in config
-- [x] SCI-0402 — Watch Rerun: POST /watches/{id}/rerun runs search, tags papers new vs seen by DOI+title_author_fingerprint, extends seen_fingerprints on each run, updates last_run_at; returns run_id for normal approve/reject flow; 7 API tests
-- [x] SCI-0403 — Zotero Sidebar WatchList: WatchList.tsx component (save-as-watch form, watch list with Rerun/Delete, rerun banner), watch_status badge in ResultsList.tsx (new in watch / previously seen), backendClient.ts createWatch/listWatches/deleteWatch/rerunWatch, useSciAgentController watch state, WatchList integrated into IdleView
-- [x] SCI-0501 — Security hardening: CORS origin allowlist, HTTP rate limiting (slowapi), `/security.md` checklist documenting the auth model, HTTPS-first deployment note
-- [x] SCI-0502 — Groq provider adapter: `src/agt/providers/groq.py` mirroring OpenAI adapter with `base_url="https://api.groq.com/openai/v1"`; wired into provider auto-detection; `AGT_GROQ_API_KEY` already in config
-- [x] SCI-0503 — Fix Dockerfile + add docker-compose: replace Streamlit `CMD` with `uvicorn agt.api.app:app --host 0.0.0.0 --port 8000`; add `docker-compose.yml` mounting `.env` and `~/.sciagent`; CI smoke test `docker build`
-- [x] SCI-0504 — Read-only MCP server: `src/agt/mcp_server.py` using FastMCP (`mcp[cli]`); expose `search_papers`, `list_watches`, `get_session`, `library_doctor` as read-only tools; no write tools (preserves approval-gate invariant)
-- [x] SCI-0601 — Generic OpenAI-compatible adapter: `AGT_LLM_BASE_URL` + `AGT_LLM_API_KEY` + `AGT_LLM_MODEL` in config and provider router; covers DeepSeek, Together AI, Anyscale, LM Studio, and any OpenAI clone; `"openai-compatible"` provider name
-- [x] SCI-0602 — Ollama named shorthand: `AGT_LLM_PROVIDER=ollama` auto-sets `base_url=http://localhost:11434/v1`, no API key required; fully offline; falls through to generic OpenAI-compatible adapter
-- [x] SCI-0603 — Zotero sidebar provider selector: dropdown for OpenAI/Anthropic/xAI/Groq/Ollama/Custom in settings panel; conditional base\_url + model fields for custom; passes all keys + base\_url to backend via `collectProviderEnv()`
-- [x] SCI-0604 — Embedded server binary: `src/agt/server.py` CLI entrypoint, `build/sciagent-server.spec` PyInstaller spec, `zotero-addon/src/host/serverManager.ts`, `FirstRunDialog.tsx`, binary CI build workflow; see [docs/local-first.md](local-first.md) for full spec
+| ID     | Story                                                                                                                                            | Effort | Blocking |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------ | -------- |
+| OPN-01 | ~~Live Zotero 9 desktop smoke test — install unsigned XPI in actual Zotero 9.x, run search→filter→approve→write, check off `docs/manual.md` checklist~~ **DONE 2026-05-12** — both `uvicorn` and Docker container confirmed | ~2h    | M6 sign-off ✓ |
+| OPN-02 | **PyInstaller binary build** — run `pyinstaller build/sciagent-server.spec`, verify the produced binary (not just the CLI) starts and responds to `/health` on macOS-arm64; validate `serverManager.ts` spawning | ~0.5d  | SCI-0604 final mile |
+| OPN-03 | **XPI signing + update.rdf** — publish unsigned XPI to GitHub Releases; generate `update.rdf` with correct `em:version` and download URL at a stable raw URL; document Zotero 9 self-signed install path | ~0.5d  | ZAP-11 completion |
+| OPN-04 | **Docs site deployment** — add GitHub Pages deploy job to CI (`mkdocs gh-deploy`) so docs are publicly browsable on push to `main` | ~0.25d | Public docs |
+| OPN-05 | **Wire MCP server into Claude Code** — add `agt.mcp_server` entry to `.claude/settings.json` so `search_papers`, `list_watches`, `get_session`, and `library_doctor` are available as tools in this session | ~0.25d | MCP usability |
+| OPN-06 | **SCI-0102 external baseline comparison** — run the 22-query benchmark panel against OpenAlex direct, Semantic Scholar direct, and a ChatGPT web-search baseline; report delta vs SciAgent default; publish in `docs/benchmark.md` | ~1d    | P1 gap |
+| OPN-07 | **Retrieval recall for TS-02/BIO-01/BIO-04** — three benchmark queries still below reviewed baseline due to external API depth limits; test whether `AGT_SEARCH_MAX_PAGES=2` or additional source tuning recovers them | ~0.5d  | P1 gap |
+| OPN-08 | **M6.1-B backend capability contract** — normalize per-source terminal states (`unavailable_missing_key` vs `disabled_by_user` vs `failed`); structured filter payload in initial `/run` request; update `docs/api.md` and `contracts.ts` | ~1-2d  | ZAP-4A |
+| OPN-09 | **AGT-13 backend PDF pipeline** — `src/agt/tools/pdf_attach.py` with httpx async download, SHA256 checksum, `AGT_ENABLE_PDF_ATTACHMENT` flag; integrate with upsert; attachment failure never corrupts item write | ~2d    | ZAP-8 completeness |
+
+### Completed: Next Items History
+
+All SCI-01xx through SCI-06xx stories shipped. See **Recent Progress** and **Done Milestones** above for details.
 
 ### Tracker Rules
 
@@ -611,25 +601,15 @@ Acceptance criteria:
 
 #### M6.1-B — Backend Capabilities, Initial Search Contract, and Source-State Transparency
 
-- [ ] Extend the add-on plan beyond the current `/health` plus post-results `filter_edit` model.
-- [ ] Define a backend capability surface that tells the add-on:
-  - contract version
-  - auth requirement
-  - available sources and search tools
-  - which filters each source can enforce server-side
-  - whether PDF download and attachment are supported
-  - which optional keyed sources are unavailable because the backend is not configured for them
-- [ ] Define initial search request semantics so the first `POST /run` carries structured deterministic filters and source/search-tool selections, not just free text plus later `filter_edit`.
-- [ ] Make “filters applied before semantic search / before results” an explicit contract requirement for year, date, source, document, open-access, include, and exclude filters.
-- [ ] Normalize per-source run metadata so each source appears in exactly one terminal state with a human-readable reason: used, disabled by user, unavailable because backend key/config is missing, skipped by policy or unsupported filter, failed at runtime, or queried with zero candidates.
-- [ ] Keep `docs/api.md` and plugin-backend contract versioning in sync before UI implementation starts.
+> **Status: Partial — tracked as OPN-08.** `/capabilities` endpoint exists and returns source policy. Per-source terminal-state normalization (`unavailable_missing_key` vs `disabled_by_user` vs `failed`) and structured deterministic filter payload in the initial `/run` request are not yet fully implemented.
 
-Acceptance criteria:
+- [x] `/capabilities` endpoint returns source policy, filter support map, `pdf_import_supported`, `provider_availability`, `active_provider`
+- [x] Add-on consumes capabilities to drive `SourceToggles` and capability-driven UI copy
+- [ ] Normalize per-source run metadata: each source appears in exactly one terminal state with a human-readable reason (`used` / `disabled_by_user` / `unavailable_missing_key` / `skipped` / `failed` / `zero_results`)
+- [ ] Initial `POST /run` carries structured deterministic filters and source/search-tool selections; filter payload not encoded only in natural language
+- [ ] `docs/api.md` and `contracts.ts` updated to reflect the contract version handshake
 
-- [ ] The first-run request contract can express deterministic filters and source/search-tool selection without encoding them only in natural language.
-- [ ] Backend metadata distinguishes `unavailable_missing_key` from `disabled_by_user`, `skipped`, `failed`, and `used`.
-- [ ] The same source never appears in multiple status buckets for the same run.
-- [ ] Missing optional backend keys/config are listed explicitly for affected sources instead of being folded into generic `skipped` messaging.
+See **OPN-08** for full scope and acceptance criteria.
 
 #### M6.1-C — Library-Window Search Workspace ✅
 
@@ -669,7 +649,9 @@ Acceptance criteria:
   - [x] Approve writes to Zotero and shows separate item and attachment outcomes.
 - [x] No `ReferenceError`, `Uncaught (in promise)`, or FTL resource errors in console during normal use.
 
-### M7 (Week 8-10): Pluggability and Elastic Infrastructure
+### M7 — Pluggability and Elastic Infrastructure _(Deferred Indefinitely — see P8)_
+
+> **Not planned.** Redis/Celery/Terraform add DevOps overhead with zero user-visible improvement for single-user local use. File-backed sessions, SQLite cache, and JSON watch store already cover persistence. Revisit when hosted multi-user deployment is needed.
 
 - [ ] AGT-23: Unified retrieval registry
       Implementation checklist:
@@ -794,9 +776,9 @@ Acceptance criteria:
 
 | ID       | Story                                                                                                               | Owner                                     | Status |
 | -------- | ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | ------ |
-| SCI-0401 | Watch lists: save a search plan; report new papers since last run                                                   | python-backend-engineer                   | [ ]    |
-| SCI-0402 | Scheduled reruns: configurable interval; "new papers since last run" diff surfaced in add-on                        | python-backend-engineer + zotero-frontend | [ ]    |
-| SCI-0403 | Zotero subcollection updates: watch list writes to dedicated subcollection; never overwrites manually curated items | python-backend-engineer + zotero-frontend | [ ]    |
+| SCI-0401 | Watch lists: save a search plan; report new papers since last run                                                   | python-backend-engineer                   | [x]    |
+| SCI-0402 | Watch rerun: manual rerun via `POST /watches/{id}/rerun`; new-paper detection by DOI+fingerprint diff              | python-backend-engineer + zotero-frontend | [x]    |
+| SCI-0403 | Zotero sidebar WatchList: WatchList.tsx, watch_status badge, backendClient watch methods                            | python-backend-engineer + zotero-frontend | [x]    |
 | SCI-0404 | Session reports: weekly/monthly summary of searches, discovered papers, writes, watch-list updates                  | python-backend-engineer                   | [ ]    |
 
 **Gate:** A researcher using SciAgent weekly sees a "what's new" report without re-entering queries.
@@ -811,10 +793,10 @@ Acceptance criteria:
 
 | ID       | Story                                                                                                                                                   | Owner                   | Status | Est  |
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- | ------ | ---- |
-| SCI-0501 | Security hardening: CORS origin allowlist (`CORS_ORIGINS` env), HTTP rate limiting via `slowapi`, `/docs/security.md` auth model checklist              | python-backend-engineer | [ ]    | 1 d  |
-| SCI-0502 | Groq provider adapter: `src/agt/providers/groq.py` cloning OpenAI adapter with `base_url="https://api.groq.com/openai/v1"`; wired into auto-detection  | python-backend-engineer | [ ]    | 0.5d |
-| SCI-0503 | Fix Dockerfile + docker-compose: `CMD uvicorn agt.api.app:app ...`; `docker-compose.yml` mounts `.env` and `~/.sciagent`; CI `docker build` smoke test  | settings-bootstrap      | [ ]    | 0.5d |
-| SCI-0504 | Read-only MCP server: `src/agt/mcp_server.py` via FastMCP; tools: `search_papers`, `list_watches`, `get_session`, `library_doctor`; no write operations | python-backend-engineer | [ ]    | 1 d  |
+| SCI-0501 | Security hardening: CORS origin allowlist (`CORS_ORIGINS` env), HTTP rate limiting via `slowapi`, `/docs/security.md` auth model checklist              | python-backend-engineer | [x]    | 1 d  |
+| SCI-0502 | Groq provider adapter: `src/agt/providers/groq.py` cloning OpenAI adapter with `base_url="https://api.groq.com/openai/v1"`; wired into auto-detection  | python-backend-engineer | [x]    | 0.5d |
+| SCI-0503 | Fix Dockerfile + docker-compose: `CMD uvicorn agt.api.app:app ...`; `docker-compose.yml` mounts `.env` and `~/.sciagent`; CI `docker build` smoke test  | settings-bootstrap      | [x]    | 0.5d |
+| SCI-0504 | Read-only MCP server: `src/agt/mcp_server.py` via FastMCP; tools: `search_papers`, `list_watches`, `get_session`, `library_doctor`; no write operations | python-backend-engineer | [x]    | 1 d  |
 
 **Deferred indefinitely (not P5):**
 
@@ -846,10 +828,10 @@ the XPI and start searching without touching a terminal.
 
 | ID       | Story                                                                                                                                                                                     | Owner                   | Status | Est   |
 | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- | ------ | ----- |
-| SCI-0601 | Generic OpenAI-compatible adapter: `AGT_LLM_BASE_URL` + `AGT_LLM_API_KEY` + `AGT_LLM_MODEL` in config; `"openai-compatible"` provider name in router; covers DeepSeek, Together, LM Studio | python-backend-engineer | [ ]    | 1 d   |
-| SCI-0602 | Ollama named shorthand: `AGT_LLM_PROVIDER=ollama` auto-sets `base_url=http://localhost:11434/v1`, no API key required; delegates to SCI-0601 generic adapter internally                   | python-backend-engineer | [ ]    | 0.5 d |
-| SCI-0603 | Zotero sidebar provider selector: dropdown for all providers + Custom; conditional base\_url + model fields; `collectProviderEnv()` passes all vars to embedded server                   | zotero-frontend         | [ ]    | 1 d   |
-| SCI-0604 | Embedded server binary: `src/agt/server.py` CLI, PyInstaller spec, `serverManager.ts`, `FirstRunDialog.tsx`, CI binary build; full spec in [docs/local-first.md](local-first.md)         | python-backend-engineer | [ ]    | 1 w   |
+| SCI-0601 | Generic OpenAI-compatible adapter: `AGT_LLM_BASE_URL` + `AGT_LLM_API_KEY` + `AGT_LLM_MODEL` in config; `"openai-compatible"` provider name in router; covers DeepSeek, Together, LM Studio | python-backend-engineer | [x]    | 1 d   |
+| SCI-0602 | Ollama named shorthand: `AGT_LLM_PROVIDER=ollama` auto-sets `base_url=http://localhost:11434/v1`, no API key required; delegates to SCI-0601 generic adapter internally                   | python-backend-engineer | [x]    | 0.5 d |
+| SCI-0603 | Zotero sidebar provider selector: dropdown for all providers + Custom; conditional base\_url + model fields; `collectProviderEnv()` passes all vars to embedded server                   | zotero-frontend         | [x]    | 1 d   |
+| SCI-0604 | Embedded server binary: `src/agt/server.py` CLI, PyInstaller spec, `serverManager.ts`, `FirstRunDialog.tsx`, CI binary build; full spec in [docs/local-first.md](local-first.md) _(CLI ✓; actual binary artifact not yet built — see OPN-02)_ | python-backend-engineer | [x]    | 1 w   |
 
 **SCI-0601 config additions:**
 
@@ -889,9 +871,44 @@ AGT_LLM_MODEL=llama3.2          # any model pulled with `ollama pull`
 | Ollama     | Model name (default: llama3.2)        | No key needed; localhost only          |
 | Custom     | Base URL + API key + model name       | Any OpenAI-compatible endpoint         |
 
-**Gate:** `uv run pytest -q` green. `AGT_LLM_PROVIDER=ollama AGT_LLM_MODEL=llama3.2 uv run python -m agt.server --port 57321` starts and responds to `/health`. Provider selector renders in sidebar with correct conditional fields. Binary smoke test passes on at least one platform.
+**Gate:** All P6 items shipped. ✓ ruff 0, pyright 0, 318 tests. ✓ Docker image builds and `/version` returns `0.1.0`. ✓ `sciagent-server --version` works. Binary artifact and live Zotero smoke test still pending (OPN-01, OPN-02).
 
 **Full local-first delivery spec:** [docs/local-first.md](local-first.md)
+
+---
+
+### P7 — Validate, Sign, and Publish
+
+**Goal:** Complete the last mile of P6 and make the product installable and discoverable without manual workarounds.
+
+> **Current focus.** OPN-01 is the first item and blocks signing, release, and public distribution.
+
+| ID     | Story                                                                                                                                | Effort | Status |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------ | ------ | ------ |
+| OPN-01 | Live Zotero 9 desktop smoke test — run through full smoke test checklist in `docs/manual.md` on actual Zotero 9.x desktop            | ~2h    | [x] 2026-05-12 |
+| OPN-02 | PyInstaller binary — `pyinstaller build/sciagent-server.spec`; test produced binary starts and serves `/health`; validate `serverManager.ts` spawn | ~0.5d  | [ ]    |
+| OPN-03 | XPI signing + `update.rdf` — publish XPI to GitHub Releases; generate `update.rdf` at stable raw URL; document self-signed install  | ~0.5d  | [ ]    |
+| OPN-04 | Docs deployment — add `mkdocs gh-deploy` job; publish GitHub Pages on push to `main`                                                | ~0.25d | [ ]    |
+| OPN-05 | MCP server wire-up — add `agt.mcp_server` entry to `.claude/settings.json` for live tool use from Claude Code                       | ~0.25d | [ ]    |
+| OPN-06 | SCI-0102 external baseline — compare recall on 22-query panel vs OpenAlex direct, Semantic Scholar direct, ChatGPT web-search        | ~1d    | [ ]    |
+| OPN-07 | Retrieval recall gaps — test `AGT_SEARCH_MAX_PAGES=2` + source tuning on TS-02/BIO-01/BIO-04 benchmark queries                     | ~0.5d  | [ ]    |
+| OPN-08 | M6.1-B capability contract — per-source terminal states; structured filter in `/run`; `docs/api.md` + `contracts.ts` update          | ~1-2d  | [ ]    |
+| OPN-09 | AGT-13 backend PDF pipeline — `pdf_attach.py`, `AGT_ENABLE_PDF_ATTACHMENT` flag, SHA256 checksum, failure isolation                  | ~2d    | [ ]    |
+
+**Gate:** OPN-01 passes smoke test. XPI is installable without "Install from File" workaround. Docs site live. Binary artifact produced and tested.
+
+---
+
+### P8 — Infrastructure _(Deferred Indefinitely)_
+
+> **Not planned.** No user-visible improvement for single-user local use. Revisit when hosted multi-user deployment is targeted.
+
+| ID     | Story                                          | Reason deferred                                                                 |
+| ------ | ---------------------------------------------- | ------------------------------------------------------------------------------- |
+| AGT-23 | Unified retrieval registry                     | Pure refactor; existing `_fetch_from_sources` works; no user-visible change     |
+| AGT-24 | Durable distributed checkpointing (Redis/PG)   | File-backed sessions already survive restarts for local-only use                |
+| AGT-25 | Async task queue (Celery/Dramatiq)             | FastAPI background tasks sufficient; queue adds infra overhead with no benefit  |
+| AGT-26 | Cloud-agnostic IaC (Terraform/Cloud Run)       | No hosted deployment planned; revisit if user base grows                        |
 
 ---
 
@@ -930,62 +947,44 @@ AGT_LLM_MODEL=llama3.2          # any model pulled with `ollama pull`
 
 ## Immediate Backlog (Checkbox-Ready)
 
-- [x] Implement AGT-28 search-plan model with deterministic hard filters and API/UI metadata
-  - [x] **Done 2026-05-08** — `SearchPlan`, `HardFilters`, `SoftPreferences`, `SourceCapability`, `FilterEditContract` models shipped; 6 enforcement tests pass; ruff 0, pyright 0, 141 tests green.
-- [x] Implement AGT-29 keyless-first retrieval benchmark against standalone LLM/web-search baseline
-  - [x] **Done 2026-05-08** — 22-query benchmark panel in `examples/m2_7_benchmark.py`; covers AI, time-series, biomedicine, social science, and interdisciplinary domains.
-  - [x] **Done 2026-05-10** — validated default benchmark run and published report in `docs/benchmark.md`; hard-filter contract and source coverage hold at 1.000, while 9 anchor-paper queries remain below the reviewed baseline on recall.
-- [ ] Define ZAP-4A filter payload shared by Streamlit, REST API, and Zotero add-on
-- [x] Add provider protocol package and baseline xAI adapter implementation
-- [ ] Add OpenAI adapter implementing the same LLMProvider contract
-- [ ] Add Anthropic adapter implementing the same LLMProvider contract
-- [x] Add provider router with explicit selection strategy (config default + per-request override)
-- [ ] Add provider health/probe command and startup diagnostics for enabled providers
-- [ ] Add model registry config (provider, model, timeout, retries, temperature) with strict validation
-- [ ] Add fallback chain policy (primary, secondary, fail-fast) with explicit audit logging
-- [x] Implement AGT-8 feature-flagged fallback retrieval path and unified dedup across primary/fallback providers
-- [x] Add strict config validation tests for missing/invalid secrets
-- [x] Implement live Zotero preflight capability check on startup
-- [x] Add trace/span helpers and propagate request/thread IDs through workflow state
-- [x] Implement Semantic Scholar client with bounded retry and error normalization
-- [x] Add multi-source retrieval fallback clients (OpenAlex + Crossref) and merge with shared dedup/rank pipeline
-- [x] Add ranking and dedup module with formula tests for recency/open-access weighting
-- [ ] Expand AgentState to include checkpoint versioning and audit-safe status fields
-- [x] Implement explicit approval node with guaranteed zero-side-effect reject path
-- [x] Implement collection resolver canonicalization tests (case/trim/parent)
-- [x] Implement item mapper validation tests for journalArticle and preprint
-- [x] Implement idempotent upsert integration tests for duplicate approval re-runs
-- [x] Implement partial-success response rendering in UI and API
-- [ ] Add resume-from-checkpoint tests for interrupted post-search and post-approval paths
-- [ ] Add CI smoke test for non-approval workflow execution via CLI
-- [ ] Switch CI dependency sync to frozen mode and enforce format check parity
-- [ ] Move test-only dependencies out of runtime dependency list
-- [ ] Add deterministic CI test env vars (for example TZ and PYTHONHASHSEED)
-- [ ] Add API contract tests for health/run/resume/status payload schemas
-- [ ] Add security checklist section and release gate in documentation
-- [ ] Add plugin-backend contract versioning before ZAP-3 implementation starts
-- [ ] Implement SCI-0501 security hardening (CORS allowlist, slowapi rate limiting, /docs/security.md)
-- [ ] Implement SCI-0502 Groq provider adapter (src/agt/providers/groq.py, auto-detection)
-- [ ] Implement SCI-0503 Dockerfile fix + docker-compose.yml + CI docker build smoke test
-- [ ] Implement SCI-0504 read-only MCP server (FastMCP, search_papers/list_watches/get_session/library_doctor)
-- [ ] AGT-23/24/25/26 — deferred indefinitely (see P5 deferral rationale in P5 section)
+> This section tracks concrete actionable items. For the full open-item registry, see the **P7 Open Items** table in the Execution Tracker above.
+
+**Genuinely Open (unblocked):**
+
+- [ ] **OPN-01** — Live Zotero 9 desktop smoke test (check off `docs/manual.md` smoke test checklist)
+- [ ] **OPN-02** — PyInstaller binary: `pyinstaller build/sciagent-server.spec`; test binary (not `uv run`) starts and serves `/health`
+- [ ] **OPN-03** — XPI signing + `update.rdf`: publish to GitHub Releases; generate `update.rdf` at stable URL
+- [ ] **OPN-04** — Docs site: add `mkdocs gh-deploy` job to CI; publish GitHub Pages on push to `main`
+- [ ] **OPN-05** — Wire MCP server: add `agt.mcp_server` to `.claude/settings.json` for local tool access
+- [ ] **OPN-06** — SCI-0102: external baseline comparison for 22-query benchmark panel
+- [ ] **OPN-07** — Retrieval recall: test `AGT_SEARCH_MAX_PAGES=2` on TS-02/BIO-01/BIO-04 queries
+- [ ] **OPN-08** — M6.1-B: per-source terminal-state normalization + structured filter in `/run` payload
+- [ ] **OPN-09** — AGT-13: backend PDF attachment pipeline (`src/agt/tools/pdf_attach.py`)
+
+**Infrastructure — Deferred Indefinitely (P8):**
+
+- [ ] AGT-23/24/25/26 — deferred until multi-user hosted deployment (see P8 rationale)
+
+**Previously Open — Now Done:**
+
+- [x] AGT-28/29, SCI-0101/0103/0104, all SCI-02xx through SCI-06xx, all ZAP-0 through ZAP-11
 
 ## Multi-Provider Rollout Checklist
 
-- [ ] Phase A: Provider abstraction locked and covered by unit tests
-- [ ] Phase B: xAI + OpenAI + Anthropic adapters passing shared contract test suite
-- [ ] Phase C: Routing policy enabled (single provider, pinned provider, fallback chain)
-- [ ] Phase D: Tracing and cost telemetry include provider and model labels
-- [ ] Phase E: Failure semantics standardized across providers for UI/API compatibility
-- [ ] Phase F: Documentation updated with provider selection, env aliases, and safe defaults
+- [x] Phase A: Provider abstraction locked and covered by unit tests (`ProviderProtocol`, `RoutedProvider`)
+- [x] Phase B: All 6 providers with adapters: xAI, OpenAI (via openai-compatible), Anthropic (via openai-compatible), Groq, Ollama, generic openai-compatible
+- [x] Phase C: Routing policy enabled — `RoutedProvider` wraps primary + fallback with `failover_on_timeout` / `failover_on_rate_limit` config
+- [ ] Phase D: Tracing and cost telemetry include provider and model labels — partial; request IDs propagate but per-call cost labels not emitted
+- [x] Phase E: Failure semantics standardized — `RoutedProvider` maps timeout/rate-limit to failover; unrecognized provider raises `RuntimeError` at startup
+- [x] Phase F: Documentation updated — `docs/manual.md` provider table, Ollama/DeepSeek examples, `AGT_LLM_PROVIDER` variants
 
 ## Backend Gates for ZAP Blocks
 
 - [x] Gate for ZAP-1 (foundation): AGT-0, AGT-1, AGT-2, AGT-4, AGT-18 done
 - [x] Gate for ZAP-2 (sidebar UX): AGT-5, AGT-6, AGT-7, AGT-15, AGT-27 done
 - [x] Gate for ZAP-3 (native write integration): AGT-10, AGT-11, AGT-12, AGT-14, AGT-16 done
-- [ ] Gate for ZAP-3 optional PDF: AGT-13 done _(AGT-13 not started)_
-- [ ] Gate for ZAP-4 (release): AGT-19, AGT-20, AGT-21 done _(AGT-21 docs incomplete)_
+- [ ] Gate for ZAP-3 optional PDF: AGT-13 backend PDF pipeline _(open — tracked as OPN-09)_
+- [x] Gate for ZAP-4 (release): AGT-19, AGT-20 done; AGT-21 auth docs shipped in `docs/security.md`
 
 ## Documentation Deliverables
 
@@ -1046,36 +1045,38 @@ site deployment are also not implemented yet.
 
 ### Backend
 
-| Area                     | Status           | Remaining plan                                                                                                                  |
-| ------------------------ | ---------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| API surface              | Mostly complete  | Keep `/health`, `/run`, `/resume`, `/status/{run_id}`, and `/capabilities` contract tests current                               |
-| Search and retrieval     | Mostly complete  | Recover P1 benchmark recall gaps before starting new differentiators                                                            |
-| Ranking and filters      | Mostly complete  | Add deterministic "Why this paper?" explanation output for result trust                                                         |
-| Workflow state           | Mostly complete  | Add remaining resume-from-checkpoint tests for interrupted post-search and post-approval paths                                  |
-| Zotero write path        | Complete for MVP | Preserve preflight, approval gate, idempotent upsert, partial-success reporting, and retry safety                               |
-| Backend PDF writes       | Not complete     | AGT-13 remains open for backend PDF attachment; add-on native PDF path exists                                                   |
-| LLM providers            | Partial          | xAI path exists; OpenAI, Anthropic, and Groq adapters need shared protocol tests before multi-provider rollout is complete      |
-| Auth and tenancy         | Partial          | Current backend API key and client ID isolation are MVP only; hosted mode needs OAuth/JWT, quotas, audit log, and RBAC decision |
-| Persistence and scale    | Planned          | AGT-24 distributed checkpointing, AGT-25 async worker queue, and AGT-26 IaC/deploy pipeline remain P5/M7 work                   |
-| Local cache and sessions | Planned          | Add SQLite result cache, persistent sessions, rerun, diff, and export workflows in P2                                           |
-| Provider registry        | Planned          | AGT-23 unified retrieval registry and provider contract tests remain required before broad adapter growth                       |
+| Area                     | Status                | Remaining plan                                                                                                        |
+| ------------------------ | --------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| API surface              | Complete              | `/health`, `/run`, `/resume`, `/status/{run_id}`, `/capabilities`, `/version`, sessions, cache, watches, exports      |
+| Search and retrieval     | Complete              | 8 keyless sources + 3 optional keyed sources; LLM rewrite + validation; ranked and explained results                 |
+| Ranking and filters      | Complete              | Deterministic `SearchPlan`, hard-filter enforcement, `NormalizedPaper.explanation` field                              |
+| Workflow state           | Complete              | Checkpoint-safe `AgentState`, resume/retry, thread isolation, per-item write outcomes                                 |
+| Zotero write path        | Complete for MVP      | Preflight, approval gate, idempotent upsert, partial-success reporting, retry safety                                  |
+| Backend PDF writes       | Open (OPN-09)         | AGT-13 backend PDF attachment pipeline not yet implemented; add-on native PDF path exists                             |
+| LLM providers            | Complete              | 6 providers: xAI, openai, anthropic, groq, ollama, openai-compatible; failover policy; 318 tests                     |
+| Auth and tenancy         | MVP only              | API key + client-ID isolation sufficient for local; hosted mode needs OAuth/JWT (deferred until multi-user need)      |
+| Local cache and sessions | Complete (P2)         | SQLite result cache (`ResultCache`), JSON session store (`SessionStore`), export (Markdown/JSON/CSV)                  |
+| Watch lists              | Complete (P4)         | `WatchStore`, CRUD API, rerun with new-paper detection, seen-fingerprint diffing                                      |
+| MCP server               | Complete (P5)         | `src/agt/mcp_server.py` — 4 read-only tools; wire-up to local Claude Code settings pending (OPN-05)                  |
+| Provider registry        | Deferred (P8)         | AGT-23 is a refactor with no user-visible change; existing `_fetch_from_sources` works fine for single-user use       |
+| Distributed persistence  | Deferred (P8)         | AGT-24 Redis/Postgres, AGT-25 Celery, AGT-26 IaC — not needed until multi-user hosted deployment                     |
 
 ### Frontend / Zotero Add-on
 
-| Area                 | Status            | Remaining plan                                                                                            |
-| -------------------- | ----------------- | --------------------------------------------------------------------------------------------------------- |
-| Build and packaging  | Complete for MVP  | Keep XPI build, manifest, bootstrap, and update metadata aligned with release workflow                    |
-| Main-window UI       | Complete for M6.1 | Continue with main-window product path; item-pane launcher stays secondary                                |
-| Backend client       | Complete for MVP  | Keep typed client aligned with backend contract and `/capabilities` schema                                |
-| Host boundary        | Complete for MVP  | Keep Zotero globals inside adapters, not presentational React components                                  |
-| Native write path    | Complete for MVP  | Preserve explicit approval before native item creation, idempotent dedup, and per-item write outcomes     |
-| Native PDF path      | Complete for MVP  | Keep PDF attachment failure separate from item write failure                                              |
-| Settings             | Complete for MVP  | Backend URL/API key/client ID and search defaults are in add-on prefs; provider keys stay backend-side    |
-| Source transparency  | Partial           | Expand unavailable-source states with missing-key guidance and capability-driven UI copy                  |
-| Session workflows    | Planned           | Add saved sessions, rerun, diff, export, watch lists, and scheduled reruns in P2/P4                       |
-| Result explanations  | Planned           | Render deterministic score/explanation fields once backend exposes them                                   |
-| Accessibility        | Planned           | Add keyboard navigation, ARIA labels, high-contrast checks, and screen-reader audit before public release |
-| Internationalization | Planned           | Fluent scaffolding exists; add non-English translations and i18n tests when product copy stabilizes       |
+| Area                 | Status            | Remaining plan                                                                                                     |
+| -------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Build and packaging  | Complete          | XPI builds, unsigned install works; signing + `update.rdf` pending (OPN-03)                                       |
+| Main-window UI       | Complete for M6.1 | Main-window workspace (Tools → SciAgent), settings split, filter composer, approval/write                         |
+| Backend client       | Complete          | Typed client for all endpoints including watches, sessions, library-doctor, gap-finder                             |
+| Host boundary        | Complete          | Zotero globals isolated in adapter modules                                                                         |
+| Native write path    | Complete          | Approval-gated, idempotent dedup, per-item outcomes, PDF attachment as optional path                               |
+| Settings             | Complete (P6)     | Connection/Auth + Search Defaults + LLM provider selector; `collectProviderEnv()` for embedded server             |
+| Source transparency  | Partial (OPN-08)  | `SourceToggles` renders per-source state; terminal-state normalization and missing-key guidance incomplete          |
+| Session/watch UI     | Complete (P2/P4)  | Source presets, watch list (create/rerun/delete/badge), session persistence via backend                            |
+| Result explanations  | Complete (P2/P3)  | `explanation` field rendered in results; library status badges; watch status badges                                |
+| Desktop validation   | Open (OPN-01)     | Live Zotero 9 desktop smoke test not yet performed                                                                 |
+| Accessibility        | Deferred          | Keyboard navigation, ARIA labels, screen-reader audit — pre-public release work                                    |
+| Internationalization | Deferred          | Fluent scaffolding exists; i18n when product copy stabilizes                                                       |
 
 ### Non-Negotiable Invariants
 

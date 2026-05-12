@@ -24,7 +24,8 @@
       "Bash(xargs kill -9)",
       "Bash(curl -s http://localhost:57321/providers)",
       "WebFetch(domain:localhost)",
-      "Bash(curl -s -X POST http://localhost:57321/run -H 'Content-Type: application/json' -d '{\"query\": \"transformer attention mechanism\", \"max_results\": 3}')"
+      "Bash(curl -s -X POST http://localhost:57321/run -H 'Content-Type: application/json' -d '{\"query\": \"transformer attention mechanism\", \"max_results\": 3}')",
+      "Bash(curl -s http://localhost:57321/status/df8aec0e-96a5-4547-8a96-e5e02d7da0a0)"
     ]
   }
 }
