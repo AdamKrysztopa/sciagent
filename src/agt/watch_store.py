@@ -56,7 +56,7 @@ class WatchStore:
             try:
                 raw = json.loads(path.read_text(encoding="utf-8"))
                 watches.append(Watch(**raw))
-            except json.JSONDecodeError, OSError, TypeError:
+            except (json.JSONDecodeError, OSError, TypeError):  # fmt: skip
                 continue
         return watches
 
