@@ -50,6 +50,7 @@ jobs:
         run: uv sync --frozen
 
       - name: Patch version into server.py
+        if: github.ref_type == 'tag'
         shell: bash
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
@@ -89,6 +90,8 @@ jobs:
   package-xpi:
     needs: build
     runs-on: ubuntu-22.04
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -108,28 +111,29 @@ jobs:
         run: |
           npm ci && npm run lint && npm run typecheck && npm run test && npm run build
 
-      - name: Generate update.rdf
+      - name: Generate update.rdf for release
+        if: github.ref_type == 'tag'
+        shell: bash
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           XPI_URL="https://github.com/${{ github.repository }}/releases/download/${GITHUB_REF_NAME}/sciagent-zotero-addon.xpi"
-          SHA256=$(sha256sum zotero-addon/sciagent-zotero-addon.xpi | cut -d' ' -f1)
-          cat > update.rdf << EOF
+          SHA256=$(sha256sum zotero-addon/build/sciagent-zotero-addon.xpi | cut -d' ' -f1)
+          cat > zotero-addon/update.rdf << ENDRDF
           <?xml version="1.0" encoding="UTF-8"?>
-          <RDF:RDF xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-                   xmlns:em="http://www.mozilla.org/2004/em-rdf#">
-            <RDF:Description about="urn:mozilla:extension:sciagent@sciagent.dev">
+          <RDF:RDF xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+            <RDF:Description about="urn:mozilla:extension:agt@yourdomain.org">
               <em:updates>
                 <RDF:Seq>
                   <RDF:li>
                     <RDF:Description>
-                      <em:version>$VERSION</em:version>
+                      <em:version>${VERSION}</em:version>
                       <em:targetApplication>
                         <RDF:Description>
                           <em:id>zotero@chnm.gmu.edu</em:id>
-                          <em:minVersion>7.0</em:minVersion>
-                          <em:maxVersion>*</em:maxVersion>
-                          <em:updateLink>$XPI_URL</em:updateLink>
-                          <em:updateHash>sha256:$SHA256</em:updateHash>
+                          <em:minVersion>9.0.0</em:minVersion>
+                          <em:maxVersion>9.*</em:maxVersion>
+                          <em:updateLink>${XPI_URL}</em:updateLink>
+                          <em:updateHash>sha256:${SHA256}</em:updateHash>
                         </RDF:Description>
                       </em:targetApplication>
                     </RDF:Description>
@@ -138,12 +142,23 @@ jobs:
               </em:updates>
             </RDF:Description>
           </RDF:RDF>
-          EOF
+          ENDRDF
+
+      - name: Commit update.rdf to main
+        if: github.ref_type == 'tag'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add zotero-addon/update.rdf
+          git diff --staged --quiet || git commit -m "chore: update update.rdf for ${GITHUB_REF_NAME}"
+          git push origin HEAD:main
 
       - name: Upload to GitHub Release
+        if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            zotero-addon/sciagent-zotero-addon.xpi
-            update.rdf
+            zotero-addon/build/sciagent-zotero-addon.xpi
+            zotero-addon/update.rdf
             binaries/**

@@ -12,12 +12,13 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 ### Current Status
 
 - **All P0–P6 milestones shipped. M6 fully signed off (2026-05-12).** Next phase is P7 — Validate, Sign, and Publish.
-- Current next target: **OPN-03** — XPI signing + update.rdf
-- Last completed: OPN-02 — PyInstaller binary built and verified on macOS arm64 (2026-05-12); binary starts, `/health` responds, `POST /run` returns real results
+- Current next target: **OPN-04** — Docs site deployment (GitHub Pages)
+- Last completed: OPN-03 — CI release pipeline fixed; `update.rdf` stable URL live; GitHub Releases install + auto-update mechanism documented (2026-05-12)
 - M7 infra (AGT-23/24/25/26) deferred indefinitely; see P8 section for rationale.
 
 ### Recent Progress
 
+- ✅ OPN-03 complete (2026-05-12): CI release pipeline corrected — wrong addon ID (`sciagent@sciagent.dev` → `agt@yourdomain.org`), wrong XPI path (`zotero-addon/` → `zotero-addon/build/`), wrong Zotero version range (`7.0/*` → `9.0.0/9.*`), SHA256 added, `Commit update.rdf to main` step added, all release steps guarded on `github.ref_type == 'tag'`; `update.rdf` stable raw URL live at main branch; GitHub Releases install path and release process documented in `docs/manual.md`.
 - ✅ OPN-02 complete (2026-05-12): PyInstaller binary built and verified on macOS arm64 — 37 MB UPX-compressed; `--version` returns `0.1.0`; `/health` HTTP 200 (ok:false without creds, ok:true with); `POST /run` returns real paper search results; `serverManager.ts` spawn contract validated; manual added to `docs/manual.md` §Standalone Binary; stale spec example in `docs/local-first.md` corrected.
 - ✅ OPN-01 complete (2026-05-12): Live Zotero 9 desktop smoke test passed — full search→filter→approve→write verified; both `uvicorn` and Docker container backends confirmed; M6 fully signed off.
 - ✅ P6 complete (2026-05-12): SCI-0601 generic OpenAI-compatible adapter (AGT_LLM_BASE_URL/AGT_LLM_API_KEY/AGT_LLM_MODEL, covers DeepSeek, Together AI, LM Studio); SCI-0602 Ollama named shorthand (AGT_LLM_PROVIDER=ollama, localhost:11434/v1, no key); SCI-0603 Zotero sidebar provider dropdown (OpenAI/Anthropic/xAI/Groq/Ollama/Custom, prefs, collectProviderEnv); SCI-0604 embedded server binary (sciagent-server CLI, AGT_DATA_DIR, GET /version, PyInstaller spec, CI build-binaries workflow, serverManager.ts, FirstRunDialog.tsx). All gates: ruff 0, pyright 0, 318 tests, addon 40 tests.
@@ -75,7 +76,7 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------ | -------- |
 | OPN-01 | ~~Live Zotero 9 desktop smoke test — install unsigned XPI in actual Zotero 9.x, run search→filter→approve→write, check off `docs/manual.md` checklist~~ **DONE 2026-05-12** — both `uvicorn` and Docker container confirmed | ~2h    | M6 sign-off ✓ |
 | OPN-02 | ~~**PyInstaller binary build** — run `pyinstaller build/sciagent-server.spec`, verify the produced binary starts and responds to `/health` on macOS-arm64; validate `serverManager.ts` spawning~~ **DONE 2026-05-12** — 37 MB arm64 binary verified; manual added to `docs/manual.md` | ~0.5d  | SCI-0604 final mile ✓ |
-| OPN-03 | **XPI signing + update.rdf** — publish unsigned XPI to GitHub Releases; generate `update.rdf` with correct `em:version` and download URL at a stable raw URL; document Zotero 9 self-signed install path | ~0.5d  | ZAP-11 completion |
+| OPN-03 | ~~**XPI signing + update.rdf** — publish unsigned XPI to GitHub Releases; generate `update.rdf` with correct `em:version` and download URL at a stable raw URL; document Zotero 9 self-signed install path~~ **DONE 2026-05-12** — CI pipeline fixed; stable update_url live; release process documented | ~0.5d  | ZAP-11 completion ✓ |
 | OPN-04 | **Docs site deployment** — add GitHub Pages deploy job to CI (`mkdocs gh-deploy`) so docs are publicly browsable on push to `main` | ~0.25d | Public docs |
 | OPN-05 | **Wire MCP server into Claude Code** — add `agt.mcp_server` entry to `.claude/settings.json` so `search_papers`, `list_watches`, `get_session`, and `library_doctor` are available as tools in this session | ~0.25d | MCP usability |
 | OPN-06 | **SCI-0102 external baseline comparison** — run the 22-query benchmark panel against OpenAlex direct, Semantic Scholar direct, and a ChatGPT web-search baseline; report delta vs SciAgent default; publish in `docs/benchmark.md` | ~1d    | P1 gap |
@@ -888,7 +889,7 @@ AGT_LLM_MODEL=llama3.2          # any model pulled with `ollama pull`
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------ | ------ | ------ |
 | OPN-01 | Live Zotero 9 desktop smoke test — run through full smoke test checklist in `docs/manual.md` on actual Zotero 9.x desktop            | ~2h    | [x] 2026-05-12 |
 | OPN-02 | PyInstaller binary — `pyinstaller build/sciagent-server.spec`; test produced binary starts and serves `/health`; validate `serverManager.ts` spawn | ~0.5d  | [x] 2026-05-12 |
-| OPN-03 | XPI signing + `update.rdf` — publish XPI to GitHub Releases; generate `update.rdf` at stable raw URL; document self-signed install  | ~0.5d  | [ ]    |
+| OPN-03 | XPI signing + `update.rdf` — publish XPI to GitHub Releases; generate `update.rdf` at stable raw URL; document self-signed install  | ~0.5d  | [x] 2026-05-12 |
 | OPN-04 | Docs deployment — add `mkdocs gh-deploy` job; publish GitHub Pages on push to `main`                                                | ~0.25d | [ ]    |
 | OPN-05 | MCP server wire-up — add `agt.mcp_server` entry to `.claude/settings.json` for live tool use from Claude Code                       | ~0.25d | [ ]    |
 | OPN-06 | SCI-0102 external baseline — compare recall on 22-query panel vs OpenAlex direct, Semantic Scholar direct, ChatGPT web-search        | ~1d    | [ ]    |
@@ -954,7 +955,7 @@ AGT_LLM_MODEL=llama3.2          # any model pulled with `ollama pull`
 
 - [ ] **OPN-01** — Live Zotero 9 desktop smoke test (check off `docs/manual.md` smoke test checklist)
 - [x] **OPN-02** — PyInstaller binary: `pyinstaller build/sciagent-server.spec`; test binary (not `uv run`) starts and serves `/health` _(done 2026-05-12)_
-- [ ] **OPN-03** — XPI signing + `update.rdf`: publish to GitHub Releases; generate `update.rdf` at stable URL
+- [x] **OPN-03** — XPI signing + `update.rdf`: publish to GitHub Releases; generate `update.rdf` at stable URL _(done 2026-05-12)_
 - [ ] **OPN-04** — Docs site: add `mkdocs gh-deploy` job to CI; publish GitHub Pages on push to `main`
 - [ ] **OPN-05** — Wire MCP server: add `agt.mcp_server` to `.claude/settings.json` for local tool access
 - [ ] **OPN-06** — SCI-0102: external baseline comparison for 22-query benchmark panel
@@ -1066,7 +1067,7 @@ site deployment are also not implemented yet.
 
 | Area                 | Status            | Remaining plan                                                                                                     |
 | -------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Build and packaging  | Complete          | XPI builds, unsigned install works; signing + `update.rdf` pending (OPN-03)                                       |
+| Build and packaging  | Complete          | XPI builds, unsigned install works; CI release pipeline correct; stable `update.rdf` URL live (OPN-03 ✓)          |
 | Main-window UI       | Complete for M6.1 | Main-window workspace (Tools → SciAgent), settings split, filter composer, approval/write                         |
 | Backend client       | Complete          | Typed client for all endpoints including watches, sessions, library-doctor, gap-finder                             |
 | Host boundary        | Complete          | Zotero globals isolated in adapter modules                                                                         |

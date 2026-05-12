@@ -51,9 +51,22 @@ uv run pre-commit install
 
 The repo config installs both `pre-commit` and `pre-push` hooks with that single command.
 
-### Optional: validate and build the Zotero add-on package
+### Option A: Install the Add-on from GitHub Releases (end-user path)
 
-The repository now includes a top-level Zotero 9 add-on scaffold in `zotero-addon/`.
+If a pre-built release exists, skip the source build entirely:
+
+1. Go to the [GitHub Releases page](https://github.com/AdamKrysztopa/sciagent/releases)
+2. Download `sciagent-zotero-addon.xpi` from the latest release
+3. In Zotero 9: **Tools → Add-ons → gear icon → Install Add-on From File...**
+4. Select the downloaded XPI
+
+The add-on will self-update automatically: Zotero polls
+`https://raw.githubusercontent.com/AdamKrysztopa/sciagent/main/zotero-addon/update.rdf`
+on each startup and prompts when a new version is available.
+
+### Option B: Build and validate the Zotero add-on from source (developer path)
+
+The repository includes a Zotero 9 add-on in `zotero-addon/`.
 
 ```bash
 cd zotero-addon
@@ -974,6 +987,43 @@ The real add-on scaffold lives in `zotero-addon/` and packages the primary Zoter
 - native main-window workspace + preference pane registration boundaries
 - optional item-pane registration as a secondary launcher
 - React MVP for query, parsed filter review/edit, selection, approval, reject, and result rendering
+
+### Publishing a Release
+
+The CI workflow `build-binaries.yml` builds all artifacts and publishes a GitHub Release when
+a tag matching `v*` is pushed. Steps:
+
+1. **Bump versions** — update `manifest.json` and `package.json` in `zotero-addon/` to the new
+   version (e.g. `0.3.0`).
+
+2. **Update `zotero-addon/update.rdf`** — set `em:version` to the new version and
+   `em:updateLink` to the expected release download URL:
+
+   ```
+   https://github.com/AdamKrysztopa/sciagent/releases/download/v0.3.0/sciagent-zotero-addon.xpi
+   ```
+
+3. **Bump the server version** — update the `--version` string in `src/agt/server.py` to match.
+
+4. **Commit and tag**:
+
+   ```bash
+   git add zotero-addon/manifest.json zotero-addon/package.json \
+           zotero-addon/update.rdf src/agt/server.py
+   git commit -m "chore: release v0.3.0"
+   git tag v0.3.0
+   git push origin main --tags
+   ```
+
+5. **CI takes over** — `build-binaries.yml` runs on the tag push and:
+   - Builds Python binaries for all four platforms (macOS arm64/x86\_64, Linux x86\_64, Windows x64)
+   - Builds the XPI (with full lint + typecheck + test gates)
+   - Computes the XPI SHA256 and rewrites `zotero-addon/update.rdf` with the hash
+   - Commits the updated `update.rdf` back to `main` (so Zotero auto-update kicks in)
+   - Creates a GitHub Release with the XPI, `update.rdf`, and all four platform binaries
+
+6. **Verify** — check the Release page; confirm Zotero detects the update from
+   `https://raw.githubusercontent.com/AdamKrysztopa/sciagent/main/zotero-addon/update.rdf`.
 
 ### Docker
 
