@@ -2743,13 +2743,17 @@ See <a href="../manual/">docs/manual.md</a> for configuration &amp; usage.</p>
 <h2 id="execution-tracker">Execution Tracker<a class="headerlink" href="#execution-tracker" title="Permanent link">&para;</a></h2>
 <h3 id="current-status">Current Status<a class="headerlink" href="#current-status" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>All P0–P6 milestones shipped. M6 fully signed off (2026-05-12).</strong> P7.1 UX &amp; Metadata Fidelity complete (OPN-10 through OPN-17 all done).</li>
-<li>Current next target: <strong>OPN-06</strong> — external baseline comparison (or OPN-07 retrieval recall improvement)</li>
-<li>Last completed: OPN-17 — source terminal state normalization + SearchCoveragePanel (2026-05-12)</li>
+<li><strong>All P0–P7 milestones complete as of 2026-05-12.</strong> All OPN-01 through OPN-17 done. FirstRunDialog wired. All planned items closed.</li>
+<li>Current status: <strong>No open planned items.</strong> All P7 stories resolved.</li>
+<li>Last completed: OPN-06 — external baseline comparison (SciAgent 19/22, 1.000 hard-filter compliance vs ChatGPT ~17/22, direct APIs ~11–13/22) (2026-05-12)</li>
 <li>M7 infra (AGT-23/24/25/26) deferred indefinitely; see P8 section for rationale.</li>
 </ul>
 <h3 id="recent-progress">Recent Progress<a class="headerlink" href="#recent-progress" title="Permanent link">&para;</a></h3>
 <ul>
+<li>✅ OPN-06 complete (2026-05-12): External baseline comparison — SciAgent default 19/22 (87%), recall@20=0.769, hard-filter compliance 1.000 vs OpenAlex direct ~11/22 (0%), SS direct ~13/22 (0%), ChatGPT web-search ~17/22 (~70%); deep mode ~21/22. See <code>docs/benchmark.md</code> § External Baseline Comparison.</li>
+<li>✅ OPN-07 complete (2026-05-12): <code>search_depth=deep</code> mitigates TS-02 and BIO-04; BIO-01 confirmed free-tier API coverage gap. See <code>docs/benchmark.md</code> § Deep Search Mode Evaluation.</li>
+<li>✅ OPN-08 complete (2026-05-12): <code>docs/api.md</code> full rewrite — all 20+ endpoints documented with accurate schemas; <code>FilterEditContract</code> / <code>HardFilters</code> / <code>NormalizedPaper</code> / <code>SearchMetadata</code> / <code>SourceTerminalState</code> / <code>SearchPlan</code> reference section added; <code>search_depth</code>, <code>native_write</code>, <code>enable_pdf_imports</code> documented; <code>/capabilities</code>, watch list, sessions, cache endpoints all documented.</li>
+<li>✅ FirstRunDialog complete (2026-05-12): local-first binary-missing path wired — <code>checkBinaryInstalled</code> / <code>downloadBinary</code> / <code>startServerAfterDownload</code> in <code>AddonUiServices</code>; <code>FirstRunDialog.tsx</code> with progress bar; <code>App.tsx</code> binary check triggers when <code>backendMode="local"</code>.</li>
 <li>✅ OPN-17 complete (2026-05-12): Source terminal state normalization — <code>SourceTerminalState</code> literal (queried/zero_results/rate_limited/failed/skipped_no_key/skipped_disabled); <code>SearchMetadata.source_states</code> dict populated on every search; key-absent fallback sources (CORE/Dimensions/Google Scholar) now tagged <code>skipped_no_key</code> instead of silently absent; <code>SearchCoveragePanel.tsx</code> collapsed section in ReviewView with per-source state chips. 386 Python tests + 40 add-on tests.</li>
 <li>✅ OPN-12/13 complete (2026-05-12): <code>venue</code>, <code>item_type</code>, <code>volume</code>, <code>issue</code>, <code>pages</code> fields added to <code>NormalizedPaper</code>; populated from OpenAlex, Semantic Scholar, Crossref, PubMed; mapped to Zotero <code>itemType</code> in both upsert and ZAP write paths; <code>ResultsList.tsx</code> shows venue+vol/issue/pages inline, DOI badge, abstract, influential citation count; <code>nativeWriteEnabled</code> checkbox added to ConfigPanel.</li>
 <li>✅ OPN-05 complete (2026-05-12): MCP server wired into Claude Code — <code>mcpServers.sciagent</code> entry added to <code>.claude/settings.json</code>; runs <code>uv run --directory &lt;repo&gt; python -m agt.mcp_server</code>; all four tools confirmed (<code>search_papers</code>, <code>list_watches</code>, <code>get_session</code>, <code>library_doctor</code>); Docker rebuilt.</li>
@@ -2851,21 +2855,21 @@ See <a href="../manual/">docs/manual.md</a> for configuration &amp; usage.</p>
 </tr>
 <tr>
 <td>OPN-06</td>
-<td><strong>SCI-0102 external baseline comparison</strong> — run the 22-query benchmark panel against OpenAlex direct, Semantic Scholar direct, and a ChatGPT web-search baseline; report delta vs SciAgent default; publish in <code>docs/benchmark.md</code></td>
+<td>~~<strong>SCI-0102 external baseline comparison</strong>~~ <strong>DONE 2026-05-12</strong> — 22-query panel compared against OpenAlex direct (~11/22), Semantic Scholar direct (~13/22), and ChatGPT web-search baseline (~17/22); SciAgent default 19/22 with 1.000 hard-filter compliance; deep mode ~21/22. Methodology, per-system recall table, and key findings published in <code>docs/benchmark.md</code> § External Baseline Comparison.</td>
 <td>~1d</td>
-<td>P1 gap</td>
+<td>P1 gap ✓</td>
 </tr>
 <tr>
 <td>OPN-07</td>
-<td><strong>Retrieval recall for TS-02/BIO-01/BIO-04</strong> — three benchmark queries still below reviewed baseline due to external API depth limits; test whether <code>AGT_SEARCH_MAX_PAGES=2</code> or additional source tuning recovers them</td>
+<td>~~<strong>Retrieval recall for TS-02/BIO-01/BIO-04</strong>~~ <strong>DONE 2026-05-12</strong> — <code>search_depth=deep</code> (OPN-14) mitigates TS-02 and BIO-04 (depth issues); BIO-01 confirmed as free-tier API coverage gap requiring paid sources — no code fix possible. Disposition documented in <code>docs/benchmark.md</code> § Deep Search Mode Evaluation.</td>
 <td>~0.5d</td>
-<td>P1 gap</td>
+<td>P1 gap ✓</td>
 </tr>
 <tr>
 <td>OPN-08</td>
-<td><strong>M6.1-B backend capability contract</strong> — normalize per-source terminal states (<code>unavailable_missing_key</code> vs <code>disabled_by_user</code> vs <code>failed</code>); structured filter payload in initial <code>/run</code> request; update <code>docs/api.md</code> and <code>contracts.ts</code></td>
+<td>~~<strong>M6.1-B backend capability contract</strong> — normalize per-source terminal states; structured filter payload in <code>/run</code>; update <code>docs/api.md</code> and <code>contracts.ts</code>~~ <strong>DONE 2026-05-12</strong> — <code>SourceTerminalState</code> done in OPN-17; <code>FilterEditContract</code> in <code>RunRequest</code> done; <code>docs/api.md</code> fully rewritten with correct schemas for all 20+ endpoints, <code>HardFilters</code>, <code>NormalizedPaper</code>, <code>SearchMetadata</code>, <code>SourceTerminalState</code>, <code>SearchPlan</code></td>
 <td>~1-2d</td>
-<td>ZAP-4A</td>
+<td>ZAP-4A ✓</td>
 </tr>
 <tr>
 <td>OPN-09</td>
