@@ -243,12 +243,13 @@ class SemanticScholarClient:
         open_access = bool(item.get("isOpenAccess") is True)
 
         pdf_url: str | None = None
-        if open_access:
-            oa_pdf = item.get("openAccessPdf")
-            if isinstance(oa_pdf, dict):
-                oa_url = cast(dict[str, Any], oa_pdf).get("url")
-                if isinstance(oa_url, str) and oa_url.strip():
-                    pdf_url = oa_url.strip()
+        oa_pdf = item.get("openAccessPdf")
+        if isinstance(oa_pdf, dict):
+            oa_url = cast(dict[str, Any], oa_pdf).get("url")
+            if isinstance(oa_url, str) and oa_url.strip():
+                pdf_url = oa_url.strip()
+        if pdf_url is None and arxiv_id:
+            pdf_url = f"https://arxiv.org/pdf/{arxiv_id}"
 
         return NormalizedPaper(
             title=title,

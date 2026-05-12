@@ -62,7 +62,7 @@ export function ConfigPanel({ config, onChange, onSave, saveError, saveState }: 
       <label className="agt-field">
         <span>Provider</span>
         <select
-          className="agt-input"
+          className="agt-select"
           onChange={(event) => onChange("llmProvider", event.target.value)}
           value={config.llmProvider}
         >
