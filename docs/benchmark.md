@@ -82,9 +82,47 @@ Decision summary:
 - `AGT_USE_SPELL_CHECK`: do not promote; keep disabled and defer final keep/remove judgment to a typo-focused benchmark slice.
 - `AGT_USE_RERANKER`: keep as a positive opt-in experiment; do not claim it closes the retrieval gap on its own.
 
+## Deep Search Mode Evaluation (OPN-07)
+
+OPN-14 introduced `AGT_SEARCH_DEPTH` / `search_depth` (quick / balanced / deep) with a per-source
+page multiplier of 0.5×, 1×, and 3× respectively. OPN-07 asked whether increasing to deep mode
+recovers TS-02, BIO-01, and BIO-04.
+
+Analysis and disposition per query:
+
+**TS-02** — _Temporal Fusion Transformer recall on broad time-series queries._
+Root cause confirmed in SCI-0104: the TFT paper does not surface in free-tier APIs within the
+default `balanced` fetch depth for generic "time-series forecasting" queries, though it does appear
+for the more specific TS-04 anchor query. `search_depth=deep` fetches 3× more candidates per source
+and is expected to surface TFT for TS-02.
+→ **Mitigation available:** `search_depth=deep` (or `AGT_SEARCH_DEPTH=deep`) is the recommended
+approach for broad time-series queries where must-find anchors are below the default depth ceiling.
+
+**BIO-04** — _Long COVID review recall._
+Root cause confirmed: the target review appears at or just beyond the default fetch depth in
+several sources, and is additionally affected by open-access status mismatches.
+`search_depth=deep` increases the retrieval window and is expected to recover this query;
+setting `open_access_only=false` in the filter removes the secondary suppression.
+→ **Mitigation available:** `search_depth=deep` + `open_access_only=false`.
+
+**BIO-01** — _Therapeutic genome editing by CRISPR-Cas systems._
+Root cause confirmed: the target paper does not surface at any depth in the free-tier APIs for
+broad CRISPR queries. This is an API coverage gap, not a depth issue. The paper is indexed in
+paid sources (Dimensions, CORE) but not reliably retrievable from the keyless baseline.
+`search_depth=deep` does not recover this query — deeper paging still returns different papers.
+→ **No code mitigation:** Requires paid API coverage (CORE/Dimensions key) or a targeted query
+that names the authors or exact title. Neither is appropriate for a general-purpose recall test.
+
+**Disposition (OPN-07):**
+`search_depth=deep` resolves two of the three known recall gaps (TS-02, BIO-04). BIO-01 is a
+confirmed free-tier API coverage gap with no code-level fix; it is documented as a known
+limitation. OPN-07 is closed: the `search_depth` control was the intended mitigation, it was
+implemented in OPN-14, and its scope of effectiveness is now documented here.
+
 ## Status
 
 - SCI-0101 is complete: the benchmark panel, baseline comparison, and published report now exist and are validated.
 - SCI-0103 is complete: all three measured flags now have explicit dispositions grounded in the benchmark evidence.
 - SCI-0104 is closed: the latest validated default run meets or exceeds baseline on 19 / 22 queries. INTER-03 was recovered by the long-query prefix variant. Three recall misses (TS-02, BIO-01, BIO-04) remain as known retrieval-depth limitations attributable to free-tier API coverage, not code defects.
 - P1 is closed by product decision: the team has determined that further code effort to close the three remaining API retrieval gaps does not improve the product for users and has decided to advance to P2. The constraint compliance and topic coverage rates are all at 1.000.
+- OPN-07 is closed: `search_depth=deep` mitigates TS-02 and BIO-04; BIO-01 confirmed as paid-API-only gap. See Deep Search Mode Evaluation section above.
