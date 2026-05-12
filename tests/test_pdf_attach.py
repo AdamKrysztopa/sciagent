@@ -232,17 +232,19 @@ async def test_attach_returns_all_skipped_when_no_library_id() -> None:
 
 
 @pytest.mark.anyio
-async def test_closed_access_paper_is_skipped() -> None:
-    paper = _paper(open_access=False)
+async def test_closed_access_paper_with_pdf_url_is_not_skipped() -> None:
+    paper = _paper(open_access=False, pdf_url="https://example.com/p.pdf")
     wr = _write_result([_created_outcome(0, "K1")])
     settings = cast(Settings, _Settings())
 
+    mock_resp = MagicMock()
+    mock_resp.status_code = 201
     mock_client = AsyncMock(spec=httpx.AsyncClient)
+    mock_client.post = AsyncMock(return_value=mock_resp)
 
     result = await attach_pdfs_to_items([paper], wr, settings, client=mock_client)
-    mock_client.post.assert_not_called()
-    assert result.skipped == 1
-    assert result.attached == 0
+    assert result.skipped == 0
+    assert result.attached == 1
     assert result.failed == 0
 
 
@@ -350,8 +352,8 @@ async def test_mixed_batch_counts() -> None:
     mock_client.post = AsyncMock(return_value=mock_resp)
 
     result = await attach_pdfs_to_items(papers, wr, settings, client=mock_client)
-    assert result.attached == 1
-    assert result.skipped == 2  # noqa: PLR2004
+    assert result.attached == 2  # noqa: PLR2004
+    assert result.skipped == 1
     assert result.failed == 0
 
 

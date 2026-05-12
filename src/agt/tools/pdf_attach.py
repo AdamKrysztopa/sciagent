@@ -226,7 +226,7 @@ async def attach_pdfs_to_items(  # noqa: PLR0912, PLR0915
 
     try:
         for idx, paper in enumerate(papers):
-            if not paper.open_access or paper.pdf_url is None:
+            if paper.pdf_url is None:
                 skipped += 1
                 continue
 
