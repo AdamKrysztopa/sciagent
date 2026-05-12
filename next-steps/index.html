@@ -1,0 +1,2206 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="SciAgent documentation site built from Markdown sources in the repository.">
+      
+      
+      
+        <link rel="canonical" href="https://adamkrysztopa.github.io/sciagent/next-steps/">
+      
+      
+        <link rel="prev" href="../priorities/">
+      
+      
+        <link rel="next" href="../manual/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Next Steps - SciAgent Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#sciagent-next-steps-remaining-work" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="SciAgent Docs" class="md-header__button md-logo" aria-label="SciAgent Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            SciAgent Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Next Steps
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/AdamKrysztopa/sciagent" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    AdamKrysztopa/sciagent
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="SciAgent Docs" class="md-nav__button md-logo" aria-label="SciAgent Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    SciAgent Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/AdamKrysztopa/sciagent" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    AdamKrysztopa/sciagent
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Overview
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Planning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Planning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../actionable-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../priorities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Priorities
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Next Steps
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Next Steps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#completion-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Completion Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#stories-with-gaps-marked-complete-but-incomplete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stories With Gaps (Marked Complete but Incomplete)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Stories With Gaps (Marked Complete but Incomplete)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#agt-20-edge-case-and-failure-path-tests-partial" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AGT-20 — Edge-Case and Failure-Path Tests (Partial)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agt-21-security-hardening-partial" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AGT-21 — Security Hardening (Partial)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agt-22-universal-llm-interface-partial" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AGT-22 — Universal LLM Interface (Partial)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discovery-quality-horizon-m27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discovery Quality Horizon (M2.7)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Discovery Quality Horizon (M2.7)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#agt-28-search-plan-and-deterministic-filter-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AGT-28 — Search Plan and Deterministic Filter Contract
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agt-29-keyless-first-retrieval-quality-benchmark" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AGT-29 — Keyless-First Retrieval Quality Benchmark
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zap-4a-filter-review-and-edit-ui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ZAP-4A — Filter Review and Edit UI
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remaining-backend-stories-m7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remaining Backend Stories (M7)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Remaining Backend Stories (M7)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#agt-23-unified-retrieval-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AGT-23 — Unified Retrieval Registry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agt-24-durable-distributed-checkpointing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AGT-24 — Durable Distributed Checkpointing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agt-25-asynchronous-task-queue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AGT-25 — Asynchronous Task Queue
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agt-26-cloud-agnostic-iac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AGT-26 — Cloud-Agnostic IaC
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agt-13-pdf-attachment-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AGT-13 — PDF Attachment Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zotero-native-add-on-m6-full-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Zotero Native Add-on (M6) — Full Scope
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Zotero Native Add-on (M6) — Full Scope">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-plugin-foundation-zap-0-zap-1-zap-2-2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: Plugin Foundation (ZAP-0, ZAP-1, ZAP-2) — ~2d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-native-sidebar-ui-zap-3-zap-4-zap-4a-zap-5-425d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2: Native Sidebar UI (ZAP-3, ZAP-4, ZAP-4A, ZAP-5) — ~4.25d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-zotero-write-integration-zap-6-zap-7-zap-8-3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3: Zotero Write Integration (ZAP-6, ZAP-7, ZAP-8) — ~3d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-polish-release-zap-9-zap-10-zap-11-3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4: Polish &amp; Release (ZAP-9, ZAP-10, ZAP-11) — ~3d
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#immediate-backlog-priority-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Immediate Backlog (Priority Order)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Immediate Backlog (Priority Order)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p0-do-first" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P0 — Do First
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p1-do-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P1 — Do Next
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p2-ship-when-ready" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P2 — Ship When Ready
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#unresolved-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unresolved Decisions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi-provider-rollout-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-Provider Rollout Checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backend-gates-for-zap-blocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend Gates for ZAP Blocks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ci-quality-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CI &amp; Quality Status
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manuals
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Manuals
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../manual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration & Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment & Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../local-first/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local-First Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmark/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    P1 Benchmark
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../zotero/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Zotero Add-on
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#completion-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Completion Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#stories-with-gaps-marked-complete-but-incomplete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stories With Gaps (Marked Complete but Incomplete)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Stories With Gaps (Marked Complete but Incomplete)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#agt-20-edge-case-and-failure-path-tests-partial" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AGT-20 — Edge-Case and Failure-Path Tests (Partial)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agt-21-security-hardening-partial" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AGT-21 — Security Hardening (Partial)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agt-22-universal-llm-interface-partial" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AGT-22 — Universal LLM Interface (Partial)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discovery-quality-horizon-m27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Discovery Quality Horizon (M2.7)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Discovery Quality Horizon (M2.7)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#agt-28-search-plan-and-deterministic-filter-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AGT-28 — Search Plan and Deterministic Filter Contract
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agt-29-keyless-first-retrieval-quality-benchmark" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AGT-29 — Keyless-First Retrieval Quality Benchmark
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zap-4a-filter-review-and-edit-ui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ZAP-4A — Filter Review and Edit UI
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remaining-backend-stories-m7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remaining Backend Stories (M7)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Remaining Backend Stories (M7)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#agt-23-unified-retrieval-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AGT-23 — Unified Retrieval Registry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agt-24-durable-distributed-checkpointing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AGT-24 — Durable Distributed Checkpointing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agt-25-asynchronous-task-queue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AGT-25 — Asynchronous Task Queue
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agt-26-cloud-agnostic-iac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AGT-26 — Cloud-Agnostic IaC
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agt-13-pdf-attachment-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AGT-13 — PDF Attachment Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zotero-native-add-on-m6-full-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Zotero Native Add-on (M6) — Full Scope
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Zotero Native Add-on (M6) — Full Scope">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-plugin-foundation-zap-0-zap-1-zap-2-2d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: Plugin Foundation (ZAP-0, ZAP-1, ZAP-2) — ~2d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-native-sidebar-ui-zap-3-zap-4-zap-4a-zap-5-425d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2: Native Sidebar UI (ZAP-3, ZAP-4, ZAP-4A, ZAP-5) — ~4.25d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-zotero-write-integration-zap-6-zap-7-zap-8-3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3: Zotero Write Integration (ZAP-6, ZAP-7, ZAP-8) — ~3d
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-polish-release-zap-9-zap-10-zap-11-3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4: Polish &amp; Release (ZAP-9, ZAP-10, ZAP-11) — ~3d
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#immediate-backlog-priority-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Immediate Backlog (Priority Order)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Immediate Backlog (Priority Order)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p0-do-first" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P0 — Do First
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p1-do-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P1 — Do Next
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p2-ship-when-ready" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P2 — Ship When Ready
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#unresolved-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unresolved Decisions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi-provider-rollout-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-Provider Rollout Checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backend-gates-for-zap-blocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend Gates for ZAP Blocks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ci-quality-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CI &amp; Quality Status
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="sciagent-next-steps-remaining-work">SciAgent — Next Steps &amp; Remaining Work<a class="headerlink" href="#sciagent-next-steps-remaining-work" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>⚠️ ARCHIVED — 2026-05-12.</strong> This document was generated on 2026-03-22 when M6 was "Not started" and 132 tests existed. All items listed here are now complete or superseded.
+For live open items and the current implementation target, see <strong><a href="../actionable-plan/">actionable-plan.md</a></strong>.
+<strong>Generated:</strong> 2026-03-22. <strong>Baseline at generation:</strong> ruff 0 errors, pyright 0 errors, 132 tests passing.</p>
+</blockquote>
+<hr />
+<h2 id="completion-summary">Completion Summary<a class="headerlink" href="#completion-summary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Milestone</th>
+<th>Status</th>
+<th>Stories</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>M1</strong> Foundation &amp; Observability</td>
+<td><strong>Done</strong></td>
+<td>AGT-0, AGT-1, AGT-2, AGT-3, AGT-4</td>
+</tr>
+<tr>
+<td><strong>M2</strong> Retrieval &amp; Ranking</td>
+<td><strong>Done</strong></td>
+<td>AGT-5, AGT-6, AGT-7, AGT-27</td>
+</tr>
+<tr>
+<td><strong>M2.5</strong> Retrieval Quality</td>
+<td><strong>Done</strong></td>
+<td>12 sources, constraint parsing, metadata</td>
+</tr>
+<tr>
+<td><strong>M2.6</strong> Fallback Retrieval</td>
+<td><strong>Done</strong></td>
+<td>AGT-8</td>
+</tr>
+<tr>
+<td><strong>M2.7</strong> Discovery Quality &amp; Filters</td>
+<td><strong>Not started</strong></td>
+<td>AGT-28, AGT-29, ZAP-4A</td>
+</tr>
+<tr>
+<td><strong>M3</strong> Write Correctness</td>
+<td><strong>Done</strong></td>
+<td>AGT-9, AGT-10, AGT-11, AGT-12</td>
+</tr>
+<tr>
+<td><strong>M4</strong> Approval Workflow &amp; MVP</td>
+<td><strong>Done</strong></td>
+<td>AGT-14, AGT-15, AGT-17, AGT-19</td>
+</tr>
+<tr>
+<td><strong>M5</strong> Production Hardening</td>
+<td><strong>Done</strong></td>
+<td>AGT-16, AGT-18, AGT-20<em>, AGT-21</em>, AGT-22*</td>
+</tr>
+<tr>
+<td><strong>M6</strong> Zotero Native Add-on</td>
+<td><strong>Not started</strong></td>
+<td>ZAP-0 through ZAP-11 plus ZAP-4A</td>
+</tr>
+<tr>
+<td><strong>M7</strong> Pluggability &amp; Infrastructure</td>
+<td><strong>Not started</strong></td>
+<td>AGT-23, AGT-24, AGT-25, AGT-26</td>
+</tr>
+</tbody>
+</table>
+<p>* = partial gaps noted below.</p>
+<hr />
+<h2 id="stories-with-gaps-marked-complete-but-incomplete">Stories With Gaps (Marked Complete but Incomplete)<a class="headerlink" href="#stories-with-gaps-marked-complete-but-incomplete" title="Permanent link">&para;</a></h2>
+<h3 id="agt-20-edge-case-and-failure-path-tests-partial">AGT-20 — Edge-Case and Failure-Path Tests (Partial)<a class="headerlink" href="#agt-20-edge-case-and-failure-path-tests-partial" title="Permanent link">&para;</a></h3>
+<p><strong>What's done:</strong> Broad failure-path coverage exists and retry-safe write outcomes are modeled.</p>
+<p><strong>What's missing:</strong></p>
+<ul>
+<li>[ ] Workflow/API terminal status must not report <code>completed</code> when all Zotero writes fail</li>
+<li>[ ] Add tests for full write failure, partial write failure, and retry-after-failure semantics</li>
+<li>[ ] Replace broad exception swallowing in retrieval/write orchestration with typed failures and structured metadata where feasible</li>
+</ul>
+<p><strong>Effort:</strong> 1d</p>
+<h3 id="agt-21-security-hardening-partial">AGT-21 — Security Hardening (Partial)<a class="headerlink" href="#agt-21-security-hardening-partial" title="Permanent link">&para;</a></h3>
+<p><strong>What's done:</strong> Secret redaction in logs, API key guard on backend endpoints, client ID owner isolation.</p>
+<p><strong>What's missing:</strong></p>
+<ul>
+<li>[ ] Security checklist document for pre-production review</li>
+<li>[ ] Future multi-user delegated-auth path documented (OAuth2/OIDC direction)</li>
+<li>[ ] Require authentication outside explicit local-dev mode instead of silently allowing anonymous access</li>
+<li>[ ] Reject missing <code>X-AGT-Client-ID</code> outside local-dev mode, or derive ownership from authenticated claims</li>
+</ul>
+<p><strong>Effort:</strong> 1d (docs + small API hardening changes)</p>
+<h3 id="agt-22-universal-llm-interface-partial">AGT-22 — Universal LLM Interface (Partial)<a class="headerlink" href="#agt-22-universal-llm-interface-partial" title="Permanent link">&para;</a></h3>
+<p><strong>What's done:</strong> <code>RoutedProvider</code> with failover, pluggable builder registry, xAI adapter.</p>
+<p><strong>What's missing:</strong></p>
+<ul>
+<li>[ ] OpenAI adapter implementing <code>LLMProvider</code> protocol</li>
+<li>[ ] Anthropic adapter implementing <code>LLMProvider</code> protocol</li>
+<li>[ ] Groq adapter implementing <code>LLMProvider</code> protocol (optional)</li>
+<li>[ ] Startup/preflight validation so configured but unimplemented providers fail before first request</li>
+<li>[ ] Shared contract test suite validating all adapters</li>
+</ul>
+<p><strong>Effort:</strong> 2.5d (adapters + startup validation + shared contract test suite)</p>
+<hr />
+<h2 id="discovery-quality-horizon-m27">Discovery Quality Horizon (M2.7)<a class="headerlink" href="#discovery-quality-horizon-m27" title="Permanent link">&para;</a></h2>
+<p><strong>Goal:</strong> Make SciAgent's paper discovery feel at least as strong as using Claude, ChatGPT, or Gemini with web search, while keeping the retrieval layer deterministic, inspectable, and usable without paid/search-engine API keys.</p>
+<p><strong>Product principle:</strong> LLMs are welcome for query rewriting, semantic validation, summarization, and reasoning. Search-engine API keys are not required for the default experience. The default source policy is keyless-first; paid/keyed sources are enrichment only.</p>
+<h3 id="agt-28-search-plan-and-deterministic-filter-contract">AGT-28 — Search Plan and Deterministic Filter Contract<a class="headerlink" href="#agt-28-search-plan-and-deterministic-filter-contract" title="Permanent link">&para;</a></h3>
+<p><strong>Priority:</strong> P0
+<strong>Dependencies:</strong> AGT-5, AGT-6
+<strong>Effort:</strong> 1.5d</p>
+<ul>
+<li>[ ] Add a typed <code>SearchPlan</code> model that separates topic terms from deterministic hard filters and soft preferences</li>
+<li>[ ] Parse freshness constraints such as <code>not older than 2024</code>, <code>since 2024</code>, <code>after 2023</code>, <code>between 2022 and 2024</code> into explicit year filters</li>
+<li>[ ] Preserve hard filters through LLM query rewriting so model output can refine topic wording but cannot loosen constraints</li>
+<li>[ ] Push filters down to source APIs when available, especially publication year and source/document type filters</li>
+<li>[ ] Re-apply hard filters after merge/dedup/ranking and fail tests if violating papers survive</li>
+<li>[ ] Return the search plan and applied filter metadata through CLI/API/UI responses</li>
+<li>[ ] Add regression coverage for the query: <code>time-series forecasting methods selection based on the data itself, not older than 2024</code></li>
+</ul>
+<h3 id="agt-29-keyless-first-retrieval-quality-benchmark">AGT-29 — Keyless-First Retrieval Quality Benchmark<a class="headerlink" href="#agt-29-keyless-first-retrieval-quality-benchmark" title="Permanent link">&para;</a></h3>
+<p><strong>Priority:</strong> P0
+<strong>Dependencies:</strong> AGT-28
+<strong>Effort:</strong> 1d</p>
+<ul>
+<li>[ ] Define a curated evaluation panel with at least 20 real research requests across domains</li>
+<li>[ ] For each request, record must-find papers, acceptable alternates, expected constraints, and source expectations</li>
+<li>[ ] Run the panel using only no-key/easy-access sources: OpenAlex, Crossref, Semantic Scholar no-key mode, PubMed, Europe PMC, arXiv, BASE, and OpenCitations enrichment</li>
+<li>[ ] Compare against a manually reviewed standalone LLM/web-search baseline and record where SciAgent misses papers a user would reasonably expect</li>
+<li>[ ] Track deterministic metrics: must-find recall, constraint compliance, freshness compliance, duplicate rate, source coverage, and top-5 relevance</li>
+<li>[ ] Report optional keyed sources separately so CORE, Dimensions, SerpAPI, or similar providers never mask weak default retrieval</li>
+</ul>
+<h3 id="zap-4a-filter-review-and-edit-ui">ZAP-4A — Filter Review and Edit UI<a class="headerlink" href="#zap-4a-filter-review-and-edit-ui" title="Permanent link">&para;</a></h3>
+<p><strong>Priority:</strong> P0 for the add-on UX
+<strong>Dependencies:</strong> AGT-28, ZAP-3, ZAP-4
+<strong>Effort:</strong> 0.75d</p>
+<ul>
+<li>[ ] Render parsed filters as editable controls before or alongside the result list</li>
+<li>[ ] Include year min/max, date range, source set, open-access preference, citation threshold, document type, include terms, and exclude terms</li>
+<li>[ ] Let users run, clear, or lock filters before approval</li>
+<li>[ ] Send the edited filter payload back to the backend instead of relying only on natural-language text</li>
+<li>[ ] Display source/skipped-source metadata so users understand whether optional API-key sources were used</li>
+</ul>
+<hr />
+<h2 id="remaining-backend-stories-m7">Remaining Backend Stories (M7)<a class="headerlink" href="#remaining-backend-stories-m7" title="Permanent link">&para;</a></h2>
+<h3 id="agt-23-unified-retrieval-registry">AGT-23 — Unified Retrieval Registry<a class="headerlink" href="#agt-23-unified-retrieval-registry" title="Permanent link">&para;</a></h3>
+<p><strong>Priority:</strong> P1
+<strong>Dependencies:</strong> AGT-5 ✅, AGT-6 ✅
+<strong>Effort:</strong> 2d</p>
+<p>Current state: <code>_RetrievalProvider</code> dataclass and <code>_build_retrieval_registry()</code> exist inside <code>search_papers.py</code> but are not a formal Protocol.</p>
+<ul>
+<li>[ ] Extract <code>RetrievalProvider</code> Protocol to <code>src/agt/tools/retrieval_protocol.py</code></li>
+<li>[ ] Create <code>src/agt/tools/retrieval_registry.py</code> with provider registration and lookup</li>
+<li>[ ] Refactor each client (Semantic Scholar, OpenAlex, Crossref, PubMed, etc.) to implement the Protocol</li>
+<li>[ ] Simplify <code>search_papers.py</code> to iterate over registry entries</li>
+<li>[ ] Split <code>search_papers.py</code> orchestration into stage modules during the registry extraction (<code>query normalization</code>, <code>rewrite</code>, <code>federation</code>, <code>enrichment</code>, <code>ranking</code>, <code>metadata assembly</code>)</li>
+<li>[ ] Add contract tests: new provider requires zero orchestrator edits</li>
+<li>[ ] Add federated merge test across registered providers</li>
+<li>[ ] Define cache boundaries and invalidation rules for normalized retrieval results if backend caching is added later</li>
+</ul>
+<h3 id="agt-24-durable-distributed-checkpointing">AGT-24 — Durable Distributed Checkpointing<a class="headerlink" href="#agt-24-durable-distributed-checkpointing" title="Permanent link">&para;</a></h3>
+<p><strong>Priority:</strong> P0
+<strong>Dependencies:</strong> AGT-16 ✅, AGT-18 ✅
+<strong>Effort:</strong> 1.5d</p>
+<ul>
+<li>[ ] Add Redis or Postgres LangGraph checkpointer backend</li>
+<li>[ ] Add <code>AGT_CHECKPOINT_BACKEND</code> and <code>AGT_CHECKPOINT_URL</code> settings fields</li>
+<li>[ ] Migrate workflow state from in-memory to persisted checkpoint store</li>
+<li>[ ] Add a temporary in-process concurrency guard if the in-memory store remains available for local-dev fallback</li>
+<li>[ ] Add migration/bootstrap script for checkpoint backend initialization</li>
+<li>[ ] Integration test: pause on instance A, resume on instance B</li>
+<li>[ ] Integration test: process restart preserves in-progress workflow state</li>
+<li>[ ] Smoke test: checkpoint backend unavailable produces actionable error</li>
+<li>[ ] Replay test: approval resume semantics stay idempotent across persisted checkpoints</li>
+</ul>
+<h3 id="agt-25-asynchronous-task-queue">AGT-25 — Asynchronous Task Queue<a class="headerlink" href="#agt-25-asynchronous-task-queue" title="Permanent link">&para;</a></h3>
+<p><strong>Priority:</strong> P1
+<strong>Dependencies:</strong> AGT-18 ✅, AGT-24 ❌ (blocked)
+<strong>Effort:</strong> 2d</p>
+<ul>
+<li>[ ] Add Celery or Dramatiq worker for workflow execution</li>
+<li>[ ] Refactor <code>POST /run</code> to return <code>task_id</code> immediately</li>
+<li>[ ] Add task state transitions: queued → running → completed/failed</li>
+<li>[ ] Ensure worker uses same checkpointer and idempotency guardrails</li>
+<li>[ ] Add cancellation/retry policy with bounded retries</li>
+<li>[ ] Integration tests for async lifecycle</li>
+</ul>
+<h3 id="agt-26-cloud-agnostic-iac">AGT-26 — Cloud-Agnostic IaC<a class="headerlink" href="#agt-26-cloud-agnostic-iac" title="Permanent link">&para;</a></h3>
+<p><strong>Priority:</strong> P2
+<strong>Dependencies:</strong> AGT-24 ❌, AGT-25 ❌ (blocked)
+<strong>Effort:</strong> 2d</p>
+<ul>
+<li>[ ] Create IaC modules (Terraform/Pulumi) for compute, persistence, queue</li>
+<li>[ ] Separate local-dev deployment from production deployment topology (dedicated backend/UI images or services)</li>
+<li>[ ] Add container hardening baseline: non-root runtime, healthchecks, explicit environment profiles</li>
+<li>[ ] Define managed secret injection contract</li>
+<li>[ ] Add CI/CD pipeline for plan/apply/deploy</li>
+<li>[ ] Add staging environment template</li>
+<li>[ ] Add rollback and drift-detection procedures</li>
+</ul>
+<h3 id="agt-13-pdf-attachment-pipeline">AGT-13 — PDF Attachment Pipeline<a class="headerlink" href="#agt-13-pdf-attachment-pipeline" title="Permanent link">&para;</a></h3>
+<p><strong>Priority:</strong> P1
+<strong>Dependencies:</strong> AGT-11 ✅, AGT-25 ❌ (partially blocked)
+<strong>Effort:</strong> 2d</p>
+<ul>
+<li>[ ] Create <code>src/agt/tools/pdf_attach.py</code> with download + SHA256 checksum</li>
+<li>[ ] Add <code>AGT_ENABLE_PDF_ATTACHMENT</code> feature flag</li>
+<li>[ ] Integrate with upsert pipeline (attach after item creation)</li>
+<li>[ ] Store checksum in Zotero extra field</li>
+<li>[ ] Ensure attachment failures never corrupt item write flow</li>
+<li>[ ] Tests for download, checksum verification, and failure isolation</li>
+</ul>
+<hr />
+<h2 id="zotero-native-add-on-m6-full-scope">Zotero Native Add-on (M6) — Full Scope<a class="headerlink" href="#zotero-native-add-on-m6-full-scope" title="Permanent link">&para;</a></h2>
+<p><strong>Overall status:</strong> Not started (zero TypeScript/React files exist).
+<strong>Backend readiness:</strong> All required API endpoints are available (<code>/health</code>, <code>/run</code>, <code>/resume</code>, <code>/status/{run_id}</code>).
+<strong>Discovery readiness:</strong> Filterable sidebar work depends on AGT-28 search-plan metadata.</p>
+<p><strong>Contract note:</strong> The implemented backend contract for add-on planning is <code>/health</code>, <code>/run</code>, <code>/resume</code>, and <code>/status/{run_id}</code>. Filterable search additionally needs AGT-28 search-plan metadata.</p>
+<h3 id="phase-1-plugin-foundation-zap-0-zap-1-zap-2-2d">Phase 1: Plugin Foundation (ZAP-0, ZAP-1, ZAP-2) — ~2d<a class="headerlink" href="#phase-1-plugin-foundation-zap-0-zap-1-zap-2-2d" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Story</th>
+<th>Task</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ZAP-0</td>
+<td>Clone <code>zotero-addon-template</code>, configure TypeScript + esbuild</td>
+<td>Not started</td>
+</tr>
+<tr>
+<td>ZAP-0</td>
+<td>Generate <code>manifest.json</code> + <code>bootstrap.js</code> with plugin ID <code>agt@yourdomain.org</code></td>
+<td>Not started</td>
+</tr>
+<tr>
+<td>ZAP-0</td>
+<td>Plugin loads in Zotero 9 with "AGT" menu item and empty sidebar</td>
+<td>Not started</td>
+</tr>
+<tr>
+<td>ZAP-1</td>
+<td>Extension proxy file for loading from source</td>
+<td>Not started</td>
+</tr>
+<tr>
+<td>ZAP-1</td>
+<td><code>npm run build</code> → <code>.xpi</code> auto-generated</td>
+<td>Not started</td>
+</tr>
+<tr>
+<td>ZAP-1</td>
+<td><code>zotero-types</code> package installed for full autocomplete</td>
+<td>Not started</td>
+</tr>
+<tr>
+<td>ZAP-2</td>
+<td>Configurable backend URL (default <code>http://localhost:8000</code>)</td>
+<td>Not started</td>
+</tr>
+<tr>
+<td>ZAP-2</td>
+<td><code>fetch</code> wrapper with auth (API key from <code>Zotero.Prefs</code>)</td>
+<td>Not started</td>
+</tr>
+<tr>
+<td>ZAP-2</td>
+<td>Health check on plugin load (green/red status in sidebar)</td>
+<td>Not started</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-2-native-sidebar-ui-zap-3-zap-4-zap-4a-zap-5-425d">Phase 2: Native Sidebar UI (ZAP-3, ZAP-4, ZAP-4A, ZAP-5) — ~4.25d<a class="headerlink" href="#phase-2-native-sidebar-ui-zap-3-zap-4-zap-4a-zap-5-425d" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Story</th>
+<th>Task</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ZAP-3</td>
+<td>Register custom pane via <code>Zotero.ItemPaneManager.registerSection</code></td>
+<td>Not started</td>
+</tr>
+<tr>
+<td>ZAP-3</td>
+<td>Collapsible sidebar with AGT icon</td>
+<td>Not started</td>
+</tr>
+<tr>
+<td>ZAP-3</td>
+<td>Chat-like React + Tailwind interface</td>
+<td>Not started</td>
+</tr>
+<tr>
+<td>ZAP-4</td>
+<td>Input box + Search button → calls <code>/run</code> endpoint</td>
+<td>Not started</td>
+</tr>
+<tr>
+<td>ZAP-4</td>
+<td>Render paper card list with indices, summaries, checkboxes</td>
+<td>Not started</td>
+</tr>
+<tr>
+<td>ZAP-4A</td>
+<td>Render/edit parsed filters: year, source set, OA, citations, type, include/exclude terms</td>
+<td>Not started</td>
+</tr>
+<tr>
+<td>ZAP-4A</td>
+<td>Send structured filter payload to backend and show skipped/optional sources</td>
+<td>Not started</td>
+</tr>
+<tr>
+<td>ZAP-5</td>
+<td>"Create Collection" field with auto-suggest</td>
+<td>Not started</td>
+</tr>
+<tr>
+<td>ZAP-5</td>
+<td>Approve / Reject / Edit buttons → calls <code>/resume</code></td>
+<td>Not started</td>
+</tr>
+<tr>
+<td>ZAP-5</td>
+<td>Progress spinner + per-item green checkmarks</td>
+<td>Not started</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-3-zotero-write-integration-zap-6-zap-7-zap-8-3d">Phase 3: Zotero Write Integration (ZAP-6, ZAP-7, ZAP-8) — ~3d<a class="headerlink" href="#phase-3-zotero-write-integration-zap-6-zap-7-zap-8-3d" title="Permanent link">&para;</a></h3>
+<p><strong>Architecture decision required:</strong> Native Zotero JS writes vs. backend-delegated writes.</p>
+<table>
+<thead>
+<tr>
+<th>Story</th>
+<th>Task</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ZAP-6</td>
+<td>Collection resolver via <code>Zotero.Collections</code> (native)</td>
+<td>Not started</td>
+</tr>
+<tr>
+<td>ZAP-7</td>
+<td>Idempotent item creation via <code>Zotero.Items</code> with DOI + hash dedup</td>
+<td>Not started</td>
+</tr>
+<tr>
+<td>ZAP-8</td>
+<td>PDF attachment via <code>Zotero.Attachments.importFromURL()</code> (feature-flagged)</td>
+<td>Not started</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phase-4-polish-release-zap-9-zap-10-zap-11-3d">Phase 4: Polish &amp; Release (ZAP-9, ZAP-10, ZAP-11) — ~3d<a class="headerlink" href="#phase-4-polish-release-zap-9-zap-10-zap-11-3d" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Story</th>
+<th>Task</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ZAP-9</td>
+<td>Preferences pane (backend URL, API key, PDF toggle)</td>
+<td>Not started</td>
+</tr>
+<tr>
+<td>ZAP-10</td>
+<td>Graceful error fallback messages</td>
+<td>Not started</td>
+</tr>
+<tr>
+<td>ZAP-10</td>
+<td>Local cache of last search results</td>
+<td>Not started</td>
+</tr>
+<tr>
+<td>ZAP-11</td>
+<td><code>npm run build</code> → signed <code>.xpi</code></td>
+<td>Not started</td>
+</tr>
+<tr>
+<td>ZAP-11</td>
+<td>GitHub Actions workflow for auto-release</td>
+<td>Not started</td>
+</tr>
+<tr>
+<td>ZAP-11</td>
+<td>Listed on Zotero plugin directory + GitHub Releases</td>
+<td>Not started</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="immediate-backlog-priority-order">Immediate Backlog (Priority Order)<a class="headerlink" href="#immediate-backlog-priority-order" title="Permanent link">&para;</a></h2>
+<h3 id="p0-do-first">P0 — Do First<a class="headerlink" href="#p0-do-first" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>AGT-28</strong> — Search plan and deterministic filter contract (1.5d)</li>
+<li><strong>AGT-29</strong> — Keyless-first retrieval quality benchmark against standalone LLM/web-search baseline (1d)</li>
+<li><strong>ZAP-4A contract</strong> — Define filter review/edit payload before sidebar implementation (0.25d)</li>
+<li><strong>AGT-20 follow-up</strong> — Truthful terminal status + typed failure handling/tests (1d)</li>
+<li><strong>AGT-21 hardening</strong> — Security checklist, auth defaults, delegated-auth direction (1d)</li>
+<li><strong>AGT-24</strong> — Distributed checkpointing with Redis/Postgres (1.5d)</li>
+<li><strong>ZAP-0 + ZAP-1</strong> — Plugin skeleton and dev environment (1d)</li>
+</ol>
+<h3 id="p1-do-next">P1 — Do Next<a class="headerlink" href="#p1-do-next" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>AGT-22 adapters</strong> — OpenAI and Anthropic provider adapters + startup validation (2.5d)</li>
+<li><strong>ZAP-2</strong> — Backend connection layer from plugin (0.5d)</li>
+<li><strong>AGT-23</strong> — Retrieval registry Protocol extraction (2d)</li>
+<li><strong>AGT-20 CI gates</strong> — Coverage, resilience, and replay checks in CI (1d)</li>
+<li><strong>ZAP-3 + ZAP-4 + ZAP-4A + ZAP-5</strong> — Full sidebar UI with filter review (4.25d)</li>
+<li><strong>AGT-13</strong> — PDF attachment pipeline (2d)</li>
+<li><strong>AGT-25</strong> — Async task queue (2d)</li>
+</ol>
+<h3 id="p2-ship-when-ready">P2 — Ship When Ready<a class="headerlink" href="#p2-ship-when-ready" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>ZAP-6 + ZAP-7 + ZAP-8</strong> — Native Zotero writes (3d)</li>
+<li><strong>ZAP-9 + ZAP-10 + ZAP-11</strong> — Preferences, error handling, release (3d)</li>
+<li><strong>AGT-26</strong> — Cloud IaC + production deployment split (2d)</li>
+</ol>
+<hr />
+<h2 id="unresolved-decisions">Unresolved Decisions<a class="headerlink" href="#unresolved-decisions" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Options</th>
+<th>Impact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Default retrieval source policy</strong></td>
+<td>Keyless-first only vs. keyless-first plus opt-in keyed enrichment</td>
+<td>Keyless-first prevents paid/search-key dependence; opt-in enrichment can improve coverage without hiding baseline gaps</td>
+</tr>
+<tr>
+<td><strong>Filter edit timing</strong></td>
+<td>Before first search vs. after parsed preview vs. both</td>
+<td>Before search improves determinism; after preview improves usability; both is best for Zotero sidebar ergonomics</td>
+</tr>
+<tr>
+<td><strong>ZAP write path</strong></td>
+<td>Native <code>Zotero.*</code> JS API vs. backend-delegated via <code>/resume</code></td>
+<td>Native = faster + offline-capable but duplicates dedup logic in TypeScript; Delegated = simpler plugin but requires backend for all writes</td>
+</tr>
+<tr>
+<td><strong>Checkpoint backend</strong></td>
+<td>Redis vs. Postgres</td>
+<td>Redis = faster + simpler; Postgres = durable + query-friendly for analytics</td>
+</tr>
+<tr>
+<td><strong>Task queue</strong></td>
+<td>Celery vs. Dramatiq</td>
+<td>Celery = mature ecosystem; Dramatiq = simpler API, fewer deps</td>
+</tr>
+<tr>
+<td><strong>Provider priority</strong></td>
+<td>OpenAI first vs. Anthropic first</td>
+<td>Depends on team key availability and model preferences</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="multi-provider-rollout-checklist">Multi-Provider Rollout Checklist<a class="headerlink" href="#multi-provider-rollout-checklist" title="Permanent link">&para;</a></h2>
+<ul>
+<li>[ ] Phase A: Provider abstraction locked and covered by unit tests</li>
+<li>[ ] Phase B: xAI + OpenAI + Anthropic adapters passing shared contract test suite</li>
+<li>[ ] Phase C: Routing policy enabled (single, pinned, fallback chain)</li>
+<li>[ ] Phase D: Tracing and cost telemetry include provider/model labels</li>
+<li>[ ] Phase E: Failure semantics standardized across providers</li>
+<li>[ ] Phase F: Documentation updated with provider selection and env aliases</li>
+</ul>
+<hr />
+<h2 id="backend-gates-for-zap-blocks">Backend Gates for ZAP Blocks<a class="headerlink" href="#backend-gates-for-zap-blocks" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Gate</th>
+<th>Required Stories</th>
+<th>Met?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Plugin foundation (ZAP-0 to ZAP-2)</td>
+<td>AGT-0, AGT-1, AGT-2, AGT-4, AGT-18</td>
+<td><strong>Yes</strong></td>
+</tr>
+<tr>
+<td>Sidebar UX (ZAP-3 to ZAP-5)</td>
+<td>AGT-5, AGT-6, AGT-7, AGT-15, AGT-27</td>
+<td><strong>Yes</strong></td>
+</tr>
+<tr>
+<td>Native writes (ZAP-6 to ZAP-8)</td>
+<td>AGT-10, AGT-11, AGT-12, AGT-14, AGT-16</td>
+<td><strong>Yes</strong></td>
+</tr>
+<tr>
+<td>PDF attachment (ZAP-8)</td>
+<td>AGT-13</td>
+<td><strong>No</strong> — AGT-13 not started</td>
+</tr>
+<tr>
+<td>Release readiness (ZAP-9 to ZAP-11)</td>
+<td>AGT-19, AGT-20, AGT-21</td>
+<td><strong>Partial</strong> — AGT-20/21 follow-up work remains</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ci-quality-status">CI &amp; Quality Status<a class="headerlink" href="#ci-quality-status" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>uv run ruff check .</code></td>
+<td>0 errors</td>
+</tr>
+<tr>
+<td><code>uv run pyright</code></td>
+<td>0 errors, 0 warnings</td>
+</tr>
+<tr>
+<td><code>uv run pytest --tb=short</code></td>
+<td>132 passed</td>
+</tr>
+<tr>
+<td>Test coverage areas</td>
+<td>config, preflight, providers, guardrails, all retrieval clients, ranking, summarize, search orchestration, query constraints, query rewriter, zotero upsert, models, workflow, API</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.sections", "navigation.expand", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

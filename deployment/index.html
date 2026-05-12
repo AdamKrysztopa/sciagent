@@ -1,0 +1,1984 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="SciAgent documentation site built from Markdown sources in the repository.">
+      
+      
+      
+        <link rel="canonical" href="https://adamkrysztopa.github.io/sciagent/deployment/">
+      
+      
+        <link rel="prev" href="../manual/">
+      
+      
+        <link rel="next" href="../local-first/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Deployment & Hosting - SciAgent Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#sciagent-deployment-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="SciAgent Docs" class="md-header__button md-logo" aria-label="SciAgent Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            SciAgent Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Deployment & Hosting
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/AdamKrysztopa/sciagent" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    AdamKrysztopa/sciagent
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="SciAgent Docs" class="md-nav__button md-logo" aria-label="SciAgent Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    SciAgent Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/AdamKrysztopa/sciagent" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    AdamKrysztopa/sciagent
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Overview
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Planning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Planning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../actionable-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../priorities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Priorities
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../next-steps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Next Steps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manuals
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Manuals
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../manual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration & Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment & Hosting
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment & Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#current-deployment-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current Deployment Options
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Current Deployment Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-development-m6-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Development (M6 Status)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker-and-docker-compose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker and Docker Compose
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#future-saas-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Future SaaS Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Future SaaS Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#proposed-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proposed Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Components
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Key Components">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-stateless-api-tier" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Stateless API Tier
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-job-queue-and-workers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Job Queue and Workers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-durable-state-store" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Durable State Store
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-secrets-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Secrets Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-observability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Observability
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites-for-saas-readiness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites for SaaS Readiness
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prerequisites for SaaS Readiness">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-agt-21-security-checklist-and-auth-hardening" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. AGT-21: Security Checklist and Auth Hardening
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-agt-24-durable-distributed-checkpointing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. AGT-24: Durable Distributed Checkpointing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-agt-25-background-job-queue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. AGT-25: Background Job Queue
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-agt-26-multi-user-isolation-and-secrets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. AGT-26: Multi-User Isolation and Secrets
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-zap-11-signed-xpi-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. ZAP-11: Signed XPI Release
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#risk-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Risk Assessment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Risk Assessment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#technical-risks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technical Risks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operational-risks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operational Risks
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-timeline-proposed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Timeline (Proposed)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#self-hosting-without-saas-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-Hosting Without SaaS Features
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        See Also
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../local-first/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local-First Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmark/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    P1 Benchmark
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../zotero/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Zotero Add-on
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#current-deployment-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current Deployment Options
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Current Deployment Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-development-m6-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Development (M6 Status)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker-and-docker-compose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker and Docker Compose
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#future-saas-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Future SaaS Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Future SaaS Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#proposed-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proposed Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Components
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Key Components">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-stateless-api-tier" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Stateless API Tier
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-job-queue-and-workers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Job Queue and Workers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-durable-state-store" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Durable State Store
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-secrets-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Secrets Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-observability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Observability
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites-for-saas-readiness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites for SaaS Readiness
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prerequisites for SaaS Readiness">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-agt-21-security-checklist-and-auth-hardening" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. AGT-21: Security Checklist and Auth Hardening
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-agt-24-durable-distributed-checkpointing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. AGT-24: Durable Distributed Checkpointing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-agt-25-background-job-queue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. AGT-25: Background Job Queue
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-agt-26-multi-user-isolation-and-secrets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. AGT-26: Multi-User Isolation and Secrets
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-zap-11-signed-xpi-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. ZAP-11: Signed XPI Release
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#risk-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Risk Assessment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Risk Assessment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#technical-risks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technical Risks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operational-risks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operational Risks
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-timeline-proposed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Timeline (Proposed)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#self-hosting-without-saas-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-Hosting Without SaaS Features
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        See Also
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="sciagent-deployment-guide">SciAgent Deployment Guide<a class="headerlink" href="#sciagent-deployment-guide" title="Permanent link">&para;</a></h1>
+<p>This document covers deployment options for SciAgent: local development, Docker/self-hosted, and future SaaS architecture.</p>
+<hr />
+<h2 id="current-deployment-options">Current Deployment Options<a class="headerlink" href="#current-deployment-options" title="Permanent link">&para;</a></h2>
+<h3 id="local-development-m6-status">Local Development (M6 Status)<a class="headerlink" href="#local-development-m6-status" title="Permanent link">&para;</a></h3>
+<p>The M6 milestone delivers a <strong>local-first architecture</strong> with:</p>
+<ul>
+<li>Python backend running on <code>localhost:8000</code> via <code>uvicorn</code></li>
+<li>Zotero 9 add-on installed locally via unsigned XPI</li>
+<li>User's own Zotero API key and library ID</li>
+<li>No shared backend, no multi-user isolation, no persistence beyond in-memory run state</li>
+</ul>
+<p><strong>Prerequisites:</strong></p>
+<ul>
+<li>Python 3.13+ (3.14 recommended)</li>
+<li><code>uv</code> package manager</li>
+<li>Node.js 20+ for add-on build</li>
+<li>Zotero 9.x desktop client</li>
+<li>Zotero API key with read/write permissions</li>
+</ul>
+<p><strong>Setup:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Backend</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>uv<span class="w"> </span>sync
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>cp<span class="w"> </span>.env.example<span class="w"> </span>.env
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Edit .env with your Zotero credentials and LLM API key</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>uv<span class="w"> </span>run<span class="w"> </span>uvicorn<span class="w"> </span>agt.api.app:app<span class="w"> </span>--host<span class="w"> </span><span class="m">127</span>.0.0.1<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># Add-on</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="nb">cd</span><span class="w"> </span>zotero-addon
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>npm<span class="w"> </span>ci
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>npm<span class="w"> </span>run<span class="w"> </span>build
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="c1"># Install build/sciagent-zotero-addon.xpi in Zotero via add-ons manager</span>
+</code></pre></div>
+<p><strong>Use Case:</strong></p>
+<ul>
+<li>Individual researchers running SciAgent on their own machine</li>
+<li>Privacy-first: all data stays local</li>
+<li>Full control over API keys, rate limits, and LLM provider choice</li>
+<li>No shared state or user isolation concerns</li>
+</ul>
+<p><strong>Limitations:</strong></p>
+<ul>
+<li>No persistence: stopping the backend clears all run state</li>
+<li>Single-user only: no multi-tenancy or user management</li>
+<li>Manual dependency management and environment setup</li>
+<li>No background/async job processing</li>
+<li>No automatic updates or centralized monitoring</li>
+</ul>
+<hr />
+<h3 id="docker-and-docker-compose">Docker and Docker Compose<a class="headerlink" href="#docker-and-docker-compose" title="Permanent link">&para;</a></h3>
+<p>The repository ships a <code>Dockerfile</code> and <code>docker-compose.yml</code> for containerized deployment.</p>
+<p><strong>Current Status (P5):</strong></p>
+<ul>
+<li>✅ Dockerfile builds a Python 3.14 image with <code>uv sync</code></li>
+<li>✅ FastAPI backend is the default CMD: <code>uvicorn agt.api.app:app --host 0.0.0.0 --port 8000</code></li>
+<li>✅ <code>docker-compose.yml</code> mounts <code>.env</code> and <code>~/.sciagent</code> for persistent data</li>
+<li>✅ CORS and rate limiting configurable via <code>AGT_CORS_ALLOWED_ORIGINS</code> / <code>AGT_API_RATE_LIMIT</code></li>
+<li>❌ No multi-container orchestration (backend + worker + database) — local only</li>
+<li>❌ No secrets management integration (Vault, AWS Secrets Manager)</li>
+</ul>
+<p><strong>Quickstart with Docker Compose:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Copy environment template and fill in credentials</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>cp<span class="w"> </span>.env.example<span class="w"> </span>.env
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1"># Edit .env: add AGT_OPENAI_API_KEY (or Groq/Anthropic), AGT_ZOTERO_API_KEY, AGT_ZOTERO_LIBRARY_ID</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># Build and start</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>--build<span class="w"> </span>-d
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="c1"># Verify</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>curl<span class="w"> </span>http://localhost:8000/health
+</code></pre></div>
+<p>Sessions, watches, and cache are persisted to <code>~/.sciagent</code> on the host via volume mount.</p>
+<p><strong>Manual Docker Run (without Compose):</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>sciagent:latest<span class="w"> </span>.
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span>--name<span class="w"> </span>sciagent-backend<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span>-p<span class="w"> </span><span class="m">8000</span>:8000<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span>--env-file<span class="w"> </span>.env<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span>--restart<span class="w"> </span>unless-stopped<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span>-v<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">HOME</span><span class="si">}</span><span class="s2">/.sciagent:/root/.sciagent&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">  </span>sciagent:latest
+</code></pre></div>
+<p><strong>Use Case:</strong></p>
+<ul>
+<li>Self-hosted deployment on a VPS or internal server</li>
+<li>Reproducible environment across development and production</li>
+<li>Privacy-first: all data stays on your infrastructure</li>
+</ul>
+<p><strong>Missing for Production Self-Hosting:</strong></p>
+<ol>
+<li><strong>Persistent State</strong>: In-memory <code>_RunStore</code> cleared on restart; file-backed sessions/watches
+   survive (mounted via volume)</li>
+<li><strong>Authentication</strong>: Set <code>AGT_BACKEND_API_KEY</code> + TLS termination via reverse proxy</li>
+<li><strong>Async Workers</strong>: Long-running workflows run in-process; no background job queue (AGT-25)</li>
+<li><strong>Multi-user</strong>: Single shared API key; no per-user isolation beyond <code>X-AGT-Client-ID</code></li>
+</ol>
+<hr />
+<h2 id="future-saas-architecture">Future SaaS Architecture<a class="headerlink" href="#future-saas-architecture" title="Permanent link">&para;</a></h2>
+<p>The planned <strong>multi-user SaaS deployment</strong> (post-M6) would enable:</p>
+<ul>
+<li>Hosted backend with centralized API and job processing</li>
+<li>Multi-user isolation with proper authentication and authorization</li>
+<li>Durable state persistence across restarts</li>
+<li>Background workers for long-running search/write workflows</li>
+<li>Zotero add-on as a thin client talking to a shared backend</li>
+</ul>
+<h3 id="proposed-architecture">Proposed Architecture<a class="headerlink" href="#proposed-architecture" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>┌─────────────────────────────────────────────────────┐
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>│ Zotero Desktop (multiple users)                     │
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>│   └─ SciAgent Add-on (thin client)                  │
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>│       └─ Calls hosted API via HTTPS                 │
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>└───────────────────┬─────────────────────────────────┘
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>                    │
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>                    ▼
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>┌─────────────────────────────────────────────────────┐
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>│ API Gateway / Load Balancer                         │
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>│   └─ TLS termination, rate limiting, auth check     │
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>└───────────────────┬─────────────────────────────────┘
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>                    │
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>         ┌──────────┴──────────┐
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>         ▼                     ▼
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>┌──────────────────┐   ┌──────────────────┐
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>│ FastAPI Backend  │   │ FastAPI Backend  │
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>│ (stateless)      │   │ (stateless)      │
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>└────────┬─────────┘   └────────┬─────────┘
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>         │                      │
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>         └──────────┬───────────┘
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>                    ▼
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>         ┌──────────────────────┐
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>         │ Job Queue (Redis)    │
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>         │   └─ Async workflows │
+<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>         └──────────┬───────────┘
+<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>                    ▼
+<a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a>         ┌──────────────────────┐
+<a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a>         │ Worker Pool          │
+<a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a>         │   └─ Search + Write  │
+<a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a>         └──────────┬───────────┘
+<a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a>                    │
+<a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a>         ┌──────────┴───────────┐
+<a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a>         ▼                      ▼
+<a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a>┌──────────────────┐   ┌──────────────────┐
+<a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a>│ PostgreSQL       │   │ Redis Cache      │
+<a id="__codelineno-3-36" name="__codelineno-3-36" href="#__codelineno-3-36"></a>│ (durable state)  │   │ (fast lookups)   │
+<a id="__codelineno-3-37" name="__codelineno-3-37" href="#__codelineno-3-37"></a>└──────────────────┘   └──────────────────┘
+</code></pre></div>
+<h3 id="key-components">Key Components<a class="headerlink" href="#key-components" title="Permanent link">&para;</a></h3>
+<h4 id="1-stateless-api-tier">1. Stateless API Tier<a class="headerlink" href="#1-stateless-api-tier" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Multiple FastAPI instances behind a load balancer</li>
+<li>JWT-based authentication with OAuth2 (GitHub, Google, institutional SSO)</li>
+<li>User-scoped API keys for programmatic access</li>
+<li>Role-based access control (admin, user, read-only)</li>
+</ul>
+<h4 id="2-job-queue-and-workers">2. Job Queue and Workers<a class="headerlink" href="#2-job-queue-and-workers" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Redis or RabbitMQ for job dispatch</li>
+<li>Worker pool running <code>agt.graph.workflow</code> in background</li>
+<li>Job status polling via <code>/status/{run_id}</code></li>
+<li>Optional webhook callbacks for completion notifications</li>
+</ul>
+<h4 id="3-durable-state-store">3. Durable State Store<a class="headerlink" href="#3-durable-state-store" title="Permanent link">&para;</a></h4>
+<ul>
+<li>PostgreSQL for:</li>
+<li>User accounts and API keys</li>
+<li>Workflow run metadata (run ID, thread ID, user ID, status)</li>
+<li>Approval decisions and selected paper indices</li>
+<li>Search plans and filter edits</li>
+<li>Optional S3/blob storage for large payloads (paper PDFs, full-text)</li>
+</ul>
+<h4 id="4-secrets-management">4. Secrets Management<a class="headerlink" href="#4-secrets-management" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Vault, AWS Secrets Manager, or GCP Secret Manager</li>
+<li>Per-user Zotero API keys stored encrypted</li>
+<li>LLM provider keys rotated centrally</li>
+<li>No hardcoded secrets in code or environment</li>
+</ul>
+<h4 id="5-observability">5. Observability<a class="headerlink" href="#5-observability" title="Permanent link">&para;</a></h4>
+<ul>
+<li>OpenTelemetry tracing for distributed workflows</li>
+<li>Prometheus metrics for API latency, job queue depth, LLM costs</li>
+<li>Grafana dashboards for monitoring and alerting</li>
+<li>Structured logging with ELK or Datadog</li>
+</ul>
+<hr />
+<h2 id="prerequisites-for-saas-readiness">Prerequisites for SaaS Readiness<a class="headerlink" href="#prerequisites-for-saas-readiness" title="Permanent link">&para;</a></h2>
+<p>Before launching a hosted multi-user SaaS, the following stories must be completed:</p>
+<h3 id="1-agt-21-security-checklist-and-auth-hardening">1. AGT-21: Security Checklist and Auth Hardening<a class="headerlink" href="#1-agt-21-security-checklist-and-auth-hardening" title="Permanent link">&para;</a></h3>
+<p><strong>Status:</strong> Not Done</p>
+<p><strong>Scope:</strong></p>
+<ul>
+<li>Replace <code>AGT_BACKEND_API_KEY</code> with JWT-based user auth</li>
+<li>Add OAuth2 flow for GitHub/Google/institutional SSO</li>
+<li>Implement user registration, login, password reset</li>
+<li>Add role-based access control (admin vs user)</li>
+<li>Encrypt Zotero API keys at rest</li>
+<li>Add CSRF protection for web UI</li>
+<li>Rate-limit API endpoints per user</li>
+</ul>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+<li>No hardcoded secrets in environment variables</li>
+<li>User API keys scoped to user accounts</li>
+<li>Admin panel for user management</li>
+<li>Zotero keys stored with AES-256 encryption</li>
+<li>All public endpoints protected with rate limits</li>
+</ul>
+<hr />
+<h3 id="2-agt-24-durable-distributed-checkpointing">2. AGT-24: Durable Distributed Checkpointing<a class="headerlink" href="#2-agt-24-durable-distributed-checkpointing" title="Permanent link">&para;</a></h3>
+<p><strong>Status:</strong> Not Done</p>
+<p><strong>Scope:</strong></p>
+<ul>
+<li>Migrate from in-memory <code>_RunStore</code> to PostgreSQL</li>
+<li>Store workflow state (papers, search plan, write results) in database</li>
+<li>Support resumption across backend restarts</li>
+<li>Add pagination for large result sets</li>
+<li>Implement state pruning/archival for old runs</li>
+</ul>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+<li>Backend restarts do not lose pending workflows</li>
+<li><code>/status/{run_id}</code> retrieves state from database</li>
+<li>Workflow state survives for 7 days minimum</li>
+<li>Old runs archived after 30 days</li>
+<li>Pagination for <code>/status</code> with 50-result pages</li>
+</ul>
+<hr />
+<h3 id="3-agt-25-background-job-queue">3. AGT-25: Background Job Queue<a class="headerlink" href="#3-agt-25-background-job-queue" title="Permanent link">&para;</a></h3>
+<p><strong>Status:</strong> Not Done</p>
+<p><strong>Scope:</strong></p>
+<ul>
+<li>Integrate Redis or RabbitMQ for job dispatch</li>
+<li>Move search and write workflows to worker pool</li>
+<li>Return job ID immediately from <code>/run</code></li>
+<li>Add <code>/jobs/{job_id}</code> polling endpoint</li>
+<li>Optional webhook support for job completion</li>
+</ul>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+<li><code>/run</code> returns in &lt;200ms with job ID</li>
+<li>Worker pool scales independently of API tier</li>
+<li>Job status polls show progress updates</li>
+<li>Workers respect per-user rate limits</li>
+<li>Failed jobs retry with exponential backoff</li>
+</ul>
+<hr />
+<h3 id="4-agt-26-multi-user-isolation-and-secrets">4. AGT-26: Multi-User Isolation and Secrets<a class="headerlink" href="#4-agt-26-multi-user-isolation-and-secrets" title="Permanent link">&para;</a></h3>
+<p><strong>Status:</strong> Not Done</p>
+<p><strong>Scope:</strong></p>
+<ul>
+<li>Add <code>users</code> table with encrypted Zotero credentials</li>
+<li>Scope all queries by <code>user_id</code></li>
+<li>Prevent cross-user data leakage in API responses</li>
+<li>Add per-user LLM cost tracking and quota limits</li>
+<li>Integrate Vault or AWS Secrets Manager</li>
+</ul>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+<li>User A cannot access User B's workflows</li>
+<li>Zotero API keys stored encrypted per user</li>
+<li>LLM cost tracked per user, enforced quotas</li>
+<li>No secrets in environment variables or logs</li>
+<li>Secrets rotated via external manager</li>
+</ul>
+<hr />
+<h3 id="5-zap-11-signed-xpi-release">5. ZAP-11: Signed XPI Release<a class="headerlink" href="#5-zap-11-signed-xpi-release" title="Permanent link">&para;</a></h3>
+<p><strong>Status:</strong> Not Done</p>
+<p><strong>Scope:</strong></p>
+<ul>
+<li>Sign XPI with Mozilla Add-ons or custom signing</li>
+<li>Publish to Zotero add-ons repository or self-hosted catalog</li>
+<li>Add auto-update manifest for version checks</li>
+<li>Document manual install vs signed install flow</li>
+</ul>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+<li>XPI passes Zotero 9 signature validation</li>
+<li>Auto-update manifest published</li>
+<li>Users can install without "Install from File" workaround</li>
+<li>Update checks work without manual re-download</li>
+</ul>
+<hr />
+<h2 id="risk-assessment">Risk Assessment<a class="headerlink" href="#risk-assessment" title="Permanent link">&para;</a></h2>
+<h3 id="technical-risks">Technical Risks<a class="headerlink" href="#technical-risks" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Likelihood</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LLM cost explosion with many users</td>
+<td>High</td>
+<td>High</td>
+<td>Per-user quotas, cost tracking, circuit breakers</td>
+</tr>
+<tr>
+<td>Zotero API rate limits hit</td>
+<td>Medium</td>
+<td>High</td>
+<td>Per-user rate limiting, queue backpressure</td>
+</tr>
+<tr>
+<td>Search latency unacceptable for SaaS</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Caching, async workers, result pagination</td>
+</tr>
+<tr>
+<td>Data leakage across users</td>
+<td>Low</td>
+<td>High</td>
+<td>Strict user isolation, security audit, penetration test</td>
+</tr>
+<tr>
+<td>Worker pool scaling issues</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Horizontal scaling, worker health checks, job retries</td>
+</tr>
+</tbody>
+</table>
+<h3 id="operational-risks">Operational Risks<a class="headerlink" href="#operational-risks" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Likelihood</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Secrets leaked in logs/errors</td>
+<td>Medium</td>
+<td>High</td>
+<td>Redaction, secret manager, audit logs</td>
+</tr>
+<tr>
+<td>Database outage loses all state</td>
+<td>Low</td>
+<td>High</td>
+<td>Replication, backups, failover</td>
+</tr>
+<tr>
+<td>Worker crashes lose in-progress jobs</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Job retry logic, durable queue, checkpoint writes</td>
+</tr>
+<tr>
+<td>Zotero API changes break integration</td>
+<td>Low</td>
+<td>High</td>
+<td>Version pinning, integration tests, monitoring</td>
+</tr>
+<tr>
+<td>LLM provider outage blocks workflows</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Fallback providers (already implemented), graceful degrade</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="implementation-timeline-proposed">Implementation Timeline (Proposed)<a class="headerlink" href="#implementation-timeline-proposed" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Stories</th>
+<th>Estimated Effort</th>
+<th>Milestone</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>AGT-21 (Auth), AGT-26 (Isolation)</td>
+<td>3-4 weeks</td>
+<td>M7.1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>AGT-24 (Checkpoints), AGT-25 (Jobs)</td>
+<td>2-3 weeks</td>
+<td>M7.2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>ZAP-11 (Signed XPI), monitoring</td>
+<td>1-2 weeks</td>
+<td>M7.3</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Load testing, security audit</td>
+<td>1-2 weeks</td>
+<td>M7.4</td>
+</tr>
+</tbody>
+</table>
+<p>Total estimated: <strong>8-12 weeks</strong> for SaaS readiness.</p>
+<hr />
+<h2 id="self-hosting-without-saas-features">Self-Hosting Without SaaS Features<a class="headerlink" href="#self-hosting-without-saas-features" title="Permanent link">&para;</a></h2>
+<p>For organizations that want to self-host without the full SaaS stack:</p>
+<p><strong>Minimal Production Setup:</strong></p>
+<ol>
+<li>Run backend with <code>docker compose up -d</code> (mounts <code>~/.sciagent</code> for persistence)</li>
+<li>Set <code>AGT_BACKEND_API_KEY</code> and a restrictive <code>AGT_CORS_ALLOWED_ORIGINS</code></li>
+<li>Use a reverse proxy (Nginx, Caddy) for TLS termination</li>
+<li>Restrict network access to internal users only</li>
+<li>See <a href="../security/">Security</a> for the full pre-production checklist</li>
+<li>Manually distribute the signed XPI to users</li>
+</ol>
+<p><strong>What You Lose:</strong></p>
+<ul>
+<li>No multi-user isolation (single shared API key)</li>
+<li>No durable state (restarts clear pending workflows)</li>
+<li>No background jobs (long searches block the API)</li>
+<li>No per-user cost tracking or quotas</li>
+<li>No auto-update for add-on</li>
+</ul>
+<p><strong>What You Keep:</strong></p>
+<ul>
+<li>Full control over API keys and LLM provider</li>
+<li>No external dependencies on hosted services</li>
+<li>Privacy: all data stays on your infrastructure</li>
+</ul>
+<hr />
+<h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../manual/">Configuration &amp; Usage Manual</a> — Local setup and configuration</li>
+<li><a href="../api/">REST API Reference</a> — Backend API contract</li>
+<li><a href="../zotero/">Zotero Add-on Roadmap</a> — Native Zotero 9 integration and future plans</li>
+<li><a href="../core/">Core Roadmap</a> — Detailed story backlog including AGT-21, AGT-24, AGT-25, AGT-26</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.sections", "navigation.expand", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
