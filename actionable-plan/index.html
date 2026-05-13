@@ -1710,8 +1710,8 @@ locally with <code>AGT_LLM_PROVIDER=ollama</code> and no hosted LLM key.</p>
 <h3 id="current-status">Current Status<a class="headerlink" href="#current-status" title="Permanent link">&para;</a></h3>
 <ul>
 <li>All P0–P7 milestones complete as of 2026-05-12.</li>
-<li>Current status: <strong>P8.11 complete — provider onboarding checklist in <code>docs/providers.md</code>; <code>scripts/new_provider.py</code> scaffold generator; <code>pyrightconfig.json</code> extended to include <code>scripts/</code>. 531 Python / 103 frontend tests green.</strong></li>
-<li>Next target: <strong>P8.12</strong>.</li>
+<li>Current status: <strong>P8.12 complete — <code>test_merge.py</code>, <code>test_capabilities.py</code>, <code>test_explain_missing.py</code>, <code>test_search_orchestrator.py</code>; <code>live_api</code> + <code>regression_gate</code> markers; zero-key smoke test; CI benchmark regression gate step. 561 Python / 103 frontend tests green.</strong></li>
+<li>Next target: <strong>P8.13</strong>.</li>
 </ul>
 <h3 id="recent-progress">Recent Progress<a class="headerlink" href="#recent-progress" title="Permanent link">&para;</a></h3>
 <ul>
@@ -1731,6 +1731,7 @@ locally with <code>AGT_LLM_PROVIDER=ollama</code> and no hosted LLM key.</p>
 <li>✅ P8.9 complete (2026-05-14): <code>SearchPlan.seed_dois</code>; <code>citation_expander.py</code> (<code>expand_citations</code> via OpenCitations + OpenAlex, tagged with <code>citation_relation</code>); directional citation badge (<code>↓ ref</code> / <code>↑ cites</code>) in result cards. 531 Python / 103 frontend tests green.</li>
 <li>✅ P8.10 complete (2026-05-14): <code>key_validator.py</code> with SSRF-safe allowlist; <code>POST /keys/validate</code> endpoint; <code>ProviderKeyRow</code> key entry panel in ConfigPanel with per-provider validate-on-demand UI; <code>validateKey</code> in controller hook. All gates green.</li>
 <li>✅ P8.11 complete (2026-05-14): 9-step provider onboarding checklist appended to <code>docs/providers.md</code>; <code>scripts/new_provider.py</code> scaffold generator (CamelCase → snake_case, emits <code>SearchProviderBase</code> skeleton + <code>anyio</code> test stub, skip-if-exists guard); <code>pyrightconfig.json</code> extended with <code>scripts/</code>. All gates green.</li>
+<li>✅ P8.12 complete (2026-05-14): P8.12-A already done (44 tests in <code>test_provider_snapshots.py</code>); <code>test_merge.py</code> (12 tests), <code>test_capabilities.py</code> (14 tests), <code>test_explain_missing.py</code> (8 tests), <code>test_search_orchestrator.py</code> (5 tests); <code>live_api</code> + <code>regression_gate</code> markers in conftest.py; <code>test_zero_key_smoke.py</code> (1 test), <code>test_regression_gate.py</code> (4 tests); CI benchmark regression gate step in <code>ci.yml</code>. 561 Python tests green (+30).</li>
 </ul>
 <h3 id="p8-status">P8 Status<a class="headerlink" href="#p8-status" title="Permanent link">&para;</a></h3>
 <table>
@@ -1981,43 +1982,43 @@ locally with <code>AGT_LLM_PROVIDER=ollama</code> and no hosted LLM key.</p>
 <td>P8.12-A</td>
 <td>VCR cassettes (44 total, 11 providers × 4 cases)</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.12-B</td>
 <td><code>tests/test_merge.py</code></td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.12-C</td>
 <td><code>tests/test_capabilities.py</code></td>
 <td>~0.1d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.12-D</td>
 <td><code>tests/test_explain_missing.py</code></td>
 <td>~0.1d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.12-E</td>
 <td><code>tests/test_search_orchestrator.py</code></td>
 <td>~0.1d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.12-F</td>
 <td>Zero-key smoke test (<code>@pytest.mark.live_api</code>)</td>
 <td>~0.1d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.12-G</td>
 <td>Regression gate in CI (≥ 19/22 benchmark)</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.13-A</td>
