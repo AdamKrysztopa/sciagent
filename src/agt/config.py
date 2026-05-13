@@ -337,6 +337,10 @@ class Settings(BaseSettings):
         default=False,
         validation_alias=AliasChoices("AGT_USE_KEYBERT", "USE_KEYBERT"),
     )
+    use_spell_check: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("AGT_USE_SPELL_CHECK", "USE_SPELL_CHECK"),
+    )
     use_reranker: bool = Field(
         default=False,
         validation_alias=AliasChoices("AGT_USE_RERANKER", "USE_RERANKER"),

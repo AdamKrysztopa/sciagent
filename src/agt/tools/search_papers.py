@@ -1383,7 +1383,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
     else:
         effective_fallback_mode = "auto" if active_settings.enable_fallback_retrieval else "off"
 
-    corrected_query = correct_query(query)
+    corrected_query = correct_query(query) if active_settings.use_spell_check else query
 
     capped_limit = min(limit, _MAX_RESULT_LIMIT)
     constraints = parse_query_constraints(

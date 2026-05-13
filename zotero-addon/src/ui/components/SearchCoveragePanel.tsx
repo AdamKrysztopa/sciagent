@@ -30,6 +30,7 @@ const SOURCE_LABELS: Record<string, string> = {
   pubmed: "PubMed",
   europe_pmc: "Europe PMC",
   arxiv: "arXiv",
+  doaj: "DOAJ",
   base: "BASE",
   core: "CORE",
   dimensions: "Dimensions",
@@ -92,7 +93,10 @@ export function SearchCoveragePanel({ sourceStates, baselineMode, providers }: S
             <div className="agt-coverage-row" key={source}>
               <span className="agt-coverage-name">{SOURCE_LABELS[source] ?? source}</span>
               <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
-                <span className={`agt-chip ${STATE_CHIP_CLASS[state]}`}>{STATE_LABEL[state]}</span>
+                <span
+                  className={`agt-chip ${STATE_CHIP_CLASS[state]}`}
+                  title={state === "skipped_disabled" ? "Disabled via AGT_DISABLED_PROVIDERS" : undefined}
+                >{STATE_LABEL[state]}</span>
                 {shouldShowByokChip(state) ? (
                   <span
                     className="agt-chip agt-chip--muted"
