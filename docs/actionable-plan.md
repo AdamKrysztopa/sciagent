@@ -94,7 +94,7 @@ asked for.
 | P9.0  | Release-mode default + first-run polish                | ~0.25d | zotero-frontend | ✅ done (2026-05-13) |
 | P9.1  | Build-binaries CI cross-platform validation            | ~0.75d | settings-bootstrap | ✅ done (2026-05-13) |
 | P9.2  | Unified `release.yml` (binaries + XPI + update.rdf)    | ~0.5d  | settings-bootstrap | ✅ done (2026-05-13) |
-| P9.3  | `update.rdf` self-update wiring                        | ~0.25d | zotero-frontend | not done |
+| P9.3  | `update.rdf` self-update wiring                        | ~0.25d | zotero-frontend | ✅ done (2026-05-13) |
 | P9.4  | macOS Gatekeeper note + Windows SmartScreen note       | ~0.25d | zotero-addon  | not done |
 | P9.5  | Embedded `FirstRunConfigCard` (LLM key + Zotero)       | ~0.5d  | zotero-frontend | not done |
 | P9.6  | `Author` first-class search field (backend)            | ~0.5d  | python-backend-engineer | not done |

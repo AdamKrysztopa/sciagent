@@ -69,6 +69,7 @@ function ProviderKeyRow({ provider, onValidate }: ProviderKeyRowProps) {
 }
 
 interface ConfigPanelProps {
+  addonVersion?: string;
   config: AddonConfig;
   onChange(field: keyof AddonConfig, value: boolean | number | null | string): void;
   onSave(): void;
@@ -77,7 +78,7 @@ interface ConfigPanelProps {
   onValidateKey(provider: string, apiKey: string): Promise<KeyValidateResponse>;
 }
 
-export function ConfigPanel({ config, onChange, onSave, saveError, saveState, onValidateKey }: ConfigPanelProps) {
+export function ConfigPanel({ addonVersion, config, onChange, onSave, saveError, saveState, onValidateKey }: ConfigPanelProps) {
   return (
     <section className="agt-card">
       <div className="agt-section-heading">
@@ -342,6 +343,10 @@ export function ConfigPanel({ config, onChange, onSave, saveError, saveState, on
           />
         ))}
       </div>
+
+      {addonVersion !== undefined ? (
+        <p className="agt-version-footer">SciAgent v{addonVersion}</p>
+      ) : null}
     </section>
   );
 }

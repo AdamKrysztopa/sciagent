@@ -193,7 +193,7 @@ function searchDisabledReason(controller: SciAgentController): string | null {
   return "Backend health has not been checked yet.";
 }
 
-function IdleView({ controller }: { controller: SciAgentController }) {
+function IdleView({ controller, addonVersion }: { controller: SciAgentController; addonVersion?: string }) {
   const disabledReason = searchDisabledReason(controller);
 
   return (
@@ -314,6 +314,7 @@ function IdleView({ controller }: { controller: SciAgentController }) {
       />
 
       <ConfigPanel
+        addonVersion={addonVersion}
         config={controller.config}
         onChange={controller.onConfigChange}
         onSave={controller.onSaveConfig}
@@ -630,7 +631,7 @@ function AppContent({ services }: { services: AddonUiServices }) {
           />
         </header>
 
-        {uiState === "idle" && <IdleView controller={controller} />}
+        {uiState === "idle" && <IdleView addonVersion={services.addonVersion} controller={controller} />}
         {uiState === "running" && <RunningView controller={controller} />}
         {uiState === "review" && <ReviewView controller={controller} />}
         {uiState === "done" && <DoneView controller={controller} />}

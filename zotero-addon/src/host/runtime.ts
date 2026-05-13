@@ -11,10 +11,10 @@ import {
   type PanelBridgeTarget,
 } from "./panelBridge";
 import { createZoteroPreferenceStore } from "./prefs";
-import { binaryInstalled, downloadBinary, getResolvedPort, startServer, stopServer } from "./serverManager";
+import { binaryInstalled, downloadBinary, getResolvedPort, SCIAGENT_SERVER_VERSION, startServer, stopServer } from "./serverManager";
 import type { BootstrapData, ZoteroWindow } from "./zoteroTypes";
 
-const PLUGIN_ID = "agt@yourdomain.org";
+const PLUGIN_ID = "sciagent@adamkrysztopa.github.io";
 const SECTION_ID = "agt-sciagent-pane";
 const SECTION_STYLESHEET_ID = "agt-sciagent-section-style";
 const TOOLS_MENU_ID = "agt-sciagent-tools-menu";
@@ -72,6 +72,8 @@ function createUiServices(): AddonUiServices {
       const config = preferenceStore.readConfig();
       await startServer(config);
     },
+
+    addonVersion: SCIAGENT_SERVER_VERSION,
   };
 }
 
