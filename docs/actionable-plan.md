@@ -82,7 +82,8 @@ asked for.
   `config.backendUrl` (8000), fixing a silent port mismatch; `BackendFailurePanel`
   now shows local-aware instructions; health re-check fires automatically after
   first-run binary download completes; `prefs.test.ts` asserts the new default.
-- **Open product gap.** No tagged release yet (P9.2). `README.md` Quick Start still
+- **Open product gap.** No tagged release yet (next: push a `v0.2.0` tag to trigger
+  `release.yml` — P9.3 wires the self-update URL). `README.md` Quick Start still
   asks the user to clone the repo and run uvicorn (P9.11). Author search ends at
   result-card chips — no Author input field (P9.6–P9.8).
 
@@ -92,7 +93,7 @@ asked for.
 | ----- | ------------------------------------------------------ | ------ | -------------- | ------ |
 | P9.0  | Release-mode default + first-run polish                | ~0.25d | zotero-frontend | ✅ done (2026-05-13) |
 | P9.1  | Build-binaries CI cross-platform validation            | ~0.75d | settings-bootstrap | ✅ done (2026-05-13) |
-| P9.2  | Unified `release.yml` (binaries + XPI + update.rdf)    | ~0.5d  | settings-bootstrap | not done |
+| P9.2  | Unified `release.yml` (binaries + XPI + update.rdf)    | ~0.5d  | settings-bootstrap | ✅ done (2026-05-13) |
 | P9.3  | `update.rdf` self-update wiring                        | ~0.25d | zotero-frontend | not done |
 | P9.4  | macOS Gatekeeper note + Windows SmartScreen note       | ~0.25d | zotero-addon  | not done |
 | P9.5  | Embedded `FirstRunConfigCard` (LLM key + Zotero)       | ~0.5d  | zotero-frontend | not done |
