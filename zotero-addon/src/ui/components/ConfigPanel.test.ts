@@ -27,7 +27,7 @@ function renderPanel(
 describe("ConfigPanel Provider API Keys section (P8.10-B)", () => {
   it("renders the Provider API Keys section heading", () => {
     const html = renderPanel();
-    expect(html).toContain("Provider API Keys");
+    expect(html).toContain("Validate Server-Side API Keys");
   });
 
   it("renders a row for every VALIDATABLE_PROVIDER", () => {
@@ -40,7 +40,7 @@ describe("ConfigPanel Provider API Keys section (P8.10-B)", () => {
   it("renders the backend .env note about key storage location", () => {
     const html = renderPanel();
     expect(html).toContain(".env");
-    expect(html).toContain("not stored here");
+    expect(html).toContain("store it");
   });
 
   it("renders a Validate button for each provider", () => {

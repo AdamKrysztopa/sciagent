@@ -140,14 +140,14 @@ describe("createZoteroPreferenceStore", () => {
 describe("collectProviderEnv", () => {
   it("sets OPENAI_API_KEY when provider is openai", () => {
     const env = collectProviderEnv({ ...DEFAULT_ADDON_CONFIG, llmProvider: "openai", openaiApiKey: "sk-test" });
-    expect(env["OPENAI_API_KEY"]).toBe("sk-test");
-    expect(env["AGT_LLM_PROVIDER"]).toBe("openai");
+    expect(env.OPENAI_API_KEY).toBe("sk-test");
+    expect(env.AGT_LLM_PROVIDER).toBe("openai");
   });
 
   it("sets no API key for ollama and uses ollama provider name", () => {
     const env = collectProviderEnv({ ...DEFAULT_ADDON_CONFIG, llmProvider: "ollama" });
-    expect(env["AGT_LLM_PROVIDER"]).toBe("ollama");
-    expect(env["OPENAI_API_KEY"]).toBeUndefined();
+    expect(env.AGT_LLM_PROVIDER).toBe("ollama");
+    expect(env.OPENAI_API_KEY).toBeUndefined();
   });
 
   it("maps custom provider to openai-compatible and sets base url", () => {
@@ -156,12 +156,12 @@ describe("collectProviderEnv", () => {
       llmProvider: "custom",
       llmBaseUrl: "https://api.deepseek.com/v1",
     });
-    expect(env["AGT_LLM_PROVIDER"]).toBe("openai-compatible");
-    expect(env["AGT_LLM_BASE_URL"]).toBe("https://api.deepseek.com/v1");
+    expect(env.AGT_LLM_PROVIDER).toBe("openai-compatible");
+    expect(env.AGT_LLM_BASE_URL).toBe("https://api.deepseek.com/v1");
   });
 
   it("sets AGT_LLM_MODEL when model is provided", () => {
     const env = collectProviderEnv({ ...DEFAULT_ADDON_CONFIG, llmProvider: "ollama", llmModel: "llama3.2" });
-    expect(env["AGT_LLM_MODEL"]).toBe("llama3.2");
+    expect(env.AGT_LLM_MODEL).toBe("llama3.2");
   });
 });

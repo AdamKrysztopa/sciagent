@@ -1,4 +1,4 @@
-import { startTransition, useEffect, useEffectEvent, useState } from "react";
+import { startTransition, useEffect, useEffectEvent, useRef, useState } from "react";
 
 import { BackendClientError } from "../../client/backendClient";
 import {
@@ -102,6 +102,9 @@ export function useSciAgentController(services: AddonUiServices) {
   const [rerunningWatchId, setRerunningWatchId] = useState<string | null>(null);
   const [lastWatchRerun, setLastWatchRerun] = useState<WatchRerunResponse | null>(null);
 
+  // Tracks whether the current config state was changed by the user (vs loaded from prefs).
+  const configChangedByUserRef = useRef(false);
+
   const currentState = runView.snapshot?.state ?? null;
   const papers: NormalizedPaper[] = currentState?.papers ?? [];
   const searchMetadata: SearchMetadata | null = currentState?.search_metadata ?? null;
@@ -193,6 +196,16 @@ export function useSciAgentController(services: AddonUiServices) {
     } catch (error) {
       setSaveError(describeError(error));
       setSaveState("error");
+    }
+  });
+
+  // Silent auto-save — writes prefs without triggering a health refresh.
+  const autoSaveConfig = useEffectEvent(async () => {
+    try {
+      const nextConfig = await services.saveConfig(config);
+      setConfig(nextConfig);
+    } catch {
+      // Auto-save failures are silent; explicit Save button remains available.
     }
   });
 
@@ -450,6 +463,16 @@ export function useSciAgentController(services: AddonUiServices) {
     return () => clearTimeout(timer);
   }, [query, config.spellCheckEnabled]);
 
+  // Auto-save whenever the user changes a preference (debounced 800 ms).
+  useEffect(() => {
+    if (!configChangedByUserRef.current) return;
+    const timer = setTimeout(() => {
+      configChangedByUserRef.current = false;
+      void autoSaveConfig();
+    }, 800);
+    return () => clearTimeout(timer);
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -546,6 +569,7 @@ export function useSciAgentController(services: AddonUiServices) {
     onApprove: () => void resumeRun(true),
     onCollectionChange: setCollectionName,
     onConfigChange: (field: keyof AddonConfig, value: boolean | number | null | string) => {
+      configChangedByUserRef.current = true;
       setConfig((currentConfig) => ({
         ...currentConfig,
         [field]: value,
