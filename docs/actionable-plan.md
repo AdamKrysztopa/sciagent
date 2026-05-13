@@ -76,8 +76,8 @@ locally with `AGT_LLM_PROVIDER=ollama` and no hosted LLM key.
 ### Current Status
 
 - All P0–P7 milestones complete as of 2026-05-12.
-- Current status: **P8.10 complete — citation expansion (`seed_dois`, `expand_citations`, directional badge), key validator (`POST /keys/validate`, ConfigPanel key entry). 531 Python / 103 frontend tests green.**
-- Next target: **P8.11**.
+- Current status: **P8.11 complete — provider onboarding checklist in `docs/providers.md`; `scripts/new_provider.py` scaffold generator; `pyrightconfig.json` extended to include `scripts/`. 531 Python / 103 frontend tests green.**
+- Next target: **P8.12**.
 
 ### Recent Progress
 
@@ -96,6 +96,7 @@ locally with `AGT_LLM_PROVIDER=ollama` and no hosted LLM key.
 - ✅ P8.8 complete (2026-05-14): `author_resolver.py` (`resolve_author` across OpenAlex + S2, ORCID dedup); `HardFilters.author_ids` + post-merge author-ID filter; author chips (OpenAlex/ORCID links) in result cards. All gates green.
 - ✅ P8.9 complete (2026-05-14): `SearchPlan.seed_dois`; `citation_expander.py` (`expand_citations` via OpenCitations + OpenAlex, tagged with `citation_relation`); directional citation badge (`↓ ref` / `↑ cites`) in result cards. 531 Python / 103 frontend tests green.
 - ✅ P8.10 complete (2026-05-14): `key_validator.py` with SSRF-safe allowlist; `POST /keys/validate` endpoint; `ProviderKeyRow` key entry panel in ConfigPanel with per-provider validate-on-demand UI; `validateKey` in controller hook. All gates green.
+- ✅ P8.11 complete (2026-05-14): 9-step provider onboarding checklist appended to `docs/providers.md`; `scripts/new_provider.py` scaffold generator (CamelCase → snake_case, emits `SearchProviderBase` skeleton + `anyio` test stub, skip-if-exists guard); `pyrightconfig.json` extended with `scripts/`. All gates green.
 
 ### P8 Status
 
@@ -138,8 +139,8 @@ locally with `AGT_LLM_PROVIDER=ollama` and no hosted LLM key.
 | P8.10-A | `POST /keys/validate`                            | ~0.5d  | done     |
 | P8.10-B | Key entry panel in `ConfigPanel.tsx`             | ~1d    | done     |
 | P8.10-C | Preference store bridging                        | ~0.5d  | done     |
-| P8.11-A | `docs/providers.md` onboarding checklist         | ~0.25d | not done |
-| P8.11-B | `scripts/new_provider.py` scaffold               | ~0.5d  | not done |
+| P8.11-A | `docs/providers.md` onboarding checklist         | ~0.25d | done     |
+| P8.11-B | `scripts/new_provider.py` scaffold               | ~0.5d  | done     |
 | P8.12-A | VCR cassettes (44 total, 11 providers × 4 cases) | ~0.25d | not done |
 | P8.12-B | `tests/test_merge.py`                            | ~0.25d | not done |
 | P8.12-C | `tests/test_capabilities.py`                     | ~0.1d  | not done |

@@ -140,7 +140,7 @@ async def test_expand_citations_direction_references_only() -> None:
             return_value=[],
         ) as mock_cits,
         patch(
-            "agt.tools.citation_expander._fetch_openalex_by_dois",
+            "agt.tools.citation_expander.fetch_openalex_by_dois",
             new_callable=AsyncMock,
             return_value=[],
         ),
@@ -177,7 +177,7 @@ async def test_expand_citations_returns_tagged_papers() -> None:
             return_value=["10.1/cit"],
         ),
         patch(
-            "agt.tools.citation_expander._fetch_openalex_by_dois",
+            "agt.tools.citation_expander.fetch_openalex_by_dois",
             new_callable=AsyncMock,
             side_effect=[[ref_paper], [cit_paper]],
         ),

@@ -236,3 +236,121 @@ are stripped before embedding.
 **Notes:** SerpAPI is an unofficial Google Scholar proxy. It has strict rate limits and per-query
 costs. The `num` parameter controls result count. This provider is optional and experimental;
 results may differ from direct Google Scholar access.
+
+## Adding a New Provider
+
+Follow these steps in order. Each step names the exact file to edit and the exact action required.
+
+1. **Declare capabilities** — open `src/agt/tools/capabilities.py` and add a module-level
+   constant:
+
+   ```python
+   FOO_CAPS = SearchProviderCapabilities(
+       fields={
+           ProviderField.TITLE: FieldSupport.FULL,
+           ProviderField.ABSTRACT: FieldSupport.FULL,
+           # … remaining ProviderField → FieldSupport mappings …
+       },
+       requires_key=False,          # set True for keyed providers
+       key_env_var=None,            # e.g. "AGT_FOO_KEY"
+       key_upgrade_hint=None,       # human-readable hint for keyed providers
+   )
+   ```
+
+   Set `requires_key=True`, `key_env_var`, and `key_upgrade_hint` for any provider that
+   requires a paid or registered API key.
+
+2. **Implement the client** — create `src/agt/tools/{snake_name}.py`. The class must subclass
+   `SearchProviderBase` from `src/agt/tools/provider_base.py`, set `capabilities_ = FOO_CAPS`
+   at class level, and implement:
+
+   ```python
+   async def _search_impl(
+       self,
+       query: str,
+       *,
+       limit: int,
+       author: str | None,
+       year_from: int | None,
+       year_to: int | None,
+   ) -> list[NormalizedPaper]: ...
+   ```
+
+   Follow the DOAJ pattern in `src/agt/tools/doaj.py` for request wiring and response
+   normalization. Wrap HTTP calls with `tenacity` `AsyncRetrying` using exponential back-off.
+   A scaffold script can generate the skeleton:
+
+   ```bash
+   uv run python scripts/new_provider.py FooProvider \
+       [--key-env-var AGT_FOO_KEY] \
+       [--base-url https://api.example.com]
+   ```
+
+3. **Wire into the registry** — open `src/agt/tools/search_papers.py` and add an entry inside
+   `_build_retrieval_registry()`. For keyless providers, add without a skip condition. For
+   keyed providers, gate on the config field and set `skip_reason="no_key"` when absent:
+
+   ```python
+   # Keyless
+   registry.add(FooClient())
+
+   # Keyed
+   registry.add(
+       FooClient(api_key=settings.foo_key),
+       skip_reason="no_key" if not settings.foo_key else None,
+   )
+   ```
+
+4. **Add config field** — if the provider uses an API key, open `src/agt/config.py` and add a
+   typed optional field to the settings class:
+
+   ```python
+   foo_key: str | None = None
+   ```
+
+   Then add a matching entry in `.env.example`:
+
+   ```bash
+   # AGT_FOO_KEY=your_key_here
+   ```
+
+5. **Add NormalizedPaper mapping** — inside `_search_impl`, map every supported response field
+   to the correct `NormalizedPaper` field defined in `src/agt/models.py`. Emit
+   `NormalizedAuthor` objects (not plain strings) for the `authors` field:
+
+   ```python
+   authors=[NormalizedAuthor(name=a["name"]) for a in raw.get("authors", [])]
+   ```
+
+   Leave unsupported fields as `None`; do not emit a sentinel value.
+
+6. **Write tests** — create `tests/test_{snake_name}.py`. The file must contain at least:
+   - A happy-path test decorated with `@pytest.mark.asyncio` and backed by a VCR cassette.
+   - An empty-results test (provider returns zero hits).
+   - A 5xx-response test verifying the client raises or propagates the error correctly.
+
+   Reference `tests/test_doaj.py` for the full pattern. All test fixtures that instantiate
+   settings must pass `_env_file=None` to prevent environment bleed.
+
+7. **Record a VCR cassette** — run once with live network access to record the cassette:
+
+   ```bash
+   uv run pytest tests/test_{snake_name}.py --vcr-record=all
+   ```
+
+   This writes `tests/cassettes/{snake_name}_happy_path.yaml`. Commit the cassette, then
+   use `--vcr-record=none` for all subsequent CI runs.
+
+8. **Update provider inventory** — open `docs/providers.md` and:
+   - Add a row to the Summary Table under `## Summary Table`.
+   - Add a `## FooClient` section following the format of the existing client sections
+     (Base URL, Auth, Key env var, Fields populated, Retry / timeout, Notes).
+
+9. **Run quality gates** — verify all checks pass before opening a PR:
+
+   ```bash
+   uv run ruff check --no-fix .
+   uv run ruff format --check .
+   uv run pyright
+   uv run pytest -q --vcr-record=none
+   ```
