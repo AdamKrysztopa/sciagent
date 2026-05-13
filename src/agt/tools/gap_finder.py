@@ -62,7 +62,7 @@ def _deduplicate_papers(papers: list[NormalizedPaper]) -> list[NormalizedPaper]:
     unique: list[NormalizedPaper] = []
     for paper in papers:
         doi = normalize_doi(paper.doi)
-        fp = title_author_fingerprint(paper.title, paper.authors)
+        fp = title_author_fingerprint(paper.title, [a.name for a in paper.authors])
         if doi is not None and doi in seen_dois:
             continue
         if fp in seen_fps:

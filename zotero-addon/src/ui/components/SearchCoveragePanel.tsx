@@ -18,6 +18,10 @@ export function shouldShowByokChip(state: SourceTerminalState): boolean {
   return state === "skipped_no_key";
 }
 
+export function shouldShowBaselineBadge(baselineMode?: boolean): boolean {
+  return baselineMode === true;
+}
+
 const SOURCE_LABELS: Record<string, string> = {
   semantic_scholar: "Semantic Scholar",
   openalex: "OpenAlex",
@@ -52,9 +56,10 @@ const STATE_LABEL: Record<SourceTerminalState, string> = {
 
 interface SearchCoveragePanelProps {
   sourceStates: Record<string, SourceTerminalState>;
+  baselineMode?: boolean;
 }
 
-export function SearchCoveragePanel({ sourceStates }: SearchCoveragePanelProps) {
+export function SearchCoveragePanel({ sourceStates, baselineMode }: SearchCoveragePanelProps) {
   const [expanded, setExpanded] = useState(false);
   const entries = Object.entries(sourceStates);
   if (entries.length === 0) return null;
@@ -74,6 +79,9 @@ export function SearchCoveragePanel({ sourceStates }: SearchCoveragePanelProps) 
           {queriedCount}/{entries.length}
           {failedCount > 0 ? ` · ${failedCount} failed` : null}
         </span>
+        {shouldShowBaselineBadge(baselineMode) ? (
+          <span className="agt-chip agt-chip--muted">Baseline (6 sources)</span>
+        ) : null}
         <span className="agt-expand-icon">{expanded ? "▲" : "▼"}</span>
       </button>
       {expanded ? (

@@ -1,0 +1,26 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json
+      User-Agent:
+      - SciAgent/0.1 (https://github.com/AdamKrysztopa/sciagent)
+    method: GET
+    uri: https://doaj.org/api/v3/search/articles/neural%20networks?pageSize=5
+  response:
+    body:
+      string: '{"total":2,"page":1,"pageSize":5,"timestamp":"2026-01-01T00:00:00Z","results":[{"id":"abc123","bibjson":{"title":"Deep
+        Neural Networks for Classification","abstract":"We present a study on deep
+        neural networks.","author":[{"name":"Alice Smith"},{"name":"Bob Jones"}],"year":"2023","identifier":[{"type":"doi","id":"10.1234/test.001"}],"journal":{"title":"Journal
+        of ML Research"},"link":[{"type":"fulltext","url":"https://example.com/paper1.pdf"}]},"link":[{"type":"fulltext","url":"https://example.com/paper1.pdf"}]},{"id":"def456","bibjson":{"title":"Recurrent
+        Networks Survey","abstract":"A survey of recurrent architectures.","author":[{"name":"Carol
+        White"}],"year":"2022","identifier":[{"type":"doi","id":"10.1234/test.002"}],"journal":{"title":"Neural
+        Computing"},"link":[{"type":"fulltext","url":"https://example.com/paper2.pdf"}]},"link":[{"type":"fulltext","url":"https://example.com/paper2.pdf"}]}]}'
+    headers:
+      Content-Type:
+      - application/json
+    status:
+      code: 200
+      message: OK
+version: 1

@@ -12,7 +12,7 @@ from slowapi import Limiter
 import agt.api.app as api_module
 from agt.api.app import create_app
 from agt.config import get_settings
-from agt.models import DoctorReport, GapSuggestion, NormalizedPaper
+from agt.models import DoctorReport, GapSuggestion, NormalizedAuthor, NormalizedPaper
 
 HTTP_OK = 200
 HTTP_UNAUTHORIZED = 401
@@ -676,7 +676,13 @@ def test_gap_finder_endpoint(monkeypatch: pytest.MonkeyPatch) -> None:
     ) -> GapSuggestion:
         return GapSuggestion(
             reasoning="Missing systematic reviews.",
-            papers=[NormalizedPaper(title="Gap Paper", authors=["Author A"], doi="10.1234/gap")],
+            papers=[
+                NormalizedPaper(
+                    title="Gap Paper",
+                    authors=[NormalizedAuthor(name="Author A")],
+                    doi="10.1234/gap",
+                )
+            ],
         )
 
     monkeypatch.setattr(api_module, "find_gaps", fake_find_gaps)

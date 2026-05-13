@@ -129,6 +129,7 @@ export interface SearchMetadata {
   total_after_filter: number;
   source_timings: Record<string, number>;
   search_plan: SearchPlan | null;
+  baseline_mode?: boolean;
 }
 
 export interface CollectionResult {

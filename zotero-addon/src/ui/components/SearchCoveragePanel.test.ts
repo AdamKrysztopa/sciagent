@@ -4,6 +4,7 @@ import type { SourceTerminalState } from "../../shared/contracts";
 import {
   BYOK_HINTS,
   getByokHint,
+  shouldShowBaselineBadge,
   shouldShowByokChip,
 } from "./SearchCoveragePanel";
 
@@ -110,5 +111,23 @@ describe("shouldShowByokChip", () => {
     ];
     const chipped = allStates.filter(shouldShowByokChip);
     expect(chipped).toEqual(["skipped_no_key"]);
+  });
+});
+
+describe("shouldShowBaselineBadge", () => {
+  it("returns true when baselineMode is true", () => {
+    expect(shouldShowBaselineBadge(true)).toBe(true);
+  });
+
+  it("returns false when baselineMode is false", () => {
+    expect(shouldShowBaselineBadge(false)).toBe(false);
+  });
+
+  it("returns false when baselineMode is undefined", () => {
+    expect(shouldShowBaselineBadge(undefined)).toBe(false);
+  });
+
+  it("returns false when called with no argument", () => {
+    expect(shouldShowBaselineBadge()).toBe(false);
   });
 });

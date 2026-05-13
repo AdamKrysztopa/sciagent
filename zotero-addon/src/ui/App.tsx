@@ -466,7 +466,10 @@ function ReviewView({ controller }: { controller: SciAgentController }) {
 
       {controller.searchMetadata !== null &&
       Object.keys(controller.searchMetadata.source_states).length > 0 ? (
-        <SearchCoveragePanel sourceStates={controller.searchMetadata.source_states} />
+        <SearchCoveragePanel
+          sourceStates={controller.searchMetadata.source_states}
+          baselineMode={controller.searchMetadata.baseline_mode}
+        />
       ) : null}
 
       {currentState !== null ? (

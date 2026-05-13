@@ -14,7 +14,7 @@ from fastapi.testclient import TestClient
 import agt.api.app as api_module
 from agt.api.app import create_app
 from agt.config import get_settings
-from agt.models import NormalizedPaper, SearchMetadata
+from agt.models import NormalizedAuthor, NormalizedPaper, SearchMetadata
 
 HTTP_OK = 200
 HTTP_CREATED = 201
@@ -97,7 +97,7 @@ def _fake_search_state(
 def _paper_dict(title: str = "Test Paper", doi: str | None = "10.1234/test") -> dict[str, Any]:
     return NormalizedPaper(
         title=title,
-        authors=["Smith, J"],
+        authors=[NormalizedAuthor(name="Smith, J")],
         doi=doi,
         source="semantic_scholar",
     ).model_dump()

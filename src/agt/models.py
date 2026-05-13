@@ -4,7 +4,14 @@ from __future__ import annotations
 
 from typing import Any, Literal, TypedDict, cast
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_serializer,
+    field_validator,
+    model_validator,
+)
 
 LibraryStatus = Literal["new", "in_library", "possible_duplicate"]
 WatchStatus = Literal["new", "seen"]
@@ -79,6 +86,73 @@ class FilterEditContract(BaseModel):
     result_limit: int = Field(default=10, ge=1, le=50)
 
 
+class NormalizedAuthor(BaseModel):
+    """Structured author record with optional cross-provider identifiers."""
+
+    name: str
+    family: str | None = None
+    given: str | None = None
+    orcid: str | None = None
+    openalex_id: str | None = None
+    s2_author_id: str | None = None
+    affiliation: str | None = None
+    source: str = ""
+
+    def normalized_last(self) -> str:
+        last = self.family or (self.name.split()[-1] if self.name else "")
+        return last.lower().strip()
+
+
+class ProvenanceField(BaseModel):
+    """Records which provider supplied a value and what the raw form was."""
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    provider: str
+    raw: object = None
+    note: str | None = None
+
+    @field_serializer("raw")
+    def _serialize_raw(
+        self, value: object
+    ) -> str | int | float | bool | dict[str, object] | list[object] | None:
+        if value is None or isinstance(value, (str, int, float, bool)):
+            return value  # type: ignore[return-value]  # narrowed by isinstance
+        if isinstance(value, dict):
+            return cast(dict[str, object], value)
+        if isinstance(value, list):
+            return cast(list[object], value)
+        return str(value)
+
+
+class FieldConflictValue(BaseModel):
+    """One side of a field conflict: which provider supplied it and what value."""
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    provider: str
+    value: object = None
+
+    @field_serializer("value")
+    def _serialize_value(
+        self, v: object
+    ) -> str | int | float | bool | list[object] | dict[str, object] | None:
+        if v is None or isinstance(v, (str, int, float, bool)):
+            return v  # type: ignore[return-value]  # narrowed by isinstance
+        if isinstance(v, list):
+            return cast(list[object], v)
+        if isinstance(v, dict):
+            return cast(dict[str, object], v)
+        return str(v)
+
+
+class FieldConflict(BaseModel):
+    """Records a disagreement between providers on a specific field."""
+
+    field: str
+    values: list[FieldConflictValue]
+
+
 class NormalizedPaper(BaseModel):
     """Canonical paper representation used across providers and UI."""
 
@@ -87,7 +161,9 @@ class NormalizedPaper(BaseModel):
     doi: str | None = None
     arxiv_id: str | None = None
     abstract: str | None = None
-    authors: list[str] = Field(default_factory=list)
+    authors: list[NormalizedAuthor] = Field(
+        default_factory=lambda: cast(list[NormalizedAuthor], [])
+    )
     url: str | None = None
     pdf_url: str | None = None
     source: str = "semantic_scholar"
@@ -106,6 +182,29 @@ class NormalizedPaper(BaseModel):
     volume: str | None = None
     issue: str | None = None
     pages: str | None = None
+    oa_url: str | None = None
+    references: list[str] = Field(default_factory=list)
+    external_ids: dict[str, str] = Field(default_factory=dict)
+    missing_reasons: dict[str, str] = Field(default_factory=dict)
+    sources: list[str] = Field(default_factory=list)
+    provenance: dict[str, ProvenanceField] = Field(default_factory=dict)
+    conflicts: list[FieldConflict] = Field(default_factory=lambda: cast(list[FieldConflict], []))
+
+    @field_validator("authors", mode="before")
+    @classmethod
+    def _coerce_authors(cls, v: object) -> list[NormalizedAuthor]:
+        if not isinstance(v, list):
+            return []
+        items = cast(list[object], v)
+        result: list[NormalizedAuthor] = []
+        for item in items:
+            if isinstance(item, str):
+                result.append(NormalizedAuthor(name=item))
+            elif isinstance(item, NormalizedAuthor):
+                result.append(item)
+            elif isinstance(item, dict):
+                result.append(NormalizedAuthor.model_validate(cast(dict[str, object], item)))
+        return result
 
 
 class SearchMetadata(BaseModel):
@@ -123,6 +222,7 @@ class SearchMetadata(BaseModel):
     total_after_filter: int = 0
     source_timings: dict[str, float] = Field(default_factory=dict)
     search_plan: SearchPlan | None = None
+    baseline_mode: bool = False
 
 
 class CollectionResult(BaseModel):

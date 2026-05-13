@@ -7,7 +7,7 @@ from typing import Any, cast
 import httpx
 from tenacity import AsyncRetrying, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from agt.models import ItemType, NormalizedPaper
+from agt.models import ItemType, NormalizedAuthor, NormalizedPaper
 
 _CROSSREF_TYPE_MAP: dict[str, ItemType] = {
     "journal-article": "journal_article",
@@ -21,6 +21,9 @@ class CrossrefResponseError(RuntimeError):
     """Raised when Crossref response payload is malformed."""
 
 
+_CROSSREF_UA_BASE = "SciAgent/0.1 (https://github.com/AdamKrysztopa/sciagent)"
+
+
 class CrossrefClient:
     """Small bounded client for Crossref works search."""
 
@@ -29,11 +32,19 @@ class CrossrefClient:
         *,
         timeout_seconds: int,
         retries: int,
+        mailto: str | None = None,
         base_url: str = "https://api.crossref.org",
     ) -> None:
         self._timeout_seconds = timeout_seconds
         self._retries = retries
+        self._mailto = mailto
         self._base_url = base_url.rstrip("/")
+
+    def _user_agent(self) -> str:
+        ua = _CROSSREF_UA_BASE
+        if self._mailto:
+            ua += f" mailto:{self._mailto}"
+        return ua
 
     async def search(self, query: str, *, limit: int, max_pages: int = 1) -> list[NormalizedPaper]:
         """Search Crossref and return normalized papers."""
@@ -85,8 +96,13 @@ class CrossrefClient:
             reraise=True,
         ):
             with attempt:
-                async with httpx.AsyncClient(timeout=self._timeout_seconds) as client:
+                async with httpx.AsyncClient(
+                    timeout=self._timeout_seconds,
+                    headers={"User-Agent": self._user_agent()},
+                ) as client:
                     response = await client.get(url, params=params)
+                    if response.status_code == 429:  # noqa: PLR2004
+                        raise RuntimeError("crossref rate limit (HTTP 429)")
                     response.raise_for_status()
                     payload = response.json()
                     if not isinstance(payload, dict):
@@ -122,8 +138,8 @@ class CrossrefClient:
         return None
 
     @staticmethod
-    def _extract_authors(item: dict[str, Any]) -> list[str]:
-        authors: list[str] = []
+    def _extract_authors(item: dict[str, Any]) -> list[NormalizedAuthor]:
+        authors: list[NormalizedAuthor] = []
         author_list = item.get("author")
         if not isinstance(author_list, list):
             return authors
@@ -132,15 +148,26 @@ class CrossrefClient:
             if not isinstance(author_obj, dict):
                 continue
             author = cast(dict[str, Any], author_obj)
-            given = author.get("given")
-            family = author.get("family")
+            given_raw = author.get("given")
+            family_raw = author.get("family")
+            given = given_raw.strip() if isinstance(given_raw, str) and given_raw.strip() else None
+            family = (
+                family_raw.strip() if isinstance(family_raw, str) and family_raw.strip() else None
+            )
             name_parts: list[str] = []
-            if isinstance(given, str) and given.strip():
-                name_parts.append(given.strip())
-            if isinstance(family, str) and family.strip():
-                name_parts.append(family.strip())
+            if given:
+                name_parts.append(given)
+            if family:
+                name_parts.append(family)
             if name_parts:
-                authors.append(" ".join(name_parts))
+                authors.append(
+                    NormalizedAuthor(
+                        name=" ".join(name_parts),
+                        family=family,
+                        given=given,
+                        source="crossref",
+                    )
+                )
 
         return authors
 

@@ -10,7 +10,7 @@ import httpx
 import pytest
 
 from agt.config import Settings
-from agt.models import NormalizedPaper
+from agt.models import NormalizedAuthor, NormalizedPaper
 from agt.tools.zotero_upsert import normalize_doi, title_author_fingerprint
 from agt.zotero.collection_inspector import (
     LibraryIndex,
@@ -69,10 +69,11 @@ def _paper(
     doi: str | None = None,
     authors: list[str] | None = None,
 ) -> NormalizedPaper:
+    author_names = authors or ["Smith, John"]
     return NormalizedPaper(
         title=title,
         doi=doi,
-        authors=authors or ["Smith, John"],
+        authors=[NormalizedAuthor(name=a) for a in author_names],
     )
 
 

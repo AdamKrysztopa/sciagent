@@ -28,9 +28,11 @@ from agt.models import (
 from agt.providers.protocol import LLMProvider
 from agt.tools.arxiv_api import ArxivClient
 from agt.tools.base_search import BaseSearchClient
+from agt.tools.capabilities import ProviderHealth
 from agt.tools.core_ac import CoreClient
 from agt.tools.crossref import CrossrefClient
 from agt.tools.dimensions import DimensionsClient
+from agt.tools.doaj import DOAJClient
 from agt.tools.europe_pmc import EuropePMCClient
 from agt.tools.google_scholar import GoogleScholarClient
 from agt.tools.keyword_extractor import extract_keywords
@@ -203,6 +205,24 @@ class _RetrievalProvider:
     enabled: bool
     fetcher: Callable[[], Awaitable[list[NormalizedPaper]]]
     skip_reason: Literal["no_key", "disabled"] | None = None
+    instance: object | None = None
+
+
+_KEY_GATED_PROVIDERS: frozenset[str] = frozenset({"core", "dimensions", "google_scholar"})
+
+
+@dataclass
+class SearchRunResult:
+    """Aggregate result of a single fan-out retrieval pass."""
+
+    per_provider: dict[str, list[NormalizedPaper]]
+    errors: dict[str, str]
+    health: dict[str, ProviderHealth]
+
+
+def _compute_baseline_mode(source_states: dict[str, SourceTerminalState]) -> bool:
+    """Return True when no key-gated providers were actually queried."""
+    return not any(source_states.get(name) == "queried" for name in _KEY_GATED_PROVIDERS)
 
 
 async def _disabled_fetcher() -> list[NormalizedPaper]:
@@ -281,27 +301,37 @@ def _build_retrieval_registry(
         api_key=semantic_api_key,
         timeout_seconds=settings.semantic_scholar_timeout_seconds,
         retries=settings.semantic_scholar_retries,
+        mailto=settings.mailto,
     )
     openalex_client = OpenAlexClient(
         timeout_seconds=settings.semantic_scholar_timeout_seconds,
         retries=settings.semantic_scholar_retries,
+        mailto=settings.mailto,
     )
     crossref_client = CrossrefClient(
         timeout_seconds=settings.semantic_scholar_timeout_seconds,
         retries=settings.semantic_scholar_retries,
+        mailto=settings.mailto,
     )
     pubmed_client = PubMedClient(
         timeout_seconds=settings.semantic_scholar_timeout_seconds,
         retries=settings.semantic_scholar_retries,
         api_key=ncbi_api_key,
+        mailto=settings.mailto,
     )
     europe_pmc_client = EuropePMCClient(
         timeout_seconds=settings.semantic_scholar_timeout_seconds,
         retries=settings.semantic_scholar_retries,
+        mailto=settings.mailto,
     )
     arxiv_client = ArxivClient(
         timeout_seconds=settings.semantic_scholar_timeout_seconds,
         retries=settings.semantic_scholar_retries,
+        mailto=settings.mailto,
+    )
+    doaj_client = DOAJClient(
+        mailto=settings.mailto,
+        timeout=float(settings.semantic_scholar_timeout_seconds),
     )
     base_client = BaseSearchClient(
         timeout_seconds=settings.semantic_scholar_timeout_seconds,
@@ -366,6 +396,13 @@ def _build_retrieval_registry(
                 limit=limit,
                 categories=arxiv_categories,
             ),
+        ),
+        _RetrievalProvider(
+            name="doaj",
+            tier="primary",
+            enabled=True,
+            fetcher=lambda: doaj_client.search(query=query, limit=limit),
+            instance=doaj_client,
         ),
         _RetrievalProvider(
             name="base",
@@ -1095,6 +1132,7 @@ _SOURCE_PUSH_DOWN: dict[str, list[str]] = {
     "pubmed": [],
     "europe_pmc": [],
     "arxiv": [],
+    "doaj": [],
     "base": [],
     "core": [],
     "dimensions": [],
@@ -1111,6 +1149,7 @@ _PRIMARY_SOURCE_NAMES: list[str] = [
     "pubmed",
     "europe_pmc",
     "arxiv",
+    "doaj",
     "base",
 ]
 
@@ -1491,6 +1530,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                 total_after_filter=len(filtered),
                 source_timings=all_timings,
                 search_plan=plan.model_copy(update={"rewritten_queries": executed_query_sequence}),
+                baseline_mode=_compute_baseline_mode(all_source_states),
             )
             return _attach_explanations(filtered, ranking_terms), metadata
 
@@ -1551,6 +1591,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                     search_plan=plan.model_copy(
                         update={"rewritten_queries": executed_query_sequence}
                     ),
+                    baseline_mode=_compute_baseline_mode(all_source_states),
                 )
                 return _attach_explanations(filtered, ranking_terms), metadata
         if not results:
@@ -1573,5 +1614,6 @@ async def search_papers(  # noqa: PLR0912, PLR0915
         total_after_filter=0,
         source_timings=all_timings,
         search_plan=plan.model_copy(update={"rewritten_queries": executed_query_sequence}),
+        baseline_mode=_compute_baseline_mode(all_source_states),
     )
     return [], metadata

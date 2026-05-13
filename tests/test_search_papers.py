@@ -83,6 +83,7 @@ async def test_search_papers_ranks_and_indexes(monkeypatch: pytest.MonkeyPatch) 
     monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "DOAJClient", _fake_client_factory([]))
 
     ranked, metadata = await search_module.search_papers(
         query="test",
@@ -158,6 +159,7 @@ async def test_search_papers_applies_constraints_and_keyword_query(
     monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "DOAJClient", _fake_client_factory([]))
 
     ranked, metadata = await search_module.search_papers(
         query="quantum optimizer after 2025 at least 10 citations open access",
@@ -215,6 +217,7 @@ async def test_search_papers_raises_when_all_sources_fail(
     monkeypatch.setattr(search_module, "EuropePMCClient", _fail_factory)
     monkeypatch.setattr(search_module, "ArxivClient", _fail_factory)
     monkeypatch.setattr(search_module, "BaseSearchClient", _fail_factory)
+    monkeypatch.setattr(search_module, "DOAJClient", _fail_factory)
 
     with pytest.raises(SemanticScholarResponseError, match="all retrieval providers failed"):
         await search_module.search_papers(
@@ -259,6 +262,7 @@ async def test_search_papers_calls_all_parallel_sources(monkeypatch: pytest.Monk
     monkeypatch.setattr(search_module, "EuropePMCClient", _factory("europe_pmc"))
     monkeypatch.setattr(search_module, "ArxivClient", _factory("arxiv"))
     monkeypatch.setattr(search_module, "BaseSearchClient", _factory("base"))
+    monkeypatch.setattr(search_module, "DOAJClient", _factory("doaj"))
 
     papers, metadata = await search_module.search_papers(
         query="papers",
@@ -309,6 +313,7 @@ async def test_search_papers_respects_requested_limit_above_source_setting(
     monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "DOAJClient", _fake_client_factory([]))
 
     ranked, metadata = await search_module.search_papers(
         query="transformer attention papers",
@@ -373,6 +378,7 @@ async def test_search_papers_uses_deterministic_query_expansions(
     monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "DOAJClient", _fake_client_factory([]))
 
     ranked, metadata = await search_module.search_papers(
         query="retrieval augmented generation survey",
@@ -454,6 +460,7 @@ async def test_search_papers_skips_generic_editing_single_keyword_expansion(
     monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "DOAJClient", _fake_client_factory([]))
 
     _, metadata = await search_module.search_papers(
         query="CRISPR gene editing therapeutic applications not older than 2022",
@@ -538,6 +545,7 @@ async def test_search_papers_refines_broad_two_keyword_queries(
     monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "DOAJClient", _fake_client_factory([]))
 
     ranked, _ = await search_module.search_papers(
         query="the most cited 2020 and newer timeseries papers - list 5",
@@ -622,6 +630,7 @@ async def test_search_papers_refinement_ignores_singularized_analysis_noise(
     monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "DOAJClient", _fake_client_factory([]))
 
     ranked, _ = await search_module.search_papers(
         query="the most cited 2020 and newer timeseries papers - list 5",
@@ -738,6 +747,7 @@ async def test_search_papers_refines_from_shorter_variant_source_hits(
     monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "DOAJClient", _fake_client_factory([]))
 
     ranked, _ = await search_module.search_papers(
         query="open access papers on COVID long-term effects after 2021",
@@ -828,6 +838,7 @@ async def test_search_papers_prefers_more_specific_abstract_backed_refinement(
     monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "DOAJClient", _fake_client_factory([]))
 
     ranked, _ = await search_module.search_papers(
         query="retrieval augmented generation survey",
@@ -929,6 +940,7 @@ async def test_search_papers_refinement_fetches_second_openalex_page(
     monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "DOAJClient", _fake_client_factory([]))
 
     ranked, _ = await search_module.search_papers(
         query="the most cited 2020 and newer timeseries papers - list 5",
@@ -974,6 +986,7 @@ async def test_fallback_disabled_skips_fallback_providers(
     monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "DOAJClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "CoreClient", _core_factory)
 
     with pytest.raises(SemanticScholarResponseError):
@@ -1023,6 +1036,7 @@ async def test_fallback_enabled_fills_results_with_provenance(
     monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "DOAJClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "CoreClient", _core_factory)
 
     papers, metadata = await search_module.search_papers(
@@ -1083,6 +1097,7 @@ async def test_fallback_and_primary_duplicates_merge_to_one_row(
     monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "DOAJClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "CoreClient", _core_factory)
 
     papers, _ = await search_module.search_papers(
@@ -1151,6 +1166,7 @@ async def test_mixed_primary_fallback_order_and_indices_are_deterministic(
     monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "DOAJClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "CoreClient", _core_factory)
 
     papers, metadata = await search_module.search_papers(
@@ -1194,6 +1210,7 @@ async def test_search_plan_produced_with_hard_filters(monkeypatch: pytest.Monkey
     monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "DOAJClient", _fake_client_factory([]))
 
     _, metadata = await search_module.search_papers(
         query="time-series forecasting not older than 2024",
@@ -1234,6 +1251,7 @@ async def test_hard_year_filter_no_violation_survives_ranking(
     monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "DOAJClient", _fake_client_factory([]))
 
     ranked, metadata = await search_module.search_papers(
         query="machine learning not older than 2024",
@@ -1284,6 +1302,7 @@ async def test_hard_exclusion_filter_no_violation_survives(
     monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "DOAJClient", _fake_client_factory([]))
 
     ranked, metadata = await search_module.search_papers(
         query="deep learning but not transformers",
@@ -1304,7 +1323,7 @@ async def test_hard_exclusion_filter_no_violation_survives(
 async def test_search_plan_source_policy_lists_all_primary_sources(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """SearchPlan.source_policy lists all 7 primary sources (AGT-28 AC)."""
+    """SearchPlan.source_policy lists all 8 primary sources (AGT-28 AC)."""
     settings = Settings.model_validate({
         "AGT_XAI_API_KEY": "xai-secret",
         "AGT_ZOTERO_API_KEY": "zot-secret",
@@ -1326,6 +1345,7 @@ async def test_search_plan_source_policy_lists_all_primary_sources(
     monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "DOAJClient", _fake_client_factory([]))
 
     _, metadata = await search_module.search_papers(
         query="graph neural networks",
@@ -1344,6 +1364,7 @@ async def test_search_plan_source_policy_lists_all_primary_sources(
         "europe_pmc",
         "arxiv",
         "base",
+        "doaj",
     }
 
 
@@ -1373,6 +1394,7 @@ async def test_search_plan_year_push_down_recorded_for_semantic_scholar(
     monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "DOAJClient", _fake_client_factory([]))
 
     _, metadata = await search_module.search_papers(
         query="causal inference since 2022",
@@ -1415,6 +1437,7 @@ async def test_search_plan_rewritten_queries_captured(
     monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "DOAJClient", _fake_client_factory([]))
 
     _, metadata = await search_module.search_papers(
         query="method selection time-series forecasting based on data characteristics not older than 2024",
@@ -1469,6 +1492,7 @@ async def test_search_papers_filters_provider_scored_off_topic_results(
     monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "DOAJClient", _fake_client_factory([]))
 
     papers, metadata = await search_module.search_papers(
         query="time-series forecasting method selection based on the tineseries data itself, not older than 2024",
@@ -1514,6 +1538,7 @@ async def test_search_papers_reports_progress_stages(
     monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "DOAJClient", _fake_client_factory([]))
 
     papers, _ = await search_module.search_papers(
         query="time series forecasting",
@@ -1588,6 +1613,7 @@ async def test_search_papers_applies_filter_edit_to_constraints_and_plan(
     monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "DOAJClient", _fake_client_factory([]))
 
     filter_edit = FilterEditContract.model_validate({
         "original_query": "transformers after 2020",
@@ -1645,6 +1671,7 @@ async def test_search_papers_populates_explanation(monkeypatch: pytest.MonkeyPat
     monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "DOAJClient", _fake_client_factory([]))
 
     ranked, _ = await search_module.search_papers(
         query="transformer attention mechanism",
@@ -1682,6 +1709,7 @@ async def test_source_states_populated_for_queried_and_skipped_no_key(
     monkeypatch.setattr(search_module, "EuropePMCClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "ArxivClient", _fake_client_factory([]))
     monkeypatch.setattr(search_module, "BaseSearchClient", _fake_client_factory([]))
+    monkeypatch.setattr(search_module, "DOAJClient", _fake_client_factory([]))
 
     _, metadata = await search_module.search_papers(
         query="source state test",
@@ -1693,7 +1721,7 @@ async def test_source_states_populated_for_queried_and_skipped_no_key(
     # semantic_scholar returned papers → queried
     assert states.get("semantic_scholar") == "queried"
     # other primary sources returned nothing → zero_results
-    for name in ("openalex", "crossref", "pubmed", "europe_pmc", "arxiv", "base"):
+    for name in ("openalex", "crossref", "pubmed", "europe_pmc", "arxiv", "base", "doaj"):
         assert states.get(name) == "zero_results", (
             f"{name} expected zero_results, got {states.get(name)}"
         )
@@ -1703,7 +1731,7 @@ async def test_source_states_populated_for_queried_and_skipped_no_key(
             f"{name} expected skipped_no_key, got {states.get(name)}"
         )
     # all expected sources present
-    assert len(states) == 10
+    assert len(states) == 11
     # all values are valid SourceTerminalState literals
     valid: set[SourceTerminalState] = {
         "queried",

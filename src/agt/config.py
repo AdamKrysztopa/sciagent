@@ -95,6 +95,11 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("AGT_ZOTERO_COLLECTION_NAME", "ZOTERO_COLLECTION_NAME"),
         description="Default Zotero collection where papers are saved.",
     )
+    mailto: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("AGT_MAILTO", "MAILTO"),
+        description="Email address for polite API pool access (OpenAlex, Crossref, DOAJ).",
+    )
     semantic_scholar_api_key: SecretStr | None = Field(
         default=None,
         validation_alias=AliasChoices("AGT_SEMANTIC_SCHOLAR_API_KEY", "SEMANTIC_SCHOLAR_API_KEY"),

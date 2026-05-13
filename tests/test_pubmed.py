@@ -55,7 +55,7 @@ async def test_pubmed_search_normalizes_results(monkeypatch: pytest.MonkeyPatch)
     assert papers[0].title == "Sports Nutrition Review"
     assert papers[0].year == _EXPECTED_YEAR_2024
     assert papers[0].doi == "10.1/abc"
-    assert papers[0].authors == ["Ada Lovelace"]
+    assert papers[0].authors[0].name == "Ada Lovelace"
     assert papers[0].url == "https://pubmed.ncbi.nlm.nih.gov/12345/"
 
 

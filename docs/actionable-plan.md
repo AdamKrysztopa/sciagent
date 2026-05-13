@@ -76,8 +76,8 @@ locally with `AGT_LLM_PROVIDER=ollama` and no hosted LLM key.
 ### Current Status
 
 - All P0–P7 milestones complete as of 2026-05-12.
-- Current status: **P8.1 complete — Provider Capability + Health Model done.**
-- Next target: **P8.2 — Baseline Providers Complete** (DOAJ provider, provider audit, SearchRunResult).
+- Current status: **P8.4 complete — field-level merge with provenance, `FieldConflict` model, and `merge.py` wired into `run_search_phase`.**
+- Next target: **P8.5**.
 
 ### Recent Progress
 
@@ -87,6 +87,8 @@ locally with `AGT_LLM_PROVIDER=ollama` and no hosted LLM key.
 - ✅ FirstRunDialog complete (2026-05-12): binary-missing download UI wired.
 - ✅ All P7 items (OPN-01–OPN-17) complete 2026-05-12.
 - ✅ P8.1 complete (2026-05-13): `capabilities.py`, `provider_base.py`, `GET /providers`, BYOK hint chip.
+- ✅ P8.2 complete (2026-05-13): DOAJ provider, provider audit (UA/retry/429), `SearchRunResult`, `baseline_mode` badge, baseline regression test. 455 tests green.
+- ✅ P8.3 complete (2026-05-13): `NormalizedAuthor`, `ProvenanceField`, extended `NormalizedPaper`, all providers migrated to emit `NormalizedAuthor`. 455 tests green.
 
 ### P8 Status
 
@@ -99,19 +101,19 @@ locally with `AGT_LLM_PROVIDER=ollama` and no hosted LLM key.
 | P8.1-B  | `provider_base.py` — protocol + base class       | ~0.5d  | done     |
 | P8.1-C  | `GET /providers` endpoint                        | ~0.25d | done     |
 | P8.1-D  | Sidebar BYOK hint chip                           | ~0.25d | done     |
-| P8.2-A  | DOAJ provider (`src/agt/tools/doaj.py`)          | ~0.5d  | not done |
-| P8.2-B  | Provider audit (User-Agent, retry, 429)          | ~0.5d  | not done |
-| P8.2-C  | `SearchRunResult` dataclass                      | ~0.25d | not done |
-| P8.2-D  | `SearchMetadata.baseline_mode` + badge           | ~0.25d | not done |
-| P8.2-E  | Baseline regression test (zero-key)              | ~0.25d | not done |
-| P8.3-A  | `NormalizedAuthor` Pydantic model                | ~0.25d | not done |
-| P8.3-B  | `ProvenanceField` Pydantic model                 | ~0.1d  | not done |
-| P8.3-C  | Extend `NormalizedPaper` with new fields         | ~0.5d  | not done |
-| P8.3-D  | Update all providers to emit `NormalizedAuthor`  | ~0.5d  | not done |
-| P8.4-A  | `src/agt/tools/merge.py`                         | ~1d    | not done |
-| P8.4-B  | Field-selection rules                            | ~0.5d  | not done |
-| P8.4-C  | `FieldConflict` model                            | ~0.25d | not done |
-| P8.4-D  | Wire merge into `run_search_phase`               | ~0.25d | not done |
+| P8.2-A  | DOAJ provider (`src/agt/tools/doaj.py`)          | ~0.5d  | done     |
+| P8.2-B  | Provider audit (User-Agent, retry, 429)          | ~0.5d  | done     |
+| P8.2-C  | `SearchRunResult` dataclass                      | ~0.25d | done     |
+| P8.2-D  | `SearchMetadata.baseline_mode` + badge           | ~0.25d | done     |
+| P8.2-E  | Baseline regression test (zero-key)              | ~0.25d | done     |
+| P8.3-A  | `NormalizedAuthor` Pydantic model                | ~0.25d | done     |
+| P8.3-B  | `ProvenanceField` Pydantic model                 | ~0.1d  | done     |
+| P8.3-C  | Extend `NormalizedPaper` with new fields         | ~0.5d  | done     |
+| P8.3-D  | Update all providers to emit `NormalizedAuthor`  | ~0.5d  | done     |
+| P8.4-A  | `src/agt/tools/merge.py`                         | ~1d    | done     |
+| P8.4-B  | Field-selection rules                            | ~0.5d  | done     |
+| P8.4-C  | `FieldConflict` model                            | ~0.25d | done     |
+| P8.4-D  | Wire merge into `run_search_phase`               | ~0.25d | done     |
 | P8.5-A  | `DEPTH_PROFILES` + `select_providers_for_depth`  | ~0.25d | not done |
 | P8.5-B  | Depth plan preview in sidebar                    | ~0.25d | not done |
 | P8.6-A  | `src/agt/tools/explain_missing.py`               | ~0.25d | not done |
@@ -1222,10 +1224,10 @@ P8.1 ──▶ P8.11
 | P8.3-B  | `ProvenanceField` Pydantic model                | ~0.1d  | not done |
 | P8.3-C  | Extend `NormalizedPaper` with new fields        | ~0.5d  | not done |
 | P8.3-D  | Update all providers to emit `NormalizedAuthor` | ~0.5d  | not done |
-| P8.4-A  | `src/agt/tools/merge.py`                        | ~1d    | not done |
-| P8.4-B  | Field-selection rules                           | ~0.5d  | not done |
-| P8.4-C  | `FieldConflict` model                           | ~0.25d | not done |
-| P8.4-D  | Wire merge into `run_search_phase`              | ~0.25d | not done |
+| P8.4-A  | `src/agt/tools/merge.py`                        | ~1d    | done     |
+| P8.4-B  | Field-selection rules                           | ~0.5d  | done     |
+| P8.4-C  | `FieldConflict` model                           | ~0.25d | done     |
+| P8.4-D  | Wire merge into `run_search_phase`              | ~0.25d | done     |
 | P8.5-A  | `DEPTH_PROFILES` + `select_providers_for_depth` | ~0.25d | not done |
 | P8.5-B  | Plan preview in sidebar                         | ~0.25d | not done |
 | P8.6-A  | `src/agt/tools/explain_missing.py`              | ~0.25d | not done |

@@ -196,7 +196,7 @@ def _watch_to_summary(watch: Watch) -> WatchSummary:
 def _paper_fingerprints(paper: NormalizedPaper) -> tuple[str | None, str]:
     """Return (normalized_doi_or_None, title_author_fp) for a paper."""
     doi = normalize_doi(paper.doi)
-    fp = title_author_fingerprint(paper.title, paper.authors)
+    fp = title_author_fingerprint(paper.title, [a.name for a in paper.authors])
     return doi, fp
 
 

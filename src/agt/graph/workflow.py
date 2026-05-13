@@ -19,6 +19,7 @@ from agt.models import (
 )
 from agt.observability import TraceContext, serialize_spans, trace_step
 from agt.providers.router import build_provider
+from agt.tools.merge import merge as merge_papers
 from agt.tools.search_papers import search_papers
 from agt.tools.summarize import summarize_papers
 from agt.tools.zotero_upsert import ZoteroWriteError, upsert_papers
@@ -140,6 +141,9 @@ async def run_search_phase(  # noqa: PLR0913
                     filter_edit=filter_edit,
                     search_depth=search_depth,
                 )
+
+        papers = merge_papers(papers)
+        # TODO(P8.4-D): ranking.py dedup can be simplified now that merge handles it
 
         with trace_step(trace, "summarize", paper_count=len(papers)):
             papers = await summarize_papers(

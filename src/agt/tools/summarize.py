@@ -35,9 +35,9 @@ def deterministic_summary(paper: NormalizedPaper, *, max_sentences: int = 4) -> 
     if paper.authors:
         lead = paper.authors[0]
         if len(paper.authors) > 1:
-            sentences.append(f"The lead listed author is {lead} and collaborators.")
+            sentences.append(f"The lead listed author is {lead.name} and collaborators.")
         else:
-            sentences.append(f"The listed author is {lead}.")
+            sentences.append(f"The listed author is {lead.name}.")
     else:
         sentences.append("No author metadata is available in the retrieved record.")
 

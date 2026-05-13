@@ -10,7 +10,7 @@ from typing import Any, cast
 import httpx
 from tenacity import AsyncRetrying, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from agt.models import NormalizedPaper
+from agt.models import NormalizedAuthor, NormalizedPaper
 
 
 class GoogleScholarResponseError(RuntimeError):
@@ -79,11 +79,15 @@ class GoogleScholarClient:
             abstract = snippet.strip() if isinstance(snippet, str) and snippet.strip() else None
             link = item.get("link")
             url = link.strip() if isinstance(link, str) and link.strip() else None
-            authors: list[str] = []
+            authors: list[NormalizedAuthor] = []
             if isinstance(pub_info, dict):
                 raw_authors = pub_info.get("authors")
                 if isinstance(raw_authors, list):
-                    authors = [str(a).strip() for a in raw_authors if str(a).strip()]
+                    authors = [
+                        NormalizedAuthor(name=str(a).strip(), source="google_scholar")
+                        for a in raw_authors
+                        if str(a).strip()
+                    ]
             papers.append(
                 NormalizedPaper(
                     title=title,

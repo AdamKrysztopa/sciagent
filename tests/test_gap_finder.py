@@ -10,7 +10,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from agt.config import Settings
-from agt.models import GapSuggestion, NormalizedPaper, SearchMetadata
+from agt.models import GapSuggestion, NormalizedAuthor, NormalizedPaper, SearchMetadata
 from agt.providers.protocol import LLMProvider
 from agt.tools.gap_finder import find_gaps
 from agt.tools.zotero_upsert import normalize_doi
@@ -71,10 +71,11 @@ def _paper(
     doi: str | None = "10.1111/new",
     authors: list[str] | None = None,
 ) -> NormalizedPaper:
+    author_names = authors or ["Author, A"]
     return NormalizedPaper(
         title=title,
         doi=doi,
-        authors=authors or ["Author, A"],
+        authors=[NormalizedAuthor(name=a) for a in author_names],
     )
 
 

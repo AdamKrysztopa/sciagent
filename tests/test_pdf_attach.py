@@ -12,7 +12,13 @@ import httpx
 import pytest
 
 from agt.config import Settings
-from agt.models import CollectionResult, ItemWriteOutcome, NormalizedPaper, WriteResult
+from agt.models import (
+    CollectionResult,
+    ItemWriteOutcome,
+    NormalizedAuthor,
+    NormalizedPaper,
+    WriteResult,
+)
 from agt.tools.arxiv_api import ArxivClient
 from agt.tools.pdf_attach import (
     attach_pdfs_to_items,
@@ -63,7 +69,7 @@ def _paper(
         pdf_url=pdf_url,
         doi=doi,
         arxiv_id=arxiv_id,
-        authors=["Smith, John"],
+        authors=[NormalizedAuthor(name="Smith, John")],
     )
 
 

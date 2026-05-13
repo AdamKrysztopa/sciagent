@@ -11,7 +11,7 @@ from typing import Any, cast
 import httpx
 from tenacity import AsyncRetrying, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from agt.models import ItemType, NormalizedPaper
+from agt.models import ItemType, NormalizedAuthor, NormalizedPaper
 
 _OPENALEX_TYPE_MAP: dict[str, ItemType] = {
     "journal-article": "journal_article",
@@ -25,6 +25,9 @@ class OpenAlexResponseError(RuntimeError):
     """Raised when OpenAlex response payload is malformed."""
 
 
+_OPENALEX_UA_BASE = "SciAgent/0.1 (https://github.com/AdamKrysztopa/sciagent)"
+
+
 class OpenAlexClient:
     """Small bounded client for OpenAlex works search."""
 
@@ -33,11 +36,19 @@ class OpenAlexClient:
         *,
         timeout_seconds: int,
         retries: int,
+        mailto: str | None = None,
         base_url: str = "https://api.openalex.org",
     ) -> None:
         self._timeout_seconds = timeout_seconds
         self._retries = retries
+        self._mailto = mailto
         self._base_url = base_url.rstrip("/")
+
+    def _user_agent(self) -> str:
+        ua = _OPENALEX_UA_BASE
+        if self._mailto:
+            ua += f" mailto:{self._mailto}"
+        return ua
 
     async def search(
         self,
@@ -110,8 +121,13 @@ class OpenAlexClient:
             reraise=True,
         ):
             with attempt:
-                async with httpx.AsyncClient(timeout=self._timeout_seconds) as client:
+                async with httpx.AsyncClient(
+                    timeout=self._timeout_seconds,
+                    headers={"User-Agent": self._user_agent()},
+                ) as client:
                     response = await client.get(url, params=params)
+                    if response.status_code == 429:  # noqa: PLR2004
+                        raise RuntimeError("openalex rate limit (HTTP 429)")
                     response.raise_for_status()
                     payload = response.json()
                     if not isinstance(payload, dict):
@@ -133,7 +149,7 @@ class OpenAlexClient:
 
         abstract = OpenAlexClient._extract_abstract(item)
 
-        authors: list[str] = []
+        authors: list[NormalizedAuthor] = []
         authorships = item.get("authorships")
         if isinstance(authorships, list):
             for authorship_obj in cast(list[object], authorships):
@@ -145,7 +161,22 @@ class OpenAlexClient:
                     author = cast(dict[str, Any], author_data)
                     display_name = author.get("display_name")
                     if isinstance(display_name, str) and display_name.strip():
-                        authors.append(display_name.strip())
+                        raw_orcid = author.get("orcid")
+                        orcid: str | None = None
+                        if isinstance(raw_orcid, str) and raw_orcid.strip():
+                            orcid = raw_orcid.strip().replace("https://orcid.org/", "")
+                        raw_oa_id = author.get("id")
+                        openalex_id: str | None = None
+                        if isinstance(raw_oa_id, str) and raw_oa_id.strip():
+                            openalex_id = raw_oa_id.strip()
+                        authors.append(
+                            NormalizedAuthor(
+                                name=display_name.strip(),
+                                orcid=orcid,
+                                openalex_id=openalex_id,
+                                source="openalex",
+                            )
+                        )
 
         url = None
         primary_location = item.get("primary_location")

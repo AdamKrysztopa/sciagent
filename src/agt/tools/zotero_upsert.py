@@ -96,12 +96,19 @@ def _map_paper_to_item(paper: NormalizedPaper, collection_key: str) -> dict[str,
     item_type = _map_item_type(paper)
     creators: list[dict[str, Any]] = []
     for author in paper.authors:
-        first_name, last_name = _split_creator_name(author)
-        creators.append({
-            "creatorType": "author",
-            "firstName": first_name,
-            "lastName": last_name,
-        })
+        if author.family or author.given:
+            creators.append({
+                "creatorType": "author",
+                "firstName": author.given or "",
+                "lastName": author.family or "",
+            })
+        else:
+            first_name, last_name = _split_creator_name(author.name)
+            creators.append({
+                "creatorType": "author",
+                "firstName": first_name,
+                "lastName": last_name,
+            })
 
     item: dict[str, Any] = {
         "itemType": item_type,
@@ -519,7 +526,7 @@ async def _upsert_with_client(
             continue
 
         doi = _normalize_doi(paper.doi)
-        fingerprint = _title_author_fingerprint(paper.title, paper.authors)
+        fingerprint = _title_author_fingerprint(paper.title, [a.name for a in paper.authors])
         if doi is not None and doi in existing_dois:
             unchanged += 1
             outcomes.append(_unchanged_outcome(index, paper, "doi"))

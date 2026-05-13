@@ -9,7 +9,7 @@ from typing import Any, cast
 import httpx
 from tenacity import AsyncRetrying, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from agt.models import NormalizedPaper
+from agt.models import NormalizedAuthor, NormalizedPaper
 
 
 class DimensionsResponseError(RuntimeError):
@@ -59,14 +59,14 @@ class DimensionsClient:
             if not isinstance(citation_count, int):
                 citation_count = 0
             open_access = bool(item.get("open_access") is True)
-            authors: list[str] = []
+            authors: list[NormalizedAuthor] = []
             raw_authors = item.get("authors")
             if isinstance(raw_authors, list):
                 for author_obj in cast(list[object], raw_authors):
                     if isinstance(author_obj, dict):
                         name = author_obj.get("raw_name")
                         if isinstance(name, str) and name.strip():
-                            authors.append(name.strip())
+                            authors.append(NormalizedAuthor(name=name.strip(), source="dimensions"))
             papers.append(
                 NormalizedPaper(
                     title=title,

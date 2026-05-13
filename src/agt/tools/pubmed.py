@@ -10,13 +10,19 @@ from typing import Any, cast
 import httpx
 from tenacity import AsyncRetrying, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from agt.models import NormalizedPaper  # ItemType not needed: PubMed is always journal_article
+from agt.models import (  # ItemType not needed: PubMed is always journal_article
+    NormalizedAuthor,
+    NormalizedPaper,
+)
 
 _YEAR_RE = re.compile(r"(?:19|20)\d{2}")
 
 
 class PubMedResponseError(RuntimeError):
     """Raised when PubMed response payload is malformed."""
+
+
+_PUBMED_UA_BASE = "SciAgent/0.1 (https://github.com/AdamKrysztopa/sciagent)"
 
 
 class PubMedClient:
@@ -28,12 +34,20 @@ class PubMedClient:
         timeout_seconds: int,
         retries: int,
         api_key: str | None = None,
+        mailto: str | None = None,
         base_url: str = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils",
     ) -> None:
         self._timeout_seconds = timeout_seconds
         self._retries = retries
         self._api_key = api_key
+        self._mailto = mailto
         self._base_url = base_url.rstrip("/")
+
+    def _user_agent(self) -> str:
+        ua = _PUBMED_UA_BASE
+        if self._mailto:
+            ua += f" mailto:{self._mailto}"
+        return ua
 
     async def search(self, query: str, *, limit: int) -> list[NormalizedPaper]:
         """Search PubMed and return normalized papers."""
@@ -117,8 +131,13 @@ class PubMedClient:
             reraise=True,
         ):
             with attempt:
-                async with httpx.AsyncClient(timeout=self._timeout_seconds) as client:
+                async with httpx.AsyncClient(
+                    timeout=self._timeout_seconds,
+                    headers={"User-Agent": self._user_agent()},
+                ) as client:
                     response = await client.get(url, params=params)
+                    if response.status_code == 429:  # noqa: PLR2004
+                        raise RuntimeError("pubmed rate limit (HTTP 429)")
                     response.raise_for_status()
                     return response.text
 
@@ -206,16 +225,23 @@ class PubMedClient:
         return " ".join(chunks)
 
     @staticmethod
-    def _extract_authors(article: ET.Element) -> list[str]:
-        authors: list[str] = []
+    def _extract_authors(article: ET.Element) -> list[NormalizedAuthor]:
+        authors: list[NormalizedAuthor] = []
         for node in article.findall(".//AuthorList/Author"):
             fore = (node.findtext("ForeName") or "").strip()
             last = (node.findtext("LastName") or "").strip()
             collective = (node.findtext("CollectiveName") or "").strip()
             if fore or last:
-                authors.append(" ".join(part for part in (fore, last) if part))
+                authors.append(
+                    NormalizedAuthor(
+                        name=" ".join(part for part in (fore, last) if part),
+                        family=last or None,
+                        given=fore or None,
+                        source="pubmed",
+                    )
+                )
             elif collective:
-                authors.append(collective)
+                authors.append(NormalizedAuthor(name=collective, source="pubmed"))
         return authors
 
     @staticmethod
