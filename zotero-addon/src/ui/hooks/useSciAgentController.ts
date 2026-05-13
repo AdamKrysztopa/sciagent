@@ -16,7 +16,9 @@ import {
   type FilterEditContract,
   type GapFinderResponse,
   type HealthResponse,
+  type KeyValidateResponse,
   type NormalizedPaper,
+  type ProviderInfo,
   type SearchMetadata,
   type SearchPlan,
   type SourceCapability,
@@ -70,6 +72,7 @@ export function useSciAgentController(services: AddonUiServices) {
   const [healthError, setHealthError] = useState<string | null>(null);
   const [healthResponse, setHealthResponse] = useState<HealthResponse | null>(null);
   const [capabilities, setCapabilities] = useState<CapabilitiesResponse | null>(null);
+  const [providers, setProviders] = useState<Record<string, ProviderInfo>>({});
   const [query, setQuery] = useState("");
   const [runView, setRunView] = useState<RunViewState>({
     error: null,
@@ -162,6 +165,13 @@ export function useSciAgentController(services: AddonUiServices) {
       } catch {
         // Non-fatal: capabilities unavailable on older backends.
         setCapabilities(null);
+      }
+      try {
+        const prov = await client.providers();
+        setProviders(prov);
+      } catch {
+        // Non-fatal: providers endpoint unavailable on older backends.
+        setProviders({});
       }
     } catch (error) {
       setHealthError(describeError(error));
@@ -422,6 +432,12 @@ export function useSciAgentController(services: AddonUiServices) {
     }
   });
 
+  const validateKey = useEffectEvent(
+    async (provider: string, apiKey: string): Promise<KeyValidateResponse> => {
+      return services.createClient(config).validateKey(provider, apiKey);
+    },
+  );
+
   useEffect(() => {
     const trimmed = query.trim();
     if (trimmed.length === 0 || !config.spellCheckEnabled) {
@@ -572,6 +588,7 @@ export function useSciAgentController(services: AddonUiServices) {
     },
     onSaveConfig: () => void saveConfig(),
     onSubmitSearch: () => void submitSearch(),
+    validateKey: (provider: string, apiKey: string) => validateKey(provider, apiKey),
     onDepthChange: setSearchDepth,
     searchDepth,
     onToggleSelection: (index: number) => {
@@ -583,6 +600,7 @@ export function useSciAgentController(services: AddonUiServices) {
       });
     },
     papers,
+    providers,
     query,
     runView,
     saveError,

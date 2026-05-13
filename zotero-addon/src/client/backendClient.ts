@@ -6,6 +6,8 @@ import type {
   FilterEditContract,
   GapFinderResponse,
   HealthResponse,
+  KeyValidateResponse,
+  ProviderInfo,
   ResumeRequest,
   RunAcceptedResponse,
   RunRequest,
@@ -80,6 +82,10 @@ export class SciAgentBackendClient {
 
   async capabilities(): Promise<CapabilitiesResponse> {
     return this.request<CapabilitiesResponse>("/capabilities", { method: "GET" });
+  }
+
+  async providers(): Promise<Record<string, ProviderInfo>> {
+    return this.request<Record<string, ProviderInfo>>("/providers", { method: "GET" });
   }
 
   async run(payload: RunRequest): Promise<RunAcceptedResponse> {
@@ -161,6 +167,13 @@ export class SciAgentBackendClient {
       `/watches/${encodeURIComponent(watchId)}/rerun`,
       { method: "POST" },
     );
+  }
+
+  async validateKey(provider: string, apiKey: string): Promise<KeyValidateResponse> {
+    return this.request<KeyValidateResponse>("/keys/validate", {
+      body: JSON.stringify({ provider, api_key: apiKey }),
+      method: "POST",
+    });
   }
 
   private buildHeaders(withJsonBody: boolean): Headers {

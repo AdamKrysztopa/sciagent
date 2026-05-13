@@ -766,3 +766,81 @@ def test_get_version(monkeypatch: pytest.MonkeyPatch) -> None:
     payload = response.json()
     assert "version" in payload
     assert isinstance(payload["version"], str)
+
+
+def test_keys_validate_valid_provider_returns_valid(monkeypatch: pytest.MonkeyPatch) -> None:
+    app = create_app()
+
+    def fake_get_settings() -> _Settings:
+        return _Settings()
+
+    async def fake_validate_key(provider: str, api_key: str) -> tuple[bool, str | None]:
+        _ = provider
+        _ = api_key
+        return True, None
+
+    app.dependency_overrides[get_settings] = fake_get_settings
+    monkeypatch.setattr(api_module, "validate_key", fake_validate_key)
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/keys/validate",
+            headers={"X-AGT-API-Key": "backend-key"},
+            json={"provider": "semantic_scholar", "api_key": "s2-test"},
+        )
+
+    assert response.status_code == HTTP_OK
+    payload = response.json()
+    assert payload["valid"] is True
+    assert payload["error"] is None
+
+    app.dependency_overrides.clear()
+
+
+def test_keys_validate_unknown_provider_returns_422(monkeypatch: pytest.MonkeyPatch) -> None:
+    app = create_app()
+
+    def fake_get_settings() -> _Settings:
+        return _Settings()
+
+    app.dependency_overrides[get_settings] = fake_get_settings
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/keys/validate",
+            headers={"X-AGT-API-Key": "backend-key"},
+            json={"provider": "totally_unknown", "api_key": "key"},
+        )
+
+    assert response.status_code == HTTP_UNPROCESSABLE_ENTITY
+
+    app.dependency_overrides.clear()
+
+
+def test_keys_validate_invalid_key_returns_valid_false(monkeypatch: pytest.MonkeyPatch) -> None:
+    app = create_app()
+
+    def fake_get_settings() -> _Settings:
+        return _Settings()
+
+    async def fake_validate_key(provider: str, api_key: str) -> tuple[bool, str | None]:
+        _ = provider
+        _ = api_key
+        return False, "invalid_key"
+
+    app.dependency_overrides[get_settings] = fake_get_settings
+    monkeypatch.setattr(api_module, "validate_key", fake_validate_key)
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/keys/validate",
+            headers={"X-AGT-API-Key": "backend-key"},
+            json={"provider": "semantic_scholar", "api_key": "bad-key"},
+        )
+
+    assert response.status_code == HTTP_OK
+    payload = response.json()
+    assert payload["valid"] is False
+    assert payload["error"] == "invalid_key"
+
+    app.dependency_overrides.clear()

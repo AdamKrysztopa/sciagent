@@ -42,6 +42,8 @@ export interface HardFilters {
   open_access_only: boolean;
   include_keywords: string[];
   exclude_keywords: string[];
+  author_ids?: string[];
+  seed_dois?: string[];
 }
 
 export interface SoftPreferences {
@@ -75,6 +77,48 @@ export interface FilterEditContract {
   result_limit: number;
 }
 
+export interface NormalizedAuthor {
+  name: string;
+  family: string | null;
+  given: string | null;
+  orcid: string | null;
+  openalex_id: string | null;
+  s2_author_id: string | null;
+  affiliation: string | null;
+  source: string;
+}
+
+export interface FieldConflictValue {
+  provider: string;
+  value: unknown;
+}
+
+export interface FieldConflict {
+  field: string;
+  values: FieldConflictValue[];
+}
+
+export interface ProviderFieldSupport {
+  [field: string]: "full" | "shallow" | "none";
+}
+
+export interface ProviderInfo {
+  name: string;
+  requires_key: boolean;
+  key_env_var: string | null;
+  key_upgrade_hint: string | null;
+  fields: ProviderFieldSupport;
+  notes: string;
+  health: {
+    status: "available" | "shallow" | "disabled" | "missing_key" | "failed" | "rate_limited";
+    reason: string;
+    last_ok_at: number | null;
+    last_error_at: number | null;
+    consecutive_failures: number;
+    retry_after: number | null;
+  };
+}
+
 // SCI-0301
 export type LibraryStatus = "new" | "in_library" | "possible_duplicate";
 
@@ -87,7 +131,10 @@ export interface NormalizedPaper {
   doi: string | null;
   arxiv_id: string | null;
   abstract: string | null;
-  authors: string[];
+  authors: (NormalizedAuthor | string)[];
+  sources?: string[];
+  conflicts?: FieldConflict[];
+  oa_url?: string | null;
   url: string | null;
   pdf_url: string | null;
   source: string;
@@ -106,6 +153,8 @@ export interface NormalizedPaper {
   volume: string | null;
   issue: string | null;
   pages: string | null;
+  citation_relation?: "references" | "cited_by" | null;
+  missing_reasons?: Record<string, string>;
 }
 
 export type SourceTerminalState =
@@ -343,6 +392,20 @@ export function getPaperIndex(paper: NormalizedPaper, fallbackIndex: number): nu
   return typeof paper.index === "number" ? paper.index : fallbackIndex;
 }
 
+export function getAuthorName(author: NormalizedAuthor | string): string {
+  if (typeof author === "string") {
+    return author;
+  }
+  return author.name;
+}
+
+export function getAuthorId(author: NormalizedAuthor | string): string | null {
+  if (typeof author === "string") {
+    return null;
+  }
+  return author.openalex_id ?? author.orcid ?? author.s2_author_id ?? null;
+}
+
 export function keywordListToText(values: readonly string[]): string {
   return values.join(", ");
 }
@@ -357,6 +420,26 @@ export function parseKeywordList(value: string): string[] {
 export function uniqueSortedIndices(values: readonly number[]): number[] {
   return [...new Set(values)].sort((left, right) => left - right);
 }
+
+// P8.10-B: Provider key validation
+export interface KeyValidateRequest {
+  provider: string;
+  api_key: string;
+}
+
+export interface KeyValidateResponse {
+  provider: string;
+  valid: boolean;
+  error: string | null;
+}
+
+export const VALIDATABLE_PROVIDERS: readonly string[] = [
+  "semantic_scholar",
+  "ncbi",
+  "core",
+  "serpapi",
+  "dimensions",
+] as const;
 
 export function buildSourceBuckets(searchMetadata: SearchMetadata | null): SourceBuckets | null {
   if (searchMetadata === null || searchMetadata.search_plan === null) {

@@ -32,6 +32,7 @@ from agt.session_export import ExportFormat, export_session
 from agt.session_store import SessionStore
 from agt.tools.capabilities import ALL_PROVIDER_CAPS, ProviderHealth
 from agt.tools.gap_finder import find_gaps
+from agt.tools.key_validator import KNOWN_PROVIDERS, validate_key
 from agt.tools.keyword_extract import KeywordExtraction, extract_keywords
 from agt.tools.search_papers import build_source_policy
 from agt.tools.spell_check import correct_query
@@ -123,6 +124,21 @@ class CorrectQueryResponse(BaseModel):
     original: str
     corrected: str
     changed: bool
+
+
+class KeyValidateRequest(BaseModel):
+    provider: str = Field(min_length=1, max_length=64)
+    api_key: str = Field(min_length=1, max_length=512)
+
+    model_config = {
+        "json_schema_extra": {"examples": [{"provider": "semantic_scholar", "api_key": "s2-..."}]}
+    }
+
+
+class KeyValidateResponse(BaseModel):
+    provider: str
+    valid: bool
+    error: str | None = None
 
 
 class ExtractKeywordsRequest(BaseModel):
@@ -561,6 +577,27 @@ def create_app() -> FastAPI:  # noqa: PLR0915
                 retry_after=health.retry_after,
             )
         return result
+
+    @app.post("/keys/validate", response_model=KeyValidateResponse)
+    async def _validate_key(  # pyright: ignore[reportUnusedFunction]
+        payload: KeyValidateRequest,
+        _: None = Depends(_require_backend_key),
+    ) -> KeyValidateResponse:
+        """Validate a provider API key with a minimal test call.
+
+        Security: the key is NEVER logged or reflected in error responses.
+        """
+        if payload.provider not in KNOWN_PROVIDERS:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"unknown_provider:{payload.provider}",
+            )
+        valid, error = await validate_key(payload.provider, payload.api_key)
+        return KeyValidateResponse(
+            provider=payload.provider,
+            valid=valid,
+            error=error,
+        )
 
     @app.get("/correct-query", response_model=CorrectQueryResponse)
     async def _correct_query_endpoint(  # pyright: ignore[reportUnusedFunction]

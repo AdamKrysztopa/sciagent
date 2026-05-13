@@ -31,6 +31,7 @@ class HardFilters(BaseModel):
     open_access_only: bool = False
     include_keywords: list[str] = Field(default_factory=list)
     exclude_keywords: list[str] = Field(default_factory=list)
+    author_ids: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def validate_ranges(self) -> HardFilters:
@@ -75,6 +76,7 @@ class SearchPlan(BaseModel):
     )
     filters_pushed_down: dict[str, list[str]] = Field(default_factory=dict)
     filters_enforced_post_merge: list[str] = Field(default_factory=list)
+    seed_dois: list[str] = Field(default_factory=list)
 
 
 class FilterEditContract(BaseModel):
@@ -84,6 +86,7 @@ class FilterEditContract(BaseModel):
     hard_filters: HardFilters = Field(default_factory=HardFilters)
     soft_preferences: SoftPreferences = Field(default_factory=SoftPreferences)
     result_limit: int = Field(default=10, ge=1, le=50)
+    seed_dois: list[str] = Field(default_factory=list)
 
 
 class NormalizedAuthor(BaseModel):
@@ -186,6 +189,7 @@ class NormalizedPaper(BaseModel):
     references: list[str] = Field(default_factory=list)
     external_ids: dict[str, str] = Field(default_factory=dict)
     missing_reasons: dict[str, str] = Field(default_factory=dict)
+    citation_relation: Literal["references", "cited_by"] | None = None
     sources: list[str] = Field(default_factory=list)
     provenance: dict[str, ProvenanceField] = Field(default_factory=dict)
     conflicts: list[FieldConflict] = Field(default_factory=lambda: cast(list[FieldConflict], []))

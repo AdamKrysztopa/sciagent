@@ -11,7 +11,7 @@ import time
 from collections import Counter, defaultdict
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, TypedDict
 
 from agt.config import Settings, get_settings
 from agt.guardrails import current_thread_id, get_guardrails
@@ -187,6 +187,72 @@ def _depth_max_pages(
     if depth == "deep":
         return min(settings.search_max_pages * 3, 10)
     return settings.search_max_pages
+
+
+class DepthProfile(TypedDict):
+    """Static provider-selection profile for a given search depth."""
+
+    providers: list[str]
+    limit_per_provider: int
+    expand_refs: bool
+    timeout: float
+
+
+DEPTH_PROFILES: dict[Literal["quick", "balanced", "deep"], DepthProfile] = {
+    "quick": {
+        "providers": ["openalex", "arxiv"],
+        "limit_per_provider": 10,
+        "expand_refs": False,
+        "timeout": 5.0,
+    },
+    "balanced": {
+        "providers": [
+            "openalex",
+            "crossref",
+            "europe_pmc",
+            "doaj",
+            "pubmed",
+            "arxiv",
+        ],
+        "limit_per_provider": 25,
+        "expand_refs": False,
+        "timeout": 15.0,
+    },
+    "deep": {
+        "providers": [
+            "openalex",
+            "crossref",
+            "europe_pmc",
+            "doaj",
+            "pubmed",
+            "arxiv",
+            "semantic_scholar",
+            "core",
+            "base",
+            "opencitations",
+        ],
+        "limit_per_provider": 50,
+        "expand_refs": True,
+        "timeout": 30.0,
+    },
+}
+
+
+def select_providers_for_depth(
+    registry: list[_RetrievalProvider],
+    depth: Literal["quick", "balanced", "deep"] | None,
+) -> list[_RetrievalProvider]:
+    """Return registry entries active at the given depth.
+
+    Providers already skipped (no_key / disabled) are always kept so that
+    source metadata reflects why they were omitted.
+    When depth is None, the full registry is returned unchanged (no filtering).
+    """
+    if depth is None:
+        return list(registry)
+    profile = DEPTH_PROFILES[depth]
+    active_names = set(profile["providers"])
+    return [p for p in registry if p.skip_reason is not None or p.name in active_names]
 
 
 @dataclass(slots=True)
@@ -501,6 +567,7 @@ async def _fetch_from_sources(
     tier: Literal["primary", "fallback", "all"] = "all",
     openalex_max_pages: int | None = None,
     max_pages: int | None = None,
+    search_depth: Literal["quick", "balanced", "deep"] | None = None,
 ) -> tuple[
     list[NormalizedPaper], list[str], list[str], dict[str, float], dict[str, SourceTerminalState]
 ]:
@@ -521,6 +588,7 @@ async def _fetch_from_sources(
         openalex_max_pages=openalex_max_pages,
         max_pages=max_pages,
     )
+    registry = select_providers_for_depth(registry, search_depth)
 
     source_tasks: list[asyncio.Task[_SourceFetchResult]] = []
     for provider in registry:
@@ -575,6 +643,7 @@ async def _fetch_query_with_optional_fallback(
     *,
     openalex_max_pages: int | None = None,
     max_pages: int | None = None,
+    search_depth: Literal["quick", "balanced", "deep"] | None = None,
 ) -> tuple[
     list[NormalizedPaper], list[str], list[str], dict[str, float], dict[str, SourceTerminalState]
 ]:
@@ -601,6 +670,7 @@ async def _fetch_query_with_optional_fallback(
         tier="primary",
         openalex_max_pages=openalex_max_pages,
         max_pages=max_pages,
+        search_depth=search_depth,
     )
     results.extend(primary_results)
     failures.extend(primary_failures)
@@ -645,6 +715,7 @@ async def _fetch_query_with_optional_fallback(
             tier="fallback",
             openalex_max_pages=openalex_max_pages,
             max_pages=max_pages,
+            search_depth=search_depth,
         )
         results.extend(fallback_results)
         failures.extend(fallback_failures)
@@ -1403,6 +1474,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
             corrected_query,
             progress,
             max_pages=depth_max_pages,
+            search_depth=search_depth,
         )
         results.extend(query_results)
         _merge_telemetry(failures, sources_used, timings, states)
@@ -1447,6 +1519,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                 progress,
                 openalex_max_pages=max(depth_max_pages, 2),
                 max_pages=depth_max_pages,
+                search_depth=search_depth,
             )
             results.extend(refinement_results)
             _merge_telemetry(
@@ -1493,6 +1566,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                         corrected_query,
                         progress,
                         max_pages=depth_max_pages,
+                        search_depth=search_depth,
                     )
                     _merge_telemetry(retry_failures, retry_sources, retry_timings, retry_states)
                     if retry_results:
@@ -1557,6 +1631,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
             corrected_query,
             progress,
             max_pages=depth_max_pages,
+            search_depth=search_depth,
         )
         _merge_telemetry(fallback_failures, fallback_sources, fallback_timings, fallback_states)
         if fallback_results:

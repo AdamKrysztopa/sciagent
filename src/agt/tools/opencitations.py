@@ -29,6 +29,46 @@ class OpenCitationsClient:
         self._retries = retries
         self._base_url = base_url.rstrip("/")
 
+    async def references(self, doi: str) -> list[str]:
+        """Return DOIs cited by the given DOI (outgoing: this paper cites them)."""
+        if not doi.strip():
+            return []
+        encoded = quote(doi.strip(), safe="")
+        try:
+            payload = await self._request_json(path=f"/references/{encoded}")
+        except Exception:  # pragma: no cover
+            return []
+        if not isinstance(payload, list):
+            return []
+        result: list[str] = []
+        for item in payload:
+            if not isinstance(item, dict):
+                continue
+            cited = item.get("cited")
+            if isinstance(cited, str) and cited:
+                result.append(cited)
+        return result
+
+    async def citations(self, doi: str) -> list[str]:
+        """Return DOIs that cite the given DOI (incoming: these papers cite it)."""
+        if not doi.strip():
+            return []
+        encoded = quote(doi.strip(), safe="")
+        try:
+            payload = await self._request_json(path=f"/citations/{encoded}")
+        except Exception:  # pragma: no cover
+            return []
+        if not isinstance(payload, list):
+            return []
+        result: list[str] = []
+        for item in payload:
+            if not isinstance(item, dict):
+                continue
+            citing = item.get("citing")
+            if isinstance(citing, str) and citing:
+                result.append(citing)
+        return result
+
     async def citation_count(self, doi: str) -> int | None:
         if not doi.strip():
             return None

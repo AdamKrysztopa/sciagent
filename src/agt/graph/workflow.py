@@ -19,12 +19,27 @@ from agt.models import (
 )
 from agt.observability import TraceContext, serialize_spans, trace_step
 from agt.providers.router import build_provider
+from agt.tools.capabilities import ALL_PROVIDER_CAPS, ProviderField
+from agt.tools.citation_expander import expand_citations
+from agt.tools.explain_missing import annotate_missing
 from agt.tools.merge import merge as merge_papers
-from agt.tools.search_papers import search_papers
+from agt.tools.search_papers import DEPTH_PROFILES, search_papers
 from agt.tools.summarize import summarize_papers
 from agt.tools.zotero_upsert import ZoteroWriteError, upsert_papers
 from agt.zotero.collection_inspector import classify_paper, fetch_library_index
 from agt.zotero.preflight import run_zotero_preflight
+
+
+def _profile_skipped(depth: Literal["quick", "balanced", "deep"] | None) -> set[ProviderField]:
+    """Return the set of ProviderFields that the given depth profile does not populate."""
+    effective: Literal["quick", "balanced", "deep"] = (
+        depth if depth in DEPTH_PROFILES else "balanced"
+    )  # type: ignore[assignment]
+    profile = DEPTH_PROFILES[effective]
+    skipped: set[ProviderField] = set()
+    if not profile["expand_refs"]:
+        skipped.add(ProviderField.REFERENCES)
+    return skipped
 
 
 def _serialize_papers(papers: list[NormalizedPaper]) -> list[dict[str, Any]]:
@@ -144,6 +159,23 @@ async def run_search_phase(  # noqa: PLR0913
 
         papers = merge_papers(papers)
         # TODO(P8.4-D): ranking.py dedup can be simplified now that merge handles it
+
+        queried_caps = [
+            ALL_PROVIDER_CAPS[name]
+            for name in search_metadata.sources_used
+            if name in ALL_PROVIDER_CAPS
+        ]
+        prof_skipped = _profile_skipped(search_depth)
+        for paper in papers:
+            annotate_missing(paper, queried=queried_caps, health={}, profile_skipped=prof_skipped)
+
+        if filter_edit is not None and filter_edit.seed_dois:
+            with trace_step(trace, "citation_expansion", seed_count=len(filter_edit.seed_dois)):
+                expansion = await expand_citations(
+                    filter_edit.seed_dois,
+                    settings=active_settings,
+                )
+                papers = merge_papers(papers + expansion)
 
         with trace_step(trace, "summarize", paper_count=len(papers)):
             papers = await summarize_papers(

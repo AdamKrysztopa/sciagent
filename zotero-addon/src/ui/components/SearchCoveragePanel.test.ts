@@ -1,9 +1,14 @@
 import { describe, expect, it } from "vitest";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 
-import type { SourceTerminalState } from "../../shared/contracts";
+import type { ProviderInfo, SourceTerminalState } from "../../shared/contracts";
 import {
   BYOK_HINTS,
+  DepthPlanPreview,
+  SearchCoveragePanel,
   getByokHint,
+  getDepthProviders,
   shouldShowBaselineBadge,
   shouldShowByokChip,
 } from "./SearchCoveragePanel";
@@ -129,5 +134,106 @@ describe("shouldShowBaselineBadge", () => {
 
   it("returns false when called with no argument", () => {
     expect(shouldShowBaselineBadge()).toBe(false);
+  });
+});
+
+describe("getDepthProviders", () => {
+  it("quick returns openalex and arxiv but not crossref", () => {
+    const providers = getDepthProviders("quick");
+    expect(providers).toContain("openalex");
+    expect(providers).toContain("arxiv");
+    expect(providers).not.toContain("crossref");
+  });
+
+  it("balanced returns all 6 baseline providers", () => {
+    const providers = getDepthProviders("balanced");
+    for (const p of ["openalex", "crossref", "europe_pmc", "doaj", "pubmed", "arxiv"]) {
+      expect(providers).toContain(p);
+    }
+    expect(providers).toHaveLength(6);
+  });
+
+  it("deep is a superset of the balanced set", () => {
+    const balanced = getDepthProviders("balanced");
+    const deep = getDepthProviders("deep");
+    for (const p of balanced) {
+      expect(deep).toContain(p);
+    }
+    expect(deep.length).toBeGreaterThan(balanced.length);
+  });
+
+  it("null falls back to balanced set", () => {
+    expect(getDepthProviders(null)).toEqual(getDepthProviders("balanced"));
+  });
+
+  it("unknown string falls back to balanced set", () => {
+    expect(getDepthProviders("unknown")).toEqual(getDepthProviders("balanced"));
+  });
+});
+
+describe("DepthPlanPreview", () => {
+  it("renders the depth label and provider names", () => {
+    const html = renderToStaticMarkup(createElement(DepthPlanPreview, { depth: "quick" }));
+    expect(html).toContain("Quick mode");
+    expect(html).toContain("2 sources");
+    expect(html).toContain("openalex");
+    expect(html).toContain("arxiv");
+  });
+
+  it("falls back to balanced label when depth is null", () => {
+    const html = renderToStaticMarkup(createElement(DepthPlanPreview, { depth: null }));
+    expect(html).toContain("Balanced mode");
+    expect(html).toContain("6 sources");
+  });
+});
+
+function makeProvider(overrides: Partial<ProviderInfo> = {}): ProviderInfo {
+  return {
+    name: "openalex",
+    requires_key: false,
+    key_env_var: null,
+    key_upgrade_hint: null,
+    fields: { title: "full", abstract: "full" },
+    notes: "OpenAlex is free and open.",
+    health: {
+      status: "available",
+      reason: "",
+      last_ok_at: null,
+      last_error_at: null,
+      consecutive_failures: 0,
+      retry_after: null,
+    },
+    ...overrides,
+  };
+}
+
+describe("SearchCoveragePanel providers rendering (P8.7-D)", () => {
+  it("renders both provider names when providers map has 2 entries", () => {
+    const providers: Record<string, ProviderInfo> = {
+      openalex: makeProvider({ name: "openalex" }),
+      crossref: makeProvider({ name: "crossref" }),
+    };
+    const html = renderToStaticMarkup(
+      createElement(SearchCoveragePanel, {
+        sourceStates: { openalex: "queried" },
+        providers,
+      }),
+    );
+    expect(html).toContain("openalex");
+    expect(html).toContain("crossref");
+  });
+
+  it("applies agt-chip--muted class when provider requires_key is true", () => {
+    const providers: Record<string, ProviderInfo> = {
+      dimensions: makeProvider({ name: "dimensions", requires_key: true }),
+    };
+    const html = renderToStaticMarkup(
+      createElement(SearchCoveragePanel, {
+        sourceStates: { openalex: "queried" },
+        providers,
+      }),
+    );
+    expect(html).toContain("agt-chip--muted");
+    expect(html).toContain("dimensions");
   });
 });

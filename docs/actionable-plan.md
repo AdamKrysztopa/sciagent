@@ -76,8 +76,8 @@ locally with `AGT_LLM_PROVIDER=ollama` and no hosted LLM key.
 ### Current Status
 
 - All P0–P7 milestones complete as of 2026-05-12.
-- Current status: **P8.4 complete — field-level merge with provenance, `FieldConflict` model, and `merge.py` wired into `run_search_phase`.**
-- Next target: **P8.5**.
+- Current status: **P8.10 complete — citation expansion (`seed_dois`, `expand_citations`, directional badge), key validator (`POST /keys/validate`, ConfigPanel key entry). 531 Python / 103 frontend tests green.**
+- Next target: **P8.11**.
 
 ### Recent Progress
 
@@ -89,6 +89,13 @@ locally with `AGT_LLM_PROVIDER=ollama` and no hosted LLM key.
 - ✅ P8.1 complete (2026-05-13): `capabilities.py`, `provider_base.py`, `GET /providers`, BYOK hint chip.
 - ✅ P8.2 complete (2026-05-13): DOAJ provider, provider audit (UA/retry/429), `SearchRunResult`, `baseline_mode` badge, baseline regression test. 455 tests green.
 - ✅ P8.3 complete (2026-05-13): `NormalizedAuthor`, `ProvenanceField`, extended `NormalizedPaper`, all providers migrated to emit `NormalizedAuthor`. 455 tests green.
+- ✅ P8.4 complete (2026-05-13): field-level merge + `FieldConflict` model + `merge.py` wired. 473 tests green.
+- ✅ P8.5 complete (2026-05-13): `DEPTH_PROFILES`, `select_providers_for_depth`, `DepthPlanPreview` in sidebar. 498 Python / 82 frontend tests green.
+- ✅ P8.6 complete (2026-05-13): `explain_missing.py` with 5 reason codes, missing-field tooltips in result cards. All gates green.
+- ✅ P8.7 complete (2026-05-14): `_profile_skipped` + `annotate_missing` loop wired into `run_search_phase`; provenance source chips, conflict dot + approval-card warning, `/providers` capability matrix in sidebar. 506 Python / 94 frontend tests green.
+- ✅ P8.8 complete (2026-05-14): `author_resolver.py` (`resolve_author` across OpenAlex + S2, ORCID dedup); `HardFilters.author_ids` + post-merge author-ID filter; author chips (OpenAlex/ORCID links) in result cards. All gates green.
+- ✅ P8.9 complete (2026-05-14): `SearchPlan.seed_dois`; `citation_expander.py` (`expand_citations` via OpenCitations + OpenAlex, tagged with `citation_relation`); directional citation badge (`↓ ref` / `↑ cites`) in result cards. 531 Python / 103 frontend tests green.
+- ✅ P8.10 complete (2026-05-14): `key_validator.py` with SSRF-safe allowlist; `POST /keys/validate` endpoint; `ProviderKeyRow` key entry panel in ConfigPanel with per-provider validate-on-demand UI; `validateKey` in controller hook. All gates green.
 
 ### P8 Status
 
@@ -114,23 +121,23 @@ locally with `AGT_LLM_PROVIDER=ollama` and no hosted LLM key.
 | P8.4-B  | Field-selection rules                            | ~0.5d  | done     |
 | P8.4-C  | `FieldConflict` model                            | ~0.25d | done     |
 | P8.4-D  | Wire merge into `run_search_phase`               | ~0.25d | done     |
-| P8.5-A  | `DEPTH_PROFILES` + `select_providers_for_depth`  | ~0.25d | not done |
-| P8.5-B  | Depth plan preview in sidebar                    | ~0.25d | not done |
-| P8.6-A  | `src/agt/tools/explain_missing.py`               | ~0.25d | not done |
-| P8.6-B  | Result card missing-field tooltip                | ~0.25d | not done |
-| P8.7-A  | Merge + explain_missing in `run_search_phase`    | ~0.5d  | not done |
-| P8.7-B  | Provenance chips in `ResultsList.tsx`            | ~0.25d | not done |
-| P8.7-C  | Conflict warnings in approval dialog             | ~0.25d | not done |
-| P8.7-D  | `/providers` surface in sidebar                  | ~0.25d | not done |
-| P8.8-A  | Author resolver tool                             | ~0.75d | not done |
-| P8.8-B  | `HardFilters.author_ids`                         | ~0.5d  | not done |
-| P8.8-C  | Author chips in `ResultsList.tsx`                | ~0.5d  | not done |
-| P8.9-A  | `SearchPlan.seed_dois`                           | ~0.25d | not done |
-| P8.9-B  | Citation expansion tool                          | ~1d    | not done |
-| P8.9-C  | Directional citation badge                       | ~0.25d | not done |
-| P8.10-A | `POST /keys/validate`                            | ~0.5d  | not done |
-| P8.10-B | Key entry panel in `ConfigPanel.tsx`             | ~1d    | not done |
-| P8.10-C | Preference store bridging                        | ~0.5d  | not done |
+| P8.5-A  | `DEPTH_PROFILES` + `select_providers_for_depth`  | ~0.25d | done     |
+| P8.5-B  | Depth plan preview in sidebar                    | ~0.25d | done     |
+| P8.6-A  | `src/agt/tools/explain_missing.py`               | ~0.25d | done     |
+| P8.6-B  | Result card missing-field tooltip                | ~0.25d | done     |
+| P8.7-A  | Merge + explain_missing in `run_search_phase`    | ~0.5d  | done     |
+| P8.7-B  | Provenance chips in `ResultsList.tsx`            | ~0.25d | done     |
+| P8.7-C  | Conflict warnings in approval dialog             | ~0.25d | done     |
+| P8.7-D  | `/providers` surface in sidebar                  | ~0.25d | done     |
+| P8.8-A  | Author resolver tool                             | ~0.75d | done     |
+| P8.8-B  | `HardFilters.author_ids`                         | ~0.5d  | done     |
+| P8.8-C  | Author chips in `ResultsList.tsx`                | ~0.5d  | done     |
+| P8.9-A  | `SearchPlan.seed_dois`                           | ~0.25d | done     |
+| P8.9-B  | Citation expansion tool                          | ~1d    | done     |
+| P8.9-C  | Directional citation badge                       | ~0.25d | done     |
+| P8.10-A | `POST /keys/validate`                            | ~0.5d  | done     |
+| P8.10-B | Key entry panel in `ConfigPanel.tsx`             | ~1d    | done     |
+| P8.10-C | Preference store bridging                        | ~0.5d  | done     |
 | P8.11-A | `docs/providers.md` onboarding checklist         | ~0.25d | not done |
 | P8.11-B | `scripts/new_provider.py` scaffold               | ~0.5d  | not done |
 | P8.12-A | VCR cassettes (44 total, 11 providers × 4 cases) | ~0.25d | not done |
@@ -1228,10 +1235,10 @@ P8.1 ──▶ P8.11
 | P8.4-B  | Field-selection rules                           | ~0.5d  | done     |
 | P8.4-C  | `FieldConflict` model                           | ~0.25d | done     |
 | P8.4-D  | Wire merge into `run_search_phase`              | ~0.25d | done     |
-| P8.5-A  | `DEPTH_PROFILES` + `select_providers_for_depth` | ~0.25d | not done |
-| P8.5-B  | Plan preview in sidebar                         | ~0.25d | not done |
-| P8.6-A  | `src/agt/tools/explain_missing.py`              | ~0.25d | not done |
-| P8.6-B  | Result card missing-field tooltip               | ~0.25d | not done |
+| P8.5-A  | `DEPTH_PROFILES` + `select_providers_for_depth` | ~0.25d | done     |
+| P8.5-B  | Plan preview in sidebar                         | ~0.25d | done     |
+| P8.6-A  | `src/agt/tools/explain_missing.py`              | ~0.25d | done     |
+| P8.6-B  | Result card missing-field tooltip               | ~0.25d | done     |
 | P8.7-A  | Merge in `run_search_phase`                     | ~0.5d  | not done |
 | P8.7-B  | Provenance chips in `ResultsList.tsx`           | ~0.25d | not done |
 | P8.7-C  | Conflict warnings in approval dialog            | ~0.25d | not done |
