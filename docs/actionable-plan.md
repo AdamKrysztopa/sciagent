@@ -76,8 +76,8 @@ locally with `AGT_LLM_PROVIDER=ollama` and no hosted LLM key.
 ### Current Status
 
 - All P0–P7 milestones complete as of 2026-05-12.
-- Current status: **P8.11 complete — provider onboarding checklist in `docs/providers.md`; `scripts/new_provider.py` scaffold generator; `pyrightconfig.json` extended to include `scripts/`. 531 Python / 103 frontend tests green.**
-- Next target: **P8.12**.
+- Current status: **P8.12 complete — `test_merge.py`, `test_capabilities.py`, `test_explain_missing.py`, `test_search_orchestrator.py`; `live_api` + `regression_gate` markers; zero-key smoke test; CI benchmark regression gate step. 561 Python / 103 frontend tests green.**
+- Next target: **P8.13**.
 
 ### Recent Progress
 
@@ -97,6 +97,7 @@ locally with `AGT_LLM_PROVIDER=ollama` and no hosted LLM key.
 - ✅ P8.9 complete (2026-05-14): `SearchPlan.seed_dois`; `citation_expander.py` (`expand_citations` via OpenCitations + OpenAlex, tagged with `citation_relation`); directional citation badge (`↓ ref` / `↑ cites`) in result cards. 531 Python / 103 frontend tests green.
 - ✅ P8.10 complete (2026-05-14): `key_validator.py` with SSRF-safe allowlist; `POST /keys/validate` endpoint; `ProviderKeyRow` key entry panel in ConfigPanel with per-provider validate-on-demand UI; `validateKey` in controller hook. All gates green.
 - ✅ P8.11 complete (2026-05-14): 9-step provider onboarding checklist appended to `docs/providers.md`; `scripts/new_provider.py` scaffold generator (CamelCase → snake_case, emits `SearchProviderBase` skeleton + `anyio` test stub, skip-if-exists guard); `pyrightconfig.json` extended with `scripts/`. All gates green.
+- ✅ P8.12 complete (2026-05-14): P8.12-A already done (44 tests in `test_provider_snapshots.py`); `test_merge.py` (12 tests), `test_capabilities.py` (14 tests), `test_explain_missing.py` (8 tests), `test_search_orchestrator.py` (5 tests); `live_api` + `regression_gate` markers in conftest.py; `test_zero_key_smoke.py` (1 test), `test_regression_gate.py` (4 tests); CI benchmark regression gate step in `ci.yml`. 561 Python tests green (+30).
 
 ### P8 Status
 
@@ -141,13 +142,13 @@ locally with `AGT_LLM_PROVIDER=ollama` and no hosted LLM key.
 | P8.10-C | Preference store bridging                        | ~0.5d  | done     |
 | P8.11-A | `docs/providers.md` onboarding checklist         | ~0.25d | done     |
 | P8.11-B | `scripts/new_provider.py` scaffold               | ~0.5d  | done     |
-| P8.12-A | VCR cassettes (44 total, 11 providers × 4 cases) | ~0.25d | not done |
-| P8.12-B | `tests/test_merge.py`                            | ~0.25d | not done |
-| P8.12-C | `tests/test_capabilities.py`                     | ~0.1d  | not done |
-| P8.12-D | `tests/test_explain_missing.py`                  | ~0.1d  | not done |
-| P8.12-E | `tests/test_search_orchestrator.py`              | ~0.1d  | not done |
-| P8.12-F | Zero-key smoke test (`@pytest.mark.live_api`)    | ~0.1d  | not done |
-| P8.12-G | Regression gate in CI (≥ 19/22 benchmark)        | ~0.25d | not done |
+| P8.12-A | VCR cassettes (44 total, 11 providers × 4 cases) | ~0.25d | done     |
+| P8.12-B | `tests/test_merge.py`                            | ~0.25d | done     |
+| P8.12-C | `tests/test_capabilities.py`                     | ~0.1d  | done     |
+| P8.12-D | `tests/test_explain_missing.py`                  | ~0.1d  | done     |
+| P8.12-E | `tests/test_search_orchestrator.py`              | ~0.1d  | done     |
+| P8.12-F | Zero-key smoke test (`@pytest.mark.live_api`)    | ~0.1d  | done     |
+| P8.12-G | Regression gate in CI (≥ 19/22 benchmark)        | ~0.25d | done     |
 | P8.13-A | New config fields (`AGT_MAILTO`, etc.)           | ~0.25d | not done |
 | P8.13-B | Disabled-by-config provider state                | ~0.25d | not done |
 | P8.13-C | `.env.example` update                            | ~0.1d  | not done |

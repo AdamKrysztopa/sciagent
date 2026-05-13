@@ -41,6 +41,9 @@ jobs:
       - name: Pytest (failure-path + integration)
         run: uv run pytest -q --vcr-record=none
 
+      - name: Benchmark regression gate
+        run: uv run pytest -q --vcr-record=none -m regression_gate
+
   zotero-addon-quality:
     name: Zotero Add-on Quality
     runs-on: ubuntu-latest

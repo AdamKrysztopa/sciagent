@@ -20,7 +20,11 @@ from agt.models import NormalizedPaper
 from agt.tools.capabilities import (
     ALL_PROVIDER_CAPS,
     BASE_CAPS,
+    CORE_PUBLIC_CAPS,
+    DIMENSIONS_CAPS,
     OPENALEX_CAPS,
+    PUBMED_CAPS,
+    SEMANTIC_SCHOLAR_CAPS,
     FieldSupport,
     ProviderField,
     ProviderHealth,
@@ -352,3 +356,98 @@ def test_get_providers_health_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
         assert info["consecutive_failures"] == 0
         assert info["last_ok_at"] is None
         assert info["last_error_at"] is None
+
+
+# ---------------------------------------------------------------------------
+# P8.12-C: ProviderField enum members
+# ---------------------------------------------------------------------------
+
+_EXPECTED_PROVIDER_FIELDS = {
+    ProviderField.TITLE,
+    ProviderField.ABSTRACT,
+    ProviderField.AUTHORS,
+    ProviderField.DOI,
+    ProviderField.YEAR,
+    ProviderField.VENUE,
+    ProviderField.CITATION_COUNT,
+    ProviderField.OA_URL,
+    ProviderField.REFERENCES,
+    ProviderField.RELATED,
+}
+
+
+def test_provider_field_enum_has_all_expected_members() -> None:
+    assert set(ProviderField) == _EXPECTED_PROVIDER_FIELDS
+
+
+def test_field_support_enum_has_full_shallow_none() -> None:
+    members = set(FieldSupport)
+    assert FieldSupport.FULL in members
+    assert FieldSupport.SHALLOW in members
+    assert FieldSupport.NONE in members
+
+
+def test_provider_status_enum_has_expected_members() -> None:
+    members = set(ProviderStatus)
+    assert ProviderStatus.AVAILABLE in members
+    assert ProviderStatus.SHALLOW in members
+    assert ProviderStatus.DISABLED in members
+    assert ProviderStatus.MISSING_KEY in members
+    assert ProviderStatus.FAILED in members
+    assert ProviderStatus.RATE_LIMITED in members
+
+
+# ---------------------------------------------------------------------------
+# P8.12-C: Canonical capability constants
+# ---------------------------------------------------------------------------
+
+
+def test_openalex_caps_requires_key_is_false() -> None:
+    assert OPENALEX_CAPS.requires_key is False
+
+
+def test_openalex_caps_supports_title_full() -> None:
+    assert OPENALEX_CAPS.supports(ProviderField.TITLE) is FieldSupport.FULL
+
+
+def test_core_caps_requires_key_is_true() -> None:
+    assert CORE_PUBLIC_CAPS.requires_key is True
+
+
+def test_core_caps_key_env_var() -> None:
+    assert CORE_PUBLIC_CAPS.key_env_var == "AGT_CORE_API_KEY"
+
+
+def test_semantic_scholar_key_upgrade_hint_is_non_empty() -> None:
+    hint = SEMANTIC_SCHOLAR_CAPS.key_upgrade_hint
+    assert hint is not None
+    assert len(hint) > 0
+
+
+def test_all_canonical_caps_have_non_empty_name() -> None:
+    for name, caps in ALL_PROVIDER_CAPS.items():
+        assert caps.name, f"caps for {name!r} has empty name"
+
+
+def test_all_canonical_caps_have_non_empty_fields() -> None:
+    for name, caps in ALL_PROVIDER_CAPS.items():
+        assert caps.fields, f"caps for {name!r} has empty fields dict"
+
+
+def test_keyed_providers_have_key_env_var() -> None:
+    """Every provider with requires_key=True must also declare key_env_var."""
+    for name, caps in ALL_PROVIDER_CAPS.items():
+        if caps.requires_key:
+            assert caps.key_env_var is not None, (
+                f"{name}: requires_key=True but key_env_var is None"
+            )
+
+
+def test_pubmed_and_base_caps_exist() -> None:
+    assert PUBMED_CAPS.name == "pubmed"
+    assert BASE_CAPS.name == "base"
+
+
+def test_dimensions_caps_requires_key() -> None:
+    assert DIMENSIONS_CAPS.requires_key is True
+    assert DIMENSIONS_CAPS.key_env_var is not None

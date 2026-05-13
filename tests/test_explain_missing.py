@@ -13,8 +13,9 @@ Coverage:
 
 from __future__ import annotations
 
-from agt.models import NormalizedPaper
+from agt.models import NormalizedAuthor, NormalizedPaper
 from agt.tools.capabilities import (
+    OPENALEX_CAPS,
     FieldSupport,
     ProviderField,
     ProviderHealth,
@@ -227,3 +228,66 @@ def test_annotate_missing_is_additive_not_destructive() -> None:
     annotate_missing(paper, queried=[], health={})
     for key, value in reasons_after_first.items():
         assert paper.missing_reasons.get(key) == value
+
+
+# ---------------------------------------------------------------------------
+# P8.12-D: Fully populated paper → no missing reasons
+# ---------------------------------------------------------------------------
+
+
+def test_fully_populated_paper_no_missing_reasons() -> None:
+    """A paper with all standard fields populated produces no missing_reasons."""
+    paper = NormalizedPaper(
+        title="Complete Paper",
+        abstract="A detailed abstract that explains the study.",
+        authors=[NormalizedAuthor(name="Jane Doe", family="Doe", given="Jane")],
+        doi="10.1234/complete",
+        year=2023,
+        venue="Nature",
+        citation_count=42,
+        oa_url="https://example.com/paper.pdf",
+        references=["10.1234/ref"],
+        source="openalex",
+    )
+    annotate_missing(paper, queried=[OPENALEX_CAPS], health={})
+    assert paper.missing_reasons == {}
+
+
+# ---------------------------------------------------------------------------
+# P8.12-D: Paper with no DOI → missing_reasons has "doi"
+# ---------------------------------------------------------------------------
+
+
+def test_paper_no_doi_annotated() -> None:
+    """A paper missing doi gets an entry for 'doi' in missing_reasons."""
+    paper = NormalizedPaper(title="No DOI Paper", source="openalex", doi=None)
+    caps = _caps("openalex", {_F.DOI: _S.FULL})
+    annotate_missing(paper, queried=[caps], health={})
+    assert "doi" in paper.missing_reasons
+
+
+# ---------------------------------------------------------------------------
+# P8.12-D: Paper with no year → missing_reasons has "year"
+# ---------------------------------------------------------------------------
+
+
+def test_paper_no_year_annotated() -> None:
+    """A paper missing year gets an entry for 'year' in missing_reasons."""
+    paper = NormalizedPaper(title="No Year Paper", source="openalex", year=None)
+    caps = _caps("openalex", {_F.YEAR: _S.FULL})
+    annotate_missing(paper, queried=[caps], health={})
+    assert "year" in paper.missing_reasons
+
+
+# ---------------------------------------------------------------------------
+# P8.12-D: annotate_missing mutates in place and returns None
+# ---------------------------------------------------------------------------
+
+
+def test_annotate_missing_returns_none_and_mutates_paper() -> None:
+    """annotate_missing mutates the paper in place and has no return value."""
+    paper = _empty_paper()
+    result = annotate_missing(paper, queried=[], health={})
+    assert result is None
+    # The paper itself is mutated
+    assert paper.missing_reasons != {}

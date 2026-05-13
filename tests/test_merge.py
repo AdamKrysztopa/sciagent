@@ -420,6 +420,40 @@ def test_normalized_paper_default_conflicts_empty() -> None:
 
 
 # ---------------------------------------------------------------------------
+# P8.12-B: cluster() — empty list
+# ---------------------------------------------------------------------------
+
+
+def test_cluster_empty_list() -> None:
+    """cluster([]) must return an empty list with no errors."""
+    assert cluster([]) == []
+
+
+# ---------------------------------------------------------------------------
+# P8.12-B: cluster() — matching DOIs group into one cluster
+# ---------------------------------------------------------------------------
+
+
+def test_cluster_matching_dois_one_cluster() -> None:
+    """Two papers with the same DOI must be placed in a single cluster."""
+    p1 = NormalizedPaper(title="Shared DOI Paper", doi="10.1/shared", source="crossref")
+    p2 = NormalizedPaper(title="Shared DOI Paper", doi="10.1/shared", source="openalex")
+    clusters = cluster([p1, p2])
+    assert len(clusters) == 1
+    assert len(clusters[0]) == _TWO_PAPERS
+
+
+# ---------------------------------------------------------------------------
+# P8.12-B: merge() — empty list
+# ---------------------------------------------------------------------------
+
+
+def test_merge_empty_list() -> None:
+    """merge([]) must return an empty list with no errors."""
+    assert merge([]) == []
+
+
+# ---------------------------------------------------------------------------
 # FieldConflict model validation
 # ---------------------------------------------------------------------------
 

@@ -8,6 +8,14 @@ def pytest_configure(config: pytest.Config) -> None:
         "markers",
         "provider_snapshot: snapshot tests that pin provider normalization behavior",
     )
+    config.addinivalue_line(
+        "markers",
+        "live_api: tests that exercise real network endpoints (skipped in CI by default)",
+    )
+    config.addinivalue_line(
+        "markers",
+        "regression_gate: tests that verify the benchmark regression threshold is structurally correct",
+    )
 
 
 @pytest.fixture(autouse=True)
