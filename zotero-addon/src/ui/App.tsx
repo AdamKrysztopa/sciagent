@@ -303,6 +303,7 @@ function IdleView({ controller, addonVersion }: { controller: SciAgentController
         onChange={controller.onFilterDraftChange}
         onReset={controller.onResetFilters}
         onSuggestAuthors={controller.onSuggestAuthors}
+        onSuggestVenues={controller.onSuggestVenues}
         searchPlan={controller.searchPlan}
       />
 
@@ -440,6 +441,7 @@ function ReviewView({ controller }: { controller: SciAgentController }) {
         onChange={controller.onFilterDraftChange}
         onReset={controller.onResetFilters}
         onSuggestAuthors={controller.onSuggestAuthors}
+        onSuggestVenues={controller.onSuggestVenues}
         searchPlan={controller.searchPlan}
       />
 

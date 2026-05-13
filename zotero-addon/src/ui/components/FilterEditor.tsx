@@ -1,5 +1,5 @@
 import { useEffect, useEffectEvent, useState } from "react";
-import type { FilterEditContract, NormalizedAuthor, ResolvedAuthor, SearchPlan } from "../../shared/contracts";
+import type { FilterEditContract, NormalizedAuthor, ResolvedAuthor, ResolvedVenue, SearchPlan } from "../../shared/contracts";
 import { keywordListToText, parseKeywordList } from "../../shared/contracts";
 
 // ── AuthorChipInput ───────────────────────────────────────────────────────────
@@ -111,6 +111,106 @@ function AuthorChipInput({ authors, disabled, onChange, onSuggest }: AuthorChipI
   );
 }
 
+// ── VenueChipInput ────────────────────────────────────────────────────────────
+
+interface VenueChipInputProps {
+  venues: ResolvedVenue[];
+  disabled: boolean;
+  onChange(next: ResolvedVenue[]): void;
+  onSuggest(q: string): Promise<ResolvedVenue[]>;
+}
+
+function VenueChipInput({ venues, disabled, onChange, onSuggest }: VenueChipInputProps) {
+  const [inputValue, setInputValue] = useState("");
+  const [suggestions, setSuggestions] = useState<ResolvedVenue[]>([]);
+
+  const doSuggest = useEffectEvent(async (q: string) => {
+    try {
+      const results = await onSuggest(q);
+      setSuggestions(results);
+    } catch {
+      setSuggestions([]);
+    }
+  });
+
+  useEffect(() => {
+    const trimmed = inputValue.trim();
+    if (trimmed.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+    const timer = setTimeout(() => { void doSuggest(trimmed); }, 200);
+    return () => clearTimeout(timer);
+  }, [inputValue]);
+
+  const addVenue = (venue: ResolvedVenue) => {
+    const alreadyAdded = venues.some(
+      (v) => v.name === venue.name && v.openalex_id === venue.openalex_id,
+    );
+    if (!alreadyAdded) {
+      onChange([...venues, venue]);
+    }
+    setInputValue("");
+    setSuggestions([]);
+  };
+
+  const removeVenue = (index: number) => {
+    onChange(venues.filter((_, i) => i !== index));
+  };
+
+  return (
+    <div className="agt-author-input">
+      {venues.length > 0 ? (
+        <div className="agt-chip-list">
+          {venues.map((venue, i) => (
+            <span className="agt-chip agt-chip--removable" key={`${venue.name}:${venue.openalex_id ?? venue.issn ?? String(i)}`}>
+              {venue.name}
+              {venue.openalex_id !== null ? <span className="agt-chip-badge">OA</span> : null}
+              {venue.issn !== null ? <span className="agt-chip-badge">ISSN</span> : null}
+              <button
+                aria-label={`Remove ${venue.name}`}
+                className="agt-chip-remove"
+                disabled={disabled}
+                onClick={() => removeVenue(i)}
+                type="button"
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+      ) : null}
+      <div className="agt-suggest-wrap">
+        <input
+          className="agt-input"
+          disabled={disabled}
+          onChange={(event) => setInputValue(event.target.value)}
+          placeholder="Type venue or journal name…"
+          type="text"
+          value={inputValue}
+        />
+        {suggestions.length > 0 ? (
+          <ul className="agt-suggest-list">
+            {suggestions.map((s, i) => (
+              <li key={s.openalex_id ?? s.issn ?? `${s.name}-${String(i)}`}>
+                <button
+                  className="agt-suggest-item"
+                  onClick={() => addVenue(s)}
+                  type="button"
+                >
+                  <span className="agt-suggest-item__name">{s.name}</span>
+                  {s.openalex_id !== null ? <span className="agt-chip-badge">OA</span> : null}
+                  {s.issn !== null ? <span className="agt-chip-badge">ISSN</span> : null}
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 // ── FilterEditor ──────────────────────────────────────────────────────────────
 
 interface FilterEditorProps {
@@ -119,6 +219,7 @@ interface FilterEditorProps {
   onChange(nextDraft: FilterEditContract): void;
   onReset(): void;
   onSuggestAuthors?: (q: string) => Promise<NormalizedAuthor[]>;
+  onSuggestVenues?: (q: string) => Promise<ResolvedVenue[]>;
   searchPlan: SearchPlan | null;
 }
 
@@ -128,6 +229,7 @@ export function FilterEditor({
   onChange,
   onReset,
   onSuggestAuthors,
+  onSuggestVenues,
   searchPlan,
 }: FilterEditorProps) {
   if (filterDraft === null) {
@@ -317,6 +419,37 @@ export function FilterEditor({
           />
         </div>
       ) : null}
+      {onSuggestVenues !== undefined ? (
+        <div className="agt-field">
+          <span>Venue / Journal Filter</span>
+          <VenueChipInput
+            venues={filterDraft.venues ?? []}
+            disabled={disabled}
+            onChange={(next) => update({ ...filterDraft, venues: next })}
+            onSuggest={onSuggestVenues}
+          />
+        </div>
+      ) : null}
+      <div className="agt-field">
+        <span>Seed Papers (DOI, one per line)</span>
+        <textarea
+          className="agt-textarea"
+          disabled={disabled}
+          onChange={(event) => {
+            update({
+              ...filterDraft,
+              seed_dois: event.target.value
+                .split("\n")
+                .map((line) => line.trim())
+                .filter((line) => line.length > 0),
+            });
+          }}
+          placeholder={"10.1038/nature12373\n10.1126/science.1234567"}
+          rows={3}
+          value={(filterDraft.seed_dois ?? []).join("\n")}
+        />
+        <span className="agt-hint">Papers whose citation graph to include. One DOI per line.</span>
+      </div>
       <div className="agt-checkbox-row">
         <label className="agt-checkbox-row">
           <input

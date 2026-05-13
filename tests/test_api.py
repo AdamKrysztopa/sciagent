@@ -12,7 +12,7 @@ from slowapi import Limiter
 import agt.api.app as api_module
 from agt.api.app import create_app
 from agt.config import get_settings
-from agt.models import DoctorReport, GapSuggestion, NormalizedAuthor, NormalizedPaper
+from agt.models import DoctorReport, GapSuggestion, NormalizedAuthor, NormalizedPaper, ResolvedVenue
 
 HTTP_OK = 200
 HTTP_UNAUTHORIZED = 401
@@ -912,6 +912,80 @@ def test_author_suggest_missing_q_returns_422(monkeypatch: pytest.MonkeyPatch) -
     with TestClient(app) as client:
         response = client.get(
             "/authors/suggest",
+            headers={"X-AGT-API-Key": "backend-key"},
+        )
+
+    assert response.status_code == HTTP_UNPROCESSABLE_ENTITY
+
+    app.dependency_overrides.clear()
+
+
+# ── P9.9: /venues/suggest ───────────────────────────────────────────────────
+
+
+def test_venue_suggest_returns_candidates(monkeypatch: pytest.MonkeyPatch) -> None:
+    app = create_app()
+
+    def fake_get_settings() -> _Settings:
+        return _Settings()
+
+    async def fake_resolve_venue(
+        query: str,
+        *,
+        settings: object = None,
+        limit: int = 5,
+    ) -> list[ResolvedVenue]:
+        _ = settings
+        return [ResolvedVenue(name=f"Result for {query}", openalex_id="S123")][:limit]
+
+    app.dependency_overrides[get_settings] = fake_get_settings
+    monkeypatch.setattr(api_module, "resolve_venue", fake_resolve_venue)
+
+    with TestClient(app) as client:
+        response = client.get(
+            "/venues/suggest",
+            params={"q": "Nature"},
+            headers={"X-AGT-API-Key": "backend-key"},
+        )
+
+    assert response.status_code == HTTP_OK
+    payload: list[object] = response.json()
+    assert isinstance(payload, list)
+    assert len(payload) == 1
+    first = payload[0]
+    assert isinstance(first, dict)
+    assert first["name"] == "Result for Nature"
+
+    app.dependency_overrides.clear()
+
+
+def test_venue_suggest_requires_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    app = create_app()
+
+    def fake_get_settings() -> _Settings:
+        return _Settings()
+
+    app.dependency_overrides[get_settings] = fake_get_settings
+
+    with TestClient(app) as client:
+        response = client.get("/venues/suggest", params={"q": "Nature"})
+
+    assert response.status_code == HTTP_UNAUTHORIZED
+
+    app.dependency_overrides.clear()
+
+
+def test_venue_suggest_missing_q_returns_422(monkeypatch: pytest.MonkeyPatch) -> None:
+    app = create_app()
+
+    def fake_get_settings() -> _Settings:
+        return _Settings()
+
+    app.dependency_overrides[get_settings] = fake_get_settings
+
+    with TestClient(app) as client:
+        response = client.get(
+            "/venues/suggest",
             headers={"X-AGT-API-Key": "backend-key"},
         )
 

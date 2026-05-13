@@ -52,6 +52,7 @@ class CrossrefClient:
         *,
         limit: int,
         author_names: list[str] | None = None,
+        venue_names: list[str] | None = None,
         max_pages: int = 1,
     ) -> list[NormalizedPaper]:
         """Search Crossref and return normalized papers."""
@@ -68,6 +69,8 @@ class CrossrefClient:
             }
             if author_names:
                 params["query.author"] = " ".join(author_names)
+            if venue_names:
+                params["query.container-title"] = " ".join(venue_names)
             payload = await self._request_json(
                 path="/works",
                 params=params,

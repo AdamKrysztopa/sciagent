@@ -427,6 +427,7 @@ def _build_retrieval_registry(
                 limit=limit,
                 year_min=constraints.year.min_year,
                 author_ids=constraints.author_ids,
+                venue_ids=constraints.venue_ids,
                 max_pages=(
                     openalex_max_pages if openalex_max_pages is not None else effective_max_pages
                 ),
@@ -440,6 +441,7 @@ def _build_retrieval_registry(
                 query=query,
                 limit=limit,
                 author_names=constraints.author_names,
+                venue_names=constraints.venue_names,
                 max_pages=effective_max_pages,
             ),
         ),
@@ -1216,14 +1218,16 @@ def _apply_filter_edit(
         ),
         author_ids=[a.openalex_id for a in filter_edit.authors if a.openalex_id],
         author_names=[a.name for a in filter_edit.authors],
+        venue_ids=[v.openalex_id for v in filter_edit.venues if v.openalex_id],
+        venue_names=[v.name for v in filter_edit.venues],
     )
 
 
 # Static capability table: which filters each source pushes down to its API.
 _SOURCE_PUSH_DOWN: dict[str, list[str]] = {
     "semantic_scholar": ["year_min", "year_max"],
-    "openalex": ["year_min", "author"],
-    "crossref": ["author"],
+    "openalex": ["year_min", "author", "venue"],
+    "crossref": ["author", "venue"],
     "pubmed": [],
     "europe_pmc": [],
     "arxiv": ["author"],
@@ -1307,6 +1311,8 @@ def _build_search_plan(  # noqa: PLR0912
         exclude_keywords=list(constraints.keywords.exclude_keywords),
         author_ids=list(constraints.author_ids),
         author_names=list(constraints.author_names),
+        venue_ids=list(constraints.venue_ids),
+        venue_names=list(constraints.venue_names),
     )
     soft_preferences = SoftPreferences(
         require_positive_community_perception=constraints.quality.require_positive_community_perception,
@@ -1327,6 +1333,7 @@ def _build_search_plan(  # noqa: PLR0912
                 or (
                     filter_name == "author" and (constraints.author_ids or constraints.author_names)
                 )
+                or (filter_name == "venue" and (constraints.venue_ids or constraints.venue_names))
             ):
                 pushed.append(filter_name)
         if pushed:
@@ -1352,6 +1359,8 @@ def _build_search_plan(  # noqa: PLR0912
         enforced_post_merge.append("topic_relevance")
     if constraints.author_ids or constraints.author_names:
         enforced_post_merge.append("author")
+    if constraints.venue_ids or constraints.venue_names:
+        enforced_post_merge.append("venue")
 
     return SearchPlan(
         original_query=original_query,

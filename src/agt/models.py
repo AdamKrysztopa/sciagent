@@ -30,6 +30,14 @@ class ResolvedAuthor(BaseModel):
     s2_author_id: str | None = None
 
 
+class ResolvedVenue(BaseModel):
+    """A venue/journal entry in a search filter, with optional cross-provider IDs."""
+
+    name: str
+    openalex_id: str | None = None
+    issn: str | None = None
+
+
 class HardFilters(BaseModel):
     """Filters that cannot be relaxed or overridden by LLM rewriting."""
 
@@ -42,6 +50,8 @@ class HardFilters(BaseModel):
     exclude_keywords: list[str] = Field(default_factory=list)
     author_ids: list[str] = Field(default_factory=list)
     author_names: list[str] = Field(default_factory=list)
+    venue_ids: list[str] = Field(default_factory=list)
+    venue_names: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def validate_ranges(self) -> HardFilters:
@@ -98,6 +108,7 @@ class FilterEditContract(BaseModel):
     result_limit: int = Field(default=10, ge=1, le=50)
     seed_dois: list[str] = Field(default_factory=list)
     authors: list[ResolvedAuthor] = Field(default_factory=lambda: cast(list[ResolvedAuthor], []))
+    venues: list[ResolvedVenue] = Field(default_factory=lambda: cast(list[ResolvedVenue], []))
 
 
 class NormalizedAuthor(BaseModel):

@@ -6,6 +6,7 @@ from agt.models import (
     HardFilters,
     NormalizedPaper,
     ResolvedAuthor,
+    ResolvedVenue,
     SearchPlan,
 )
 
@@ -90,6 +91,45 @@ def test_filter_edit_contract_authors_roundtrips_via_model() -> None:
     assert len(restored.authors) == 1
     assert restored.authors[0].name == "Yoshua Bengio"
     assert restored.authors[0].openalex_id == "A5023888391"
+
+
+# ── P9.9: ResolvedVenue + FilterEditContract.venues + HardFilters.venue_ids ──
+
+
+def test_resolved_venue_minimal() -> None:
+    venue = ResolvedVenue(name="Nature")
+    assert venue.name == "Nature"
+    assert venue.openalex_id is None
+    assert venue.issn is None
+
+
+def test_resolved_venue_with_all_fields() -> None:
+    venue = ResolvedVenue(name="Nature", openalex_id="S137773608", issn="1476-4687")
+    assert venue.openalex_id == "S137773608"
+    assert venue.issn == "1476-4687"
+
+
+def test_filter_edit_contract_venues_defaults_empty() -> None:
+    contract = FilterEditContract(original_query="transformer")
+    assert contract.venues == []
+
+
+def test_filter_edit_contract_venues_roundtrips_via_model() -> None:
+    contract = FilterEditContract(
+        original_query="transformer",
+        venues=[ResolvedVenue(name="Nature", openalex_id="S137773608", issn="1476-4687")],
+    )
+    dumped = contract.model_dump()
+    restored = FilterEditContract.model_validate(dumped)
+    assert len(restored.venues) == 1
+    assert restored.venues[0].name == "Nature"
+    assert restored.venues[0].openalex_id == "S137773608"
+
+
+def test_hard_filters_venue_ids_defaults_empty() -> None:
+    filters = HardFilters()
+    assert filters.venue_ids == []
+    assert filters.venue_names == []
 
 
 def test_hard_filters_author_names_defaults_empty() -> None:

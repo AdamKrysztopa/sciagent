@@ -223,6 +223,8 @@ class SearchConstraintSpec(BaseModel):
     keywords: KeywordConstraint = Field(default_factory=KeywordConstraint)
     author_ids: list[str] = Field(default_factory=list)
     author_names: list[str] = Field(default_factory=list)
+    venue_ids: list[str] = Field(default_factory=list)
+    venue_names: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def apply_quality_defaults(self) -> SearchConstraintSpec:

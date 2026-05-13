@@ -9,6 +9,7 @@ import type {
   KeyValidateResponse,
   NormalizedAuthor,
   ProviderInfo,
+  ResolvedVenue,
   ResumeRequest,
   RunAcceptedResponse,
   RunRequest,
@@ -180,6 +181,13 @@ export class SciAgentBackendClient {
   async suggestAuthors(q: string, limit = 5): Promise<NormalizedAuthor[]> {
     const params = new URLSearchParams({ q, limit: String(limit) });
     return this.request<NormalizedAuthor[]>(`/authors/suggest?${params.toString()}`, {
+      method: "GET",
+    });
+  }
+
+  async suggestVenues(q: string, limit = 5): Promise<ResolvedVenue[]> {
+    const params = new URLSearchParams({ q, limit: String(limit) });
+    return this.request<ResolvedVenue[]>(`/venues/suggest?${params.toString()}`, {
       method: "GET",
     });
   }

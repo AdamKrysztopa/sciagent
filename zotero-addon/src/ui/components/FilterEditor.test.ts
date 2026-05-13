@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { buildDefaultFilterEdit, type FilterEditContract, type NormalizedAuthor } from "../../shared/contracts";
+import { buildDefaultFilterEdit, type FilterEditContract, type NormalizedAuthor, type ResolvedVenue } from "../../shared/contracts";
 import { FilterEditor } from "./FilterEditor";
 
 const BASE_FILTER = buildDefaultFilterEdit();
@@ -11,6 +11,7 @@ function renderEditor(
   overrides: Partial<{
     filterDraft: FilterEditContract | null;
     onSuggestAuthors: (q: string) => Promise<NormalizedAuthor[]>;
+    onSuggestVenues: (q: string) => Promise<ResolvedVenue[]>;
     disabled: boolean;
   }> = {},
 ): string {
@@ -22,10 +23,41 @@ function renderEditor(
       onChange: vi.fn(),
       onReset: vi.fn(),
       onSuggestAuthors: overrides.onSuggestAuthors,
+      onSuggestVenues: overrides.onSuggestVenues,
       searchPlan: null,
     }),
   );
 }
+
+describe("FilterEditor Seed Papers section (P9.10)", () => {
+  it("renders Seed Papers textarea", () => {
+    const html = renderEditor();
+    expect(html).toContain("Seed Papers (DOI, one per line)");
+    expect(html).toContain("agt-textarea");
+    expect(html).toContain("10.1038/nature12373");
+  });
+
+  it("renders seed DOI values in textarea", () => {
+    const filterWithDois: FilterEditContract = {
+      ...BASE_FILTER,
+      seed_dois: ["10.1038/nature12373", "10.1126/science.1234567"],
+    };
+    const html = renderEditor({ filterDraft: filterWithDois });
+    expect(html).toContain("10.1038/nature12373");
+    expect(html).toContain("10.1126/science.1234567");
+  });
+
+  it("renders hint text for seed DOIs", () => {
+    const html = renderEditor();
+    expect(html).toContain("Papers whose citation graph to include");
+  });
+
+  it("renders seed DOIs textarea when filterDraft has empty seed_dois", () => {
+    const filterEmpty: FilterEditContract = { ...BASE_FILTER, seed_dois: [] };
+    const html = renderEditor({ filterDraft: filterEmpty });
+    expect(html).toContain("Seed Papers (DOI, one per line)");
+  });
+});
 
 describe("FilterEditor Author section (P9.8)", () => {
   it("renders Author Filter field when onSuggestAuthors is provided", () => {
@@ -99,5 +131,43 @@ describe("FilterEditor Author section (P9.8)", () => {
     expect(html).toContain("Result Limit");
     expect(html).toContain("Min Year");
     expect(html).toContain("Author Filter");
+  });
+});
+
+describe("FilterEditor Venue section (P9.9)", () => {
+  it("renders Venue / Journal Filter field when onSuggestVenues is provided", () => {
+    const html = renderEditor({ onSuggestVenues: vi.fn().mockResolvedValue([]) });
+    expect(html).toContain("Venue / Journal Filter");
+  });
+
+  it("does not render Venue filter when onSuggestVenues is omitted", () => {
+    const html = renderEditor();
+    expect(html).not.toContain("Venue / Journal Filter");
+  });
+
+  it("renders existing venue chips", () => {
+    const filterWithVenue: FilterEditContract = {
+      ...BASE_FILTER,
+      venues: [{ name: "Nature", openalex_id: "S137773608", issn: "1476-4687" }],
+    };
+    const html = renderEditor({
+      filterDraft: filterWithVenue,
+      onSuggestVenues: vi.fn().mockResolvedValue([]),
+    });
+    expect(html).toContain("Nature");
+    expect(html).toContain("agt-chip--removable");
+    expect(html).toContain("agt-chip-remove");
+  });
+
+  it("renders OA badge for venue with openalex_id", () => {
+    const filterWithVenue: FilterEditContract = {
+      ...BASE_FILTER,
+      venues: [{ name: "Nature", openalex_id: "S137773608", issn: null }],
+    };
+    const html = renderEditor({
+      filterDraft: filterWithVenue,
+      onSuggestVenues: vi.fn().mockResolvedValue([]),
+    });
+    expect(html).toContain("OA");
   });
 });
