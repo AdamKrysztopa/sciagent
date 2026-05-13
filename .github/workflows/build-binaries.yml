@@ -58,6 +58,7 @@ jobs:
             src/agt/server.py
 
       - name: Build binary
+        shell: bash
         run: |
           uv run pyinstaller build/sciagent-server.spec \
             --distpath build/dist \
