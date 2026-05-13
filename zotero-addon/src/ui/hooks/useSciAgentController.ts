@@ -199,6 +199,20 @@ export function useSciAgentController(services: AddonUiServices) {
     }
   });
 
+  const saveFirstRunConfig = useEffectEvent(async (update: Partial<AddonConfig>) => {
+    setSaveState("saving");
+    setSaveError(null);
+    try {
+      const nextConfig = await services.saveConfig({ ...config, ...update });
+      setConfig(nextConfig);
+      setSaveState("saved");
+      void refreshHealth(nextConfig);
+    } catch (error) {
+      setSaveError(describeError(error));
+      setSaveState("error");
+    }
+  });
+
   // Silent auto-save — writes prefs without triggering a health refresh.
   const autoSaveConfig = useEffectEvent(async () => {
     try {
@@ -611,6 +625,7 @@ export function useSciAgentController(services: AddonUiServices) {
       );
     },
     onSaveConfig: () => void saveConfig(),
+    onSaveFirstRunConfig: (update: Partial<AddonConfig>) => void saveFirstRunConfig(update),
     onSubmitSearch: () => void submitSearch(),
     validateKey: (provider: string, apiKey: string) => validateKey(provider, apiKey),
     onDepthChange: setSearchDepth,

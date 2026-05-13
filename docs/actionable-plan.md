@@ -96,7 +96,7 @@ asked for.
 | P9.2  | Unified `release.yml` (binaries + XPI + update.rdf)    | ~0.5d  | settings-bootstrap | ✅ done (2026-05-13) |
 | P9.3  | `update.rdf` self-update wiring                        | ~0.25d | zotero-frontend | ✅ done (2026-05-13) |
 | P9.4  | macOS Gatekeeper note + Windows SmartScreen note       | ~0.25d | zotero-addon  | ✅ done (2026-05-13) |
-| P9.5  | Embedded `FirstRunConfigCard` (LLM key + Zotero)       | ~0.5d  | zotero-frontend | not done |
+| P9.5  | Embedded `FirstRunConfigCard` (LLM key + Zotero)       | ~0.5d  | zotero-frontend | ✅ done (2026-05-13) |
 | P9.6  | `Author` first-class search field (backend)            | ~0.5d  | python-backend-engineer | not done |
 | P9.7  | `Author` autocomplete endpoint                         | ~0.25d | python-backend-engineer | not done |
 | P9.8  | `Author` UI field with chip autocomplete               | ~0.5d  | zotero-frontend | not done |

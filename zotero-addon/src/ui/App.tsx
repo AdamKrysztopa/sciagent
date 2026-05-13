@@ -8,6 +8,7 @@ import { BackendFailurePanel } from "./components/BackendFailurePanel";
 import { CapabilityBanner } from "./components/CapabilityBanner";
 import { ConfigPanel } from "./components/ConfigPanel";
 import { FilterEditor } from "./components/FilterEditor";
+import { FirstRunConfigCard } from "./components/FirstRunConfigCard";
 import { FirstRunDialog } from "./components/FirstRunDialog";
 import { HealthStatus } from "./components/HealthStatus";
 import { LibraryDoctor } from "./components/LibraryDoctor";
@@ -590,6 +591,15 @@ function AppContent({ services }: { services: AddonUiServices }) {
     }
   }, [binarySetup, controller]);
 
+  // First-run config card: shown when binary is ready but no LLM key is configured.
+  const [firstRunConfigDone, setFirstRunConfigDone] = useState(false);
+  const hasLlmKey =
+    controller.config.openaiApiKey.length > 0 ||
+    controller.config.anthropicApiKey.length > 0 ||
+    controller.config.xaiApiKey.length > 0 ||
+    controller.config.groqApiKey.length > 0;
+  const showFirstRunConfig = binarySetup === "ready" && !hasLlmKey && !firstRunConfigDone;
+
   if (binarySetup === "needed") {
     return (
       <div className="agt-root">
@@ -601,6 +611,23 @@ function AppContent({ services }: { services: AddonUiServices }) {
             onComplete={() => setBinarySetup("ready")}
             onSkip={() => setBinarySetup("ready")}
             services={services}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (showFirstRunConfig) {
+    return (
+      <div className="agt-root">
+        <div className="agt-shell">
+          <header className="agt-titlebar">
+            <span className="agt-title">SciAgent</span>
+          </header>
+          <FirstRunConfigCard
+            config={controller.config}
+            onSave={(update) => { controller.onSaveFirstRunConfig(update); }}
+            onSkip={() => { setFirstRunConfigDone(true); }}
           />
         </div>
       </div>
