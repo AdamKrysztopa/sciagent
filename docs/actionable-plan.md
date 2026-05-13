@@ -76,8 +76,8 @@ locally with `AGT_LLM_PROVIDER=ollama` and no hosted LLM key.
 ### Current Status
 
 - All P0–P7 milestones complete as of 2026-05-12.
-- Current status: **P8.12 complete — `test_merge.py`, `test_capabilities.py`, `test_explain_missing.py`, `test_search_orchestrator.py`; `live_api` + `regression_gate` markers; zero-key smoke test; CI benchmark regression gate step. 561 Python / 103 frontend tests green.**
-- Next target: **P8.13**.
+- Current status: **P8.14 complete — `AGT_DISABLED_PROVIDERS` config + disabled-by-config provider state; `.env.example` updated; 6-query P8 benchmark panel extension (P8-OA-01 through P8-CONF-01); `docs/benchmark.md` P8 section; 2 new orchestrator tests. 563 Python / 103 frontend tests green. All P8 stories complete.**
+- Next target: **P9** (or backlog review).
 
 ### Recent Progress
 
@@ -98,62 +98,64 @@ locally with `AGT_LLM_PROVIDER=ollama` and no hosted LLM key.
 - ✅ P8.10 complete (2026-05-14): `key_validator.py` with SSRF-safe allowlist; `POST /keys/validate` endpoint; `ProviderKeyRow` key entry panel in ConfigPanel with per-provider validate-on-demand UI; `validateKey` in controller hook. All gates green.
 - ✅ P8.11 complete (2026-05-14): 9-step provider onboarding checklist appended to `docs/providers.md`; `scripts/new_provider.py` scaffold generator (CamelCase → snake_case, emits `SearchProviderBase` skeleton + `anyio` test stub, skip-if-exists guard); `pyrightconfig.json` extended with `scripts/`. All gates green.
 - ✅ P8.12 complete (2026-05-14): P8.12-A already done (44 tests in `test_provider_snapshots.py`); `test_merge.py` (12 tests), `test_capabilities.py` (14 tests), `test_explain_missing.py` (8 tests), `test_search_orchestrator.py` (5 tests); `live_api` + `regression_gate` markers in conftest.py; `test_zero_key_smoke.py` (1 test), `test_regression_gate.py` (4 tests); CI benchmark regression gate step in `ci.yml`. 561 Python tests green (+30).
+- ✅ P8.13 complete (2026-05-14): `AGT_DISABLED_PROVIDERS` field added to `Settings` (pydantic-settings `list[str]`, JSON array format); disabled-by-config pass wired into `_build_retrieval_registry` — any named provider gets `enabled=False, skip_reason="disabled"` regardless of key availability; `.env.example` updated with `AGT_MAILTO` and `AGT_DISABLED_PROVIDERS` entries; 2 new tests in `test_search_orchestrator.py` (keyless + keyed provider disable). 563 Python tests green.
+- ✅ P8.14 complete (2026-05-14): 6 new PanelEntry objects added to benchmark panel (P8-OA-01, P8-CITE-01, P8-DEPTH-01, P8-MULTI-01, P8-YEAR-01, P8-CONF-01); `_MIN_MUST_FIND_TARGETS` updated from 12 to 15; `docs/benchmark.md` P8 Benchmark Update section appended with per-query table, rationale, and updated panel statistics (22→28 queries). Docs gate (markdownlint + mkdocs strict) green.
 
 ### P8 Status
 
-| ID      | Story                                            | Effort | Status   |
-| ------- | ------------------------------------------------ | ------ | -------- |
-| P8.0-A  | Provider inventory table (`docs/providers.md`)   | ~0.25d | done     |
-| P8.0-B  | Snapshot VCR tests                               | ~0.5d  | done     |
-| P8.0-C  | Cassette hygiene + `provider_snapshot` marker    | ~0.25d | done     |
-| P8.1-A  | `capabilities.py` — capability + health model    | ~0.5d  | done     |
-| P8.1-B  | `provider_base.py` — protocol + base class       | ~0.5d  | done     |
-| P8.1-C  | `GET /providers` endpoint                        | ~0.25d | done     |
-| P8.1-D  | Sidebar BYOK hint chip                           | ~0.25d | done     |
-| P8.2-A  | DOAJ provider (`src/agt/tools/doaj.py`)          | ~0.5d  | done     |
-| P8.2-B  | Provider audit (User-Agent, retry, 429)          | ~0.5d  | done     |
-| P8.2-C  | `SearchRunResult` dataclass                      | ~0.25d | done     |
-| P8.2-D  | `SearchMetadata.baseline_mode` + badge           | ~0.25d | done     |
-| P8.2-E  | Baseline regression test (zero-key)              | ~0.25d | done     |
-| P8.3-A  | `NormalizedAuthor` Pydantic model                | ~0.25d | done     |
-| P8.3-B  | `ProvenanceField` Pydantic model                 | ~0.1d  | done     |
-| P8.3-C  | Extend `NormalizedPaper` with new fields         | ~0.5d  | done     |
-| P8.3-D  | Update all providers to emit `NormalizedAuthor`  | ~0.5d  | done     |
-| P8.4-A  | `src/agt/tools/merge.py`                         | ~1d    | done     |
-| P8.4-B  | Field-selection rules                            | ~0.5d  | done     |
-| P8.4-C  | `FieldConflict` model                            | ~0.25d | done     |
-| P8.4-D  | Wire merge into `run_search_phase`               | ~0.25d | done     |
-| P8.5-A  | `DEPTH_PROFILES` + `select_providers_for_depth`  | ~0.25d | done     |
-| P8.5-B  | Depth plan preview in sidebar                    | ~0.25d | done     |
-| P8.6-A  | `src/agt/tools/explain_missing.py`               | ~0.25d | done     |
-| P8.6-B  | Result card missing-field tooltip                | ~0.25d | done     |
-| P8.7-A  | Merge + explain_missing in `run_search_phase`    | ~0.5d  | done     |
-| P8.7-B  | Provenance chips in `ResultsList.tsx`            | ~0.25d | done     |
-| P8.7-C  | Conflict warnings in approval dialog             | ~0.25d | done     |
-| P8.7-D  | `/providers` surface in sidebar                  | ~0.25d | done     |
-| P8.8-A  | Author resolver tool                             | ~0.75d | done     |
-| P8.8-B  | `HardFilters.author_ids`                         | ~0.5d  | done     |
-| P8.8-C  | Author chips in `ResultsList.tsx`                | ~0.5d  | done     |
-| P8.9-A  | `SearchPlan.seed_dois`                           | ~0.25d | done     |
-| P8.9-B  | Citation expansion tool                          | ~1d    | done     |
-| P8.9-C  | Directional citation badge                       | ~0.25d | done     |
-| P8.10-A | `POST /keys/validate`                            | ~0.5d  | done     |
-| P8.10-B | Key entry panel in `ConfigPanel.tsx`             | ~1d    | done     |
-| P8.10-C | Preference store bridging                        | ~0.5d  | done     |
-| P8.11-A | `docs/providers.md` onboarding checklist         | ~0.25d | done     |
-| P8.11-B | `scripts/new_provider.py` scaffold               | ~0.5d  | done     |
-| P8.12-A | VCR cassettes (44 total, 11 providers × 4 cases) | ~0.25d | done     |
-| P8.12-B | `tests/test_merge.py`                            | ~0.25d | done     |
-| P8.12-C | `tests/test_capabilities.py`                     | ~0.1d  | done     |
-| P8.12-D | `tests/test_explain_missing.py`                  | ~0.1d  | done     |
-| P8.12-E | `tests/test_search_orchestrator.py`              | ~0.1d  | done     |
-| P8.12-F | Zero-key smoke test (`@pytest.mark.live_api`)    | ~0.1d  | done     |
-| P8.12-G | Regression gate in CI (≥ 19/22 benchmark)        | ~0.25d | done     |
-| P8.13-A | New config fields (`AGT_MAILTO`, etc.)           | ~0.25d | not done |
-| P8.13-B | Disabled-by-config provider state                | ~0.25d | not done |
-| P8.13-C | `.env.example` update                            | ~0.1d  | not done |
-| P8.14-A | New 6-query benchmark panel                      | ~0.5d  | not done |
-| P8.14-B | `docs/benchmark.md` P8 update                    | ~0.1d  | not done |
+| ID      | Story                                            | Effort | Status  |
+| ------- | ------------------------------------------------ | ------ | ------- |
+| P8.0-A  | Provider inventory table (`docs/providers.md`)   | ~0.25d | done    |
+| P8.0-B  | Snapshot VCR tests                               | ~0.5d  | done    |
+| P8.0-C  | Cassette hygiene + `provider_snapshot` marker    | ~0.25d | done    |
+| P8.1-A  | `capabilities.py` — capability + health model    | ~0.5d  | done    |
+| P8.1-B  | `provider_base.py` — protocol + base class       | ~0.5d  | done    |
+| P8.1-C  | `GET /providers` endpoint                        | ~0.25d | done    |
+| P8.1-D  | Sidebar BYOK hint chip                           | ~0.25d | done    |
+| P8.2-A  | DOAJ provider (`src/agt/tools/doaj.py`)          | ~0.5d  | done    |
+| P8.2-B  | Provider audit (User-Agent, retry, 429)          | ~0.5d  | done    |
+| P8.2-C  | `SearchRunResult` dataclass                      | ~0.25d | done    |
+| P8.2-D  | `SearchMetadata.baseline_mode` + badge           | ~0.25d | done    |
+| P8.2-E  | Baseline regression test (zero-key)              | ~0.25d | done    |
+| P8.3-A  | `NormalizedAuthor` Pydantic model                | ~0.25d | done    |
+| P8.3-B  | `ProvenanceField` Pydantic model                 | ~0.1d  | done    |
+| P8.3-C  | Extend `NormalizedPaper` with new fields         | ~0.5d  | done    |
+| P8.3-D  | Update all providers to emit `NormalizedAuthor`  | ~0.5d  | done    |
+| P8.4-A  | `src/agt/tools/merge.py`                         | ~1d    | done    |
+| P8.4-B  | Field-selection rules                            | ~0.5d  | done    |
+| P8.4-C  | `FieldConflict` model                            | ~0.25d | done    |
+| P8.4-D  | Wire merge into `run_search_phase`               | ~0.25d | done    |
+| P8.5-A  | `DEPTH_PROFILES` + `select_providers_for_depth`  | ~0.25d | done    |
+| P8.5-B  | Depth plan preview in sidebar                    | ~0.25d | done    |
+| P8.6-A  | `src/agt/tools/explain_missing.py`               | ~0.25d | done    |
+| P8.6-B  | Result card missing-field tooltip                | ~0.25d | done    |
+| P8.7-A  | Merge + explain_missing in `run_search_phase`    | ~0.5d  | done    |
+| P8.7-B  | Provenance chips in `ResultsList.tsx`            | ~0.25d | done    |
+| P8.7-C  | Conflict warnings in approval dialog             | ~0.25d | done    |
+| P8.7-D  | `/providers` surface in sidebar                  | ~0.25d | done    |
+| P8.8-A  | Author resolver tool                             | ~0.75d | done    |
+| P8.8-B  | `HardFilters.author_ids`                         | ~0.5d  | done    |
+| P8.8-C  | Author chips in `ResultsList.tsx`                | ~0.5d  | done    |
+| P8.9-A  | `SearchPlan.seed_dois`                           | ~0.25d | done    |
+| P8.9-B  | Citation expansion tool                          | ~1d    | done    |
+| P8.9-C  | Directional citation badge                       | ~0.25d | done    |
+| P8.10-A | `POST /keys/validate`                            | ~0.5d  | done    |
+| P8.10-B | Key entry panel in `ConfigPanel.tsx`             | ~1d    | done    |
+| P8.10-C | Preference store bridging                        | ~0.5d  | done    |
+| P8.11-A | `docs/providers.md` onboarding checklist         | ~0.25d | done    |
+| P8.11-B | `scripts/new_provider.py` scaffold               | ~0.5d  | done    |
+| P8.12-A | VCR cassettes (44 total, 11 providers × 4 cases) | ~0.25d | done    |
+| P8.12-B | `tests/test_merge.py`                            | ~0.25d | done    |
+| P8.12-C | `tests/test_capabilities.py`                     | ~0.1d  | done    |
+| P8.12-D | `tests/test_explain_missing.py`                  | ~0.1d  | done    |
+| P8.12-E | `tests/test_search_orchestrator.py`              | ~0.1d  | done    |
+| P8.12-F | Zero-key smoke test (`@pytest.mark.live_api`)    | ~0.1d  | done    |
+| P8.12-G | Regression gate in CI (≥ 19/22 benchmark)        | ~0.25d | done    |
+| P8.13-A | New config fields (`AGT_MAILTO`, etc.)           | ~0.25d | ✅ done |
+| P8.13-B | Disabled-by-config provider state                | ~0.25d | ✅ done |
+| P8.13-C | `.env.example` update                            | ~0.1d  | ✅ done |
+| P8.14-A | New 6-query benchmark panel                      | ~0.5d  | ✅ done |
+| P8.14-B | `docs/benchmark.md` P8 update                    | ~0.1d  | ✅ done |
 
 **Total: ~17–18 working days remaining.**
 

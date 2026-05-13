@@ -553,6 +553,25 @@ def _build_retrieval_registry(
             )
         )
 
+    # Apply disabled_providers config: override enabled state for any named provider
+    _disabled_set = frozenset(settings.disabled_providers)
+    if _disabled_set:
+        registry = [
+            (
+                _RetrievalProvider(
+                    name=p.name,
+                    tier=p.tier,
+                    enabled=False,
+                    fetcher=_disabled_fetcher,
+                    skip_reason="disabled",
+                    instance=p.instance,
+                )
+                if p.name in _disabled_set
+                else p
+            )
+            for p in registry
+        ]
+
     return registry
 
 

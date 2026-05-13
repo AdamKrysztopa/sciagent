@@ -100,6 +100,14 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("AGT_MAILTO", "MAILTO"),
         description="Email address for polite API pool access (OpenAlex, Crossref, DOAJ).",
     )
+    disabled_providers: list[str] = Field(
+        default_factory=list,
+        validation_alias=AliasChoices("AGT_DISABLED_PROVIDERS", "DISABLED_PROVIDERS"),
+        description=(
+            "Provider names to disable regardless of key availability. "
+            'Set as a JSON array: \'["openalex","crossref"]\'.'
+        ),
+    )
     semantic_scholar_api_key: SecretStr | None = Field(
         default=None,
         validation_alias=AliasChoices("AGT_SEMANTIC_SCHOLAR_API_KEY", "SEMANTIC_SCHOLAR_API_KEY"),

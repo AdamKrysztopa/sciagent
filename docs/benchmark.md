@@ -91,11 +91,11 @@ Evaluated 2026-05-12 against benchmark version `m2.7-agt29-v3`.
 Three baseline systems were compared against SciAgent (default, balanced depth) on the same
 22-query panel:
 
-| System | Approach | Key limitations |
-| ---------------------- | -------------------------------------------- | ----------------------------------- |
-| **OpenAlex direct** | Single-source keyword query, no rewriting | One source; no cross-source dedup; no filter enforcement; top-20 raw results |
-| **Semantic Scholar direct** | Single-source keyword query, no rewriting | One source; CS/AI-heavy; gaps in biomedical and social science |
-| **ChatGPT web-search** | GPT-4o with web search enabled; manually reviewed for must-find anchors | Non-deterministic; cannot enforce hard filters; free search not reproducible |
+| System                      | Approach                                                                | Key limitations                                                              |
+| --------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| **OpenAlex direct**         | Single-source keyword query, no rewriting                               | One source; no cross-source dedup; no filter enforcement; top-20 raw results |
+| **Semantic Scholar direct** | Single-source keyword query, no rewriting                               | One source; CS/AI-heavy; gaps in biomedical and social science               |
+| **ChatGPT web-search**      | GPT-4o with web search enabled; manually reviewed for must-find anchors | Non-deterministic; cannot enforce hard filters; free search not reproducible |
 
 The ChatGPT web-search baseline was run on 2026-05-10, manually reviewed for must-find anchor
 recall and constraint compliance, and recorded as `manual-reviewed-standalone-web-search (2026-05-10-v1)`.
@@ -107,13 +107,13 @@ must-find anchor recall and hard-filter compliance without any post-merge enforc
 
 ### Results
 
-| System | Pass rate | Must-find recall@20 | Hard-filter compliance | Notes |
-| ------------------------- | --------- | ------------------- | ---------------------- | ----------------------------------------------------- |
-| **SciAgent (default)** | 19 / 22 | 0.769 | 1.000 | Federated, LLM-rewritten, filter-enforced |
-| **SciAgent (deep)** | ~21 / 22 | ~0.846 | 1.000 | TS-02, BIO-04 recover; BIO-01 remains |
-| **OpenAlex direct** | ~11 / 22 | ~0.385 | 0.000 | No filter enforcement; year/OA filters not applied |
-| **Semantic Scholar direct** | ~13 / 22 | ~0.462 | 0.000 | Strong AI/CS coverage; weak biomedical and social science |
-| **ChatGPT web-search** | ~17 / 22 | ~0.692 | ~0.700 | Non-deterministic; cannot enforce `min_year` consistently |
+| System                      | Pass rate | Must-find recall@20 | Hard-filter compliance | Notes                                                     |
+| --------------------------- | --------- | ------------------- | ---------------------- | --------------------------------------------------------- |
+| **SciAgent (default)**      | 19 / 22   | 0.769               | 1.000                  | Federated, LLM-rewritten, filter-enforced                 |
+| **SciAgent (deep)**         | ~21 / 22  | ~0.846              | 1.000                  | TS-02, BIO-04 recover; BIO-01 remains                     |
+| **OpenAlex direct**         | ~11 / 22  | ~0.385              | 0.000                  | No filter enforcement; year/OA filters not applied        |
+| **Semantic Scholar direct** | ~13 / 22  | ~0.462              | 0.000                  | Strong AI/CS coverage; weak biomedical and social science |
+| **ChatGPT web-search**      | ~17 / 22  | ~0.692              | ~0.700                 | Non-deterministic; cannot enforce `min_year` consistently |
 
 OpenAlex and Semantic Scholar recall estimates are derived from per-source contribution data
 collected during the SciAgent runs: each source's per-query paper sets were compared against the
@@ -205,3 +205,58 @@ implemented in OPN-14, and its scope of effectiveness is now documented here.
 - OPN-07 is closed: `search_depth=deep` mitigates TS-02 and BIO-04; BIO-01 confirmed as paid-API-only gap. See Deep Search Mode Evaluation section above.
 - OPN-06 is closed: external baseline comparison complete. SciAgent default 19/22 with 1.000 hard-filter compliance outperforms OpenAlex direct (~11/22), Semantic Scholar direct (~13/22), and ChatGPT web-search (~17/22, ~0.700 compliance). See External Baseline Comparison section above.
 - **All P7 open items (OPN-01 through OPN-17, FirstRunDialog, OPN-08, OPN-07, OPN-06) are closed as of 2026-05-12.**
+
+## P8 Benchmark Update
+
+Panel version: `m2.7-agt29-v3` extended. Six new queries added to exercise P8-specific
+capabilities: provider config, open-access filtering, citation-threshold filtering, retrieval
+depth, multi-provider federation, and strict year-range constraints.
+
+### New Queries (P8 Panel Extension)
+
+| Query ID    | Domain            | Capability exercised                                        |
+| ----------- | ----------------- | ----------------------------------------------------------- |
+| P8-OA-01    | AI                | Open-access filter + year filter; DOAJ and OA-aware sources |
+| P8-CITE-01  | AI                | Citation-threshold filter; high-citation anchor recall      |
+| P8-DEPTH-01 | AI                | Retrieval depth across providers; NAS survey anchor         |
+| P8-MULTI-01 | AI                | arXiv-first federation; preprint-heavy domain + year filter |
+| P8-YEAR-01  | Interdisciplinary | Strict min_year + max_year range filter                     |
+| P8-CONF-01  | Interdisciplinary | Polite-pool / mailto scenario; OA + federation              |
+
+### Why These Queries Were Added
+
+1. **Open-access filter coverage (P8-OA-01, P8-CONF-01):** Previous panel had only two OA
+   queries (AI-05, BIO-04). The P8 work introduced DOAJ integration and polite-pool mailto
+   support; new queries target those code paths explicitly.
+
+2. **Citation-threshold recall (P8-CITE-01):** The `min_citations` filter path was exercised
+   only indirectly via TS-02. A dedicated high-citation anchor query validates that the filter
+   is applied correctly and that high-impact papers surface in the top results.
+
+3. **Retrieval depth (P8-DEPTH-01):** NAS is a broad topic with strong arXiv and Semantic Scholar
+   coverage; this query validates that multi-page retrieval and provider federation cooperate to
+   surface survey papers reliably.
+
+4. **arXiv-first federation (P8-MULTI-01):** Diffusion models are a preprint-heavy domain.
+   The query validates that arXiv contributes unique results not duplicated from other sources and
+   that year filtering applies correctly in the merged result set.
+
+5. **Strict year-range (P8-YEAR-01):** The existing panel used `min_year` only. This entry adds
+   `max_year` to validate that the upper-bound year filter is applied and that papers outside the
+   window are excluded post-merge.
+
+6. **Polite-pool config (P8-CONF-01):** Exercises the `AGT_MAILTO` / `mailto` setting path, which
+   improves rate limits for OpenAlex, Crossref, and DOAJ. The OA requirement validates that the
+   polite-pool header does not change result quality for OA queries.
+
+### Updated Panel Statistics
+
+| Metric                     | Before P8 | After P8 |
+| -------------------------- | --------- | -------- |
+| Total queries              | 22        | 28       |
+| Must-find targets          | 12        | 15       |
+| Queries with OA filter     | 2         | 4        |
+| Queries with min_year      | 11        | 14       |
+| Queries with max_year      | 0         | 1        |
+| Queries with min_citations | 1         | 2        |
+| Domains covered            | 4         | 5        |

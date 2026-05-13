@@ -153,3 +153,36 @@ def test_search_run_result_per_provider_type() -> None:
     provider_papers = result.per_provider["openalex"]
     assert isinstance(provider_papers, list)
     assert all(isinstance(p, NormalizedPaper) for p in provider_papers)
+
+
+# ---------------------------------------------------------------------------
+# Test 6: disabled_providers disables a keyless provider
+# ---------------------------------------------------------------------------
+
+
+def test_disabled_providers_disables_keyless_provider(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A keyless provider listed in disabled_providers must have skip_reason='disabled'."""
+    _clear_key_env_vars(monkeypatch)
+    monkeypatch.setenv("AGT_DISABLED_PROVIDERS", '["openalex"]')
+    settings = Settings(_env_file=None)  # pyright: ignore[reportCallIssue]
+    registry = _build_retrieval_registry(_QUERY, _LIMIT, _constraints(), settings, None)
+    by_name = {entry.name: entry for entry in registry}
+    assert by_name["openalex"].skip_reason == "disabled"
+    assert not by_name["openalex"].enabled
+
+
+# ---------------------------------------------------------------------------
+# Test 7: disabled_providers disables a keyed provider even when key is present
+# ---------------------------------------------------------------------------
+
+
+def test_disabled_providers_overrides_keyed_provider(monkeypatch: pytest.MonkeyPatch) -> None:
+    """disabled_providers must disable a provider even when its API key is set."""
+    _clear_key_env_vars(monkeypatch)
+    monkeypatch.setenv("AGT_CORE_API_KEY", "fake-core-key")
+    monkeypatch.setenv("AGT_DISABLED_PROVIDERS", '["core"]')
+    settings = Settings(_env_file=None)  # pyright: ignore[reportCallIssue]
+    registry = _build_retrieval_registry(_QUERY, _LIMIT, _constraints(), settings, None)
+    by_name = {entry.name: entry for entry in registry}
+    assert by_name["core"].skip_reason == "disabled"
+    assert not by_name["core"].enabled
