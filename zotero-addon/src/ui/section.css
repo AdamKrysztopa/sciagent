@@ -508,6 +508,11 @@
   border-color: var(--agt-accent);
 }
 
+.agt-chip--muted {
+  color: var(--agt-text-muted);
+  opacity: 0.8;
+}
+
 /* ── Search Coverage Panel ────────────────────────────────── */
 .agt-section-heading--clickable {
   background: none;

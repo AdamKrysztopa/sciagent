@@ -30,6 +30,7 @@ from agt.providers.router import build_provider
 from agt.result_cache import ResultCache
 from agt.session_export import ExportFormat, export_session
 from agt.session_store import SessionStore
+from agt.tools.capabilities import ALL_PROVIDER_CAPS, ProviderHealth
 from agt.tools.gap_finder import find_gaps
 from agt.tools.keyword_extract import KeywordExtraction, extract_keywords
 from agt.tools.search_papers import build_source_policy
@@ -97,6 +98,25 @@ class StatusResponse(BaseModel):
     status: Literal["awaiting_approval", "completed", "rejected", "failed"]
     state: dict[str, Any] | None
     error: str | None = None
+
+
+class ProviderInfo(BaseModel):
+    """Combined capability + health view for a single search provider."""
+
+    # Capability fields
+    name: str
+    fields: dict[str, str]  # ProviderField.value -> FieldSupport.value
+    requires_key: bool
+    key_env_var: str | None
+    key_upgrade_hint: str | None
+    notes: str
+    # Health fields (defaults until a global health registry is wired in P8.2+)
+    status: str
+    reason: str
+    last_ok_at: float | None
+    last_error_at: float | None
+    consecutive_failures: int
+    retry_after: float | None
 
 
 class CorrectQueryResponse(BaseModel):
@@ -512,6 +532,35 @@ def create_app() -> FastAPI:  # noqa: PLR0915
             provider_availability=provider_availability,
             active_provider=settings.runtime.provider,
         )
+
+    @app.get("/providers", response_model=dict[str, ProviderInfo])
+    async def _providers(  # pyright: ignore[reportUnusedFunction]
+        _: None = Depends(_require_backend_key),
+    ) -> dict[str, ProviderInfo]:
+        """Return capability + health for every known search provider.
+
+        Health data is initialised to ``ProviderHealth()`` defaults because
+        there is no global health registry yet.
+        TODO(P8.2): wire real per-provider health state once the registry exists.
+        """
+        result: dict[str, ProviderInfo] = {}
+        for name, caps in ALL_PROVIDER_CAPS.items():
+            health = ProviderHealth()
+            result[name] = ProviderInfo(
+                name=caps.name,
+                fields={f.value: s.value for f, s in caps.fields.items()},
+                requires_key=caps.requires_key,
+                key_env_var=caps.key_env_var,
+                key_upgrade_hint=caps.key_upgrade_hint,
+                notes=caps.notes,
+                status=health.status.value,
+                reason=health.reason,
+                last_ok_at=health.last_ok_at,
+                last_error_at=health.last_error_at,
+                consecutive_failures=health.consecutive_failures,
+                retry_after=health.retry_after,
+            )
+        return result
 
     @app.get("/correct-query", response_model=CorrectQueryResponse)
     async def _correct_query_endpoint(  # pyright: ignore[reportUnusedFunction]

@@ -1,6 +1,23 @@
 import type { SourceTerminalState } from "../../shared/contracts";
 import { useState } from "react";
 
+export const BYOK_HINTS: Record<string, string> = {
+  semantic_scholar: "Add AGT_SEMANTIC_SCHOLAR_API_KEY to remove rate limits.",
+  core: "Add AGT_CORE_API_KEY to unlock CORE full-text indexing.",
+  dimensions: "Add AGT_DIMENSIONS_KEY to unlock Dimensions metadata.",
+  google_scholar: "Add AGT_SERPAPI_KEY to unlock Google Scholar via SerpAPI.",
+};
+
+const BYOK_HINT_FALLBACK = "Add the provider API key to unlock.";
+
+export function getByokHint(source: string): string {
+  return BYOK_HINTS[source] ?? BYOK_HINT_FALLBACK;
+}
+
+export function shouldShowByokChip(state: SourceTerminalState): boolean {
+  return state === "skipped_no_key";
+}
+
 const SOURCE_LABELS: Record<string, string> = {
   semantic_scholar: "Semantic Scholar",
   openalex: "OpenAlex",
@@ -64,7 +81,17 @@ export function SearchCoveragePanel({ sourceStates }: SearchCoveragePanelProps) 
           {entries.map(([source, state]) => (
             <div className="agt-coverage-row" key={source}>
               <span className="agt-coverage-name">{SOURCE_LABELS[source] ?? source}</span>
-              <span className={`agt-chip ${STATE_CHIP_CLASS[state]}`}>{STATE_LABEL[state]}</span>
+              <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+                <span className={`agt-chip ${STATE_CHIP_CLASS[state]}`}>{STATE_LABEL[state]}</span>
+                {shouldShowByokChip(state) ? (
+                  <span
+                    className="agt-chip agt-chip--muted"
+                    title={getByokHint(source)}
+                  >
+                    API key optional
+                  </span>
+                ) : null}
+              </div>
             </div>
           ))}
         </div>

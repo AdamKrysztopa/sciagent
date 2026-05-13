@@ -76,8 +76,8 @@ locally with `AGT_LLM_PROVIDER=ollama` and no hosted LLM key.
 ### Current Status
 
 - All P0–P7 milestones complete as of 2026-05-12.
-- Current status: **Starting P8 — Baseline Search + Provider Capability.**
-- Next target: **P8.0 — Snapshot safety net** (must land before any provider refactoring).
+- Current status: **P8.1 complete — Provider Capability + Health Model done.**
+- Next target: **P8.2 — Baseline Providers Complete** (DOAJ provider, provider audit, SearchRunResult).
 
 ### Recent Progress
 
@@ -86,6 +86,7 @@ locally with `AGT_LLM_PROVIDER=ollama` and no hosted LLM key.
 - ✅ OPN-08 complete (2026-05-12): `docs/api.md` full rewrite — all 20+ endpoints accurate.
 - ✅ FirstRunDialog complete (2026-05-12): binary-missing download UI wired.
 - ✅ All P7 items (OPN-01–OPN-17) complete 2026-05-12.
+- ✅ P8.1 complete (2026-05-13): `capabilities.py`, `provider_base.py`, `GET /providers`, BYOK hint chip.
 
 ### P8 Status
 
@@ -94,10 +95,10 @@ locally with `AGT_LLM_PROVIDER=ollama` and no hosted LLM key.
 | P8.0-A  | Provider inventory table (`docs/providers.md`)   | ~0.25d | done     |
 | P8.0-B  | Snapshot VCR tests                               | ~0.5d  | done     |
 | P8.0-C  | Cassette hygiene + `provider_snapshot` marker    | ~0.25d | done     |
-| P8.1-A  | `capabilities.py` — capability + health model    | ~0.5d  | not done |
-| P8.1-B  | `provider_base.py` — protocol + base class       | ~0.5d  | not done |
-| P8.1-C  | `GET /providers` endpoint                        | ~0.25d | not done |
-| P8.1-D  | Sidebar BYOK hint chip                           | ~0.25d | not done |
+| P8.1-A  | `capabilities.py` — capability + health model    | ~0.5d  | done     |
+| P8.1-B  | `provider_base.py` — protocol + base class       | ~0.5d  | done     |
+| P8.1-C  | `GET /providers` endpoint                        | ~0.25d | done     |
+| P8.1-D  | Sidebar BYOK hint chip                           | ~0.25d | done     |
 | P8.2-A  | DOAJ provider (`src/agt/tools/doaj.py`)          | ~0.5d  | not done |
 | P8.2-B  | Provider audit (User-Agent, retry, 429)          | ~0.5d  | not done |
 | P8.2-C  | `SearchRunResult` dataclass                      | ~0.25d | not done |
@@ -176,6 +177,12 @@ detectable.
 
 **Goal:** Every search provider declares what it _can_ return and its current runtime state.
 No search behavior changes — pure infrastructure that P8.2–P8.7 build on.
+
+**Two-layer design (explicit):** `SearchProviderCapabilities.fields` is a
+`dict[ProviderField, FieldSupport]` — a static, immutable declaration of what a provider _can_
+return, independent of any particular query. `ProviderHealth` is the mutable runtime view,
+updated on every search call. The `/providers` endpoint returns both layers keyed by provider
+name. Keeping them distinct is what makes "why is the abstract empty?" answerable (P8.6).
 
 **What already exists:** `SourceCapability` in `src/agt/models.py` has only `name`, `tier`,
 `enabled`, `supports_year_filter`, `supports_open_access_filter`. `SourceTerminalState`
@@ -1260,6 +1267,11 @@ P8.1 ──▶ P8.11
 - LLM ranking, embeddings, "chat with PDFs" — SciAgent's edge is the deterministic, auditable intake layer.
 - Full-text fetching pipelines — OA URL is enough; Zotero handles attachments.
 - Author disambiguation beyond ORCID + last-name + given-initial — belongs in a future "author entity resolution" phase.
+- **CORE keyless endpoint** — CORE without an API key is too rate-limited to provide reliable
+  coverage. The keyed CORE provider (activated via `AGT_CORE_API_KEY`) covers the open-access
+  backfill use case. Keyless CORE OA-URL backfill is intentionally excluded; this decision should
+  not be revisited without a concrete throughput benchmark showing it improves recall over the
+  six keyless baseline providers.
 
 ---
 
@@ -1280,6 +1292,10 @@ P8.1 ──▶ P8.11
 - [x] P1 — Evidence Before Expansion _(closed at 19/22 by product decision; 2026-05-11)_
 - [x] P2 — Differentiating Core _(sessions, cache, export, capability endpoint, source presets)_
 - [x] P3 — Zotero-Native Value _(collection-aware search, PDF attach, Library Doctor, Gap Finder)_
+      — **Note:** The "re-running the same search produces zero new items" guarantee is an AGT-11
+      upsert invariant, enforced by `tests/test_zotero_upsert.py`, not an acceptance criterion of the
+      collection-aware search story itself. These are distinct: P3 delivered the collection context
+      signal; the idempotency contract is owned by the write-path, not the search-path.
 - [x] P4 — Retention and Recurring Workflows _(watch list CRUD, watch rerun, WatchList UI)_
 - [x] P5 — Local-First Hardening _(CORS + slowapi, Groq adapter, Docker fix + compose, MCP)_
 - [x] P6 — Provider Extensibility and Zero-Terminal Install
@@ -1287,7 +1303,7 @@ P8.1 ──▶ P8.11
 
 ---
 
-## Product Thesis
+## Product Thesis _(Last reviewed: 2026-05-13)_
 
 SciAgent is a **deterministic, auditable, Zotero-native research intake and discovery system.**
 
@@ -1315,3 +1331,7 @@ Core differentiators (in priority order):
 8. Feature flags without benchmark evidence are technical debt. Measure, then promote, retain as experimental, or remove.
 9. The canonical product path is the Zotero add-on. CLI/REST/Streamlit are developer interfaces.
 10. **`BaseSearchClient` is the BASE SRU provider** — never use this name for a base class. Use `SearchProviderBase` and `SearchProviderProtocol` for the protocol layer.
+11. **Benchmark gate after retrieval changes.** Any change to retrieval, ranking, merge, or
+    `SearchPlan` enforcement requires re-running `examples/m2_7_benchmark.py` and recording the
+    updated must-find recall in the same PR. This is the single safeguard protecting benchmark-
+    validated trust gains from silent regression across P8 iterations.
