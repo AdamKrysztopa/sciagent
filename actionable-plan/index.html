@@ -770,10 +770,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#product-thesis" class="md-nav__link">
+  <a href="#product-thesis-last-reviewed-2026-05-13" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Product Thesis
+        Product Thesis (Last reviewed: 2026-05-13)
       
     </span>
   </a>
@@ -1105,6 +1105,34 @@
     
   
     REST API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../providers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provider Inventory
   
 
     
@@ -1551,10 +1579,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#product-thesis" class="md-nav__link">
+  <a href="#product-thesis-last-reviewed-2026-05-13" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Product Thesis
+        Product Thesis (Last reviewed: 2026-05-13)
       
     </span>
   </a>
@@ -1682,8 +1710,8 @@ locally with <code>AGT_LLM_PROVIDER=ollama</code> and no hosted LLM key.</p>
 <h3 id="current-status">Current Status<a class="headerlink" href="#current-status" title="Permanent link">&para;</a></h3>
 <ul>
 <li>All P0–P7 milestones complete as of 2026-05-12.</li>
-<li>Current status: <strong>Starting P8 — Baseline Search + Provider Capability.</strong></li>
-<li>Next target: <strong>P8.0 — Snapshot safety net</strong> (must land before any provider refactoring).</li>
+<li>Current status: <strong>P8.11 complete — provider onboarding checklist in <code>docs/providers.md</code>; <code>scripts/new_provider.py</code> scaffold generator; <code>pyrightconfig.json</code> extended to include <code>scripts/</code>. 531 Python / 103 frontend tests green.</strong></li>
+<li>Next target: <strong>P8.12</strong>.</li>
 </ul>
 <h3 id="recent-progress">Recent Progress<a class="headerlink" href="#recent-progress" title="Permanent link">&para;</a></h3>
 <ul>
@@ -1692,6 +1720,17 @@ locally with <code>AGT_LLM_PROVIDER=ollama</code> and no hosted LLM key.</p>
 <li>✅ OPN-08 complete (2026-05-12): <code>docs/api.md</code> full rewrite — all 20+ endpoints accurate.</li>
 <li>✅ FirstRunDialog complete (2026-05-12): binary-missing download UI wired.</li>
 <li>✅ All P7 items (OPN-01–OPN-17) complete 2026-05-12.</li>
+<li>✅ P8.1 complete (2026-05-13): <code>capabilities.py</code>, <code>provider_base.py</code>, <code>GET /providers</code>, BYOK hint chip.</li>
+<li>✅ P8.2 complete (2026-05-13): DOAJ provider, provider audit (UA/retry/429), <code>SearchRunResult</code>, <code>baseline_mode</code> badge, baseline regression test. 455 tests green.</li>
+<li>✅ P8.3 complete (2026-05-13): <code>NormalizedAuthor</code>, <code>ProvenanceField</code>, extended <code>NormalizedPaper</code>, all providers migrated to emit <code>NormalizedAuthor</code>. 455 tests green.</li>
+<li>✅ P8.4 complete (2026-05-13): field-level merge + <code>FieldConflict</code> model + <code>merge.py</code> wired. 473 tests green.</li>
+<li>✅ P8.5 complete (2026-05-13): <code>DEPTH_PROFILES</code>, <code>select_providers_for_depth</code>, <code>DepthPlanPreview</code> in sidebar. 498 Python / 82 frontend tests green.</li>
+<li>✅ P8.6 complete (2026-05-13): <code>explain_missing.py</code> with 5 reason codes, missing-field tooltips in result cards. All gates green.</li>
+<li>✅ P8.7 complete (2026-05-14): <code>_profile_skipped</code> + <code>annotate_missing</code> loop wired into <code>run_search_phase</code>; provenance source chips, conflict dot + approval-card warning, <code>/providers</code> capability matrix in sidebar. 506 Python / 94 frontend tests green.</li>
+<li>✅ P8.8 complete (2026-05-14): <code>author_resolver.py</code> (<code>resolve_author</code> across OpenAlex + S2, ORCID dedup); <code>HardFilters.author_ids</code> + post-merge author-ID filter; author chips (OpenAlex/ORCID links) in result cards. All gates green.</li>
+<li>✅ P8.9 complete (2026-05-14): <code>SearchPlan.seed_dois</code>; <code>citation_expander.py</code> (<code>expand_citations</code> via OpenCitations + OpenAlex, tagged with <code>citation_relation</code>); directional citation badge (<code>↓ ref</code> / <code>↑ cites</code>) in result cards. 531 Python / 103 frontend tests green.</li>
+<li>✅ P8.10 complete (2026-05-14): <code>key_validator.py</code> with SSRF-safe allowlist; <code>POST /keys/validate</code> endpoint; <code>ProviderKeyRow</code> key entry panel in ConfigPanel with per-provider validate-on-demand UI; <code>validateKey</code> in controller hook. All gates green.</li>
+<li>✅ P8.11 complete (2026-05-14): 9-step provider onboarding checklist appended to <code>docs/providers.md</code>; <code>scripts/new_provider.py</code> scaffold generator (CamelCase → snake_case, emits <code>SearchProviderBase</code> skeleton + <code>anyio</code> test stub, skip-if-exists guard); <code>pyrightconfig.json</code> extended with <code>scripts/</code>. All gates green.</li>
 </ul>
 <h3 id="p8-status">P8 Status<a class="headerlink" href="#p8-status" title="Permanent link">&para;</a></h3>
 <table>
@@ -1708,235 +1747,235 @@ locally with <code>AGT_LLM_PROVIDER=ollama</code> and no hosted LLM key.</p>
 <td>P8.0-A</td>
 <td>Provider inventory table (<code>docs/providers.md</code>)</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.0-B</td>
 <td>Snapshot VCR tests</td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.0-C</td>
 <td>Cassette hygiene + <code>provider_snapshot</code> marker</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.1-A</td>
 <td><code>capabilities.py</code> — capability + health model</td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.1-B</td>
 <td><code>provider_base.py</code> — protocol + base class</td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.1-C</td>
 <td><code>GET /providers</code> endpoint</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.1-D</td>
 <td>Sidebar BYOK hint chip</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.2-A</td>
 <td>DOAJ provider (<code>src/agt/tools/doaj.py</code>)</td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.2-B</td>
 <td>Provider audit (User-Agent, retry, 429)</td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.2-C</td>
 <td><code>SearchRunResult</code> dataclass</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.2-D</td>
 <td><code>SearchMetadata.baseline_mode</code> + badge</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.2-E</td>
 <td>Baseline regression test (zero-key)</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.3-A</td>
 <td><code>NormalizedAuthor</code> Pydantic model</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.3-B</td>
 <td><code>ProvenanceField</code> Pydantic model</td>
 <td>~0.1d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.3-C</td>
 <td>Extend <code>NormalizedPaper</code> with new fields</td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.3-D</td>
 <td>Update all providers to emit <code>NormalizedAuthor</code></td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.4-A</td>
 <td><code>src/agt/tools/merge.py</code></td>
 <td>~1d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.4-B</td>
 <td>Field-selection rules</td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.4-C</td>
 <td><code>FieldConflict</code> model</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.4-D</td>
 <td>Wire merge into <code>run_search_phase</code></td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.5-A</td>
 <td><code>DEPTH_PROFILES</code> + <code>select_providers_for_depth</code></td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.5-B</td>
 <td>Depth plan preview in sidebar</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.6-A</td>
 <td><code>src/agt/tools/explain_missing.py</code></td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.6-B</td>
 <td>Result card missing-field tooltip</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.7-A</td>
 <td>Merge + explain_missing in <code>run_search_phase</code></td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.7-B</td>
 <td>Provenance chips in <code>ResultsList.tsx</code></td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.7-C</td>
 <td>Conflict warnings in approval dialog</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.7-D</td>
 <td><code>/providers</code> surface in sidebar</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.8-A</td>
 <td>Author resolver tool</td>
 <td>~0.75d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.8-B</td>
 <td><code>HardFilters.author_ids</code></td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.8-C</td>
 <td>Author chips in <code>ResultsList.tsx</code></td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.9-A</td>
 <td><code>SearchPlan.seed_dois</code></td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.9-B</td>
 <td>Citation expansion tool</td>
 <td>~1d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.9-C</td>
 <td>Directional citation badge</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.10-A</td>
 <td><code>POST /keys/validate</code></td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.10-B</td>
 <td>Key entry panel in <code>ConfigPanel.tsx</code></td>
 <td>~1d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.10-C</td>
 <td>Preference store bridging</td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.11-A</td>
 <td><code>docs/providers.md</code> onboarding checklist</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.11-B</td>
 <td><code>scripts/new_provider.py</code> scaffold</td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.12-A</td>
@@ -2058,6 +2097,11 @@ detectable.</p>
 </blockquote>
 <p><strong>Goal:</strong> Every search provider declares what it <em>can</em> return and its current runtime state.
 No search behavior changes — pure infrastructure that P8.2–P8.7 build on.</p>
+<p><strong>Two-layer design (explicit):</strong> <code>SearchProviderCapabilities.fields</code> is a
+<code>dict[ProviderField, FieldSupport]</code> — a static, immutable declaration of what a provider <em>can</em>
+return, independent of any particular query. <code>ProviderHealth</code> is the mutable runtime view,
+updated on every search call. The <code>/providers</code> endpoint returns both layers keyed by provider
+name. Keeping them distinct is what makes "why is the abstract empty?" answerable (P8.6).</p>
 <p><strong>What already exists:</strong> <code>SourceCapability</code> in <code>src/agt/models.py</code> has only <code>name</code>, <code>tier</code>,
 <code>enabled</code>, <code>supports_year_filter</code>, <code>supports_open_access_filter</code>. <code>SourceTerminalState</code>
 (terminal states per run) exists but is distinct from per-provider health. No formal provider
@@ -3472,49 +3516,49 @@ restarts without editing <code>.env</code>.</p>
 <td>P8.4-A</td>
 <td><code>src/agt/tools/merge.py</code></td>
 <td>~1d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.4-B</td>
 <td>Field-selection rules</td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.4-C</td>
 <td><code>FieldConflict</code> model</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.4-D</td>
 <td>Wire merge into <code>run_search_phase</code></td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.5-A</td>
 <td><code>DEPTH_PROFILES</code> + <code>select_providers_for_depth</code></td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.5-B</td>
 <td>Plan preview in sidebar</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.6-A</td>
 <td><code>src/agt/tools/explain_missing.py</code></td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.6-B</td>
 <td>Result card missing-field tooltip</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>done</td>
 </tr>
 <tr>
 <td>P8.7-A</td>
@@ -3687,6 +3731,11 @@ restarts without editing <code>.env</code>.</p>
 <li>LLM ranking, embeddings, "chat with PDFs" — SciAgent's edge is the deterministic, auditable intake layer.</li>
 <li>Full-text fetching pipelines — OA URL is enough; Zotero handles attachments.</li>
 <li>Author disambiguation beyond ORCID + last-name + given-initial — belongs in a future "author entity resolution" phase.</li>
+<li><strong>CORE keyless endpoint</strong> — CORE without an API key is too rate-limited to provide reliable
+  coverage. The keyed CORE provider (activated via <code>AGT_CORE_API_KEY</code>) covers the open-access
+  backfill use case. Keyless CORE OA-URL backfill is intentionally excluded; this decision should
+  not be revisited without a concrete throughput benchmark showing it improves recall over the
+  six keyless baseline providers.</li>
 </ul>
 <hr />
 <h2 id="done-milestones-archive">Done Milestones (Archive)<a class="headerlink" href="#done-milestones-archive" title="Permanent link">&para;</a></h2>
@@ -3705,14 +3754,18 @@ restarts without editing <code>.env</code>.</p>
 <li>[x] P0 — Product Truth and Trust</li>
 <li>[x] P1 — Evidence Before Expansion <em>(closed at 19/22 by product decision; 2026-05-11)</em></li>
 <li>[x] P2 — Differentiating Core <em>(sessions, cache, export, capability endpoint, source presets)</em></li>
-<li>[x] P3 — Zotero-Native Value <em>(collection-aware search, PDF attach, Library Doctor, Gap Finder)</em></li>
+<li>[x] P3 — Zotero-Native Value <em>(collection-aware search, PDF attach, Library Doctor, Gap Finder)</em>
+      — <strong>Note:</strong> The "re-running the same search produces zero new items" guarantee is an AGT-11
+      upsert invariant, enforced by <code>tests/test_zotero_upsert.py</code>, not an acceptance criterion of the
+      collection-aware search story itself. These are distinct: P3 delivered the collection context
+      signal; the idempotency contract is owned by the write-path, not the search-path.</li>
 <li>[x] P4 — Retention and Recurring Workflows <em>(watch list CRUD, watch rerun, WatchList UI)</em></li>
 <li>[x] P5 — Local-First Hardening <em>(CORS + slowapi, Groq adapter, Docker fix + compose, MCP)</em></li>
 <li>[x] P6 — Provider Extensibility and Zero-Terminal Install</li>
 <li>[x] P7 — Validate, Sign, and Publish <em>(all OPN-01 through OPN-17 done; 2026-05-12)</em></li>
 </ul>
 <hr />
-<h2 id="product-thesis">Product Thesis<a class="headerlink" href="#product-thesis" title="Permanent link">&para;</a></h2>
+<h2 id="product-thesis-last-reviewed-2026-05-13">Product Thesis <em>(Last reviewed: 2026-05-13)</em><a class="headerlink" href="#product-thesis-last-reviewed-2026-05-13" title="Permanent link">&para;</a></h2>
 <p>SciAgent is a <strong>deterministic, auditable, Zotero-native research intake and discovery system.</strong></p>
 <p>Core differentiators (in priority order):</p>
 <ol>
@@ -3738,6 +3791,10 @@ restarts without editing <code>.env</code>.</p>
 <li>Feature flags without benchmark evidence are technical debt. Measure, then promote, retain as experimental, or remove.</li>
 <li>The canonical product path is the Zotero add-on. CLI/REST/Streamlit are developer interfaces.</li>
 <li><strong><code>BaseSearchClient</code> is the BASE SRU provider</strong> — never use this name for a base class. Use <code>SearchProviderBase</code> and <code>SearchProviderProtocol</code> for the protocol layer.</li>
+<li><strong>Benchmark gate after retrieval changes.</strong> Any change to retrieval, ranking, merge, or
+    <code>SearchPlan</code> enforcement requires re-running <code>examples/m2_7_benchmark.py</code> and recording the
+    updated must-find recall in the same PR. This is the single safeguard protecting benchmark-
+    validated trust gains from silent regression across P8 iterations.</li>
 </ol>
 
 
