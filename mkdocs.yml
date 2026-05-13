@@ -35,6 +35,7 @@ nav:
       - Priorities: priorities.md
       - Next Steps: next-steps.md
   - Manuals:
+      - User Manual (Start Here): user-manual.md
       - Configuration & Usage: manual.md
       - Deployment & Hosting: deployment.md
       - Local-First Install: local-first.md
