@@ -100,8 +100,8 @@ asked for.
 | P9.6  | `Author` first-class search field (backend)            | ~0.5d  | python-backend-engineer | ✅ done (2026-05-13) |
 | P9.7  | `Author` autocomplete endpoint                         | ~0.25d | python-backend-engineer | ✅ done (2026-05-13) |
 | P9.8  | `Author` UI field with chip autocomplete               | ~0.5d  | zotero-frontend | ✅ done (2026-05-13) |
-| P9.9  | `Venue/Journal` first-class field                      | ~0.5d  | full-stack    | not done |
-| P9.10 | `Seed DOI` paste field (drives `seed_dois`)            | ~0.25d | zotero-frontend | not done |
+| P9.9  | `Venue/Journal` first-class field                      | ~0.5d  | full-stack    | ✅ done (2026-05-13) |
+| P9.10 | `Seed DOI` paste field (drives `seed_dois`)            | ~0.25d | zotero-frontend | ✅ done (2026-05-13) |
 | P9.11 | README rewrite: XPI-first quick start                  | ~0.25d | core-planner  | not done |
 | P9.12 | `docs/user-manual.md` rewrite (minimum-config path)    | ~0.5d  | core-planner  | not done |
 | P9.13 | New `docs/install.md` (single source for install flow) | ~0.25d | core-planner  | not done |
