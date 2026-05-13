@@ -202,6 +202,7 @@ function IdleView({ controller }: { controller: SciAgentController }) {
         <BackendFailurePanel
           error={controller.healthError}
           onRetry={controller.onRefreshHealth}
+          backendMode={controller.config.backendMode}
         />
       ) : null}
 
@@ -556,11 +557,12 @@ function DoneView({ controller }: { controller: SciAgentController }) {
 function AppContent({ services }: { services: AddonUiServices }) {
   const controller = useSciAgentController(services);
 
-  // Binary check: runs once when backendMode is confirmed as "local".
-  // Default config has backendMode="remote", so the check fires only after
-  // prefs load and the value changes to "local".
+  // Binary check: runs once after prefs load confirms backendMode="local" (P9.0 default).
+  // If the binary is missing, shows FirstRunDialog to download it.
+  // On completion, triggers a health re-check so the pill turns green without manual action.
   const [binarySetup, setBinarySetup] = useState<"ready" | "needed">("ready");
   const binaryCheckDoneRef = useRef(false);
+  const binaryWasNeededRef = useRef(false);
 
   useEffect(() => {
     if (binaryCheckDoneRef.current) return;
@@ -571,9 +573,21 @@ function AppContent({ services }: { services: AddonUiServices }) {
     }
     binaryCheckDoneRef.current = true;
     void services.checkBinaryInstalled().then((installed) => {
-      if (!installed) setBinarySetup("needed");
+      if (!installed) {
+        binaryWasNeededRef.current = true;
+        setBinarySetup("needed");
+      }
     });
   }, [controller.config.backendMode, services]);
+
+  // After download completes and binarySetup returns to "ready", refresh health
+  // so the pill updates without the user pressing "Retry".
+  useEffect(() => {
+    if (binarySetup === "ready" && binaryWasNeededRef.current) {
+      binaryWasNeededRef.current = false;
+      controller.onRefreshHealth();
+    }
+  }, [binarySetup, controller]);
 
   if (binarySetup === "needed") {
     return (

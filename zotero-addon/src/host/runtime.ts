@@ -11,7 +11,7 @@ import {
   type PanelBridgeTarget,
 } from "./panelBridge";
 import { createZoteroPreferenceStore } from "./prefs";
-import { binaryInstalled, downloadBinary, startServer, stopServer } from "./serverManager";
+import { binaryInstalled, downloadBinary, getResolvedPort, startServer, stopServer } from "./serverManager";
 import type { BootstrapData, ZoteroWindow } from "./zoteroTypes";
 
 const PLUGIN_ID = "agt@yourdomain.org";
@@ -25,9 +25,15 @@ function createUiServices(): AddonUiServices {
 
   return {
     createClient(config) {
+      // In local mode the server binds to the resolved port (57321 or next free).
+      // In remote mode the user has configured backendUrl explicitly.
+      const baseUrl =
+        config.backendMode === "local"
+          ? `http://127.0.0.1:${getResolvedPort()}`
+          : config.backendUrl;
       return createBackendClient({
         apiKey: config.apiKey,
-        baseUrl: config.backendUrl,
+        baseUrl,
         clientId: config.clientId,
         fetchImpl: globalThis.fetch.bind(globalThis),
       });

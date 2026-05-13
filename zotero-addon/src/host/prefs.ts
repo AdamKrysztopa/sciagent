@@ -79,8 +79,9 @@ export const DEFAULT_ADDON_CONFIG: AddonConfig = {
   groqApiKey: "",
   llmBaseUrl: "",
   llmModel: "",
-  // Backend mode (SCI-0604)
-  backendMode: "remote",
+  // Backend mode (SCI-0604 / P9.0): "local" spawns the embedded server binary;
+  // "remote" connects to backendUrl set by the user in preferences.
+  backendMode: "local",
   // First-run capability banner (OPN-16)
   bannerDismissed: false,
 };
