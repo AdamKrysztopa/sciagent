@@ -21,6 +21,15 @@ SourceTerminalState = Literal[
 ]
 
 
+class ResolvedAuthor(BaseModel):
+    """An author entry in a search filter, with optional cross-provider IDs resolved at search time."""
+
+    name: str
+    openalex_id: str | None = None
+    orcid: str | None = None
+    s2_author_id: str | None = None
+
+
 class HardFilters(BaseModel):
     """Filters that cannot be relaxed or overridden by LLM rewriting."""
 
@@ -32,6 +41,7 @@ class HardFilters(BaseModel):
     include_keywords: list[str] = Field(default_factory=list)
     exclude_keywords: list[str] = Field(default_factory=list)
     author_ids: list[str] = Field(default_factory=list)
+    author_names: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def validate_ranges(self) -> HardFilters:
@@ -87,6 +97,7 @@ class FilterEditContract(BaseModel):
     soft_preferences: SoftPreferences = Field(default_factory=SoftPreferences)
     result_limit: int = Field(default=10, ge=1, le=50)
     seed_dois: list[str] = Field(default_factory=list)
+    authors: list[ResolvedAuthor] = Field(default_factory=lambda: cast(list[ResolvedAuthor], []))
 
 
 class NormalizedAuthor(BaseModel):

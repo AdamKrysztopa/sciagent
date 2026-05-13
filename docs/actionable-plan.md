@@ -97,8 +97,8 @@ asked for.
 | P9.3  | `update.rdf` self-update wiring                        | ~0.25d | zotero-frontend | ✅ done (2026-05-13) |
 | P9.4  | macOS Gatekeeper note + Windows SmartScreen note       | ~0.25d | zotero-addon  | ✅ done (2026-05-13) |
 | P9.5  | Embedded `FirstRunConfigCard` (LLM key + Zotero)       | ~0.5d  | zotero-frontend | ✅ done (2026-05-13) |
-| P9.6  | `Author` first-class search field (backend)            | ~0.5d  | python-backend-engineer | not done |
-| P9.7  | `Author` autocomplete endpoint                         | ~0.25d | python-backend-engineer | not done |
+| P9.6  | `Author` first-class search field (backend)            | ~0.5d  | python-backend-engineer | ✅ done (2026-05-13) |
+| P9.7  | `Author` autocomplete endpoint                         | ~0.25d | python-backend-engineer | ✅ done (2026-05-13) |
 | P9.8  | `Author` UI field with chip autocomplete               | ~0.5d  | zotero-frontend | not done |
 | P9.9  | `Venue/Journal` first-class field                      | ~0.5d  | full-stack    | not done |
 | P9.10 | `Seed DOI` paste field (drives `seed_dois`)            | ~0.25d | zotero-frontend | not done |

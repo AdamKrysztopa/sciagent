@@ -25,6 +25,8 @@ class _FakeClient:
         limit: int,
         year_min: int | None = None,
         year_max: int | None = None,
+        author_ids: list[str] | None = None,
+        author_names: list[str] | None = None,
         max_pages: int = 1,
         categories: list[str] | None = None,
     ) -> list[NormalizedPaper]:
@@ -32,6 +34,8 @@ class _FakeClient:
         _ = limit
         _ = year_min
         _ = year_max
+        _ = author_ids
+        _ = author_names
         _ = max_pages
         _ = categories
         return self.papers
@@ -194,6 +198,8 @@ async def test_search_papers_raises_when_all_sources_fail(
             limit: int,
             year_min: int | None = None,
             year_max: int | None = None,
+            author_ids: list[str] | None = None,
+            author_names: list[str] | None = None,
             max_pages: int = 1,
             categories: list[str] | None = None,
         ) -> list[NormalizedPaper]:
@@ -201,6 +207,8 @@ async def test_search_papers_raises_when_all_sources_fail(
             _ = limit
             _ = year_min
             _ = year_max
+            _ = author_ids
+            _ = author_names
             _ = max_pages
             _ = categories
             raise RuntimeError("boom")
@@ -915,10 +923,12 @@ async def test_search_papers_refinement_fetches_second_openalex_page(
             *,
             limit: int,
             year_min: int | None = None,
+            author_ids: list[str] | None = None,
             max_pages: int = 1,
         ) -> list[NormalizedPaper]:
             _ = limit
             _ = year_min
+            _ = author_ids
             openalex_max_pages_by_query[query] = max_pages
             if query == "time series forecasting transformer" and max_pages >= 2:
                 return [anchor]

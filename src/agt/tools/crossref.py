@@ -46,7 +46,14 @@ class CrossrefClient:
             ua += f" mailto:{self._mailto}"
         return ua
 
-    async def search(self, query: str, *, limit: int, max_pages: int = 1) -> list[NormalizedPaper]:
+    async def search(
+        self,
+        query: str,
+        *,
+        limit: int,
+        author_names: list[str] | None = None,
+        max_pages: int = 1,
+    ) -> list[NormalizedPaper]:
         """Search Crossref and return normalized papers."""
 
         if not query.strip():
@@ -54,13 +61,16 @@ class CrossrefClient:
 
         papers: list[NormalizedPaper] = []
         for page_idx in range(max(1, max_pages)):
+            params: dict[str, str] = {
+                "query.bibliographic": query,
+                "rows": str(limit),
+                "offset": str(page_idx * limit),
+            }
+            if author_names:
+                params["query.author"] = " ".join(author_names)
             payload = await self._request_json(
                 path="/works",
-                params={
-                    "query.bibliographic": query,
-                    "rows": str(limit),
-                    "offset": str(page_idx * limit),
-                },
+                params=params,
             )
 
             message = payload.get("message")
