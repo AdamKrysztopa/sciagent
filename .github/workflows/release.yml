@@ -167,32 +167,11 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           XPI_URL="https://github.com/${{ github.repository }}/releases/download/${GITHUB_REF_NAME}/sciagent-zotero-addon.xpi"
           SHA256=$(sha256sum zotero-addon/build/sciagent-zotero-addon.xpi | cut -d' ' -f1)
-          cat > /tmp/update.rdf << EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<RDF:RDF xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-         xmlns:em="http://www.mozilla.org/2004/em-rdf#">
-  <RDF:Description about="urn:mozilla:extension:sciagent@adamkrysztopa.github.io">
-    <em:updates>
-      <RDF:Seq>
-        <RDF:li>
-          <RDF:Description>
-            <em:version>${VERSION}</em:version>
-            <em:targetApplication>
-              <RDF:Description>
-                <em:id>zotero@chnm.gmu.edu</em:id>
-                <em:minVersion>9.0.0</em:minVersion>
-                <em:maxVersion>9.*</em:maxVersion>
-                <em:updateLink>${XPI_URL}</em:updateLink>
-                <em:updateHash>sha256:${SHA256}</em:updateHash>
-              </RDF:Description>
-            </em:targetApplication>
-          </RDF:Description>
-        </RDF:li>
-      </RDF:Seq>
-    </em:updates>
-  </RDF:Description>
-</RDF:RDF>
-EOF
+          sed \
+            -e "s|TMPL_VERSION|${VERSION}|" \
+            -e "s|TMPL_XPI_URL|${XPI_URL}|" \
+            -e "s|TMPL_SHA256|${SHA256}|" \
+            .github/scripts/update-rdf-template.xml > /tmp/update.rdf
 
       - name: Commit update.rdf to main
         if: github.ref_type == 'tag'
