@@ -1,4 +1,5 @@
 import type { HealthResponse, WriteResult } from "../shared/contracts";
+import { getPaperIndex } from "../shared/contracts";
 import type { NativeWriteResult } from "../host/zoteroWriter";
 
 import { Component, type ErrorInfo, type ReactNode, useEffect, useRef, useState } from "react";
@@ -317,6 +318,7 @@ function IdleView({ controller }: { controller: SciAgentController }) {
         onSave={controller.onSaveConfig}
         saveError={controller.saveError}
         saveState={controller.saveState}
+        onValidateKey={controller.validateKey}
       />
 
       <LibraryDoctor
@@ -415,6 +417,9 @@ function RunningView({ controller }: { controller: SciAgentController }) {
 
 function ReviewView({ controller }: { controller: SciAgentController }) {
   const currentState = controller.runView.snapshot?.state ?? null;
+  const conflictedPapers = controller.papers
+    .filter((p, i) => controller.selectedIndices.includes(getPaperIndex(p, i)))
+    .filter((p) => p.conflicts != null && p.conflicts.length > 0);
   return (
     <div className="agt-state-view">
       {controller.query.trim().length > 0 ? (
@@ -466,7 +471,11 @@ function ReviewView({ controller }: { controller: SciAgentController }) {
 
       {controller.searchMetadata !== null &&
       Object.keys(controller.searchMetadata.source_states).length > 0 ? (
-        <SearchCoveragePanel sourceStates={controller.searchMetadata.source_states} />
+        <SearchCoveragePanel
+          sourceStates={controller.searchMetadata.source_states}
+          baselineMode={controller.searchMetadata.baseline_mode}
+          providers={controller.providers}
+        />
       ) : null}
 
       {currentState !== null ? (
@@ -477,6 +486,24 @@ function ReviewView({ controller }: { controller: SciAgentController }) {
               <span className="agt-pill agt-pill--muted">→ {currentState.collection_name}</span>
             ) : null}
           </div>
+          {conflictedPapers.length > 0 ? (
+            <div className="agt-conflict-warning" role="alert">
+              <strong>⚠ {conflictedPapers.length} selected paper{conflictedPapers.length > 1 ? "s have" : " has"} field conflicts:</strong>
+              <ul className="agt-conflict-list">
+                {conflictedPapers.flatMap((p) =>
+                  (p.conflicts ?? []).map((c) => (
+                    <li key={`${p.doi ?? p.title}-${c.field}`}>
+                      <strong>{p.title.slice(0, 40)}{p.title.length > 40 ? "…" : ""}</strong>
+                      {": "}
+                      <span className="agt-conflict-field">{c.field}</span>
+                      {" — "}
+                      {c.values.map((v) => `${v.provider}: ${String(v.value)}`).join(" vs ")}
+                    </li>
+                  ))
+                )}
+              </ul>
+            </div>
+          ) : null}
           <div className="agt-action-cluster">
             <button
               className="agt-button agt-button--warn"

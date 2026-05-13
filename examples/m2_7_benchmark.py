@@ -407,10 +407,106 @@ PANEL: list[PanelEntry] = [
         acceptable_alternate_fragments=["adaptive learning", "intelligent tutoring", "education"],
         notes="AI x education; broad coverage expected.",
     ),
+    # -----------------------------------------------------------------------
+    # P8 capabilities — provider config, open access, citation, depth
+    # -----------------------------------------------------------------------
+    PanelEntry(
+        query_id="P8-OA-01",
+        query="open access systematic reviews on machine learning explainability since 2021",
+        domain="AI",
+        expected_topic_tokens=["explainability", "machine", "learning"],
+        min_year=2021,
+        open_access_required=True,
+        expected_sources=["openalex", "doaj", "europe_pmc", "semantic_scholar"],
+        acceptable_alternate_fragments=[
+            "explainability",
+            "interpretability",
+            "explainable artificial intelligence",
+        ],
+        notes="P8-OA: open-access filter + year filter. Tests DOAJ and OA-aware sources.",
+    ),
+    PanelEntry(
+        query_id="P8-CITE-01",
+        query="most cited papers on attention mechanisms neural networks",
+        domain="AI",
+        expected_topic_tokens=["attention", "neural"],
+        min_citations=10,
+        expected_sources=["semantic_scholar", "openalex", "crossref"],
+        must_find=[
+            _target(
+                "Attention Is All You Need",
+                "10.48550/arXiv.1706.03762",
+                "attention is all you need",
+            )
+        ],
+        notes="P8-CITE: citation-threshold filter. High-citation anchor expected in top results.",
+    ),
+    PanelEntry(
+        query_id="P8-DEPTH-01",
+        query="survey papers on neural architecture search automated machine learning",
+        domain="AI",
+        expected_topic_tokens=["neural", "architecture", "search"],
+        expected_sources=["semantic_scholar", "openalex", "arxiv"],
+        must_find=[
+            _target(
+                "Neural Architecture Search survey",
+                "10.48550/arXiv.1808.05377",
+                "neural architecture search: a survey",
+            )
+        ],
+        notes="P8-DEPTH: broad multi-source query; tests retrieval depth across providers.",
+    ),
+    PanelEntry(
+        query_id="P8-MULTI-01",
+        query="preprint papers on diffusion models image generation not older than 2022",
+        domain="AI",
+        expected_topic_tokens=["diffusion", "generation"],
+        min_year=2022,
+        expected_sources=["arxiv", "semantic_scholar", "openalex"],
+        must_find=[
+            _target(
+                "Denoising Diffusion Probabilistic Models",
+                "10.48550/arXiv.2006.11239",
+                "denoising diffusion probabilistic models",
+            )
+        ],
+        notes="P8-MULTI: arXiv-first; preprint-heavy domain with year filter.",
+    ),
+    PanelEntry(
+        query_id="P8-YEAR-01",
+        query="papers on quantum computing error correction published between 2020 and 2023",
+        domain="interdisciplinary",
+        expected_topic_tokens=["quantum", "error", "correction"],
+        min_year=2020,
+        max_year=2023,
+        expected_sources=["semantic_scholar", "openalex", "crossref", "arxiv"],
+        acceptable_alternate_fragments=[
+            "quantum error correction",
+            "fault-tolerant quantum computing",
+            "quantum computing",
+        ],
+        notes="P8-YEAR: strict year-range filter with both min_year and max_year set.",
+    ),
+    PanelEntry(
+        query_id="P8-CONF-01",
+        query="open access papers on scientific reproducibility research methodology since 2020",
+        domain="interdisciplinary",
+        expected_topic_tokens=["reproducibility", "research"],
+        min_year=2020,
+        open_access_required=True,
+        expected_sources=["openalex", "europe_pmc", "crossref", "doaj"],
+        acceptable_alternate_fragments=[
+            "reproducibility",
+            "replication",
+            "research methodology",
+            "open science",
+        ],
+        notes="P8-CONF: polite-pool / mailto scenario; OA filter + Crossref/OpenAlex federation.",
+    ),
 ]
 
 _MIN_PANEL_SIZE = 20
-_MIN_MUST_FIND_TARGETS = 12
+_MIN_MUST_FIND_TARGETS = 15
 assert len(PANEL) >= _MIN_PANEL_SIZE, (
     f"Benchmark requires >={_MIN_PANEL_SIZE} queries; got {len(PANEL)}"
 )

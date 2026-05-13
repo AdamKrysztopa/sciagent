@@ -2,7 +2,7 @@ import pytest
 
 # ruff: noqa: I001, PLR2004
 
-from agt.models import NormalizedPaper
+from agt.models import NormalizedAuthor, NormalizedPaper
 from agt.tools import ranking as ranking_module
 from agt.tools.ranking import (
     WEIGHTS_CITATION,
@@ -122,8 +122,16 @@ def test_ranking_handles_cjk_and_rtl_titles() -> None:
 
 def test_dedup_handles_zero_width_characters_in_titles() -> None:
     papers = [
-        NormalizedPaper(title="Transformer\u200bSurvey", authors=["A"], semantic_score=0.2),
-        NormalizedPaper(title="Transformer\u200bSurvey", authors=["A"], semantic_score=0.7),
+        NormalizedPaper(
+            title="Transformer\u200bSurvey",
+            authors=[NormalizedAuthor(name="A")],
+            semantic_score=0.2,
+        ),
+        NormalizedPaper(
+            title="Transformer\u200bSurvey",
+            authors=[NormalizedAuthor(name="A")],
+            semantic_score=0.7,
+        ),
     ]
     ranked = rank_and_index_papers(papers)
     assert len(ranked) == 1
@@ -134,12 +142,12 @@ def test_ranking_preserves_diacritics_in_authors() -> None:
     papers = [
         NormalizedPaper(
             title="Paper A",
-            authors=["Jos\u00e9 Ni\u00f1o"],
+            authors=[NormalizedAuthor(name="Jos\u00e9 Ni\u00f1o")],
             semantic_score=0.3,
         ),
         NormalizedPaper(
             title="Paper B",
-            authors=["Zo\u00eb Kr\u00e1l"],
+            authors=[NormalizedAuthor(name="Zo\u00eb Kr\u00e1l")],
             semantic_score=0.4,
         ),
     ]

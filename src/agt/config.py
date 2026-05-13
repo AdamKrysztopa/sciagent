@@ -95,6 +95,19 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("AGT_ZOTERO_COLLECTION_NAME", "ZOTERO_COLLECTION_NAME"),
         description="Default Zotero collection where papers are saved.",
     )
+    mailto: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("AGT_MAILTO", "MAILTO"),
+        description="Email address for polite API pool access (OpenAlex, Crossref, DOAJ).",
+    )
+    disabled_providers: list[str] = Field(
+        default_factory=list,
+        validation_alias=AliasChoices("AGT_DISABLED_PROVIDERS", "DISABLED_PROVIDERS"),
+        description=(
+            "Provider names to disable regardless of key availability. "
+            'Set as a JSON array: \'["openalex","crossref"]\'.'
+        ),
+    )
     semantic_scholar_api_key: SecretStr | None = Field(
         default=None,
         validation_alias=AliasChoices("AGT_SEMANTIC_SCHOLAR_API_KEY", "SEMANTIC_SCHOLAR_API_KEY"),
@@ -323,6 +336,10 @@ class Settings(BaseSettings):
     use_keybert: bool = Field(
         default=False,
         validation_alias=AliasChoices("AGT_USE_KEYBERT", "USE_KEYBERT"),
+    )
+    use_spell_check: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("AGT_USE_SPELL_CHECK", "USE_SPELL_CHECK"),
     )
     use_reranker: bool = Field(
         default=False,

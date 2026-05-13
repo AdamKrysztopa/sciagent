@@ -40,7 +40,7 @@ async def test_europe_pmc_search_normalizes_payload(monkeypatch: pytest.MonkeyPa
     assert len(papers) == 1
     assert papers[0].title == "Sports Nutrition Review"
     assert papers[0].year == _EXPECTED_YEAR_2024
-    assert papers[0].authors == ["Ada Lovelace", "Grace Hopper"]
+    assert [a.name for a in papers[0].authors] == ["Ada Lovelace", "Grace Hopper"]
     assert papers[0].open_access is True
     assert papers[0].url == "https://europepmc.org/article/MED/12345"
 

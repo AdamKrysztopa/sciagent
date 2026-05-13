@@ -43,7 +43,7 @@ async def test_openalex_search_normalizes_payload(monkeypatch: pytest.MonkeyPatc
     assert papers[0].title == "Nutrition in Sport"
     assert papers[0].doi == "10.1/abc"
     assert papers[0].abstract == "Nutrition Sport performance"
-    assert papers[0].authors == ["Ada Lovelace"]
+    assert papers[0].authors[0].name == "Ada Lovelace"
     assert papers[0].open_access is True
     assert papers[0].citation_count == _EXPECTED_CITATION_COUNT
 

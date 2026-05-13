@@ -1,4 +1,4 @@
-import { startTransition, useEffect, useEffectEvent, useState } from "react";
+import { startTransition, useEffect, useEffectEvent, useRef, useState } from "react";
 
 import { BackendClientError } from "../../client/backendClient";
 import {
@@ -16,7 +16,9 @@ import {
   type FilterEditContract,
   type GapFinderResponse,
   type HealthResponse,
+  type KeyValidateResponse,
   type NormalizedPaper,
+  type ProviderInfo,
   type SearchMetadata,
   type SearchPlan,
   type SourceCapability,
@@ -70,6 +72,7 @@ export function useSciAgentController(services: AddonUiServices) {
   const [healthError, setHealthError] = useState<string | null>(null);
   const [healthResponse, setHealthResponse] = useState<HealthResponse | null>(null);
   const [capabilities, setCapabilities] = useState<CapabilitiesResponse | null>(null);
+  const [providers, setProviders] = useState<Record<string, ProviderInfo>>({});
   const [query, setQuery] = useState("");
   const [runView, setRunView] = useState<RunViewState>({
     error: null,
@@ -98,6 +101,9 @@ export function useSciAgentController(services: AddonUiServices) {
   const [watchSaveError, setWatchSaveError] = useState<string | null>(null);
   const [rerunningWatchId, setRerunningWatchId] = useState<string | null>(null);
   const [lastWatchRerun, setLastWatchRerun] = useState<WatchRerunResponse | null>(null);
+
+  // Tracks whether the current config state was changed by the user (vs loaded from prefs).
+  const configChangedByUserRef = useRef(false);
 
   const currentState = runView.snapshot?.state ?? null;
   const papers: NormalizedPaper[] = currentState?.papers ?? [];
@@ -163,6 +169,13 @@ export function useSciAgentController(services: AddonUiServices) {
         // Non-fatal: capabilities unavailable on older backends.
         setCapabilities(null);
       }
+      try {
+        const prov = await client.providers();
+        setProviders(prov);
+      } catch {
+        // Non-fatal: providers endpoint unavailable on older backends.
+        setProviders({});
+      }
     } catch (error) {
       setHealthError(describeError(error));
       setHealthResponse(null);
@@ -183,6 +196,16 @@ export function useSciAgentController(services: AddonUiServices) {
     } catch (error) {
       setSaveError(describeError(error));
       setSaveState("error");
+    }
+  });
+
+  // Silent auto-save — writes prefs without triggering a health refresh.
+  const autoSaveConfig = useEffectEvent(async () => {
+    try {
+      const nextConfig = await services.saveConfig(config);
+      setConfig(nextConfig);
+    } catch {
+      // Auto-save failures are silent; explicit Save button remains available.
     }
   });
 
@@ -422,6 +445,12 @@ export function useSciAgentController(services: AddonUiServices) {
     }
   });
 
+  const validateKey = useEffectEvent(
+    async (provider: string, apiKey: string): Promise<KeyValidateResponse> => {
+      return services.createClient(config).validateKey(provider, apiKey);
+    },
+  );
+
   useEffect(() => {
     const trimmed = query.trim();
     if (trimmed.length === 0 || !config.spellCheckEnabled) {
@@ -433,6 +462,16 @@ export function useSciAgentController(services: AddonUiServices) {
     }, 500);
     return () => clearTimeout(timer);
   }, [query, config.spellCheckEnabled]);
+
+  // Auto-save whenever the user changes a preference (debounced 800 ms).
+  useEffect(() => {
+    if (!configChangedByUserRef.current) return;
+    const timer = setTimeout(() => {
+      configChangedByUserRef.current = false;
+      void autoSaveConfig();
+    }, 800);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -530,6 +569,7 @@ export function useSciAgentController(services: AddonUiServices) {
     onApprove: () => void resumeRun(true),
     onCollectionChange: setCollectionName,
     onConfigChange: (field: keyof AddonConfig, value: boolean | number | null | string) => {
+      configChangedByUserRef.current = true;
       setConfig((currentConfig) => ({
         ...currentConfig,
         [field]: value,
@@ -572,6 +612,7 @@ export function useSciAgentController(services: AddonUiServices) {
     },
     onSaveConfig: () => void saveConfig(),
     onSubmitSearch: () => void submitSearch(),
+    validateKey: (provider: string, apiKey: string) => validateKey(provider, apiKey),
     onDepthChange: setSearchDepth,
     searchDepth,
     onToggleSelection: (index: number) => {
@@ -583,6 +624,7 @@ export function useSciAgentController(services: AddonUiServices) {
       });
     },
     papers,
+    providers,
     query,
     runView,
     saveError,

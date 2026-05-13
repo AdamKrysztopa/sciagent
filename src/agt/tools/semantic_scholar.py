@@ -10,7 +10,7 @@ from typing import Any, cast
 import httpx
 from tenacity import AsyncRetrying, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from agt.models import ItemType, NormalizedPaper
+from agt.models import ItemType, NormalizedAuthor, NormalizedPaper
 
 _SS_PUBLICATION_TYPE_MAP: dict[str, ItemType] = {
     "JournalArticle": "journal_article",
@@ -48,6 +48,9 @@ class SemanticScholarResponseError(RuntimeError):
     """Raised when the API response is malformed or unsupported."""
 
 
+_SS_UA_BASE = "SciAgent/0.1 (https://github.com/AdamKrysztopa/sciagent)"
+
+
 class SemanticScholarClient:
     """Small bounded client for Semantic Scholar Graph API."""
 
@@ -65,15 +68,23 @@ class SemanticScholarClient:
         api_key: str | None,
         timeout_seconds: int,
         retries: int,
+        mailto: str | None = None,
         base_url: str = "https://api.semanticscholar.org/graph/v1",
     ) -> None:
         self._api_key = api_key
         self._timeout_seconds = timeout_seconds
         self._retries = retries
+        self._mailto = mailto
         self._base_url = base_url.rstrip("/")
         # Serialize concurrent calls so the free-tier 1 req/sec limit is respected.
         self._semaphore: asyncio.Semaphore = asyncio.Semaphore(1)
         self._last_request_at: float = 0.0
+
+    def _user_agent(self) -> str:
+        ua = _SS_UA_BASE
+        if self._mailto:
+            ua += f" mailto:{self._mailto}"
+        return ua
 
     async def search(  # noqa: PLR0912
         self,
@@ -94,7 +105,7 @@ class SemanticScholarClient:
         if not safe_query:
             safe_query = query.split(maxsplit=1)[0] if query.split() else query
 
-        headers: dict[str, str] = {}
+        headers: dict[str, str] = {"User-Agent": self._user_agent()}
         if self._api_key:
             headers["x-api-key"] = self._api_key
 
@@ -169,6 +180,7 @@ class SemanticScholarClient:
                 retry=retry_if_exception_type((
                     httpx.TimeoutException,
                     httpx.NetworkError,
+                    httpx.HTTPStatusError,
                 )),
                 reraise=True,
             ):
@@ -180,9 +192,10 @@ class SemanticScholarClient:
                             raise SemanticScholarResponseError(
                                 f"Semantic Scholar 400 Bad Request for query={params.get('query')!r}"
                             )
-                        # 429 / 5xx → raise_for_status → HTTPStatusError; tenacity won't
-                        # retry those (only TimeoutException / NetworkError), so they
-                        # surface as failures that the outer catch in _fetch_one_source handles.
+                        # Raise immediately on 429 (rate limit) without retrying.
+                        if response.status_code == 429:  # noqa: PLR2004
+                            raise RuntimeError("semantic_scholar rate limit (HTTP 429)")
+                        # 5xx → raise_for_status → HTTPStatusError; retried by tenacity.
                         response.raise_for_status()
                         payload = response.json()
                         if not isinstance(payload, dict):
@@ -211,7 +224,7 @@ class SemanticScholarClient:
         url_value = item.get("url")
         url = str(url_value).strip() if isinstance(url_value, str) else None
 
-        authors: list[str] = []
+        authors: list[NormalizedAuthor] = []
         raw_authors = item.get("authors")
         if isinstance(raw_authors, list):
             for author_obj in cast(list[object], raw_authors):
@@ -219,7 +232,19 @@ class SemanticScholarClient:
                     author = cast(dict[str, Any], author_obj)
                     name = author.get("name")
                     if isinstance(name, str) and name.strip():
-                        authors.append(name.strip())
+                        raw_s2_id = author.get("authorId")
+                        s2_id: str | None = (
+                            raw_s2_id.strip()
+                            if isinstance(raw_s2_id, str) and raw_s2_id.strip()
+                            else None
+                        )
+                        authors.append(
+                            NormalizedAuthor(
+                                name=name.strip(),
+                                s2_author_id=s2_id,
+                                source="semantic_scholar",
+                            )
+                        )
 
         doi: str | None = None
         arxiv_id: str | None = None

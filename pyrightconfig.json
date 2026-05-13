@@ -5,6 +5,7 @@
   "reportUnusedImport": true,
   "include": [
     "src",
-    "tests"
+    "tests",
+    "scripts"
   ]
 }

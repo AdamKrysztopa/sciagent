@@ -7,11 +7,14 @@ from typing import Any, cast
 import httpx
 from tenacity import AsyncRetrying, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from agt.models import NormalizedPaper
+from agt.models import NormalizedAuthor, NormalizedPaper
 
 
 class EuropePMCResponseError(RuntimeError):
     """Raised when Europe PMC response payload is malformed."""
+
+
+_EUROPE_PMC_UA_BASE = "SciAgent/0.1 (https://github.com/AdamKrysztopa/sciagent)"
 
 
 class EuropePMCClient:
@@ -22,11 +25,19 @@ class EuropePMCClient:
         *,
         timeout_seconds: int,
         retries: int,
+        mailto: str | None = None,
         base_url: str = "https://www.ebi.ac.uk/europepmc/webservices/rest",
     ) -> None:
         self._timeout_seconds = timeout_seconds
         self._retries = retries
+        self._mailto = mailto
         self._base_url = base_url.rstrip("/")
+
+    def _user_agent(self) -> str:
+        ua = _EUROPE_PMC_UA_BASE
+        if self._mailto:
+            ua += f" mailto:{self._mailto}"
+        return ua
 
     async def search(self, query: str, *, limit: int) -> list[NormalizedPaper]:
         """Search Europe PMC and return normalized papers."""
@@ -74,8 +85,13 @@ class EuropePMCClient:
             reraise=True,
         ):
             with attempt:
-                async with httpx.AsyncClient(timeout=self._timeout_seconds) as client:
+                async with httpx.AsyncClient(
+                    timeout=self._timeout_seconds,
+                    headers={"User-Agent": self._user_agent()},
+                ) as client:
                     response = await client.get(url, params=params)
+                    if response.status_code == 429:  # noqa: PLR2004
+                        raise RuntimeError("europe_pmc rate limit (HTTP 429)")
                     response.raise_for_status()
                     payload = response.json()
                     if not isinstance(payload, dict):
@@ -109,11 +125,15 @@ class EuropePMCClient:
             else None
         )
 
-        authors: list[str] = []
+        authors: list[NormalizedAuthor] = []
         author_string = item.get("authorString")
         if isinstance(author_string, str) and author_string.strip():
             raw_authors = [part.strip() for part in author_string.split(",")]
-            authors = [author for author in raw_authors if author]
+            authors = [
+                NormalizedAuthor(name=author, source="europe_pmc")
+                for author in raw_authors
+                if author
+            ]
 
         source = item.get("source") if isinstance(item.get("source"), str) else ""
         item_id = item.get("id") if isinstance(item.get("id"), str) else ""

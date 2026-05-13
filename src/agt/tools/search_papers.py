@@ -11,7 +11,7 @@ import time
 from collections import Counter, defaultdict
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, TypedDict
 
 from agt.config import Settings, get_settings
 from agt.guardrails import current_thread_id, get_guardrails
@@ -28,9 +28,11 @@ from agt.models import (
 from agt.providers.protocol import LLMProvider
 from agt.tools.arxiv_api import ArxivClient
 from agt.tools.base_search import BaseSearchClient
+from agt.tools.capabilities import ProviderHealth
 from agt.tools.core_ac import CoreClient
 from agt.tools.crossref import CrossrefClient
 from agt.tools.dimensions import DimensionsClient
+from agt.tools.doaj import DOAJClient
 from agt.tools.europe_pmc import EuropePMCClient
 from agt.tools.google_scholar import GoogleScholarClient
 from agt.tools.keyword_extractor import extract_keywords
@@ -187,6 +189,72 @@ def _depth_max_pages(
     return settings.search_max_pages
 
 
+class DepthProfile(TypedDict):
+    """Static provider-selection profile for a given search depth."""
+
+    providers: list[str]
+    limit_per_provider: int
+    expand_refs: bool
+    timeout: float
+
+
+DEPTH_PROFILES: dict[Literal["quick", "balanced", "deep"], DepthProfile] = {
+    "quick": {
+        "providers": ["openalex", "arxiv"],
+        "limit_per_provider": 10,
+        "expand_refs": False,
+        "timeout": 5.0,
+    },
+    "balanced": {
+        "providers": [
+            "openalex",
+            "crossref",
+            "europe_pmc",
+            "doaj",
+            "pubmed",
+            "arxiv",
+        ],
+        "limit_per_provider": 25,
+        "expand_refs": False,
+        "timeout": 15.0,
+    },
+    "deep": {
+        "providers": [
+            "openalex",
+            "crossref",
+            "europe_pmc",
+            "doaj",
+            "pubmed",
+            "arxiv",
+            "semantic_scholar",
+            "core",
+            "base",
+            "opencitations",
+        ],
+        "limit_per_provider": 50,
+        "expand_refs": True,
+        "timeout": 30.0,
+    },
+}
+
+
+def select_providers_for_depth(
+    registry: list[_RetrievalProvider],
+    depth: Literal["quick", "balanced", "deep"] | None,
+) -> list[_RetrievalProvider]:
+    """Return registry entries active at the given depth.
+
+    Providers already skipped (no_key / disabled) are always kept so that
+    source metadata reflects why they were omitted.
+    When depth is None, the full registry is returned unchanged (no filtering).
+    """
+    if depth is None:
+        return list(registry)
+    profile = DEPTH_PROFILES[depth]
+    active_names = set(profile["providers"])
+    return [p for p in registry if p.skip_reason is not None or p.name in active_names]
+
+
 @dataclass(slots=True)
 class _SourceFetchResult:
     name: str
@@ -203,6 +271,24 @@ class _RetrievalProvider:
     enabled: bool
     fetcher: Callable[[], Awaitable[list[NormalizedPaper]]]
     skip_reason: Literal["no_key", "disabled"] | None = None
+    instance: object | None = None
+
+
+_KEY_GATED_PROVIDERS: frozenset[str] = frozenset({"core", "dimensions", "google_scholar"})
+
+
+@dataclass
+class SearchRunResult:
+    """Aggregate result of a single fan-out retrieval pass."""
+
+    per_provider: dict[str, list[NormalizedPaper]]
+    errors: dict[str, str]
+    health: dict[str, ProviderHealth]
+
+
+def _compute_baseline_mode(source_states: dict[str, SourceTerminalState]) -> bool:
+    """Return True when no key-gated providers were actually queried."""
+    return not any(source_states.get(name) == "queried" for name in _KEY_GATED_PROVIDERS)
 
 
 async def _disabled_fetcher() -> list[NormalizedPaper]:
@@ -281,27 +367,37 @@ def _build_retrieval_registry(
         api_key=semantic_api_key,
         timeout_seconds=settings.semantic_scholar_timeout_seconds,
         retries=settings.semantic_scholar_retries,
+        mailto=settings.mailto,
     )
     openalex_client = OpenAlexClient(
         timeout_seconds=settings.semantic_scholar_timeout_seconds,
         retries=settings.semantic_scholar_retries,
+        mailto=settings.mailto,
     )
     crossref_client = CrossrefClient(
         timeout_seconds=settings.semantic_scholar_timeout_seconds,
         retries=settings.semantic_scholar_retries,
+        mailto=settings.mailto,
     )
     pubmed_client = PubMedClient(
         timeout_seconds=settings.semantic_scholar_timeout_seconds,
         retries=settings.semantic_scholar_retries,
         api_key=ncbi_api_key,
+        mailto=settings.mailto,
     )
     europe_pmc_client = EuropePMCClient(
         timeout_seconds=settings.semantic_scholar_timeout_seconds,
         retries=settings.semantic_scholar_retries,
+        mailto=settings.mailto,
     )
     arxiv_client = ArxivClient(
         timeout_seconds=settings.semantic_scholar_timeout_seconds,
         retries=settings.semantic_scholar_retries,
+        mailto=settings.mailto,
+    )
+    doaj_client = DOAJClient(
+        mailto=settings.mailto,
+        timeout=float(settings.semantic_scholar_timeout_seconds),
     )
     base_client = BaseSearchClient(
         timeout_seconds=settings.semantic_scholar_timeout_seconds,
@@ -366,6 +462,13 @@ def _build_retrieval_registry(
                 limit=limit,
                 categories=arxiv_categories,
             ),
+        ),
+        _RetrievalProvider(
+            name="doaj",
+            tier="primary",
+            enabled=True,
+            fetcher=lambda: doaj_client.search(query=query, limit=limit),
+            instance=doaj_client,
         ),
         _RetrievalProvider(
             name="base",
@@ -450,6 +553,25 @@ def _build_retrieval_registry(
             )
         )
 
+    # Apply disabled_providers config: override enabled state for any named provider
+    _disabled_set = frozenset(settings.disabled_providers)
+    if _disabled_set:
+        registry = [
+            (
+                _RetrievalProvider(
+                    name=p.name,
+                    tier=p.tier,
+                    enabled=False,
+                    fetcher=_disabled_fetcher,
+                    skip_reason="disabled",
+                    instance=p.instance,
+                )
+                if p.name in _disabled_set
+                else p
+            )
+            for p in registry
+        ]
+
     return registry
 
 
@@ -464,6 +586,7 @@ async def _fetch_from_sources(
     tier: Literal["primary", "fallback", "all"] = "all",
     openalex_max_pages: int | None = None,
     max_pages: int | None = None,
+    search_depth: Literal["quick", "balanced", "deep"] | None = None,
 ) -> tuple[
     list[NormalizedPaper], list[str], list[str], dict[str, float], dict[str, SourceTerminalState]
 ]:
@@ -484,6 +607,7 @@ async def _fetch_from_sources(
         openalex_max_pages=openalex_max_pages,
         max_pages=max_pages,
     )
+    registry = select_providers_for_depth(registry, search_depth)
 
     source_tasks: list[asyncio.Task[_SourceFetchResult]] = []
     for provider in registry:
@@ -538,6 +662,7 @@ async def _fetch_query_with_optional_fallback(
     *,
     openalex_max_pages: int | None = None,
     max_pages: int | None = None,
+    search_depth: Literal["quick", "balanced", "deep"] | None = None,
 ) -> tuple[
     list[NormalizedPaper], list[str], list[str], dict[str, float], dict[str, SourceTerminalState]
 ]:
@@ -564,6 +689,7 @@ async def _fetch_query_with_optional_fallback(
         tier="primary",
         openalex_max_pages=openalex_max_pages,
         max_pages=max_pages,
+        search_depth=search_depth,
     )
     results.extend(primary_results)
     failures.extend(primary_failures)
@@ -608,6 +734,7 @@ async def _fetch_query_with_optional_fallback(
             tier="fallback",
             openalex_max_pages=openalex_max_pages,
             max_pages=max_pages,
+            search_depth=search_depth,
         )
         results.extend(fallback_results)
         failures.extend(fallback_failures)
@@ -1095,6 +1222,7 @@ _SOURCE_PUSH_DOWN: dict[str, list[str]] = {
     "pubmed": [],
     "europe_pmc": [],
     "arxiv": [],
+    "doaj": [],
     "base": [],
     "core": [],
     "dimensions": [],
@@ -1111,6 +1239,7 @@ _PRIMARY_SOURCE_NAMES: list[str] = [
     "pubmed",
     "europe_pmc",
     "arxiv",
+    "doaj",
     "base",
 ]
 
@@ -1254,7 +1383,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
     else:
         effective_fallback_mode = "auto" if active_settings.enable_fallback_retrieval else "off"
 
-    corrected_query = correct_query(query)
+    corrected_query = correct_query(query) if active_settings.use_spell_check else query
 
     capped_limit = min(limit, _MAX_RESULT_LIMIT)
     constraints = parse_query_constraints(
@@ -1364,6 +1493,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
             corrected_query,
             progress,
             max_pages=depth_max_pages,
+            search_depth=search_depth,
         )
         results.extend(query_results)
         _merge_telemetry(failures, sources_used, timings, states)
@@ -1408,6 +1538,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                 progress,
                 openalex_max_pages=max(depth_max_pages, 2),
                 max_pages=depth_max_pages,
+                search_depth=search_depth,
             )
             results.extend(refinement_results)
             _merge_telemetry(
@@ -1454,6 +1585,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                         corrected_query,
                         progress,
                         max_pages=depth_max_pages,
+                        search_depth=search_depth,
                     )
                     _merge_telemetry(retry_failures, retry_sources, retry_timings, retry_states)
                     if retry_results:
@@ -1491,6 +1623,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                 total_after_filter=len(filtered),
                 source_timings=all_timings,
                 search_plan=plan.model_copy(update={"rewritten_queries": executed_query_sequence}),
+                baseline_mode=_compute_baseline_mode(all_source_states),
             )
             return _attach_explanations(filtered, ranking_terms), metadata
 
@@ -1517,6 +1650,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
             corrected_query,
             progress,
             max_pages=depth_max_pages,
+            search_depth=search_depth,
         )
         _merge_telemetry(fallback_failures, fallback_sources, fallback_timings, fallback_states)
         if fallback_results:
@@ -1551,6 +1685,7 @@ async def search_papers(  # noqa: PLR0912, PLR0915
                     search_plan=plan.model_copy(
                         update={"rewritten_queries": executed_query_sequence}
                     ),
+                    baseline_mode=_compute_baseline_mode(all_source_states),
                 )
                 return _attach_explanations(filtered, ranking_terms), metadata
         if not results:
@@ -1573,5 +1708,6 @@ async def search_papers(  # noqa: PLR0912, PLR0915
         total_after_filter=0,
         source_timings=all_timings,
         search_plan=plan.model_copy(update={"rewritten_queries": executed_query_sequence}),
+        baseline_mode=_compute_baseline_mode(all_source_states),
     )
     return [], metadata

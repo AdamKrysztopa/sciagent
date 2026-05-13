@@ -6,7 +6,7 @@ import httpx
 import pytest
 
 from agt.config import Settings
-from agt.models import NormalizedPaper
+from agt.models import NormalizedAuthor, NormalizedPaper
 from agt.tools.zotero_upsert import (
     map_item_type,
     map_paper_to_item,
@@ -32,10 +32,11 @@ def _paper(
     doi: str | None = "10.1000/example",
     authors: list[str] | None = None,
 ) -> NormalizedPaper:
+    author_names = authors if authors is not None else ["Ada Lovelace"]
     return NormalizedPaper(
         title=title,
         doi=doi,
-        authors=authors if authors is not None else ["Ada Lovelace"],
+        authors=[NormalizedAuthor(name=a) for a in author_names],
         year=2024,
         source="semantic_scholar",
     )
@@ -343,7 +344,9 @@ def testmap_item_type_openalex_is_journal_article() -> None:
 
 
 def test_map_paper_single_author_creator() -> None:
-    paper = NormalizedPaper(title="Paper", authors=["Ada Lovelace"], year=2024, source="openalex")
+    paper = NormalizedPaper(
+        title="Paper", authors=[NormalizedAuthor(name="Ada Lovelace")], year=2024, source="openalex"
+    )
     item = map_paper_to_item(paper, "CKEY")
     assert item["creators"] == [
         {"creatorType": "author", "firstName": "Ada", "lastName": "Lovelace"}
@@ -353,7 +356,11 @@ def test_map_paper_single_author_creator() -> None:
 def test_map_paper_multiple_authors() -> None:
     paper = NormalizedPaper(
         title="Paper",
-        authors=["Alice Smith", "Bob Jones", "Carol White"],
+        authors=[
+            NormalizedAuthor(name="Alice Smith"),
+            NormalizedAuthor(name="Bob Jones"),
+            NormalizedAuthor(name="Carol White"),
+        ],
         source="openalex",
     )
     item = map_paper_to_item(paper, "CKEY")
@@ -366,7 +373,9 @@ def test_map_paper_multiple_authors() -> None:
 
 
 def test_map_paper_author_comma_format() -> None:
-    paper = NormalizedPaper(title="Paper", authors=["Turing, Alan"], source="openalex")
+    paper = NormalizedPaper(
+        title="Paper", authors=[NormalizedAuthor(name="Turing, Alan")], source="openalex"
+    )
     item = map_paper_to_item(paper, "CKEY")
     creator = item["creators"][0]
     assert creator["firstName"] == "Alan"
@@ -380,51 +389,68 @@ def test_map_paper_empty_authors() -> None:
 
 
 def test_map_paper_doi_field() -> None:
-    paper = NormalizedPaper(title="Paper", doi="10.1000/test", authors=["A B"], source="openalex")
+    paper = NormalizedPaper(
+        title="Paper", doi="10.1000/test", authors=[NormalizedAuthor(name="A B")], source="openalex"
+    )
     item = map_paper_to_item(paper, "CKEY")
     assert item["DOI"] == "10.1000/test"
 
 
 def test_map_paper_missing_doi_is_empty_string() -> None:
-    paper = NormalizedPaper(title="Paper", doi=None, authors=["A B"], source="openalex")
+    paper = NormalizedPaper(
+        title="Paper", doi=None, authors=[NormalizedAuthor(name="A B")], source="openalex"
+    )
     item = map_paper_to_item(paper, "CKEY")
     assert item["DOI"] == ""
 
 
 def test_map_paper_abstract_note() -> None:
     paper = NormalizedPaper(
-        title="Paper", abstract="A great study.", authors=["A B"], source="openalex"
+        title="Paper",
+        abstract="A great study.",
+        authors=[NormalizedAuthor(name="A B")],
+        source="openalex",
     )
     item = map_paper_to_item(paper, "CKEY")
     assert item["abstractNote"] == "A great study."
 
 
 def test_map_paper_missing_abstract_is_empty_string() -> None:
-    paper = NormalizedPaper(title="Paper", abstract=None, authors=["A B"], source="openalex")
+    paper = NormalizedPaper(
+        title="Paper", abstract=None, authors=[NormalizedAuthor(name="A B")], source="openalex"
+    )
     item = map_paper_to_item(paper, "CKEY")
     assert item["abstractNote"] == ""
 
 
 def test_map_paper_year_as_date_string() -> None:
-    paper = NormalizedPaper(title="Paper", year=2023, authors=["A B"], source="openalex")
+    paper = NormalizedPaper(
+        title="Paper", year=2023, authors=[NormalizedAuthor(name="A B")], source="openalex"
+    )
     item = map_paper_to_item(paper, "CKEY")
     assert item["date"] == "2023"
 
 
 def test_map_paper_missing_year_is_empty_string() -> None:
-    paper = NormalizedPaper(title="Paper", year=None, authors=["A B"], source="openalex")
+    paper = NormalizedPaper(
+        title="Paper", year=None, authors=[NormalizedAuthor(name="A B")], source="openalex"
+    )
     item = map_paper_to_item(paper, "CKEY")
     assert item["date"] == ""
 
 
 def test_map_paper_item_type_journal_article() -> None:
-    paper = NormalizedPaper(title="Paper", authors=["A B"], source="semantic_scholar")
+    paper = NormalizedPaper(
+        title="Paper", authors=[NormalizedAuthor(name="A B")], source="semantic_scholar"
+    )
     item = map_paper_to_item(paper, "CKEY")
     assert item["itemType"] == "journalArticle"
 
 
 def test_map_paper_item_type_preprint_sets_repository() -> None:
-    paper = NormalizedPaper(title="Paper", authors=["A B"], source="arxiv", arxiv_id="2301.00001")
+    paper = NormalizedPaper(
+        title="Paper", authors=[NormalizedAuthor(name="A B")], source="arxiv", arxiv_id="2301.00001"
+    )
     item = map_paper_to_item(paper, "CKEY")
     assert item["itemType"] == "preprint"
     assert item["repository"] == "arxiv"
@@ -432,19 +458,23 @@ def test_map_paper_item_type_preprint_sets_repository() -> None:
 
 
 def test_map_paper_collection_key_in_collections() -> None:
-    paper = NormalizedPaper(title="Paper", authors=["A B"], source="openalex")
+    paper = NormalizedPaper(
+        title="Paper", authors=[NormalizedAuthor(name="A B")], source="openalex"
+    )
     item = map_paper_to_item(paper, "MYKEY")
     assert item["collections"] == ["MYKEY"]
 
 
 def test_map_paper_title_is_stripped() -> None:
-    paper = NormalizedPaper(title="  Whitespace Title  ", authors=["A B"], source="openalex")
+    paper = NormalizedPaper(
+        title="  Whitespace Title  ", authors=[NormalizedAuthor(name="A B")], source="openalex"
+    )
     item = map_paper_to_item(paper, "CKEY")
     assert item["title"] == "Whitespace Title"
 
 
 def test_map_paper_source_in_extra() -> None:
-    paper = NormalizedPaper(title="Paper", authors=["A B"], source="pubmed")
+    paper = NormalizedPaper(title="Paper", authors=[NormalizedAuthor(name="A B")], source="pubmed")
     item = map_paper_to_item(paper, "CKEY")
     assert "pubmed" in item["extra"]
 
@@ -480,7 +510,9 @@ def test_map_item_type_none_uses_source_inference() -> None:
 
 
 def test_map_paper_venue_journal_article_uses_publication_title() -> None:
-    paper = NormalizedPaper(title="T", authors=["A"], source="openalex", venue="Nature")
+    paper = NormalizedPaper(
+        title="T", authors=[NormalizedAuthor(name="A")], source="openalex", venue="Nature"
+    )
     item = map_paper_to_item(paper, "C")
     assert item["publicationTitle"] == "Nature"
     assert "repository" not in item
@@ -489,7 +521,11 @@ def test_map_paper_venue_journal_article_uses_publication_title() -> None:
 
 def test_map_paper_venue_preprint_uses_repository() -> None:
     paper = NormalizedPaper(
-        title="T", authors=["A"], source="arxiv", item_type="preprint", venue="bioRxiv"
+        title="T",
+        authors=[NormalizedAuthor(name="A")],
+        source="arxiv",
+        item_type="preprint",
+        venue="bioRxiv",
     )
     item = map_paper_to_item(paper, "C")
     assert item["repository"] == "bioRxiv"
@@ -499,7 +535,7 @@ def test_map_paper_venue_preprint_uses_repository() -> None:
 def test_map_paper_venue_conference_uses_conference_name() -> None:
     paper = NormalizedPaper(
         title="T",
-        authors=["A"],
+        authors=[NormalizedAuthor(name="A")],
         source="semantic_scholar",
         item_type="conference_paper",
         venue="NeurIPS",
@@ -511,7 +547,12 @@ def test_map_paper_venue_conference_uses_conference_name() -> None:
 
 def test_map_paper_volume_issue_pages() -> None:
     paper = NormalizedPaper(
-        title="T", authors=["A"], source="crossref", volume="12", issue="3", pages="100-115"
+        title="T",
+        authors=[NormalizedAuthor(name="A")],
+        source="crossref",
+        volume="12",
+        issue="3",
+        pages="100-115",
     )
     item = map_paper_to_item(paper, "C")
     assert item["volume"] == "12"
@@ -520,7 +561,9 @@ def test_map_paper_volume_issue_pages() -> None:
 
 
 def test_map_paper_none_venue_omits_venue_field() -> None:
-    paper = NormalizedPaper(title="T", authors=["A"], source="openalex", venue=None)
+    paper = NormalizedPaper(
+        title="T", authors=[NormalizedAuthor(name="A")], source="openalex", venue=None
+    )
     item = map_paper_to_item(paper, "C")
     assert "publicationTitle" not in item
     assert "repository" not in item
@@ -528,6 +571,8 @@ def test_map_paper_none_venue_omits_venue_field() -> None:
 
 
 def test_map_paper_none_volume_omits_volume_field() -> None:
-    paper = NormalizedPaper(title="T", authors=["A"], source="openalex", volume=None)
+    paper = NormalizedPaper(
+        title="T", authors=[NormalizedAuthor(name="A")], source="openalex", volume=None
+    )
     item = map_paper_to_item(paper, "C")
     assert "volume" not in item

@@ -6,7 +6,8 @@
  * - ZAP-8: attachPdf — downloads and attaches a PDF via Zotero.Attachments.importFromURL.
  */
 
-import type { NormalizedPaper } from "../shared/contracts";
+import type { NormalizedAuthor, NormalizedPaper } from "../shared/contracts";
+import { getAuthorName } from "../shared/contracts";
 import type {
   ZoteroAttachments,
   ZoteroCollection,
@@ -56,8 +57,9 @@ function servicesFromZotero(z: ZoteroGlobal): ZoteroWriterServices {
 }
 
 // Stable hash of title + first-author for dedup when DOI is absent.
-function titleAuthorHash(title: string, authors: string[]): string {
-  const key = `${title.toLowerCase().trim()}|${(authors[0] ?? "").toLowerCase().trim()}`;
+function titleAuthorHash(title: string, authors: (NormalizedAuthor | string)[]): string {
+  const firstAuthorName = authors.length > 0 ? getAuthorName(authors[0]) : "";
+  const key = `${title.toLowerCase().trim()}|${firstAuthorName.toLowerCase().trim()}`;
   // Simple deterministic hash — not cryptographic.
   let h = 0;
   for (let i = 0; i < key.length; i++) {
@@ -111,8 +113,13 @@ function splitCreatorName(name: string): { firstName: string; lastName: string }
   return { firstName: trimmed.slice(0, lastSpace), lastName: trimmed.slice(lastSpace + 1) };
 }
 
-function buildCreators(authors: string[]): Array<{ creatorType: string; firstName: string; lastName: string }> {
-  return authors.map((author) => ({ creatorType: "author", ...splitCreatorName(author) }));
+function buildCreators(authors: (NormalizedAuthor | string)[]): Array<{ creatorType: string; firstName: string; lastName: string }> {
+  return authors.map((author) => {
+    if (typeof author !== "string" && author.family != null) {
+      return { creatorType: "author", firstName: author.given ?? "", lastName: author.family };
+    }
+    return { creatorType: "author", ...splitCreatorName(getAuthorName(author)) };
+  });
 }
 
 /**

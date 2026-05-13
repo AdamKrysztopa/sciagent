@@ -92,7 +92,7 @@ export async function downloadBinary(
   const url = `https://github.com/AdamKrysztopa/sciagent/releases/download/v${version}/${name}`;
   const binDir = _getBinDir();
   await IOUtils.makeDirectory(binDir, { createAncestors: true });
-  const tmpPath = PathUtils.join(binDir, name + ".tmp");
+  const tmpPath = PathUtils.join(binDir, `${name}.tmp`);
 
   await new Promise<void>((resolve, reject) => {
     const xhr = new XMLHttpRequest();

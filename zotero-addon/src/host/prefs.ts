@@ -246,21 +246,21 @@ export function collectProviderEnv(config: AddonConfig): Record<string, string> 
   const provider = config.llmProvider;
 
   if (provider) {
-    env["AGT_LLM_PROVIDER"] = provider === "custom" ? "openai-compatible" : provider;
+    env.AGT_LLM_PROVIDER = provider === "custom" ? "openai-compatible" : provider;
   }
 
   if (provider === "openai" && config.openaiApiKey) {
-    env["OPENAI_API_KEY"] = config.openaiApiKey;
+    env.OPENAI_API_KEY = config.openaiApiKey;
   } else if (provider === "anthropic" && config.anthropicApiKey) {
-    env["ANTHROPIC_API_KEY"] = config.anthropicApiKey;
+    env.ANTHROPIC_API_KEY = config.anthropicApiKey;
   } else if (provider === "xai" && config.xaiApiKey) {
-    env["XAI_API_KEY"] = config.xaiApiKey;
+    env.XAI_API_KEY = config.xaiApiKey;
   } else if (provider === "groq" && config.groqApiKey) {
-    env["AGT_GROQ_API_KEY"] = config.groqApiKey;
+    env.AGT_GROQ_API_KEY = config.groqApiKey;
   }
 
-  if (config.llmBaseUrl) env["AGT_LLM_BASE_URL"] = config.llmBaseUrl;
-  if (config.llmModel) env["AGT_LLM_MODEL"] = config.llmModel;
+  if (config.llmBaseUrl) env.AGT_LLM_BASE_URL = config.llmBaseUrl;
+  if (config.llmModel) env.AGT_LLM_MODEL = config.llmModel;
 
   return env;
 }

@@ -39,7 +39,7 @@ async def test_crossref_search_normalizes_payload(monkeypatch: pytest.MonkeyPatc
     assert len(papers) == 1
     assert papers[0].title == "RAG in Practice"
     assert papers[0].year == _EXPECTED_YEAR_2024
-    assert papers[0].authors == ["Ada Lovelace"]
+    assert papers[0].authors[0].name == "Ada Lovelace"
     assert papers[0].citation_count == _EXPECTED_CITATION_COUNT
 
 
@@ -115,7 +115,7 @@ async def test_crossref_builds_author_names(monkeypatch: pytest.MonkeyPatch) -> 
     monkeypatch.setattr(client, "_request_json", _fake_request_json)
 
     papers = await client.search("x", limit=3)
-    assert papers[0].authors == ["Grace Hopper", "Turing", "Alan"]
+    assert [a.name for a in papers[0].authors] == ["Grace Hopper", "Turing", "Alan"]
 
 
 @pytest.mark.anyio

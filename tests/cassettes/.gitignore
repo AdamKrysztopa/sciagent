@@ -1,0 +1,2 @@
+# Exclude nothing — cassette YAML files must be committed.
+# Add specific exclusions here only if needed.

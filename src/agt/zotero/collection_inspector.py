@@ -207,7 +207,7 @@ def classify_paper(
     if doi is not None and doi in index.doi_set:
         return "in_library"
 
-    fingerprint = title_author_fingerprint(paper.title, paper.authors)
+    fingerprint = title_author_fingerprint(paper.title, [a.name for a in paper.authors])
     if fingerprint in index.fingerprint_set:
         return "possible_duplicate"
 

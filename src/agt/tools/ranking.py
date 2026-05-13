@@ -245,7 +245,7 @@ def _normalized_arxiv_id(value: str | None) -> str | None:
 
 
 def _title_author_hash(paper: NormalizedPaper) -> str:
-    authors = "|".join(author.strip().lower() for author in paper.authors)
+    authors = "|".join(author.name.strip().lower() for author in paper.authors)
     raw = f"{_normalize_title(paper.title)}::{authors}"
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 

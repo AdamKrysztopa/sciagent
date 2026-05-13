@@ -21,7 +21,8 @@ SciAgent is not a floating AI sidebar, PDF chat tool, or generic browser plug-in
 
 ## Documentation
 
-- **[Configuration & Usage Manual](docs/manual.md)** — Primary Zotero workflow, installation, and local run guide
+- **[User Manual](docs/user-manual.md)** — Zero-to-running installation guide; shareable with anyone new to SciAgent
+- **[Configuration & Usage Manual](docs/manual.md)** — Full Zotero workflow, configuration reference, and developer interfaces
 - **[Zotero Add-on Plan](docs/zotero.md)** — Main-window product direction, scope, and compatibility stance
 - **[REST API Reference](docs/api.md)** — Backend contract for the add-on and developer/support tooling
 - **[Deployment Guide](docs/deployment.md)** — Local, Docker, and future SaaS architecture

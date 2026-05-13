@@ -5,7 +5,13 @@ from dataclasses import dataclass, field
 import pytest
 
 from agt.graph import workflow
-from agt.models import CollectionResult, NormalizedPaper, SearchMetadata, WriteResult
+from agt.models import (
+    CollectionResult,
+    NormalizedAuthor,
+    NormalizedPaper,
+    SearchMetadata,
+    WriteResult,
+)
 from agt.zotero.preflight import PreflightResult
 
 _EXPECTED_PAPER_COUNT = 2
@@ -84,8 +90,16 @@ async def test_m4_end_to_end_happy_path_with_mocked_externals(
         _ = kwargs
         return (
             [
-                NormalizedPaper(title=f"{query}-A", doi="10.1000/a", authors=["Ada Lovelace"]),
-                NormalizedPaper(title=f"{query}-B", doi="10.1000/b", authors=["Grace Hopper"]),
+                NormalizedPaper(
+                    title=f"{query}-A",
+                    doi="10.1000/a",
+                    authors=[NormalizedAuthor(name="Ada Lovelace")],
+                ),
+                NormalizedPaper(
+                    title=f"{query}-B",
+                    doi="10.1000/b",
+                    authors=[NormalizedAuthor(name="Grace Hopper")],
+                ),
             ],
             SearchMetadata(original_query=query, regex_query=query),
         )

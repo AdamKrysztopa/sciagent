@@ -12,11 +12,14 @@ from urllib.parse import quote_plus
 import httpx
 from tenacity import AsyncRetrying, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from agt.models import NormalizedPaper
+from agt.models import NormalizedAuthor, NormalizedPaper
 
 
 class ArxivResponseError(RuntimeError):
     """Raised when arXiv payload is malformed."""
+
+
+_ARXIV_UA_BASE = "SciAgent/0.1 (https://github.com/AdamKrysztopa/sciagent)"
 
 
 class ArxivClient:
@@ -27,11 +30,19 @@ class ArxivClient:
         *,
         timeout_seconds: int,
         retries: int,
+        mailto: str | None = None,
         base_url: str = "https://export.arxiv.org/api/query",
     ) -> None:
         self._timeout_seconds = timeout_seconds
         self._retries = retries
+        self._mailto = mailto
         self._base_url = base_url
+
+    def _user_agent(self) -> str:
+        ua = _ARXIV_UA_BASE
+        if self._mailto:
+            ua += f" mailto:{self._mailto}"
+        return ua
 
     async def search(
         self,
@@ -85,7 +96,7 @@ class ArxivClient:
             for author in entry.findall("atom:author", ns):
                 name = (author.findtext("atom:name", default="", namespaces=ns) or "").strip()
                 if name:
-                    authors.append(name)
+                    authors.append(NormalizedAuthor(name=name, source="arxiv"))
             pdf_url: str | None = None
             for link in entry.findall("atom:link", ns):
                 href = (link.attrib.get("href") or "").strip()
@@ -127,8 +138,13 @@ class ArxivClient:
             reraise=True,
         ):
             with attempt:
-                async with httpx.AsyncClient(timeout=self._timeout_seconds) as client:
+                async with httpx.AsyncClient(
+                    timeout=self._timeout_seconds,
+                    headers={"User-Agent": self._user_agent()},
+                ) as client:
                     response = await client.get(url)
+                    if response.status_code == 429:
+                        raise RuntimeError("arxiv rate limit (HTTP 429)")
                     response.raise_for_status()
                     return response.text
 

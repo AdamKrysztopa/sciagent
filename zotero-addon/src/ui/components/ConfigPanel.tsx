@@ -1,7 +1,72 @@
+import { useState } from "react";
+
+import type { KeyValidateResponse } from "../../shared/contracts";
+import { VALIDATABLE_PROVIDERS } from "../../shared/contracts";
 import type { AddonConfig } from "../../host/prefs";
 import { CustomSelect } from "./CustomSelect";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
+type ValidationState = "idle" | "validating" | "valid" | "invalid";
+
+interface ProviderKeyRowProps {
+  provider: string;
+  onValidate(provider: string, apiKey: string): Promise<KeyValidateResponse>;
+}
+
+function ProviderKeyRow({ provider, onValidate }: ProviderKeyRowProps) {
+  const [apiKey, setApiKey] = useState("");
+  const [validationState, setValidationState] = useState<ValidationState>("idle");
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  const handleValidate = async () => {
+    if (!apiKey.trim()) return;
+    setValidationState("validating");
+    setValidationError(null);
+    try {
+      const result = await onValidate(provider, apiKey.trim());
+      if (result.valid) {
+        setValidationState("valid");
+      } else {
+        setValidationState("invalid");
+        setValidationError(result.error ?? "validation_failed");
+      }
+    } catch {
+      setValidationState("invalid");
+      setValidationError("network_error");
+    }
+  };
+
+  return (
+    <div className="agt-provider-key-row">
+      <label className="agt-field">
+        <span>{provider}</span>
+        <div className="agt-key-input-row">
+          <input
+            className="agt-input"
+            disabled={validationState === "validating"}
+            onChange={(event) => { setApiKey(event.target.value); setValidationState("idle"); }}
+            placeholder={`${provider} API key`}
+            type="password"
+            value={apiKey}
+          />
+          <button
+            className="agt-button agt-button--ghost"
+            disabled={!apiKey.trim() || validationState === "validating"}
+            onClick={() => { void handleValidate(); }}
+            type="button"
+          >
+            {validationState === "validating" ? "\u2026" : "Validate"}
+          </button>
+        </div>
+      </label>
+      {validationState === "valid" ? (
+        <output className="agt-validation-ok">✓ Key is valid</output>
+      ) : validationState === "invalid" ? (
+        <p className="agt-validation-error" role="alert">✗ {validationError ?? "Invalid key"}</p>
+      ) : null}
+    </div>
+  );
+}
 
 interface ConfigPanelProps {
   config: AddonConfig;
@@ -9,9 +74,10 @@ interface ConfigPanelProps {
   onSave(): void;
   saveError: string | null;
   saveState: SaveState;
+  onValidateKey(provider: string, apiKey: string): Promise<KeyValidateResponse>;
 }
 
-export function ConfigPanel({ config, onChange, onSave, saveError, saveState }: ConfigPanelProps) {
+export function ConfigPanel({ config, onChange, onSave, saveError, saveState, onValidateKey }: ConfigPanelProps) {
   return (
     <section className="agt-card">
       <div className="agt-section-heading">
@@ -145,18 +211,24 @@ export function ConfigPanel({ config, onChange, onSave, saveError, saveState }: 
           />
         </label>
       )}
-      {(config.llmProvider === "ollama" || config.llmProvider === "custom") && (
-        <label className="agt-field">
-          <span>Model</span>
-          <input
-            className="agt-input"
-            onChange={(event) => onChange("llmModel", event.target.value)}
-            placeholder={config.llmProvider === "ollama" ? "llama3.2" : "deepseek-chat"}
-            type="text"
-            value={config.llmModel}
-          />
-        </label>
-      )}
+      <label className="agt-field">
+        <span>Model Name</span>
+        <input
+          className="agt-input"
+          onChange={(event) => onChange("llmModel", event.target.value)}
+          placeholder={
+            config.llmProvider === "openai" ? "gpt-5.4" :
+            config.llmProvider === "anthropic" ? "claude-opus-4-6" :
+            config.llmProvider === "xai" ? "grok-4" :
+            config.llmProvider === "groq" ? "llama-3.3-70b-versatile" :
+            config.llmProvider === "ollama" ? "llama3.2" :
+            "deepseek-chat"
+          }
+          type="text"
+          value={config.llmModel}
+        />
+      </label>
+      <p className="agt-small-note">Leave blank to use the provider default.</p>
 
       <h3 className="agt-subsection-heading">Search Defaults</h3>
       <p className="agt-small-note">
@@ -252,6 +324,24 @@ export function ConfigPanel({ config, onChange, onSave, saveError, saveState }: 
       </label>
       {saveState === "saved" ? <span className="agt-pill agt-pill--ok">Preferences saved</span> : null}
       {saveError !== null ? <div className="agt-error">{saveError}</div> : null}
+
+      <h3 className="agt-subsection-heading">Validate Server-Side API Keys</h3>
+      <p className="agt-small-note">
+        These buttons check whether your backend already has a key configured for each optional
+        provider. Keys must be set in the backend <code>.env</code> file
+        (e.g. <code>AGT_SEMANTIC_SCHOLAR_API_KEY</code>) — entering a key here
+        does <strong>not</strong> store it. Note: providers without a key still work at free-tier
+        rate limits (Semantic Scholar is always reachable without a key).
+      </p>
+      <div className="agt-provider-key-grid">
+        {VALIDATABLE_PROVIDERS.map((provider) => (
+          <ProviderKeyRow
+            key={provider}
+            provider={provider}
+            onValidate={onValidateKey}
+          />
+        ))}
+      </div>
     </section>
   );
 }

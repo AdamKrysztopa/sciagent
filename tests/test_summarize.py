@@ -6,7 +6,7 @@ from typing import Any
 
 import pytest
 
-from agt.models import NormalizedPaper
+from agt.models import NormalizedAuthor, NormalizedPaper
 from agt.tools.summarize import deterministic_summary, summarize_papers
 
 MAX_SENTENCES = 4
@@ -37,7 +37,7 @@ def test_deterministic_summary_bounded() -> None:
     paper = NormalizedPaper(
         title="Paper",
         year=2026,
-        authors=["A", "B"],
+        authors=[NormalizedAuthor(name="A"), NormalizedAuthor(name="B")],
         abstract="First sentence. Second sentence. Third sentence. Fourth sentence. Fifth sentence.",
         open_access=True,
     )

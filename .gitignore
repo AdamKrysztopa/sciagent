@@ -12,3 +12,4 @@ build/
 site/
 *.egg-info/
 nohup.out
+.claude/worktrees/

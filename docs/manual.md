@@ -118,18 +118,20 @@ Alternatively, use Ollama (no key) or any OpenAI-compatible endpoint:
 
 ### Optional Variables
 
-| Variable                  | Default           | Description                                                                             |
-| ------------------------- | ----------------- | --------------------------------------------------------------------------------------- |
-| `AGT_ZOTERO_LIBRARY_TYPE` | `user`            | `user` or `group`                                                                       |
-| `AGT_LLM_PROVIDER`        | `auto-detect`     | Explicit provider override. Values: `openai`, `anthropic`, `xai`, `groq`, `ollama`, `openai-compatible` |
-| `AGT_LLM_MODEL`           | provider-specific | Model name for Ollama or custom endpoint (alias for `AGT_MODEL_NAME`)                   |
-| `AGT_MODEL_NAME`          | provider-specific | Optional model override. Defaults to the selected provider's built-in model             |
-| `AGT_DATA_DIR`            | `~/.sciagent`     | Root data directory for sessions, cache, and watch files (SCI-0604)                     |
-| `AGT_TIMEOUT_SECONDS`     | `30`              | LLM call timeout (1–300)                                                                |
-| `AGT_RETRIES`             | `3`               | LLM retry count (0–10)                                                                  |
-| `AGT_TEMPERATURE`         | `0.2`             | LLM sampling temperature (0.0–2.0)                                                      |
-| `AGT_LOG_LEVEL`           | `INFO`            | Logging level                                                                           |
-| `AGT_ENV`                 | `local`           | Runtime environment: `local`, `staging`, `production`                                   |
+| Variable                    | Default           | Description                                                                             |
+| --------------------------- | ----------------- | --------------------------------------------------------------------------------------- |
+| `AGT_ZOTERO_LIBRARY_TYPE`   | `user`            | `user` or `group`                                                                       |
+| `AGT_LLM_PROVIDER`          | `auto-detect`     | Explicit provider override. Values: `openai`, `anthropic`, `xai`, `groq`, `ollama`, `openai-compatible` |
+| `AGT_LLM_MODEL`             | provider-specific | Model name for Ollama or custom endpoint (alias for `AGT_MODEL_NAME`)                   |
+| `AGT_MODEL_NAME`            | provider-specific | Optional model override. Defaults to the selected provider's built-in model             |
+| `AGT_DATA_DIR`              | `~/.sciagent`     | Root data directory for sessions, cache, and watch files (SCI-0604)                     |
+| `AGT_TIMEOUT_SECONDS`       | `30`              | LLM call timeout (1–300)                                                                |
+| `AGT_RETRIES`               | `3`               | LLM retry count (0–10)                                                                  |
+| `AGT_TEMPERATURE`           | `0.2`             | LLM sampling temperature (0.0–2.0)                                                      |
+| `AGT_LOG_LEVEL`             | `INFO`            | Logging level                                                                           |
+| `AGT_ENV`                   | `local`           | Runtime environment: `local`, `staging`, `production`                                   |
+| `AGT_MAILTO`                | —                 | Your email for the OpenAlex/Crossref/DOAJ "polite pool" — improves rate limits           |
+| `AGT_DISABLED_PROVIDERS`    | `[]`              | JSON array of provider names to disable regardless of key availability, e.g. `["base"]` |
 
 ### Optional API Keys (Enhance Retrieval)
 
@@ -379,7 +381,7 @@ Do **NOT** double-click the XPI file or use "Open With" → Zotero. macOS will a
 
 **Expected result:**
 
-- SciAgent appears in the add-ons list with version `0.1.2`
+- SciAgent appears in the add-ons list with version `0.2.0`
 - Status shows "Enabled"
 - A restart prompt may appear; restart Zotero if requested
 
@@ -473,7 +475,7 @@ Verified 2026-05-12 on Zotero 9.x with both `uvicorn` and Docker container backe
 - [x] Backend starts without errors: `uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000`
 - [x] Add-on builds cleanly: `npm run build` in `zotero-addon/`
 - [x] XPI installs via Zotero's add-ons manager (not double-click on macOS)
-- [x] Add-on appears in Tools → Add-ons with version 0.1.2
+- [x] Add-on appears in Tools → Add-ons with version 0.2.0
 - [x] Preferences pane opens and saves settings
 - [x] **Tools → SciAgent** opens the main-window workspace
 - [x] Backend health indicator shows green/connected in the main-window workspace
@@ -561,7 +563,7 @@ The binary is written to `build/dist/sciagent-server` (or `.exe` on Windows). Th
 ```bash
 # Version check (no credentials needed)
 ./build/dist/sciagent-server --version
-# → sciagent-server 0.1.0
+# → sciagent-server 0.2.0
 
 # Start on a test port — no credentials means ok:false body but HTTP 200
 ./build/dist/sciagent-server --port 58000 &
@@ -781,7 +783,8 @@ SciAgent searches across multiple academic databases simultaneously and merges r
 | **Europe PMC**       | 43M+ life sciences  | Open access indicator                                   |
 | **arXiv**            | 2.4M+ preprints     | Physics, CS, math, etc.                                 |
 | **BASE**             | 400M+ records       | Open academic search index                              |
-| **OpenCitations**    | Citation enrichment | Adds citation counts                                    |
+| **DOAJ**             | 9M+ OA articles     | Directory of Open Access Journals; all results are OA   |
+| **OpenCitations**    | Citation enrichment | Adds citation counts and citation graph expansion       |
 
 ### Require API Key
 
@@ -800,6 +803,46 @@ SciAgent searches across multiple academic databases simultaneously and merges r
 5. Hard filters are applied before ranking, including year filters, date ranges, citation thresholds, source filters, and exclude terms
 6. Papers are ranked by a multi-factor formula: semantic relevance (45%), citations (30%), influential citations (10%), recency (12%), abstract quality (5%), open access (3%)
 7. LLM validates result relevance and retries with improved topic wording if needed
+
+### Search Depth
+
+Use the **depth selector** in the sidebar or `AGT_SEARCH_DEPTH` env var to control breadth vs. speed:
+
+| Depth      | Providers queried                                   | Results/provider | Ref expansion |
+| ---------- | --------------------------------------------------- | ---------------- | ------------- |
+| `quick`    | OpenAlex, arXiv                                     | 10               | off           |
+| `balanced` | + Crossref, Europe PMC, DOAJ, PubMed                | 25               | off           |
+| `deep`     | + Semantic Scholar, CORE, BASE, OpenCitations       | 50               | on            |
+
+The sidebar shows a depth plan preview — which providers will run — before you start the search.
+
+### Provider Coverage Panel
+
+The sidebar's **Coverage** panel (populated from `GET /providers`) shows:
+
+- Each provider's capability matrix (which fields it can return)
+- Runtime health (available / rate-limited / failed / disabled)
+- BYOK hints: providers that need a key display an upgrade chip with the env var to set
+
+### Result Provenance
+
+Every result card shows:
+
+- **Source chips** — which providers contributed to this merged record (e.g. `openalex • crossref`)
+- **Missing-field tooltips** — hover the "ⓘ" icon next to an empty field for the reason: provider
+  didn't return it, no queried provider supports it, a key is missing, or the current depth skipped it
+- **Conflict dot** — a red dot means two providers disagreed on a field value. The approval dialog
+  shows each conflict and asks for explicit confirmation before writing to Zotero
+
+### Author Search and Citation Graph
+
+**Author-scoped search:** Queries like "papers by Karpathy 2023" resolve the author via OpenAlex
+and Semantic Scholar, then filter results to that author's resolved IDs. Author chips in result
+cards are tappable to trigger a new scoped search.
+
+**Citation graph expansion:** Queries like "papers citing Attention Is All You Need" use
+`SearchPlan.seed_dois` to fan out via OpenCitations and Semantic Scholar. Result cards show a
+directional badge (`↓ ref` / `↑ cites`) to indicate how the paper was found.
 
 ### Deterministic Search Filters
 

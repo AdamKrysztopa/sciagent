@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 import httpx
 from tenacity import AsyncRetrying, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from agt.models import NormalizedPaper
+from agt.models import NormalizedAuthor, NormalizedPaper
 
 
 class BaseSearchResponseError(RuntimeError):
@@ -58,7 +58,7 @@ class BaseSearchClient:
             abstract = (record.findtext("description", default="") or "").strip() or None
             url = (record.findtext("url", default="") or "").strip() or None
             creator = (record.findtext("creator", default="") or "").strip()
-            authors = [creator] if creator else []
+            authors = [NormalizedAuthor(name=creator)] if creator else []
             access = (record.findtext("accessRights", default="") or "").lower()
             open_access = "open" in access or "free" in access
             pdf_url = url if url and url.lower().endswith(".pdf") else None
