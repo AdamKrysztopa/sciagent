@@ -1,11 +1,124 @@
-import type { FilterEditContract, SearchPlan } from "../../shared/contracts";
+import { useEffect, useEffectEvent, useState } from "react";
+import type { FilterEditContract, NormalizedAuthor, ResolvedAuthor, SearchPlan } from "../../shared/contracts";
 import { keywordListToText, parseKeywordList } from "../../shared/contracts";
+
+// ── AuthorChipInput ───────────────────────────────────────────────────────────
+
+interface AuthorChipInputProps {
+  authors: ResolvedAuthor[];
+  disabled: boolean;
+  onChange(next: ResolvedAuthor[]): void;
+  onSuggest(q: string): Promise<NormalizedAuthor[]>;
+}
+
+function AuthorChipInput({ authors, disabled, onChange, onSuggest }: AuthorChipInputProps) {
+  const [inputValue, setInputValue] = useState("");
+  const [suggestions, setSuggestions] = useState<NormalizedAuthor[]>([]);
+
+  const doSuggest = useEffectEvent(async (q: string) => {
+    try {
+      const results = await onSuggest(q);
+      setSuggestions(results);
+    } catch {
+      setSuggestions([]);
+    }
+  });
+
+  useEffect(() => {
+    const trimmed = inputValue.trim();
+    if (trimmed.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+    const timer = setTimeout(() => { void doSuggest(trimmed); }, 200);
+    return () => clearTimeout(timer);
+  }, [inputValue]);
+
+  const addAuthor = (author: NormalizedAuthor) => {
+    const resolved: ResolvedAuthor = {
+      name: author.name,
+      openalex_id: author.openalex_id,
+      orcid: author.orcid,
+      s2_author_id: author.s2_author_id,
+    };
+    const alreadyAdded = authors.some(
+      (a) => a.name === resolved.name && a.openalex_id === resolved.openalex_id,
+    );
+    if (!alreadyAdded) {
+      onChange([...authors, resolved]);
+    }
+    setInputValue("");
+    setSuggestions([]);
+  };
+
+  const removeAuthor = (index: number) => {
+    onChange(authors.filter((_, i) => i !== index));
+  };
+
+  return (
+    <div className="agt-author-input">
+      {authors.length > 0 ? (
+        <div className="agt-chip-list">
+          {authors.map((author, i) => (
+            <span className="agt-chip agt-chip--removable" key={`${author.name}:${author.openalex_id ?? author.orcid ?? String(i)}`}>
+              {author.name}
+              {author.openalex_id !== null ? <span className="agt-chip-badge">OA</span> : null}
+              {author.orcid !== null ? <span className="agt-chip-badge">ORC</span> : null}
+              <button
+                aria-label={`Remove ${author.name}`}
+                className="agt-chip-remove"
+                disabled={disabled}
+                onClick={() => removeAuthor(i)}
+                type="button"
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+      ) : null}
+      <div className="agt-suggest-wrap">
+        <input
+          className="agt-input"
+          disabled={disabled}
+          onChange={(event) => setInputValue(event.target.value)}
+          placeholder="Type author name…"
+          type="text"
+          value={inputValue}
+        />
+        {suggestions.length > 0 ? (
+          <ul className="agt-suggest-list">
+            {suggestions.map((s, i) => (
+              <li key={s.openalex_id ?? s.orcid ?? `${s.name}-${String(i)}`}>
+                <button
+                  className="agt-suggest-item"
+                  onClick={() => addAuthor(s)}
+                  type="button"
+                >
+                  <span className="agt-suggest-item__name">{s.name}</span>
+                  {s.affiliation !== null ? (
+                    <span className="agt-suggest-item__affil">{s.affiliation}</span>
+                  ) : null}
+                  {s.openalex_id !== null ? <span className="agt-chip-badge">OA</span> : null}
+                  {s.orcid !== null ? <span className="agt-chip-badge">ORC</span> : null}
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+// ── FilterEditor ──────────────────────────────────────────────────────────────
 
 interface FilterEditorProps {
   disabled: boolean;
   filterDraft: FilterEditContract | null;
   onChange(nextDraft: FilterEditContract): void;
   onReset(): void;
+  onSuggestAuthors?: (q: string) => Promise<NormalizedAuthor[]>;
   searchPlan: SearchPlan | null;
 }
 
@@ -14,6 +127,7 @@ export function FilterEditor({
   filterDraft,
   onChange,
   onReset,
+  onSuggestAuthors,
   searchPlan,
 }: FilterEditorProps) {
   if (filterDraft === null) {
@@ -192,6 +306,17 @@ export function FilterEditor({
           />
         </label>
       </div>
+      {onSuggestAuthors !== undefined ? (
+        <div className="agt-field">
+          <span>Author Filter</span>
+          <AuthorChipInput
+            authors={filterDraft.authors ?? []}
+            disabled={disabled}
+            onChange={(next) => update({ ...filterDraft, authors: next })}
+            onSuggest={onSuggestAuthors}
+          />
+        </div>
+      ) : null}
       <div className="agt-checkbox-row">
         <label className="agt-checkbox-row">
           <input

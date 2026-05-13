@@ -885,6 +885,102 @@
 .agt-progress-bar { background: var(--agt-border); border-radius: 4px; height: 8px; margin: 8px 0; overflow: hidden; }
 .agt-progress-fill { background: var(--agt-accent, #d47b37); height: 100%; transition: width 0.15s ease; }
 
+/* ── Author chip input (P9.8) ─────────────────────────────── */
+.agt-author-input {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.agt-chip--removable {
+  align-items: center;
+  display: inline-flex;
+  gap: 4px;
+  padding-right: 4px;
+}
+
+.agt-chip-badge {
+  background: var(--agt-accent-dim);
+  border-radius: 3px;
+  color: var(--agt-accent);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 4px;
+}
+
+.agt-chip-remove {
+  align-items: center;
+  background: none;
+  border: none;
+  color: var(--agt-text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.9rem;
+  height: 16px;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  width: 14px;
+}
+.agt-chip-remove:hover:not(:disabled) {
+  color: var(--agt-danger);
+}
+.agt-chip-remove:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.agt-suggest-wrap {
+  position: relative;
+}
+
+.agt-suggest-list {
+  background: var(--agt-surface);
+  border: 0.5px solid var(--agt-border-strong);
+  border-radius: var(--agt-radius-sm);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  list-style: none;
+  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 4px 0;
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+.agt-suggest-item {
+  background: none;
+  border: none;
+  color: var(--agt-text);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  font: inherit;
+  gap: 2px;
+  padding: 6px 10px;
+  text-align: left;
+  width: 100%;
+}
+.agt-suggest-item:hover {
+  background: var(--agt-surface-raised);
+}
+
+.agt-suggest-item__name {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.agt-suggest-item__affil {
+  color: var(--agt-text-muted);
+  font-size: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ── Responsive ───────────────────────────────────────────── */
 @media (max-width: 640px) {
   .agt-grid,

@@ -626,6 +626,7 @@ export function useSciAgentController(services: AddonUiServices) {
     },
     onSaveConfig: () => void saveConfig(),
     onSaveFirstRunConfig: (update: Partial<AddonConfig>) => void saveFirstRunConfig(update),
+    onSuggestAuthors: (q: string) => services.createClient(config).suggestAuthors(q),
     onSubmitSearch: () => void submitSearch(),
     validateKey: (provider: string, apiKey: string) => validateKey(provider, apiKey),
     onDepthChange: setSearchDepth,

@@ -7,6 +7,7 @@ import type {
   GapFinderResponse,
   HealthResponse,
   KeyValidateResponse,
+  NormalizedAuthor,
   ProviderInfo,
   ResumeRequest,
   RunAcceptedResponse,
@@ -173,6 +174,13 @@ export class SciAgentBackendClient {
     return this.request<KeyValidateResponse>("/keys/validate", {
       body: JSON.stringify({ provider, api_key: apiKey }),
       method: "POST",
+    });
+  }
+
+  async suggestAuthors(q: string, limit = 5): Promise<NormalizedAuthor[]> {
+    const params = new URLSearchParams({ q, limit: String(limit) });
+    return this.request<NormalizedAuthor[]>(`/authors/suggest?${params.toString()}`, {
+      method: "GET",
     });
   }
 

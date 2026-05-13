@@ -43,7 +43,15 @@ export interface HardFilters {
   include_keywords: string[];
   exclude_keywords: string[];
   author_ids?: string[];
+  author_names?: string[];
   seed_dois?: string[];
+}
+
+export interface ResolvedAuthor {
+  name: string;
+  openalex_id: string | null;
+  orcid: string | null;
+  s2_author_id: string | null;
 }
 
 export interface SoftPreferences {
@@ -75,6 +83,7 @@ export interface FilterEditContract {
   hard_filters: HardFilters;
   soft_preferences: SoftPreferences;
   result_limit: number;
+  authors?: ResolvedAuthor[];
 }
 
 export interface NormalizedAuthor {
