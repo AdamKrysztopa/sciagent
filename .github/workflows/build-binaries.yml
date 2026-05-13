@@ -67,19 +67,39 @@ jobs:
       - name: Smoke test binary
         shell: bash
         run: |
+          # Hard check: --version must succeed
           ./build/dist/${{ matrix.binary }} --version
+
+          # Start server and capture PID (more reliable than job-control %1)
           ./build/dist/${{ matrix.binary }} --port 58000 &
-          sleep 3
-          curl -f http://127.0.0.1:58000/health || true
-          kill %1 || true
+          SERVER_PID=$!
+
+          # Poll health up to 20 s (Windows Defender can delay first-run by 10+ s)
+          HEALTHY=0
+          for i in $(seq 1 10); do
+            if curl -sf http://127.0.0.1:58000/health; then
+              HEALTHY=1
+              break
+            fi
+            sleep 2
+          done
+
+          kill "$SERVER_PID" 2>/dev/null || true
+          wait "$SERVER_PID" 2>/dev/null || true
+
+          if [ "$HEALTHY" -eq 0 ]; then
+            echo "WARNING: health check did not pass within 20 s (non-fatal on first CI run)"
+          fi
 
       - name: Rename and checksum
         shell: bash
         run: |
-          cp build/dist/${{ matrix.binary }} \
-            sciagent-server-${{ matrix.platform }}${{ runner.os == 'Windows' && '.exe' || '' }}
-          sha256sum sciagent-server-${{ matrix.platform }}* \
-            > sciagent-server-${{ matrix.platform }}.sha256
+          DEST="sciagent-server-${{ matrix.platform }}${{ runner.os == 'Windows' && '.exe' || '' }}"
+          cp "build/dist/${{ matrix.binary }}" "$DEST"
+          # sha256sum is available on all GitHub-hosted runners (Linux, macOS via coreutils, Windows via Git Bash)
+          sha256sum "$DEST" > "sciagent-server-${{ matrix.platform }}.sha256"
+          echo "--- checksum ---"
+          cat "sciagent-server-${{ matrix.platform }}.sha256"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -110,6 +130,13 @@ jobs:
         working-directory: zotero-addon
         run: |
           npm ci && npm run lint && npm run typecheck && npm run test && npm run build
+
+      - name: Upload XPI artifact (non-release runs)
+        if: github.ref_type != 'tag'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sciagent-zotero-addon-xpi
+          path: zotero-addon/build/sciagent-zotero-addon.xpi
 
       - name: Generate update.rdf for release
         if: github.ref_type == 'tag'
