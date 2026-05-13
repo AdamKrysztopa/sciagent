@@ -76,22 +76,22 @@ asked for.
 
 ### Current Status
 
-- All P0–P8 milestones complete as of 2026-05-14. 563 Python / 103 add-on tests
-  green.
-- Local-first scaffolding done: `src/agt/server.py`, `GET /version`,
-  `AGT_DATA_DIR`, `serverManager.ts`, `FirstRunDialog.tsx`,
-  `.github/workflows/build-binaries.yml`, working PyInstaller spec verified on
-  macOS arm64.
-- **Open product gap.** No tagged release has run the full
-  `build-binaries` + `package-xpi` pipeline end-to-end. `README.md` Quick Start
-  still asks the user to clone the repo and run uvicorn. The Author search story
-  ends at "chips in the result card" — there is no Author input field.
+- All P0–P8 milestones complete as of 2026-05-14. 563 Python / 104 add-on tests green.
+- ✅ **P9.0 complete (2026-05-13):** `backendMode` default changed to `"local"`;
+  `runtime.ts` `createClient` uses `getResolvedPort()` (57321) instead of
+  `config.backendUrl` (8000), fixing a silent port mismatch; `BackendFailurePanel`
+  now shows local-aware instructions; health re-check fires automatically after
+  first-run binary download completes; `prefs.test.ts` asserts the new default.
+- **Open product gap.** No tagged release has run the full `build-binaries.yml`
+  end-to-end (P9.1). `README.md` Quick Start still asks the user to clone the
+  repo and run uvicorn (P9.11). Author search ends at result-card chips —
+  no Author input field (P9.6–P9.8).
 
 ### P9 Status
 
 | ID    | Story                                                  | Effort | Owner          | Status |
 | ----- | ------------------------------------------------------ | ------ | -------------- | ------ |
-| P9.0  | Release-mode default + first-run polish                | ~0.25d | zotero-frontend | not done |
+| P9.0  | Release-mode default + first-run polish                | ~0.25d | zotero-frontend | ✅ done (2026-05-13) |
 | P9.1  | Build-binaries CI cross-platform validation            | ~0.75d | settings-bootstrap | not done |
 | P9.2  | Unified `release.yml` (binaries + XPI + update.rdf)    | ~0.5d  | settings-bootstrap | not done |
 | P9.3  | `update.rdf` self-update wiring                        | ~0.25d | zotero-frontend | not done |
