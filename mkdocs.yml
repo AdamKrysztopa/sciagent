@@ -29,21 +29,24 @@ markdown_extensions:
 nav:
   - Overview:
       - Home: index.md
-  - Planning:
+  - Get Started:
+      - Installation: install.md
+      - API Keys: keys.md
+      - User Manual: user-manual.md
+  - Power User:
+      - Advanced Configuration: advanced-config.md
+      - Configuration & Usage: manual.md
+      - Deployment & Hosting: deployment.md
+  - Reference:
+      - REST API: api.md
+      - Provider Inventory: providers.md
+      - Settings: settings.md
+      - Zotero Add-on: zotero.md
+      - Security: security.md
+      - P1 Benchmark: benchmark.md
+      - Local-First Install: local-first.md
+  - Project:
       - Core Roadmap: core.md
       - Action Plan: actionable-plan.md
       - Priorities: priorities.md
       - Next Steps: next-steps.md
-  - Manuals:
-      - Installation: install.md
-      - User Manual (Start Here): user-manual.md
-      - Configuration & Usage: manual.md
-      - Deployment & Hosting: deployment.md
-      - Local-First Install: local-first.md
-  - Reference:
-      - P1 Benchmark: benchmark.md
-      - REST API: api.md
-      - Provider Inventory: providers.md
-      - Settings: settings.md
-      - Security: security.md
-      - Zotero Add-on: zotero.md

@@ -1,30 +1,28 @@
-# SciAgent Docs
+# SciAgent
 
-SciAgent docs are organized around the primary researcher path: open the Zotero add-on from Zotero's main window, review the deterministic search plan, then approve selected papers into Zotero.
-
-The Zotero add-on is the primary interface. Streamlit remains a prototype and support surface. The CLI and REST API remain developer and support interfaces.
+SciAgent is a federated academic search assistant that queries OpenAlex, Semantic Scholar,
+Crossref, PubMed, arXiv, Europe PMC, BASE, and OpenCitations in a single deterministic plan,
+ranks and deduplicates results, and routes approved papers into your Zotero library through an
+idempotent, approval-gated write path — so nothing lands in Zotero without your explicit sign-off.
 
 ## Start Here
 
-- [Manual](manual.md) for the Zotero-first workflow, installation, and support interfaces
-- [Settings](settings.md) for runtime, tooling, and quality-gate policy
-- [Core Roadmap](core.md) for implementation order, acceptance criteria, and backlog structure
-- [Zotero Add-on](zotero.md) for the primary product path, scope, and compatibility stance
-- [API Reference](api.md) for backend integration, automation, and support debugging
+- New to SciAgent? [Install and configure the backend and Zotero add-on.](install.md)
+- Running your first search? [Follow the User Manual for a step-by-step walkthrough.](user-manual.md)
+- Deploying for a team? [See Deployment and Hosting for server and Docker setup.](deployment.md)
 
-## Docs Workflow
+## What Is in This Docs Site
 
-Use the repo Markdown toolchain to lint, preview, and build the docs site.
+- **Get Started** — installation, API key setup, and the user manual for daily use
+- **Power User** — advanced configuration, the full configuration and usage reference, and
+  deployment options for self-hosted or team environments
+- **Reference** — REST API, provider inventory, settings contract, Zotero add-on architecture,
+  security policy, benchmark results, and local-first install guide
+- **Project** — core roadmap, action plan, priorities, and next-steps tracking
 
-```bash
-npx --yes markdownlint-cli2 "README.md" "docs/**/*.md" "examples/**/*.md" ".github/**/*.md" "zotero-addon/README.md"
-uv run mkdocs serve -a 127.0.0.1:8001
-uv run mkdocs build --strict
-```
+## Docs Maintenance
 
-The workspace also includes modern Markdown authoring support through `.vscode/`:
+To lint and build the docs locally:
 
-- autosave after a short delay
-- format-on-save for Markdown
-- advanced preview and Mermaid extensions
-- MCP browser automation for validating the generated docs site
+    npx --yes markdownlint-cli2 "README.md" "docs/**/*.md" ".github/**/*.md" "zotero-addon/README.md"
+    uv run mkdocs build --strict
