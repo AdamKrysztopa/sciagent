@@ -41,6 +41,7 @@ nav:
   - Reference:
       - P1 Benchmark: benchmark.md
       - REST API: api.md
+      - Provider Inventory: providers.md
       - Settings: settings.md
       - Security: security.md
       - Zotero Add-on: zotero.md

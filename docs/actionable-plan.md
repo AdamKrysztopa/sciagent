@@ -91,9 +91,9 @@ locally with `AGT_LLM_PROVIDER=ollama` and no hosted LLM key.
 
 | ID      | Story                                            | Effort | Status   |
 | ------- | ------------------------------------------------ | ------ | -------- |
-| P8.0-A  | Provider inventory table (`docs/providers.md`)   | ~0.25d | not done |
-| P8.0-B  | Snapshot VCR tests                               | ~0.5d  | not done |
-| P8.0-C  | Cassette hygiene + `provider_snapshot` marker    | ~0.25d | not done |
+| P8.0-A  | Provider inventory table (`docs/providers.md`)   | ~0.25d | done     |
+| P8.0-B  | Snapshot VCR tests                               | ~0.5d  | done     |
+| P8.0-C  | Cassette hygiene + `provider_snapshot` marker    | ~0.25d | done     |
 | P8.1-A  | `capabilities.py` — capability + health model    | ~0.5d  | not done |
 | P8.1-B  | `provider_base.py` — protocol + base class       | ~0.5d  | not done |
 | P8.1-C  | `GET /providers` endpoint                        | ~0.25d | not done |
