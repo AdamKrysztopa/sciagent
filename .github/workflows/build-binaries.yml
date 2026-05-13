@@ -97,8 +97,12 @@ jobs:
         run: |
           DEST="sciagent-server-${{ matrix.platform }}${{ runner.os == 'Windows' && '.exe' || '' }}"
           cp "build/dist/${{ matrix.binary }}" "$DEST"
-          # sha256sum is available on all GitHub-hosted runners (Linux, macOS via coreutils, Windows via Git Bash)
-          sha256sum "$DEST" > "sciagent-server-${{ matrix.platform }}.sha256"
+          # sha256sum on Linux/Windows; macOS ships shasum instead
+          if command -v sha256sum >/dev/null 2>&1; then
+            sha256sum "$DEST" > "sciagent-server-${{ matrix.platform }}.sha256"
+          else
+            shasum -a 256 "$DEST" > "sciagent-server-${{ matrix.platform }}.sha256"
+          fi
           echo "--- checksum ---"
           cat "sciagent-server-${{ matrix.platform }}.sha256"
 
