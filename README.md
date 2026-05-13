@@ -27,7 +27,7 @@ SciAgent is not a floating AI sidebar, PDF chat tool, or generic browser plug-in
 - **[REST API Reference](docs/api.md)** — Backend contract for the add-on and developer/support tooling
 - **[Deployment Guide](docs/deployment.md)** — Local, Docker, and future SaaS architecture
 - **[Core Roadmap](docs/core.md)** — Feature backlog and milestone details
-- **[Action Plan](docs/actionable-plan.md)** — Execution tracker and live status
+- **[Action Plan](docs/actionable-plan-done-2.md)** — Execution tracker and live status
 - **[Settings](docs/settings.md)** — Runtime stack, bootstrap flow, and quality tooling
 
 ## Quick Start

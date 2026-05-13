@@ -1,7 +1,7 @@
 # SciAgent Priorities
 
 > **⚠️ ARCHIVED — 2026-05-12.** Generated 2026-03-24 when AGT-28, AGT-29, and ZAP-0 were "Not started". All priorities listed here are now implemented.
-> For current open items and priority order, see **[actionable-plan.md](actionable-plan.md)** — the P7 Open Items section.
+> For current open items and priority order, see **[actionable-plan.md](actionable-plan-done-2.md)** — the P7 Open Items section.
 
 **Generated:** 2026-03-24
 **Purpose:** Historical priority map; superseded by P7 open items in `actionable-plan.md`.

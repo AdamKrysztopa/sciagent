@@ -41,7 +41,8 @@
       "Bash(gtimeout 5 uv run python -m agt.mcp_server)",
       "Bash(echo \"exit: $?\")",
       "Bash(echo \"LINT EXIT: $?\")",
-      "Bash(npm ci *)"
+      "Bash(npm ci *)",
+      "Bash(echo \"EXIT=$?\")"
     ]
   }
 }
