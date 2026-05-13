@@ -8,7 +8,9 @@ __pycache__/
 .env
 node_modules/
 dist/
-build/
+build/dist/
+build/work/
+zotero-addon/build/
 site/
 *.egg-info/
 nohup.out
