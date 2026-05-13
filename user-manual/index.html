@@ -1,0 +1,2183 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="SciAgent documentation site built from Markdown sources in the repository.">
+      
+      
+      
+        <link rel="canonical" href="https://adamkrysztopa.github.io/sciagent/user-manual/">
+      
+      
+        <link rel="prev" href="../next-steps/">
+      
+      
+        <link rel="next" href="../manual/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>User Manual (Start Here) - SciAgent Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#sciagent-user-manual" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="SciAgent Docs" class="md-header__button md-logo" aria-label="SciAgent Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            SciAgent Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              User Manual (Start Here)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/AdamKrysztopa/sciagent" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    AdamKrysztopa/sciagent
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="SciAgent Docs" class="md-nav__button md-logo" aria-label="SciAgent Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    SciAgent Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/AdamKrysztopa/sciagent" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    AdamKrysztopa/sciagent
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Overview
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Planning
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Planning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../actionable-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../priorities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Priorities
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../next-steps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Next Steps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manuals
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Manuals
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Manual (Start Here)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Manual (Start Here)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-you-need-before-starting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What You Need Before Starting
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-install-python-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1 — Install Python backend
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-configure-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2 — Configure credentials
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 2 — Configure credentials">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#getting-your-zotero-api-key-and-library-id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Getting your Zotero API key and library ID
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-ollama-fully-offline-no-llm-key-needed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using Ollama (fully offline, no LLM key needed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-build-the-zotero-add-on" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3 — Build the Zotero add-on
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-install-the-add-on-in-zotero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4 — Install the add-on in Zotero
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#starting-sciagent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Starting SciAgent
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Starting SciAgent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#alternative-docker-no-python-install" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alternative: Docker (no Python install)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#your-first-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Your First Search
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#search-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Search Features
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Search Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#search-depth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Search depth
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deterministic-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deterministic filters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#result-provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Result provenance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#author-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Author search
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#citation-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Citation graph
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#saving-and-re-running-searches-watch-lists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Saving and re-running searches (watch lists)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#provider-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Provider Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Provider Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#free-sources-always-active-no-key-needed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Free sources (always active, no key needed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional-keys-add-to-env-to-unlock" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optional keys (add to .env to unlock)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#disabling-specific-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Disabling specific providers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#backend-wont-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend won't start
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zotero-add-on-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Zotero add-on issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zotero-preflight-fails-cannot-write" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Zotero preflight fails ("cannot write")
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#search-returns-no-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Search returns no results
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rate-limit-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rate limit errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-reference-all-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Reference: all environment variables
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../manual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration & Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment & Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../local-first/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local-First Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmark/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    P1 Benchmark
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../providers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provider Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../zotero/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Zotero Add-on
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-you-need-before-starting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What You Need Before Starting
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-install-python-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1 — Install Python backend
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-configure-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2 — Configure credentials
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 2 — Configure credentials">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#getting-your-zotero-api-key-and-library-id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Getting your Zotero API key and library ID
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-ollama-fully-offline-no-llm-key-needed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using Ollama (fully offline, no LLM key needed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-build-the-zotero-add-on" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3 — Build the Zotero add-on
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-install-the-add-on-in-zotero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4 — Install the add-on in Zotero
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#starting-sciagent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Starting SciAgent
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Starting SciAgent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#alternative-docker-no-python-install" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alternative: Docker (no Python install)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#your-first-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Your First Search
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#search-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Search Features
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Search Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#search-depth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Search depth
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deterministic-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deterministic filters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#result-provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Result provenance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#author-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Author search
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#citation-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Citation graph
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#saving-and-re-running-searches-watch-lists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Saving and re-running searches (watch lists)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#provider-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Provider Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Provider Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#free-sources-always-active-no-key-needed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Free sources (always active, no key needed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional-keys-add-to-env-to-unlock" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optional keys (add to .env to unlock)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#disabling-specific-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Disabling specific providers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#backend-wont-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend won't start
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zotero-add-on-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Zotero add-on issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#zotero-preflight-fails-cannot-write" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Zotero preflight fails ("cannot write")
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#search-returns-no-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Search returns no results
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rate-limit-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rate limit errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-reference-all-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Reference: all environment variables
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="sciagent-user-manual">SciAgent — User Manual<a class="headerlink" href="#sciagent-user-manual" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>Version 0.2.0 · For researchers who want Zotero-native, approval-gated academic search.</p>
+</blockquote>
+<p>SciAgent federates academic search across 9 free sources, merges results with full provenance,
+and writes approved papers to your Zotero library — never silently, always with your sign-off.</p>
+<hr />
+<h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Permanent link">&para;</a></h2>
+<ol>
+<li><a href="#what-you-need-before-starting">What You Need Before Starting</a></li>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#starting-sciagent">Starting SciAgent</a></li>
+<li><a href="#your-first-search">Your First Search</a></li>
+<li><a href="#search-features">Search Features</a></li>
+<li><a href="#provider-configuration">Provider Configuration</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+</ol>
+<hr />
+<h2 id="what-you-need-before-starting">What You Need Before Starting<a class="headerlink" href="#what-you-need-before-starting" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Requirement</th>
+<th>Where to get it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Zotero 9.x</strong></td>
+<td><a href="https://www.zotero.org/download">zotero.org/download</a></td>
+</tr>
+<tr>
+<td><strong>Zotero API key</strong></td>
+<td><a href="https://www.zotero.org/settings/keys">zotero.org/settings/keys</a> — needs write access</td>
+</tr>
+<tr>
+<td><strong>Zotero library ID</strong></td>
+<td>Your numeric user ID on the same keys page</td>
+</tr>
+<tr>
+<td><strong>One LLM key</strong></td>
+<td>OpenAI, Anthropic, xAI, or Groq — or run Ollama locally (free)</td>
+</tr>
+<tr>
+<td><strong>Python 3.13+</strong></td>
+<td><a href="https://www.python.org">python.org</a> or <code>pyenv install 3.14</code></td>
+</tr>
+<tr>
+<td><strong>uv</strong> (Python manager)</td>
+<td><code>curl -Lsf https://astral.sh/uv/install.sh \| sh</code></td>
+</tr>
+<tr>
+<td><strong>Node.js 20+</strong></td>
+<td><a href="https://nodejs.org">nodejs.org</a> — only needed to build the add-on</td>
+</tr>
+<tr>
+<td><strong>git</strong></td>
+<td>Pre-installed on macOS/Linux; <a href="https://git-scm.com">git-scm.com</a> on Windows</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
+<h3 id="step-1-install-python-backend">Step 1 — Install Python backend<a class="headerlink" href="#step-1-install-python-backend" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Clone the repository</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/AdamKrysztopa/sciagent.git
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nb">cd</span><span class="w"> </span>sciagent
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># Install all Python dependencies (creates .venv automatically)</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>uv<span class="w"> </span>sync
+</code></pre></div>
+<p>That's it. No system-wide Python install required — <code>uv</code> manages the virtualenv.</p>
+<p><strong>Verify:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span class="w"> </span>run<span class="w"> </span>sciagent-server<span class="w"> </span>--version
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="c1"># sciagent-server 0.2.0</span>
+</code></pre></div>
+<hr />
+<h3 id="step-2-configure-credentials">Step 2 — Configure credentials<a class="headerlink" href="#step-2-configure-credentials" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>cp<span class="w"> </span>.env.example<span class="w"> </span>.env
+</code></pre></div>
+<p>Open <code>.env</code> in any text editor and fill in <strong>at minimum</strong>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a># --- LLM (pick one) ---
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>AGT_OPENAI_API_KEY=sk-...          # OpenAI
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a># AGT_ANTHROPIC_API_KEY=sk-ant-...  # Anthropic Claude
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a># AGT_GROQ_API_KEY=gsk_...          # Groq (free tier)
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a># --- Zotero write path ---
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>AGT_ZOTERO_API_KEY=your-zotero-api-key
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>AGT_ZOTERO_LIBRARY_ID=12345678        # your numeric user ID
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a># --- Strongly recommended ---
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>AGT_MAILTO=your-email@example.com     # unlocks polite-pool rate limits for OpenAlex, Crossref, DOAJ
+</code></pre></div>
+<h4 id="getting-your-zotero-api-key-and-library-id">Getting your Zotero API key and library ID<a class="headerlink" href="#getting-your-zotero-api-key-and-library-id" title="Permanent link">&para;</a></h4>
+<ol>
+<li>Go to <a href="https://www.zotero.org/settings/keys">zotero.org/settings/keys</a></li>
+<li>Click <strong>Create new private key</strong></li>
+<li>Enable <strong>Allow write access</strong> — this is required for SciAgent to add papers</li>
+<li>Copy the key into <code>AGT_ZOTERO_API_KEY</code></li>
+<li>Your <strong>library ID</strong> is shown on that same page as "Your userID for use in API calls"</li>
+</ol>
+<h4 id="using-ollama-fully-offline-no-llm-key-needed">Using Ollama (fully offline, no LLM key needed)<a class="headerlink" href="#using-ollama-fully-offline-no-llm-key-needed" title="Permanent link">&para;</a></h4>
+<p>Install <a href="https://ollama.ai">Ollama</a> and pull a model:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>ollama<span class="w"> </span>pull<span class="w"> </span>llama3.2
+</code></pre></div>
+<p>Then in <code>.env</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>AGT_LLM_PROVIDER=ollama
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>AGT_LLM_MODEL=llama3.2
+</code></pre></div>
+<hr />
+<h3 id="step-3-build-the-zotero-add-on">Step 3 — Build the Zotero add-on<a class="headerlink" href="#step-3-build-the-zotero-add-on" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nb">cd</span><span class="w"> </span>zotero-addon
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>npm<span class="w"> </span>ci<span class="w">            </span><span class="c1"># install Node dependencies (first time only)</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>npm<span class="w"> </span>run<span class="w"> </span>build<span class="w">     </span><span class="c1"># produces build/sciagent-zotero-addon.xpi</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="nb">cd</span><span class="w"> </span>..
+</code></pre></div>
+<p><strong>Expected output:</strong> a file at <code>zotero-addon/build/sciagent-zotero-addon.xpi</code> (around 250 KB).</p>
+<hr />
+<h3 id="step-4-install-the-add-on-in-zotero">Step 4 — Install the add-on in Zotero<a class="headerlink" href="#step-4-install-the-add-on-in-zotero" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p><strong>macOS warning:</strong> Do NOT double-click the XPI file. macOS treats it as a zip archive and
+extracts it instead of installing it. Always use the in-app install method below.</p>
+</blockquote>
+<ol>
+<li>Open Zotero 9</li>
+<li>Go to <strong>Tools → Add-ons</strong></li>
+<li>Click the <strong>gear icon</strong> (⚙) in the top-right corner</li>
+<li>Select <strong>Install Add-on From File…</strong></li>
+<li>Navigate to <code>sciagent/zotero-addon/build/sciagent-zotero-addon.xpi</code></li>
+<li>Click <strong>Open</strong> and confirm</li>
+</ol>
+<p>Zotero may ask you to restart — do so if prompted.</p>
+<p><strong>After restart, verify:</strong> SciAgent should appear in the add-on list with status <strong>Enabled</strong> and
+version <strong>0.2.0</strong>.</p>
+<hr />
+<h2 id="starting-sciagent">Starting SciAgent<a class="headerlink" href="#starting-sciagent" title="Permanent link">&para;</a></h2>
+<p><strong>Every time you want to use SciAgent, start the backend first:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nb">cd</span><span class="w"> </span>sciagent
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>uv<span class="w"> </span>run<span class="w"> </span>uvicorn<span class="w"> </span>agt.api.app:app<span class="w"> </span>--host<span class="w"> </span><span class="m">127</span>.0.0.1<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
+</code></pre></div>
+<p>Wait for:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>INFO:     Application startup complete.
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>INFO:     Uvicorn running on http://127.0.0.1:8000
+</code></pre></div>
+<p>Then open Zotero → <strong>Tools → SciAgent</strong>.</p>
+<p>The health indicator at the top of the workspace should show <strong>green / connected</strong>. If it shows
+red, the backend is not running — go back to the terminal step.</p>
+<h3 id="alternative-docker-no-python-install">Alternative: Docker (no Python install)<a class="headerlink" href="#alternative-docker-no-python-install" title="Permanent link">&para;</a></h3>
+<p>If you prefer Docker over a native Python setup:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>cp<span class="w"> </span>.env.example<span class="w"> </span>.env<span class="w">  </span><span class="c1"># fill in credentials</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>--build<span class="w"> </span>-d
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>curl<span class="w"> </span>http://localhost:8000/health<span class="w">  </span><span class="c1"># should return {&quot;ok&quot;: true, ...}</span>
+</code></pre></div>
+<p>The <code>.env</code> file is mounted directly — edit it to change credentials.</p>
+<hr />
+<h2 id="your-first-search">Your First Search<a class="headerlink" href="#your-first-search" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Open Tools → SciAgent</strong> in Zotero</li>
+<li><strong>Type a research question</strong> in the search box, e.g. <code>retrieval augmented generation 2023+</code></li>
+<li><strong>Set a collection name</strong> — e.g. <code>RAG Papers</code>. SciAgent creates the collection if it doesn't exist.</li>
+<li>Click <strong>Run Search</strong>. SciAgent shows the <strong>search plan</strong> (parsed year filters, exclude terms,
+   source list) before fetching anything, then runs the search across all active providers in
+   parallel, and merges and deduplicates results with full provenance.</li>
+<li><strong>Review the results</strong> — each card shows title, authors, year, citation count, abstract, and
+   which sources contributed to that record</li>
+<li><strong>Check/uncheck papers</strong> you want to add to Zotero</li>
+<li>Click <strong>Approve</strong> — SciAgent writes selected papers to the target collection</li>
+<li>Each paper gets a write status: <code>created</code>, <code>unchanged</code> (already in library), or <code>failed</code></li>
+</ol>
+<p>Writing is approval-gated: nothing touches your Zotero library until you click Approve.</p>
+<hr />
+<h2 id="search-features">Search Features<a class="headerlink" href="#search-features" title="Permanent link">&para;</a></h2>
+<h3 id="search-depth">Search depth<a class="headerlink" href="#search-depth" title="Permanent link">&para;</a></h3>
+<p>Use the <strong>depth selector</strong> in the sidebar before running:</p>
+<table>
+<thead>
+<tr>
+<th>Depth</th>
+<th>Providers queried</th>
+<th>Results/source</th>
+<th>Speed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>quick</code></td>
+<td>OpenAlex, arXiv</td>
+<td>10</td>
+<td>~5 s</td>
+</tr>
+<tr>
+<td><code>balanced</code></td>
+<td>+ Crossref, Europe PMC, DOAJ, PubMed</td>
+<td>25</td>
+<td>~15 s</td>
+</tr>
+<tr>
+<td><code>deep</code></td>
+<td>+ Semantic Scholar, CORE, BASE, OpenCitations</td>
+<td>50</td>
+<td>~30 s</td>
+</tr>
+</tbody>
+</table>
+<p>The sidebar shows which providers will run at the selected depth <em>before</em> you search.</p>
+<h3 id="deterministic-filters">Deterministic filters<a class="headerlink" href="#deterministic-filters" title="Permanent link">&para;</a></h3>
+<p>Hard filters are parsed from your query and displayed before search — they cannot be silently
+loosened:</p>
+<table>
+<thead>
+<tr>
+<th>What you write</th>
+<th>What SciAgent enforces</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>not older than 2023</code></td>
+<td><code>min_year = 2023</code></td>
+</tr>
+<tr>
+<td><code>between 2021 and 2024</code></td>
+<td><code>min_year = 2021</code>, <code>max_year = 2024</code></td>
+</tr>
+<tr>
+<td><code>not about healthcare</code></td>
+<td><code>exclude_terms = ["healthcare"]</code></td>
+</tr>
+<tr>
+<td><code>open access only</code></td>
+<td><code>open_access = true</code></td>
+</tr>
+<tr>
+<td><code>most cited</code></td>
+<td>citation threshold filter</td>
+</tr>
+</tbody>
+</table>
+<p>You can also <strong>edit any filter</strong> before re-running: adjust year range, add exclusions, toggle OA.</p>
+<h3 id="result-provenance">Result provenance<a class="headerlink" href="#result-provenance" title="Permanent link">&para;</a></h3>
+<p>Every result shows exactly where its data came from:</p>
+<ul>
+<li><strong>Source chips</strong> — which providers contributed to this merged record (e.g. <code>openalex • crossref</code>)</li>
+<li><strong>Missing-field tooltips</strong> — hover the "ⓘ" next to an empty field to see why it's missing:
+  provider didn't return it, no queried provider supports that field, a key is required, or the
+  current depth skipped it</li>
+<li><strong>Conflict dot</strong> — a red ● means providers disagreed on a field value. The approval dialog shows
+  each conflict and requires explicit confirmation before writing to Zotero</li>
+</ul>
+<h3 id="author-search">Author search<a class="headerlink" href="#author-search" title="Permanent link">&para;</a></h3>
+<p>Queries like <em>"papers by Yoshua Bengio 2020–2024"</em> resolve the author via OpenAlex and Semantic
+Scholar, then filter results to that author's verified IDs. Author chips in result cards are
+tappable to launch a new scoped search.</p>
+<h3 id="citation-graph">Citation graph<a class="headerlink" href="#citation-graph" title="Permanent link">&para;</a></h3>
+<p>Queries like <em>"papers citing Attention Is All You Need"</em> trigger citation graph expansion via
+OpenCitations and Semantic Scholar. Result cards show:</p>
+<ul>
+<li><code>↓ ref</code> — this paper was cited by your seed</li>
+<li><code>↑ cites</code> — this paper cites your seed</li>
+</ul>
+<h3 id="saving-and-re-running-searches-watch-lists">Saving and re-running searches (watch lists)<a class="headerlink" href="#saving-and-re-running-searches-watch-lists" title="Permanent link">&para;</a></h3>
+<p>From the sidebar, save any search plan as a <strong>Watch</strong>. SciAgent re-runs it on demand and shows
+only new papers since the last run — safe to approve repeatedly without creating duplicates.</p>
+<hr />
+<h2 id="provider-configuration">Provider Configuration<a class="headerlink" href="#provider-configuration" title="Permanent link">&para;</a></h2>
+<h3 id="free-sources-always-active-no-key-needed">Free sources (always active, no key needed)<a class="headerlink" href="#free-sources-always-active-no-key-needed" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Coverage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OpenAlex</td>
+<td>250M+ works</td>
+</tr>
+<tr>
+<td>Crossref</td>
+<td>130M+ DOI records</td>
+</tr>
+<tr>
+<td>arXiv</td>
+<td>2.4M+ preprints</td>
+</tr>
+<tr>
+<td>Europe PMC</td>
+<td>43M+ life sciences</td>
+</tr>
+<tr>
+<td>PubMed</td>
+<td>36M+ biomedical</td>
+</tr>
+<tr>
+<td>DOAJ</td>
+<td>9M+ OA articles</td>
+</tr>
+<tr>
+<td>BASE</td>
+<td>400M+ records</td>
+</tr>
+<tr>
+<td>OpenCitations</td>
+<td>Citation graph</td>
+</tr>
+<tr>
+<td>Semantic Scholar</td>
+<td>200M+ (rate-limited without key)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="optional-keys-add-to-env-to-unlock">Optional keys (add to <code>.env</code> to unlock)<a class="headerlink" href="#optional-keys-add-to-env-to-unlock" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>What it unlocks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AGT_SEMANTIC_SCHOLAR_API_KEY</code></td>
+<td>Higher S2 throughput (free key at semanticscholar.org)</td>
+</tr>
+<tr>
+<td><code>AGT_NCBI_API_KEY</code></td>
+<td>Higher PubMed limits (free at ncbi.nlm.nih.gov/account)</td>
+</tr>
+<tr>
+<td><code>AGT_CORE_API_KEY</code></td>
+<td>CORE full-text OA index (free at core.ac.uk)</td>
+</tr>
+<tr>
+<td><code>AGT_SERPAPI_KEY</code></td>
+<td>Google Scholar via SerpAPI (paid)</td>
+</tr>
+<tr>
+<td><code>AGT_DIMENSIONS_KEY</code></td>
+<td>Dimensions institutional metadata (paid)</td>
+</tr>
+</tbody>
+</table>
+<p>You can also enter provider keys directly in the <strong>ConfigPanel</strong> inside the Zotero sidebar
+(<strong>Tools → SciAgent → ⚙ Config</strong>). Each key has a <strong>Test</strong> button that validates it before saving.</p>
+<h3 id="disabling-specific-providers">Disabling specific providers<a class="headerlink" href="#disabling-specific-providers" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>AGT_DISABLED_PROVIDERS=[&quot;base&quot;,&quot;core&quot;]
+</code></pre></div>
+<p>Disabled providers appear as <code>disabled</code> in the Coverage panel with no silent failure.</p>
+<hr />
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<h3 id="backend-wont-start">Backend won't start<a class="headerlink" href="#backend-wont-start" title="Permanent link">&para;</a></h3>
+<p><strong>"Extra inputs are not permitted"</strong> — a variable name in <code>.env</code> has a typo or is missing the
+<code>AGT_</code> prefix. All variables must start with <code>AGT_</code>.</p>
+<p><strong>"Missing required field"</strong> — <code>AGT_ZOTERO_API_KEY</code> or <code>AGT_ZOTERO_LIBRARY_ID</code> is empty.
+At least one LLM key is also required.</p>
+<p><strong>Port 8000 already in use</strong> — another process has the port. Either kill it or start on a
+different port:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>uv<span class="w"> </span>run<span class="w"> </span>uvicorn<span class="w"> </span>agt.api.app:app<span class="w"> </span>--host<span class="w"> </span><span class="m">127</span>.0.0.1<span class="w"> </span>--port<span class="w"> </span><span class="m">8001</span>
+</code></pre></div>
+<p>Then update the backend URL in the add-on preferences to <code>http://localhost:8001</code>.</p>
+<h3 id="zotero-add-on-issues">Zotero add-on issues<a class="headerlink" href="#zotero-add-on-issues" title="Permanent link">&para;</a></h3>
+<p><strong>"The add-on could not be installed"</strong> — rebuild the XPI:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="nb">cd</span><span class="w"> </span>zotero-addon<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>npm<span class="w"> </span>run<span class="w"> </span>build
+</code></pre></div>
+<p>Then install the freshly built file from <code>zotero-addon/build/sciagent-zotero-addon.xpi</code>.</p>
+<p><strong>Requires Zotero 9.0.0+</strong> — earlier versions are not supported. Check <strong>Help → About Zotero</strong>.</p>
+<p><strong>Backend health shows red</strong> — the backend is not running or the URL in preferences is wrong.
+Default URL is <code>http://localhost:8000</code>. Check the terminal where you started the backend.</p>
+<h3 id="zotero-preflight-fails-cannot-write">Zotero preflight fails ("cannot write")<a class="headerlink" href="#zotero-preflight-fails-cannot-write" title="Permanent link">&para;</a></h3>
+<p>Your API key may lack write permissions. Go to
+<a href="https://www.zotero.org/settings/keys">zotero.org/settings/keys</a>, edit your key, and enable
+<strong>Allow write access</strong>.</p>
+<h3 id="search-returns-no-results">Search returns no results<a class="headerlink" href="#search-returns-no-results" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Check for spelling errors — SciAgent does not auto-correct queries</li>
+<li>Try broader search terms</li>
+<li>For very recent dates (e.g. "2026 papers"), fewer results are expected</li>
+<li><code>quick</code> depth only queries 2 sources; switch to <code>balanced</code> or <code>deep</code></li>
+</ul>
+<h3 id="rate-limit-errors">Rate limit errors<a class="headerlink" href="#rate-limit-errors" title="Permanent link">&para;</a></h3>
+<p>If you see rate-limit messages in the Coverage panel:</p>
+<ul>
+<li>Add <code>AGT_SEMANTIC_SCHOLAR_API_KEY</code> (free) for Semantic Scholar</li>
+<li>Add <code>AGT_MAILTO=your-email@example.com</code> to enter the polite pool for OpenAlex/Crossref/DOAJ</li>
+<li>Wait and retry — rate limits are per session and reset quickly</li>
+</ul>
+<hr />
+<h2 id="quick-reference-all-environment-variables">Quick Reference: all environment variables<a class="headerlink" href="#quick-reference-all-environment-variables" title="Permanent link">&para;</a></h2>
+<p>See <code>.env.example</code> in the repo root for the full annotated list. The most important:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a># LLM (required — pick one)
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>AGT_OPENAI_API_KEY=
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>AGT_ANTHROPIC_API_KEY=
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>AGT_XAI_API_KEY=
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>AGT_GROQ_API_KEY=
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a># Zotero write path (required)
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>AGT_ZOTERO_API_KEY=
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>AGT_ZOTERO_LIBRARY_ID=
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a># Polite pool (strongly recommended)
+<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>AGT_MAILTO=your-email@example.com
+<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>
+<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a># Optional: search quality
+<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a>AGT_SEMANTIC_SCHOLAR_API_KEY=
+<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a>AGT_NCBI_API_KEY=
+<a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a>AGT_CORE_API_KEY=
+<a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a>
+<a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a># Optional: search depth default
+<a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a>AGT_SEARCH_DEPTH=balanced   # quick | balanced | deep
+<a id="__codelineno-13-21" name="__codelineno-13-21" href="#__codelineno-13-21"></a>
+<a id="__codelineno-13-22" name="__codelineno-13-22" href="#__codelineno-13-22"></a># Optional: Ollama (no hosted LLM key)
+<a id="__codelineno-13-23" name="__codelineno-13-23" href="#__codelineno-13-23"></a>AGT_LLM_PROVIDER=ollama
+<a id="__codelineno-13-24" name="__codelineno-13-24" href="#__codelineno-13-24"></a>AGT_LLM_MODEL=llama3.2
+<a id="__codelineno-13-25" name="__codelineno-13-25" href="#__codelineno-13-25"></a>
+<a id="__codelineno-13-26" name="__codelineno-13-26" href="#__codelineno-13-26"></a># Optional: disable specific providers
+<a id="__codelineno-13-27" name="__codelineno-13-27" href="#__codelineno-13-27"></a>AGT_DISABLED_PROVIDERS=[&quot;base&quot;]
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.sections", "navigation.expand", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

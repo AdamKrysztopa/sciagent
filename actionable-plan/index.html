@@ -924,6 +924,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../user-manual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Manual (Start Here)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../manual/" class="md-nav__link">
         
   
@@ -1710,8 +1738,8 @@ locally with <code>AGT_LLM_PROVIDER=ollama</code> and no hosted LLM key.</p>
 <h3 id="current-status">Current Status<a class="headerlink" href="#current-status" title="Permanent link">&para;</a></h3>
 <ul>
 <li>All P0–P7 milestones complete as of 2026-05-12.</li>
-<li>Current status: <strong>P8.12 complete — <code>test_merge.py</code>, <code>test_capabilities.py</code>, <code>test_explain_missing.py</code>, <code>test_search_orchestrator.py</code>; <code>live_api</code> + <code>regression_gate</code> markers; zero-key smoke test; CI benchmark regression gate step. 561 Python / 103 frontend tests green.</strong></li>
-<li>Next target: <strong>P8.13</strong>.</li>
+<li>Current status: <strong>P8.14 complete — <code>AGT_DISABLED_PROVIDERS</code> config + disabled-by-config provider state; <code>.env.example</code> updated; 6-query P8 benchmark panel extension (P8-OA-01 through P8-CONF-01); <code>docs/benchmark.md</code> P8 section; 2 new orchestrator tests. 563 Python / 103 frontend tests green. All P8 stories complete.</strong></li>
+<li>Next target: <strong>P9</strong> (or backlog review).</li>
 </ul>
 <h3 id="recent-progress">Recent Progress<a class="headerlink" href="#recent-progress" title="Permanent link">&para;</a></h3>
 <ul>
@@ -1732,6 +1760,8 @@ locally with <code>AGT_LLM_PROVIDER=ollama</code> and no hosted LLM key.</p>
 <li>✅ P8.10 complete (2026-05-14): <code>key_validator.py</code> with SSRF-safe allowlist; <code>POST /keys/validate</code> endpoint; <code>ProviderKeyRow</code> key entry panel in ConfigPanel with per-provider validate-on-demand UI; <code>validateKey</code> in controller hook. All gates green.</li>
 <li>✅ P8.11 complete (2026-05-14): 9-step provider onboarding checklist appended to <code>docs/providers.md</code>; <code>scripts/new_provider.py</code> scaffold generator (CamelCase → snake_case, emits <code>SearchProviderBase</code> skeleton + <code>anyio</code> test stub, skip-if-exists guard); <code>pyrightconfig.json</code> extended with <code>scripts/</code>. All gates green.</li>
 <li>✅ P8.12 complete (2026-05-14): P8.12-A already done (44 tests in <code>test_provider_snapshots.py</code>); <code>test_merge.py</code> (12 tests), <code>test_capabilities.py</code> (14 tests), <code>test_explain_missing.py</code> (8 tests), <code>test_search_orchestrator.py</code> (5 tests); <code>live_api</code> + <code>regression_gate</code> markers in conftest.py; <code>test_zero_key_smoke.py</code> (1 test), <code>test_regression_gate.py</code> (4 tests); CI benchmark regression gate step in <code>ci.yml</code>. 561 Python tests green (+30).</li>
+<li>✅ P8.13 complete (2026-05-14): <code>AGT_DISABLED_PROVIDERS</code> field added to <code>Settings</code> (pydantic-settings <code>list[str]</code>, JSON array format); disabled-by-config pass wired into <code>_build_retrieval_registry</code> — any named provider gets <code>enabled=False, skip_reason="disabled"</code> regardless of key availability; <code>.env.example</code> updated with <code>AGT_MAILTO</code> and <code>AGT_DISABLED_PROVIDERS</code> entries; 2 new tests in <code>test_search_orchestrator.py</code> (keyless + keyed provider disable). 563 Python tests green.</li>
+<li>✅ P8.14 complete (2026-05-14): 6 new PanelEntry objects added to benchmark panel (P8-OA-01, P8-CITE-01, P8-DEPTH-01, P8-MULTI-01, P8-YEAR-01, P8-CONF-01); <code>_MIN_MUST_FIND_TARGETS</code> updated from 12 to 15; <code>docs/benchmark.md</code> P8 Benchmark Update section appended with per-query table, rationale, and updated panel statistics (22→28 queries). Docs gate (markdownlint + mkdocs strict) green.</li>
 </ul>
 <h3 id="p8-status">P8 Status<a class="headerlink" href="#p8-status" title="Permanent link">&para;</a></h3>
 <table>
@@ -2024,35 +2054,35 @@ locally with <code>AGT_LLM_PROVIDER=ollama</code> and no hosted LLM key.</p>
 <td>P8.13-A</td>
 <td>New config fields (<code>AGT_MAILTO</code>, etc.)</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.13-B</td>
 <td>Disabled-by-config provider state</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.13-C</td>
 <td><code>.env.example</code> update</td>
 <td>~0.1d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.14-A</td>
 <td>New 6-query benchmark panel</td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.14-B</td>
 <td><code>docs/benchmark.md</code> P8 update</td>
 <td>~0.1d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Total: ~17–18 working days remaining.</strong></p>
+<p><strong>All P8 stories complete as of 2026-05-14.</strong></p>
 <hr />
 <h2 id="p8-milestones">P8 Milestones<a class="headerlink" href="#p8-milestones" title="Permanent link">&para;</a></h2>
 <h3 id="p80-snapshot-safety-net-12-day">P8.0 — Snapshot Safety Net <em>(½ day)</em><a class="headerlink" href="#p80-snapshot-safety-net-12-day" title="Permanent link">&para;</a></h3>
@@ -3421,311 +3451,311 @@ restarts without editing <code>.env</code>.</p>
 <td>P8.0-A</td>
 <td>Provider inventory table</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.0-B</td>
 <td>Snapshot VCR tests</td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.0-C</td>
 <td>Cassette hygiene</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.1-A</td>
 <td><code>capabilities.py</code> — capability model</td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.1-B</td>
 <td><code>provider_base.py</code> — protocol + base class</td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.1-C</td>
 <td><code>GET /providers</code> endpoint</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.1-D</td>
 <td>Sidebar BYOK hint chip</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.2-A</td>
 <td>DOAJ provider</td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.2-B</td>
 <td>Provider audit (User-Agent, retry, 429)</td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.2-C</td>
 <td><code>SearchRunResult</code> dataclass</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.2-D</td>
 <td><code>SearchMetadata.baseline_mode</code> + badge</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.2-E</td>
 <td>Baseline regression test</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.3-A</td>
 <td><code>NormalizedAuthor</code> Pydantic model</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.3-B</td>
 <td><code>ProvenanceField</code> Pydantic model</td>
 <td>~0.1d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.3-C</td>
 <td>Extend <code>NormalizedPaper</code> with new fields</td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.3-D</td>
 <td>Update all providers to emit <code>NormalizedAuthor</code></td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.4-A</td>
 <td><code>src/agt/tools/merge.py</code></td>
 <td>~1d</td>
-<td>done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.4-B</td>
 <td>Field-selection rules</td>
 <td>~0.5d</td>
-<td>done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.4-C</td>
 <td><code>FieldConflict</code> model</td>
 <td>~0.25d</td>
-<td>done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.4-D</td>
 <td>Wire merge into <code>run_search_phase</code></td>
 <td>~0.25d</td>
-<td>done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.5-A</td>
 <td><code>DEPTH_PROFILES</code> + <code>select_providers_for_depth</code></td>
 <td>~0.25d</td>
-<td>done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.5-B</td>
 <td>Plan preview in sidebar</td>
 <td>~0.25d</td>
-<td>done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.6-A</td>
 <td><code>src/agt/tools/explain_missing.py</code></td>
 <td>~0.25d</td>
-<td>done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.6-B</td>
 <td>Result card missing-field tooltip</td>
 <td>~0.25d</td>
-<td>done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.7-A</td>
 <td>Merge in <code>run_search_phase</code></td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.7-B</td>
 <td>Provenance chips in <code>ResultsList.tsx</code></td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.7-C</td>
 <td>Conflict warnings in approval dialog</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.7-D</td>
 <td><code>/providers</code> in sidebar</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.8-A</td>
 <td>Author resolver tool</td>
 <td>~0.75d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.8-B</td>
 <td><code>HardFilters.author_ids</code></td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.8-C</td>
 <td>Author chips in <code>ResultsList.tsx</code></td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.9-A</td>
 <td><code>SearchPlan.seed_dois</code></td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.9-B</td>
 <td>Citation expansion tool</td>
 <td>~1d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.9-C</td>
 <td>Directional badge</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.10-A</td>
 <td><code>POST /keys/validate</code></td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.10-B</td>
 <td>Key entry panel in <code>ConfigPanel.tsx</code></td>
 <td>~1d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.10-C</td>
 <td>Preference store bridging</td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.11-A</td>
 <td><code>docs/providers.md</code> checklist</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.11-B</td>
 <td><code>scripts/new_provider.py</code> scaffold</td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.12-A</td>
 <td>VCR cassettes (44 total)</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.12-B</td>
 <td><code>test_merge.py</code></td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.12-C</td>
 <td><code>test_capabilities.py</code></td>
 <td>~0.1d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.12-D</td>
 <td><code>test_explain_missing.py</code></td>
 <td>~0.1d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.12-E</td>
 <td><code>test_search_orchestrator.py</code></td>
 <td>~0.1d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.12-F</td>
 <td>Zero-key smoke test</td>
 <td>~0.1d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.12-G</td>
 <td>Regression gate in CI</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.13-A</td>
 <td>New config fields (<code>AGT_MAILTO</code>, etc.)</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.13-B</td>
 <td>Disabled-by-config state</td>
 <td>~0.25d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.13-C</td>
 <td><code>.env.example</code> update</td>
 <td>~0.1d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.14-A</td>
 <td>New 6-query benchmark panel</td>
 <td>~0.5d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 <tr>
 <td>P8.14-B</td>
 <td><code>docs/benchmark.md</code> update</td>
 <td>~0.1d</td>
-<td>not done</td>
+<td>✅ done</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Total estimated effort: ~17–18 working days</strong></p>
+<p><strong>All P8 stories complete. 563 Python / 103 frontend tests green.</strong></p>
 <hr />
 <h2 id="out-of-scope">Out of Scope<a class="headerlink" href="#out-of-scope" title="Permanent link">&para;</a></h2>
 <ul>

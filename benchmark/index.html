@@ -540,6 +540,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../user-manual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Manual (Start Here)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../manual/" class="md-nav__link">
         
   
@@ -860,6 +888,56 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#p8-benchmark-update" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P8 Benchmark Update
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="P8 Benchmark Update">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-queries-p8-panel-extension" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New Queries (P8 Panel Extension)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-these-queries-were-added" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why These Queries Were Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updated-panel-statistics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Updated Panel Statistics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1155,6 +1233,56 @@
       
     </span>
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#p8-benchmark-update" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P8 Benchmark Update
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="P8 Benchmark Update">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-queries-p8-panel-extension" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New Queries (P8 Panel Extension)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-these-queries-were-added" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why These Queries Were Added
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#updated-panel-statistics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Updated Panel Statistics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1496,6 +1624,132 @@ implemented in OPN-14, and its scope of effectiveness is now documented here.</p
 <li>OPN-06 is closed: external baseline comparison complete. SciAgent default 19/22 with 1.000 hard-filter compliance outperforms OpenAlex direct (~11/22), Semantic Scholar direct (~13/22), and ChatGPT web-search (~17/22, ~0.700 compliance). See External Baseline Comparison section above.</li>
 <li><strong>All P7 open items (OPN-01 through OPN-17, FirstRunDialog, OPN-08, OPN-07, OPN-06) are closed as of 2026-05-12.</strong></li>
 </ul>
+<h2 id="p8-benchmark-update">P8 Benchmark Update<a class="headerlink" href="#p8-benchmark-update" title="Permanent link">&para;</a></h2>
+<p>Panel version: <code>m2.7-agt29-v3</code> extended. Six new queries added to exercise P8-specific
+capabilities: provider config, open-access filtering, citation-threshold filtering, retrieval
+depth, multi-provider federation, and strict year-range constraints.</p>
+<h3 id="new-queries-p8-panel-extension">New Queries (P8 Panel Extension)<a class="headerlink" href="#new-queries-p8-panel-extension" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Query ID</th>
+<th>Domain</th>
+<th>Capability exercised</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P8-OA-01</td>
+<td>AI</td>
+<td>Open-access filter + year filter; DOAJ and OA-aware sources</td>
+</tr>
+<tr>
+<td>P8-CITE-01</td>
+<td>AI</td>
+<td>Citation-threshold filter; high-citation anchor recall</td>
+</tr>
+<tr>
+<td>P8-DEPTH-01</td>
+<td>AI</td>
+<td>Retrieval depth across providers; NAS survey anchor</td>
+</tr>
+<tr>
+<td>P8-MULTI-01</td>
+<td>AI</td>
+<td>arXiv-first federation; preprint-heavy domain + year filter</td>
+</tr>
+<tr>
+<td>P8-YEAR-01</td>
+<td>Interdisciplinary</td>
+<td>Strict min_year + max_year range filter</td>
+</tr>
+<tr>
+<td>P8-CONF-01</td>
+<td>Interdisciplinary</td>
+<td>Polite-pool / mailto scenario; OA + federation</td>
+</tr>
+</tbody>
+</table>
+<h3 id="why-these-queries-were-added">Why These Queries Were Added<a class="headerlink" href="#why-these-queries-were-added" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>Open-access filter coverage (P8-OA-01, P8-CONF-01):</strong> Previous panel had only two OA
+   queries (AI-05, BIO-04). The P8 work introduced DOAJ integration and polite-pool mailto
+   support; new queries target those code paths explicitly.</p>
+</li>
+<li>
+<p><strong>Citation-threshold recall (P8-CITE-01):</strong> The <code>min_citations</code> filter path was exercised
+   only indirectly via TS-02. A dedicated high-citation anchor query validates that the filter
+   is applied correctly and that high-impact papers surface in the top results.</p>
+</li>
+<li>
+<p><strong>Retrieval depth (P8-DEPTH-01):</strong> NAS is a broad topic with strong arXiv and Semantic Scholar
+   coverage; this query validates that multi-page retrieval and provider federation cooperate to
+   surface survey papers reliably.</p>
+</li>
+<li>
+<p><strong>arXiv-first federation (P8-MULTI-01):</strong> Diffusion models are a preprint-heavy domain.
+   The query validates that arXiv contributes unique results not duplicated from other sources and
+   that year filtering applies correctly in the merged result set.</p>
+</li>
+<li>
+<p><strong>Strict year-range (P8-YEAR-01):</strong> The existing panel used <code>min_year</code> only. This entry adds
+   <code>max_year</code> to validate that the upper-bound year filter is applied and that papers outside the
+   window are excluded post-merge.</p>
+</li>
+<li>
+<p><strong>Polite-pool config (P8-CONF-01):</strong> Exercises the <code>AGT_MAILTO</code> / <code>mailto</code> setting path, which
+   improves rate limits for OpenAlex, Crossref, and DOAJ. The OA requirement validates that the
+   polite-pool header does not change result quality for OA queries.</p>
+</li>
+</ol>
+<h3 id="updated-panel-statistics">Updated Panel Statistics<a class="headerlink" href="#updated-panel-statistics" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Before P8</th>
+<th>After P8</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Total queries</td>
+<td>22</td>
+<td>28</td>
+</tr>
+<tr>
+<td>Must-find targets</td>
+<td>12</td>
+<td>15</td>
+</tr>
+<tr>
+<td>Queries with OA filter</td>
+<td>2</td>
+<td>4</td>
+</tr>
+<tr>
+<td>Queries with min_year</td>
+<td>11</td>
+<td>14</td>
+</tr>
+<tr>
+<td>Queries with max_year</td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Queries with min_citations</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Domains covered</td>
+<td>4</td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
 
 
 

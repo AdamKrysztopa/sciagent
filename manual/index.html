@@ -13,7 +13,7 @@
         <link rel="canonical" href="https://adamkrysztopa.github.io/sciagent/manual/">
       
       
-        <link rel="prev" href="../next-steps/">
+        <link rel="prev" href="../user-manual/">
       
       
         <link rel="next" href="../deployment/">
@@ -532,6 +532,34 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-manual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Manual (Start Here)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -1086,6 +1114,50 @@
     <span class="md-ellipsis">
       
         How Search Works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#search-depth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Search Depth
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#provider-coverage-panel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Provider Coverage Panel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#result-provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Result Provenance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#author-search-and-citation-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Author Search and Citation Graph
       
     </span>
   </a>
@@ -2145,6 +2217,50 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#search-depth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Search Depth
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#provider-coverage-panel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Provider Coverage Panel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#result-provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Result Provenance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#author-search-and-citation-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Author Search and Citation Graph
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#deterministic-search-filters" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2630,6 +2746,16 @@ Alternatively, use Ollama (no key) or any OpenAI-compatible endpoint:</p>
 <td><code>local</code></td>
 <td>Runtime environment: <code>local</code>, <code>staging</code>, <code>production</code></td>
 </tr>
+<tr>
+<td><code>AGT_MAILTO</code></td>
+<td>—</td>
+<td>Your email for the OpenAlex/Crossref/DOAJ "polite pool" — improves rate limits</td>
+</tr>
+<tr>
+<td><code>AGT_DISABLED_PROVIDERS</code></td>
+<td><code>[]</code></td>
+<td>JSON array of provider names to disable regardless of key availability, e.g. <code>["base"]</code></td>
+</tr>
 </tbody>
 </table>
 <h3 id="optional-api-keys-enhance-retrieval">Optional API Keys (Enhance Retrieval)<a class="headerlink" href="#optional-api-keys-enhance-retrieval" title="Permanent link">&para;</a></h3>
@@ -2957,7 +3083,7 @@ directly. Persistent data (<code>~/.sciagent/sessions</code>, watches, cache) is
 </ol>
 <p><strong>Expected result:</strong></p>
 <ul>
-<li>SciAgent appears in the add-ons list with version <code>0.1.2</code></li>
+<li>SciAgent appears in the add-ons list with version <code>0.2.0</code></li>
 <li>Status shows "Enabled"</li>
 <li>A restart prompt may appear; restart Zotero if requested</li>
 </ul>
@@ -3083,7 +3209,7 @@ directly. Persistent data (<code>~/.sciagent/sessions</code>, watches, cache) is
 <li>[x] Backend starts without errors: <code>uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000</code></li>
 <li>[x] Add-on builds cleanly: <code>npm run build</code> in <code>zotero-addon/</code></li>
 <li>[x] XPI installs via Zotero's add-ons manager (not double-click on macOS)</li>
-<li>[x] Add-on appears in Tools → Add-ons with version 0.1.2</li>
+<li>[x] Add-on appears in Tools → Add-ons with version 0.2.0</li>
 <li>[x] Preferences pane opens and saves settings</li>
 <li>[x] <strong>Tools → SciAgent</strong> opens the main-window workspace</li>
 <li>[x] Backend health indicator shows green/connected in the main-window workspace</li>
@@ -3167,7 +3293,7 @@ via <code>uv run uvicorn</code>.</p>
 <h3 id="verify-the-binary-works">Verify the Binary Works<a class="headerlink" href="#verify-the-binary-works" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># Version check (no credentials needed)</span>
 <a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>./build/dist/sciagent-server<span class="w"> </span>--version
-<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="c1"># → sciagent-server 0.1.0</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="c1"># → sciagent-server 0.2.0</span>
 <a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>
 <a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="c1"># Start on a test port — no credentials means ok:false body but HTTP 200</span>
 <a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>./build/dist/sciagent-server<span class="w"> </span>--port<span class="w"> </span><span class="m">58000</span><span class="w"> </span><span class="p">&amp;</span>
@@ -3417,9 +3543,14 @@ your coding session without leaving the editor.</p>
 <td>Open academic search index</td>
 </tr>
 <tr>
+<td><strong>DOAJ</strong></td>
+<td>9M+ OA articles</td>
+<td>Directory of Open Access Journals; all results are OA</td>
+</tr>
+<tr>
 <td><strong>OpenCitations</strong></td>
 <td>Citation enrichment</td>
-<td>Adds citation counts</td>
+<td>Adds citation counts and citation graph expansion</td>
 </tr>
 </tbody>
 </table>
@@ -3460,6 +3591,62 @@ your coding session without leaving the editor.</p>
 <li>Papers are ranked by a multi-factor formula: semantic relevance (45%), citations (30%), influential citations (10%), recency (12%), abstract quality (5%), open access (3%)</li>
 <li>LLM validates result relevance and retries with improved topic wording if needed</li>
 </ol>
+<h3 id="search-depth">Search Depth<a class="headerlink" href="#search-depth" title="Permanent link">&para;</a></h3>
+<p>Use the <strong>depth selector</strong> in the sidebar or <code>AGT_SEARCH_DEPTH</code> env var to control breadth vs. speed:</p>
+<table>
+<thead>
+<tr>
+<th>Depth</th>
+<th>Providers queried</th>
+<th>Results/provider</th>
+<th>Ref expansion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>quick</code></td>
+<td>OpenAlex, arXiv</td>
+<td>10</td>
+<td>off</td>
+</tr>
+<tr>
+<td><code>balanced</code></td>
+<td>+ Crossref, Europe PMC, DOAJ, PubMed</td>
+<td>25</td>
+<td>off</td>
+</tr>
+<tr>
+<td><code>deep</code></td>
+<td>+ Semantic Scholar, CORE, BASE, OpenCitations</td>
+<td>50</td>
+<td>on</td>
+</tr>
+</tbody>
+</table>
+<p>The sidebar shows a depth plan preview — which providers will run — before you start the search.</p>
+<h3 id="provider-coverage-panel">Provider Coverage Panel<a class="headerlink" href="#provider-coverage-panel" title="Permanent link">&para;</a></h3>
+<p>The sidebar's <strong>Coverage</strong> panel (populated from <code>GET /providers</code>) shows:</p>
+<ul>
+<li>Each provider's capability matrix (which fields it can return)</li>
+<li>Runtime health (available / rate-limited / failed / disabled)</li>
+<li>BYOK hints: providers that need a key display an upgrade chip with the env var to set</li>
+</ul>
+<h3 id="result-provenance">Result Provenance<a class="headerlink" href="#result-provenance" title="Permanent link">&para;</a></h3>
+<p>Every result card shows:</p>
+<ul>
+<li><strong>Source chips</strong> — which providers contributed to this merged record (e.g. <code>openalex • crossref</code>)</li>
+<li><strong>Missing-field tooltips</strong> — hover the "ⓘ" icon next to an empty field for the reason: provider
+  didn't return it, no queried provider supports it, a key is missing, or the current depth skipped it</li>
+<li><strong>Conflict dot</strong> — a red dot means two providers disagreed on a field value. The approval dialog
+  shows each conflict and asks for explicit confirmation before writing to Zotero</li>
+</ul>
+<h3 id="author-search-and-citation-graph">Author Search and Citation Graph<a class="headerlink" href="#author-search-and-citation-graph" title="Permanent link">&para;</a></h3>
+<p><strong>Author-scoped search:</strong> Queries like "papers by Karpathy 2023" resolve the author via OpenAlex
+and Semantic Scholar, then filter results to that author's resolved IDs. Author chips in result
+cards are tappable to trigger a new scoped search.</p>
+<p><strong>Citation graph expansion:</strong> Queries like "papers citing Attention Is All You Need" use
+<code>SearchPlan.seed_dois</code> to fan out via OpenCitations and Semantic Scholar. Result cards show a
+directional badge (<code>↓ ref</code> / <code>↑ cites</code>) to indicate how the paper was found.</p>
 <h3 id="deterministic-search-filters">Deterministic Search Filters<a class="headerlink" href="#deterministic-search-filters" title="Permanent link">&para;</a></h3>
 <p>SciAgent treats filters as structured constraints, not just semantic hints. For example:</p>
 <table>
