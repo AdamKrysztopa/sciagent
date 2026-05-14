@@ -102,13 +102,13 @@ asked for.
 | P9.8  | `Author` UI field with chip autocomplete               | ~0.5d  | zotero-frontend | ✅ done (2026-05-13) |
 | P9.9  | `Venue/Journal` first-class field                      | ~0.5d  | full-stack    | ✅ done (2026-05-13) |
 | P9.10 | `Seed DOI` paste field (drives `seed_dois`)            | ~0.25d | zotero-frontend | ✅ done (2026-05-13) |
-| P9.11 | README rewrite: XPI-first quick start                  | ~0.25d | core-planner  | not done |
-| P9.12 | `docs/user-manual.md` rewrite (minimum-config path)    | ~0.5d  | core-planner  | not done |
-| P9.13 | New `docs/install.md` (single source for install flow) | ~0.25d | core-planner  | not done |
-| P9.14 | New `docs/keys.md` (how to get every key)              | ~0.5d  | core-planner  | not done |
-| P9.15 | `docs/advanced-config.md` (everything that is optional) | ~0.25d | core-planner | not done |
-| P9.16 | `mkdocs.yml` nav reshuffle + landing-page redesign     | ~0.25d | core-planner  | not done |
-| P9.17 | Telemetry-free first-run smoke (manual checklist)      | ~0.25d | sciagent-orchestrator | not done |
+| P9.11 | README rewrite: XPI-first quick start                  | ~0.25d | core-planner  | ✅ done (2026-05-14) |
+| P9.12 | `docs/user-manual.md` rewrite (minimum-config path)    | ~0.5d  | core-planner  | ✅ done (2026-05-14) |
+| P9.13 | New `docs/install.md` (single source for install flow) | ~0.25d | core-planner  | ✅ done (2026-05-14) |
+| P9.14 | New `docs/keys.md` (how to get every key)              | ~0.5d  | core-planner  | ✅ done (2026-05-14) |
+| P9.15 | `docs/advanced-config.md` (everything that is optional) | ~0.25d | core-planner | ✅ done (2026-05-14) |
+| P9.16 | `mkdocs.yml` nav reshuffle + landing-page redesign     | ~0.25d | core-planner  | ✅ done (2026-05-14) |
+| P9.17 | Telemetry-free first-run smoke (manual checklist)      | ~0.25d | sciagent-orchestrator | ✅ done (2026-05-14) |
 
 **Total estimate:** ~6.25 days.
 
