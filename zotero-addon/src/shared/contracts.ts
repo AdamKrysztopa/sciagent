@@ -43,7 +43,21 @@ export interface HardFilters {
   include_keywords: string[];
   exclude_keywords: string[];
   author_ids?: string[];
-  seed_dois?: string[];
+  author_names?: string[];
+  venue_ids?: string[];
+}
+
+export interface ResolvedVenue {
+  name: string;
+  openalex_id: string | null;
+  issn: string | null;
+}
+
+export interface ResolvedAuthor {
+  name: string;
+  openalex_id: string | null;
+  orcid: string | null;
+  s2_author_id: string | null;
 }
 
 export interface SoftPreferences {
@@ -75,6 +89,9 @@ export interface FilterEditContract {
   hard_filters: HardFilters;
   soft_preferences: SoftPreferences;
   result_limit: number;
+  authors?: ResolvedAuthor[];
+  venues?: ResolvedVenue[];
+  seed_dois?: string[];
 }
 
 export interface NormalizedAuthor {
@@ -368,6 +385,7 @@ export function buildDefaultFilterEdit(
     },
     soft_preferences: { ...DEFAULT_SOFT_PREFERENCES },
     result_limit: 10,
+    seed_dois: [],
   };
 }
 
@@ -385,6 +403,7 @@ export function filterEditFromSearchPlan(
     },
     soft_preferences: { ...searchPlan.soft_preferences },
     result_limit: resultLimit,
+    seed_dois: [],
   };
 }
 

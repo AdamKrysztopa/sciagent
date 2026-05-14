@@ -1,4 +1,5 @@
-name: Build Server Binaries
+name: Build and Release
+# Replaces build-binaries.yml (P9.2)
 
 on:
   push:
@@ -8,6 +9,7 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-22.04
@@ -54,10 +56,11 @@ jobs:
         shell: bash
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          sed -i.bak "s/version=\"%(prog)s 0.1.0\"/version=\"%(prog)s $VERSION\"/" \
+          sed -i.bak "s/version=\"%(prog)s [^\"]*\"/version=\"%(prog)s $VERSION\"/" \
             src/agt/server.py
 
       - name: Build binary
+        shell: bash
         run: |
           uv run pyinstaller build/sciagent-server.spec \
             --distpath build/dist \
@@ -67,19 +70,43 @@ jobs:
       - name: Smoke test binary
         shell: bash
         run: |
+          # Hard check: --version must succeed
           ./build/dist/${{ matrix.binary }} --version
+
+          # Start server and capture PID (more reliable than job-control %1)
           ./build/dist/${{ matrix.binary }} --port 58000 &
-          sleep 3
-          curl -f http://127.0.0.1:58000/health || true
-          kill %1 || true
+          SERVER_PID=$!
+
+          # Poll health up to 20 s (Windows Defender can delay first-run by 10+ s)
+          HEALTHY=0
+          for i in $(seq 1 10); do
+            if curl -sf http://127.0.0.1:58000/health; then
+              HEALTHY=1
+              break
+            fi
+            sleep 2
+          done
+
+          kill "$SERVER_PID" 2>/dev/null || true
+          wait "$SERVER_PID" 2>/dev/null || true
+
+          if [ "$HEALTHY" -eq 0 ]; then
+            echo "WARNING: health check did not pass within 20 s (non-fatal on first CI run)"
+          fi
 
       - name: Rename and checksum
         shell: bash
         run: |
-          cp build/dist/${{ matrix.binary }} \
-            sciagent-server-${{ matrix.platform }}${{ runner.os == 'Windows' && '.exe' || '' }}
-          sha256sum sciagent-server-${{ matrix.platform }}* \
-            > sciagent-server-${{ matrix.platform }}.sha256
+          DEST="sciagent-server-${{ matrix.platform }}${{ runner.os == 'Windows' && '.exe' || '' }}"
+          cp "build/dist/${{ matrix.binary }}" "$DEST"
+          # sha256sum on Linux/Windows; macOS ships shasum instead
+          if command -v sha256sum >/dev/null 2>&1; then
+            sha256sum "$DEST" > "sciagent-server-${{ matrix.platform }}.sha256"
+          else
+            shasum -a 256 "$DEST" > "sciagent-server-${{ matrix.platform }}.sha256"
+          fi
+          echo "--- checksum ---"
+          cat "sciagent-server-${{ matrix.platform }}.sha256"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -89,6 +116,9 @@ jobs:
 
   package-xpi:
     needs: build
+    # Run even if some build legs failed (e.g. macOS-13 runner queued too long).
+    # Cancelled is the only state that should suppress the XPI and release steps.
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-22.04
     permissions:
       contents: write
@@ -106,43 +136,42 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Patch addon version for release
+        if: github.ref_type == 'tag'
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          # manifest.json — the version shown in Zotero's add-on list
+          sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"${VERSION}\"/" \
+            zotero-addon/manifest.json
+          # serverManager.ts — the binary version the add-on downloads from Releases
+          sed -i \
+            "s/SCIAGENT_SERVER_VERSION = \"[^\"]*\"/SCIAGENT_SERVER_VERSION = \"${VERSION}\"/" \
+            zotero-addon/src/host/serverManager.ts
+
       - name: Build XPI
         working-directory: zotero-addon
         run: |
           npm ci && npm run lint && npm run typecheck && npm run test && npm run build
 
-      - name: Generate update.rdf for release
+      - name: Upload XPI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sciagent-zotero-addon-xpi
+          path: zotero-addon/build/sciagent-zotero-addon.xpi
+
+      - name: Generate update.rdf
         if: github.ref_type == 'tag'
         shell: bash
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           XPI_URL="https://github.com/${{ github.repository }}/releases/download/${GITHUB_REF_NAME}/sciagent-zotero-addon.xpi"
           SHA256=$(sha256sum zotero-addon/build/sciagent-zotero-addon.xpi | cut -d' ' -f1)
-          cat > zotero-addon/update.rdf << ENDRDF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <RDF:RDF xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
-            <RDF:Description about="urn:mozilla:extension:agt@yourdomain.org">
-              <em:updates>
-                <RDF:Seq>
-                  <RDF:li>
-                    <RDF:Description>
-                      <em:version>${VERSION}</em:version>
-                      <em:targetApplication>
-                        <RDF:Description>
-                          <em:id>zotero@chnm.gmu.edu</em:id>
-                          <em:minVersion>9.0.0</em:minVersion>
-                          <em:maxVersion>9.*</em:maxVersion>
-                          <em:updateLink>${XPI_URL}</em:updateLink>
-                          <em:updateHash>sha256:${SHA256}</em:updateHash>
-                        </RDF:Description>
-                      </em:targetApplication>
-                    </RDF:Description>
-                  </RDF:li>
-                </RDF:Seq>
-              </em:updates>
-            </RDF:Description>
-          </RDF:RDF>
-          ENDRDF
+          sed \
+            -e "s|TMPL_VERSION|${VERSION}|" \
+            -e "s|TMPL_XPI_URL|${XPI_URL}|" \
+            -e "s|TMPL_SHA256|${SHA256}|" \
+            .github/scripts/update-rdf-template.xml > /tmp/update.rdf
 
       - name: Commit update.rdf to main
         if: github.ref_type == 'tag'
@@ -150,14 +179,19 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Fetch latest main so we commit on top of it, not on the detached tag HEAD
+          git fetch origin main
+          git checkout main
+          cp /tmp/update.rdf zotero-addon/update.rdf
           git add zotero-addon/update.rdf
           git diff --staged --quiet || git commit -m "chore: update update.rdf for ${GITHUB_REF_NAME}"
-          git push origin HEAD:main
+          git push origin main
 
       - name: Upload to GitHub Release
         if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v2
         with:
+          generate_release_notes: true
           files: |
             zotero-addon/build/sciagent-zotero-addon.xpi
             zotero-addon/update.rdf

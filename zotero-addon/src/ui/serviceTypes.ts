@@ -23,4 +23,6 @@ export interface AddonUiServices {
   downloadBinary?(version: string, onProgress: (pct: number) => void): Promise<void>;
   /** Start the embedded server after a successful download. */
   startServerAfterDownload?(): Promise<void>;
+  /** The installed add-on version (e.g. "0.2.0"). Patched at release time. */
+  readonly addonVersion?: string;
 }

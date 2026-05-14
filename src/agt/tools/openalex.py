@@ -1,6 +1,6 @@
 """OpenAlex API wrapper returning NormalizedPaper models."""
 
-# ruff: noqa: PLR0912
+# ruff: noqa: PLR0912, PLR0913
 # pyright: reportUnknownVariableType=false, reportUnknownArgumentType=false, reportUnknownMemberType=false
 
 from __future__ import annotations
@@ -56,6 +56,8 @@ class OpenAlexClient:
         *,
         limit: int,
         year_min: int | None = None,
+        author_ids: list[str] | None = None,
+        venue_ids: list[str] | None = None,
         max_pages: int = 1,
     ) -> list[NormalizedPaper]:
         """Search OpenAlex and return normalized papers."""
@@ -70,8 +72,15 @@ class OpenAlexClient:
                 "search": query,
                 "per-page": str(limit),
             }
+            filter_parts: list[str] = []
             if year_min is not None:
-                params["filter"] = f"publication_year:>{year_min - 1}"
+                filter_parts.append(f"publication_year:>{year_min - 1}")
+            if author_ids:
+                filter_parts.append("author.id:" + "|".join(author_ids))
+            if venue_ids:
+                filter_parts.append("primary_location.source.id:" + "|".join(venue_ids))
+            if filter_parts:
+                params["filter"] = ",".join(filter_parts)
             if max_pages > 1:
                 params["cursor"] = cursor
 

@@ -50,15 +50,19 @@ class ArxivClient:
         *,
         limit: int,
         categories: list[str] | None = None,
+        author_names: list[str] | None = None,
     ) -> list[NormalizedPaper]:
         if not query.strip():
             return []
 
         search_query = query
+        if author_names:
+            au_parts = " AND ".join(f"au:{name}" for name in author_names)
+            search_query = f"({search_query}) AND ({au_parts})"
         if categories:
             cat_query = " OR ".join(f"cat:{cat}" for cat in categories if cat)
             if cat_query:
-                search_query = f"({query}) AND ({cat_query})"
+                search_query = f"({search_query}) AND ({cat_query})"
 
         payload = await self._request_text(
             query={

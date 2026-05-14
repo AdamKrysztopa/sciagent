@@ -42,6 +42,12 @@ export function FirstRunDialog({ services, onComplete, onSkip }: FirstRunDialogP
           searches locally — no internet connection required after install.
         </p>
         <p className="agt-small-note agt-meta">Version: {SCIAGENT_SERVER_VERSION}</p>
+        <p className="agt-small-note">
+          <strong>macOS / Windows:</strong> after download your OS security may
+          block the binary on first start — see{" "}
+          <strong>OS Security Warnings</strong> in the docs for the one-time
+          approval step.
+        </p>
 
         {phase === "idle" && (
           <div className="agt-action-cluster">
@@ -88,6 +94,13 @@ export function FirstRunDialog({ services, onComplete, onSkip }: FirstRunDialogP
         {phase === "error" && (
           <>
             <div className="agt-error">{error}</div>
+            <p className="agt-small-note">
+              <strong>macOS:</strong> if Gatekeeper blocked the binary, open
+              Finder → <code>~/.sciagent/bin/</code> → right-click the binary →
+              Open → confirm once, then retry.{" "}
+              <strong>Windows:</strong> if SmartScreen appeared, click{" "}
+              <em>More info → Run anyway</em>, then retry.
+            </p>
             <div className="agt-action-cluster">
               <button
                 className="agt-button agt-button--warn"

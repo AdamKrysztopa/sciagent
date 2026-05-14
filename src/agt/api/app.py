@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.metadata
+import time
 import uuid
 from dataclasses import dataclass
 from typing import Any, Literal, cast
@@ -23,19 +24,23 @@ from agt.models import (
     DoctorReport,
     FilterEditContract,
     GapSuggestion,
+    NormalizedAuthor,
     NormalizedPaper,
+    ResolvedVenue,
     SourceCapability,
 )
 from agt.providers.router import build_provider
 from agt.result_cache import ResultCache
 from agt.session_export import ExportFormat, export_session
 from agt.session_store import SessionStore
+from agt.tools.author_resolver import resolve_author
 from agt.tools.capabilities import ALL_PROVIDER_CAPS, ProviderHealth
 from agt.tools.gap_finder import find_gaps
 from agt.tools.key_validator import KNOWN_PROVIDERS, validate_key
 from agt.tools.keyword_extract import KeywordExtraction, extract_keywords
 from agt.tools.search_papers import build_source_policy
 from agt.tools.spell_check import correct_query
+from agt.tools.venue_resolver import resolve_venue
 from agt.tools.zotero_upsert import normalize_doi, title_author_fingerprint
 from agt.watch_store import Watch, WatchStore, create_watch
 from agt.zotero.library_doctor import scan_collection
@@ -914,6 +919,47 @@ def create_app() -> FastAPI:  # noqa: PLR0915
             new_count=new_count,
             total_count=len(tagged_papers),
         )
+
+    # ── Author autocomplete (P9.7) ──────────────────────────────────────────
+
+    _SUGGEST_TTL = 900.0  # 15 minutes
+    _suggest_cache: dict[str, tuple[float, list[NormalizedAuthor]]] = {}
+
+    @app.get("/authors/suggest", response_model=list[NormalizedAuthor])
+    async def _author_suggest(  # pyright: ignore[reportUnusedFunction]
+        q: str = Query(min_length=1),
+        limit: int = Query(default=5, ge=1, le=20),
+        _: None = Depends(_require_backend_key),
+        settings: Settings = Depends(get_settings),
+    ) -> list[NormalizedAuthor]:
+        cache_key = f"{q}:{limit}"
+        now = time.monotonic()
+        cached = _suggest_cache.get(cache_key)
+        if cached is not None and now - cached[0] < _SUGGEST_TTL:
+            return cached[1]
+        results = await resolve_author(q, settings=settings, limit=limit)
+        _suggest_cache[cache_key] = (now, results)
+        return results
+
+    # ── Venue autocomplete (P9.9) ───────────────────────────────────────────
+
+    _venue_suggest_cache: dict[str, tuple[float, list[ResolvedVenue]]] = {}
+
+    @app.get("/venues/suggest", response_model=list[ResolvedVenue])
+    async def _venue_suggest(  # pyright: ignore[reportUnusedFunction]
+        q: str = Query(min_length=1),
+        limit: int = Query(default=5, ge=1, le=20),
+        _: None = Depends(_require_backend_key),
+        settings: Settings = Depends(get_settings),
+    ) -> list[ResolvedVenue]:
+        cache_key = f"{q}:{limit}"
+        now = time.monotonic()
+        cached_venue = _venue_suggest_cache.get(cache_key)
+        if cached_venue is not None and now - cached_venue[0] < _SUGGEST_TTL:
+            return cached_venue[1]
+        venue_results = await resolve_venue(q, settings=settings, limit=limit)
+        _venue_suggest_cache[cache_key] = (now, venue_results)
+        return venue_results
 
     return app
 

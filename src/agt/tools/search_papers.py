@@ -426,6 +426,8 @@ def _build_retrieval_registry(
                 query=query,
                 limit=limit,
                 year_min=constraints.year.min_year,
+                author_ids=constraints.author_ids,
+                venue_ids=constraints.venue_ids,
                 max_pages=(
                     openalex_max_pages if openalex_max_pages is not None else effective_max_pages
                 ),
@@ -438,6 +440,8 @@ def _build_retrieval_registry(
             fetcher=lambda: crossref_client.search(
                 query=query,
                 limit=limit,
+                author_names=constraints.author_names,
+                venue_names=constraints.venue_names,
                 max_pages=effective_max_pages,
             ),
         ),
@@ -461,6 +465,7 @@ def _build_retrieval_registry(
                 query=query,
                 limit=limit,
                 categories=arxiv_categories,
+                author_names=constraints.author_names,
             ),
         ),
         _RetrievalProvider(
@@ -1211,17 +1216,21 @@ def _apply_filter_edit(
             include_keywords=include_keywords,
             exclude_keywords=exclude_keywords,
         ),
+        author_ids=[a.openalex_id for a in filter_edit.authors if a.openalex_id],
+        author_names=[a.name for a in filter_edit.authors],
+        venue_ids=[v.openalex_id for v in filter_edit.venues if v.openalex_id],
+        venue_names=[v.name for v in filter_edit.venues],
     )
 
 
 # Static capability table: which filters each source pushes down to its API.
 _SOURCE_PUSH_DOWN: dict[str, list[str]] = {
     "semantic_scholar": ["year_min", "year_max"],
-    "openalex": ["year_min"],
-    "crossref": [],
+    "openalex": ["year_min", "author", "venue"],
+    "crossref": ["author", "venue"],
     "pubmed": [],
     "europe_pmc": [],
-    "arxiv": [],
+    "arxiv": ["author"],
     "doaj": [],
     "base": [],
     "core": [],
@@ -1282,7 +1291,7 @@ def build_source_policy(settings: Settings) -> list[SourceCapability]:
     return result
 
 
-def _build_search_plan(
+def _build_search_plan(  # noqa: PLR0912
     original_query: str,
     topic_query: str,
     rewritten_queries: list[str],
@@ -1300,6 +1309,10 @@ def _build_search_plan(
         open_access_only=constraints.quality.open_access_only,
         include_keywords=list(constraints.keywords.include_keywords),
         exclude_keywords=list(constraints.keywords.exclude_keywords),
+        author_ids=list(constraints.author_ids),
+        author_names=list(constraints.author_names),
+        venue_ids=list(constraints.venue_ids),
+        venue_names=list(constraints.venue_names),
     )
     soft_preferences = SoftPreferences(
         require_positive_community_perception=constraints.quality.require_positive_community_perception,
@@ -1314,8 +1327,13 @@ def _build_search_plan(
     for name in all_source_names:
         pushed: list[str] = []
         for filter_name in _SOURCE_PUSH_DOWN.get(name, []):
-            if (filter_name == "year_min" and constraints.year.min_year is not None) or (
-                filter_name == "year_max" and constraints.year.max_year is not None
+            if (
+                (filter_name == "year_min" and constraints.year.min_year is not None)
+                or (filter_name == "year_max" and constraints.year.max_year is not None)
+                or (
+                    filter_name == "author" and (constraints.author_ids or constraints.author_names)
+                )
+                or (filter_name == "venue" and (constraints.venue_ids or constraints.venue_names))
             ):
                 pushed.append(filter_name)
         if pushed:
@@ -1339,6 +1357,10 @@ def _build_search_plan(
         enforced_post_merge.append("exclude_keywords")
     if constraints.keywords.include_keywords:
         enforced_post_merge.append("topic_relevance")
+    if constraints.author_ids or constraints.author_names:
+        enforced_post_merge.append("author")
+    if constraints.venue_ids or constraints.venue_names:
+        enforced_post_merge.append("venue")
 
     return SearchPlan(
         original_query=original_query,

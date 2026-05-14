@@ -9,9 +9,11 @@ import { ConfigPanel } from "./ConfigPanel";
 
 function renderPanel(
   onValidateKey?: (provider: string, apiKey: string) => Promise<KeyValidateResponse>,
+  addonVersion?: string,
 ): string {
   return renderToStaticMarkup(
     createElement(ConfigPanel, {
+      addonVersion,
       config: { ...DEFAULT_ADDON_CONFIG },
       onChange: () => {},
       onSave: () => {},
@@ -23,6 +25,19 @@ function renderPanel(
     }),
   );
 }
+
+describe("ConfigPanel version footer (P9.3)", () => {
+  it("shows version string when addonVersion is provided", () => {
+    const html = renderPanel(undefined, "0.2.0");
+    expect(html).toContain("SciAgent v0.2.0");
+    expect(html).toContain("agt-version-footer");
+  });
+
+  it("omits version footer when addonVersion is not provided", () => {
+    const html = renderPanel();
+    expect(html).not.toContain("agt-version-footer");
+  });
+});
 
 describe("ConfigPanel Provider API Keys section (P8.10-B)", () => {
   it("renders the Provider API Keys section heading", () => {

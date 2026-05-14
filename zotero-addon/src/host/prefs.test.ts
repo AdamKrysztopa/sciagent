@@ -65,6 +65,12 @@ function createMockZotero(): ZoteroGlobal {
   };
 }
 
+describe("DEFAULT_ADDON_CONFIG", () => {
+  it("defaults backendMode to local so researchers get the standalone experience without configuration", () => {
+    expect(DEFAULT_ADDON_CONFIG.backendMode).toBe("local");
+  });
+});
+
 describe("createZoteroPreferenceStore", () => {
   it("returns defaults when prefs are unset", () => {
     const store = createZoteroPreferenceStore(createMockZotero());

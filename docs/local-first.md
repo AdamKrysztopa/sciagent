@@ -10,7 +10,7 @@ PyInstaller binary build, CI pipeline, and Zotero add-on integration. It is the
 implementation spec for **SCI-0604** (embedded server) and the context for **P6**
 overall.
 
-See [actionable-plan.md](actionable-plan.md) for sequencing relative to P5 and P6.
+See [actionable-plan.md](actionable-plan-done-2.md) for sequencing relative to P5 and P6.
 
 ---
 
@@ -645,7 +645,7 @@ export function FirstRunDialog({ version, onComplete, onError }: Props) {
 ### 4.4 Provider selector in settings panel (P6 / SCI-0603)
 
 The existing settings panel gains a provider dropdown and conditional fields. This
-is tracked as SCI-0603 in P6. See the P6 section in [actionable-plan.md](actionable-plan.md).
+is tracked as SCI-0603 in P6. See the P6 section in [actionable-plan.md](actionable-plan-done-2.md).
 
 ---
 

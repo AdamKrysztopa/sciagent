@@ -8,6 +8,7 @@ import { BackendFailurePanel } from "./components/BackendFailurePanel";
 import { CapabilityBanner } from "./components/CapabilityBanner";
 import { ConfigPanel } from "./components/ConfigPanel";
 import { FilterEditor } from "./components/FilterEditor";
+import { FirstRunConfigCard } from "./components/FirstRunConfigCard";
 import { FirstRunDialog } from "./components/FirstRunDialog";
 import { HealthStatus } from "./components/HealthStatus";
 import { LibraryDoctor } from "./components/LibraryDoctor";
@@ -193,7 +194,7 @@ function searchDisabledReason(controller: SciAgentController): string | null {
   return "Backend health has not been checked yet.";
 }
 
-function IdleView({ controller }: { controller: SciAgentController }) {
+function IdleView({ controller, addonVersion }: { controller: SciAgentController; addonVersion?: string }) {
   const disabledReason = searchDisabledReason(controller);
 
   return (
@@ -202,6 +203,7 @@ function IdleView({ controller }: { controller: SciAgentController }) {
         <BackendFailurePanel
           error={controller.healthError}
           onRetry={controller.onRefreshHealth}
+          backendMode={controller.config.backendMode}
         />
       ) : null}
 
@@ -300,6 +302,8 @@ function IdleView({ controller }: { controller: SciAgentController }) {
         filterDraft={controller.filterDraft}
         onChange={controller.onFilterDraftChange}
         onReset={controller.onResetFilters}
+        onSuggestAuthors={controller.onSuggestAuthors}
+        onSuggestVenues={controller.onSuggestVenues}
         searchPlan={controller.searchPlan}
       />
 
@@ -313,6 +317,7 @@ function IdleView({ controller }: { controller: SciAgentController }) {
       />
 
       <ConfigPanel
+        addonVersion={addonVersion}
         config={controller.config}
         onChange={controller.onConfigChange}
         onSave={controller.onSaveConfig}
@@ -435,6 +440,8 @@ function ReviewView({ controller }: { controller: SciAgentController }) {
         filterDraft={controller.filterDraft}
         onChange={controller.onFilterDraftChange}
         onReset={controller.onResetFilters}
+        onSuggestAuthors={controller.onSuggestAuthors}
+        onSuggestVenues={controller.onSuggestVenues}
         searchPlan={controller.searchPlan}
       />
 
@@ -556,11 +563,12 @@ function DoneView({ controller }: { controller: SciAgentController }) {
 function AppContent({ services }: { services: AddonUiServices }) {
   const controller = useSciAgentController(services);
 
-  // Binary check: runs once when backendMode is confirmed as "local".
-  // Default config has backendMode="remote", so the check fires only after
-  // prefs load and the value changes to "local".
+  // Binary check: runs once after prefs load confirms backendMode="local" (P9.0 default).
+  // If the binary is missing, shows FirstRunDialog to download it.
+  // On completion, triggers a health re-check so the pill turns green without manual action.
   const [binarySetup, setBinarySetup] = useState<"ready" | "needed">("ready");
   const binaryCheckDoneRef = useRef(false);
+  const binaryWasNeededRef = useRef(false);
 
   useEffect(() => {
     if (binaryCheckDoneRef.current) return;
@@ -571,9 +579,30 @@ function AppContent({ services }: { services: AddonUiServices }) {
     }
     binaryCheckDoneRef.current = true;
     void services.checkBinaryInstalled().then((installed) => {
-      if (!installed) setBinarySetup("needed");
+      if (!installed) {
+        binaryWasNeededRef.current = true;
+        setBinarySetup("needed");
+      }
     });
   }, [controller.config.backendMode, services]);
+
+  // After download completes and binarySetup returns to "ready", refresh health
+  // so the pill updates without the user pressing "Retry".
+  useEffect(() => {
+    if (binarySetup === "ready" && binaryWasNeededRef.current) {
+      binaryWasNeededRef.current = false;
+      controller.onRefreshHealth();
+    }
+  }, [binarySetup, controller]);
+
+  // First-run config card: shown when binary is ready but no LLM key is configured.
+  const [firstRunConfigDone, setFirstRunConfigDone] = useState(false);
+  const hasLlmKey =
+    controller.config.openaiApiKey.length > 0 ||
+    controller.config.anthropicApiKey.length > 0 ||
+    controller.config.xaiApiKey.length > 0 ||
+    controller.config.groqApiKey.length > 0;
+  const showFirstRunConfig = binarySetup === "ready" && !hasLlmKey && !firstRunConfigDone;
 
   if (binarySetup === "needed") {
     return (
@@ -586,6 +615,23 @@ function AppContent({ services }: { services: AddonUiServices }) {
             onComplete={() => setBinarySetup("ready")}
             onSkip={() => setBinarySetup("ready")}
             services={services}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (showFirstRunConfig) {
+    return (
+      <div className="agt-root">
+        <div className="agt-shell">
+          <header className="agt-titlebar">
+            <span className="agt-title">SciAgent</span>
+          </header>
+          <FirstRunConfigCard
+            config={controller.config}
+            onSave={(update) => { controller.onSaveFirstRunConfig(update); }}
+            onSkip={() => { setFirstRunConfigDone(true); }}
           />
         </div>
       </div>
@@ -616,7 +662,7 @@ function AppContent({ services }: { services: AddonUiServices }) {
           />
         </header>
 
-        {uiState === "idle" && <IdleView controller={controller} />}
+        {uiState === "idle" && <IdleView addonVersion={services.addonVersion} controller={controller} />}
         {uiState === "running" && <RunningView controller={controller} />}
         {uiState === "review" && <ReviewView controller={controller} />}
         {uiState === "done" && <DoneView controller={controller} />}

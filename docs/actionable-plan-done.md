@@ -2,7 +2,7 @@
 
 > **Last audit: 2026-05-12** — OPN-12 through OPN-17 complete. NormalizedPaper venue/item_type/volume/issue/pages fields + Zotero write mapping; result card DOI badge/abstract/venue/citations (OPN-13); AGT_SEARCH_DEPTH quick/balanced/deep (OPN-14); ServerStartError + BackendFailurePanel (OPN-15); CapabilityBanner first-run checklist (OPN-16); SourceTerminalState per-source normalization + SearchCoveragePanel collapsed section (OPN-17). 386 Python tests + 40 add-on tests green. ruff 0, pyright 0.
 >
-> **Historical snapshot:** this file records the pre-P8 done/current state. The active release plan now lives in [actionable-plan.md](actionable-plan.md) and pivots P8 to an LLM-only minimum setup for baseline search, with academic provider keys treated as optional capability unlocks.
+> **Historical snapshot:** this file records the pre-P8 done/current state. The active release plan now lives in [actionable-plan.md](actionable-plan-done-2.md) and pivots P8 to an LLM-only minimum setup for baseline search, with academic provider keys treated as optional capability unlocks.
 >
 > This is the canonical execution tracker for live status, overall progress, and the next implementation target.
 > Update done / not done state here first.
