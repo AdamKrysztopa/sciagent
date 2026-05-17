@@ -78,48 +78,62 @@ the same credentials on `/run` and `/resume`.
 - [ ] Confirm `--max-instances=2` on Cloud Run service: `gcloud run services describe sciagent --region=europe-west1 | grep -i maxScale`.
 - [ ] (Optional) Set a hard DeepSeek monthly cap in the DeepSeek dashboard if available.
 
-### MU1 — Backend credential injection (1–1.5 days)
+### MU1 — Backend credential injection ✅ done 2026-05-17
 
 **Goal.** Every Zotero/LLM call inside a request reads credentials from a
 request-scoped contextvar, not from `settings`.
 
-#### New file: `src/agt/api/credentials.py`
+#### Delivered
 
-- Define `RequestCredentials` Pydantic model with optional/required fields per below.
-- Define `current_credentials: ContextVar[RequestCredentials | None]` module-global.
-- Define `get_credentials(...)` FastAPI dependency that:
-  - Parses headers (`X-Zotero-API-Key`, `X-Zotero-Library-ID`, `X-Zotero-Library-Type`,
-    `X-LLM-API-Key`, `X-LLM-Provider`, `X-LLM-Model`, `X-LLM-Base-URL`).
-  - Validates required fields for Zotero-touching endpoints.
-  - Sets the contextvar, yields, resets in `finally`.
-
-#### Files to refactor
-
-| File | Change |
-|---|---|
-| `src/agt/api/app.py` | Attach `Depends(get_credentials)` to `/run`, `/resume`, `/library-doctor`, `/gap-finder`, `/extract-keywords`. Add new `/preflight` endpoint that calls `run_preflight(credentials)`. Change `/health` to service-only (drop Zotero preflight). |
-| `src/agt/zotero/preflight.py` | `run_preflight(creds: RequestCredentials)` — stop reading from `settings`. |
-| `src/agt/zotero/collection_inspector.py` | Read from `current_credentials.get()` instead of `settings`. |
-| `src/agt/tools/zotero_upsert.py` | Same: 3 call sites switch to contextvar. |
-| `src/agt/tools/pdf_attach.py` | Same. |
-| `src/agt/providers/router.py` | `get_llm()` — if `creds.llm_api_key` is set, build provider from creds; otherwise use `settings`. |
-| `src/agt/config.py` | Mark `zotero_*` settings as dev-only (kept for local single-user dev). Add `multi_user_mode: bool = True` (default True; flips to False if `AGT_ZOTERO_API_KEY` is set, for local backwards compat). |
-| `tests/test_zotero_*.py`, `tests/test_api_*.py` | Update fixtures to pass credentials in headers (use a `make_credentials_headers()` helper). |
+- `src/agt/credential_context.py` — `RequestCredentials` model, `current_credentials`
+  contextvar, `resolve_zotero_*` / `resolve_llm_*` helpers with settings fallback for
+  local single-user dev.
+- `src/agt/api/credentials.py` — FastAPI `get_credentials` generator dependency that
+  reads 7 headers, validates Zotero fields, sets/restores contextvar in try/finally
+  (using `set(previous)` pattern — `reset(token)` fails across async contexts).
+- `src/agt/api/app.py` — `/health` is service-only (no Zotero call); new `/preflight`
+  endpoint with `Depends(get_credentials)`; `Depends(get_credentials)` on `/run`,
+  `/resume`, `/library-doctor`, `/gap-finder`, `/watches/{id}/rerun`.
+- `src/agt/zotero/preflight.py` — resolves credentials from contextvar first, falls
+  back to `settings`.
+- `src/agt/zotero/collection_inspector.py`, `src/agt/tools/zotero_upsert.py`,
+  `src/agt/tools/pdf_attach.py` — all switched to resolve helpers.
+- `src/agt/providers/router.py` — `build_provider_for_request(settings)` checks
+  contextvar for per-request LLM override, calls `settings.model_copy(update=...)`.
+- `src/agt/graph/workflow.py` — `build_provider` → `build_provider_for_request`.
+- All tests updated: `_ZOTERO_HEADERS` added to API tests; `build_provider_for_request`
+  monkeypatched in workflow/e2e tests. 583 tests pass.
 
 #### Acceptance criteria (MU1)
 
-- [ ] All Python quality gates pass: `uv run ruff check . && uv run ruff format --check . && uv run pyright && uv run pytest -q --vcr-record=none`.
-- [ ] `/health` returns 200 without any user credentials (service-only).
-- [ ] `/preflight` returns 200 with valid creds, 401 without creds, 403 with bad Zotero key.
-- [ ] `/run` returns 401 if `X-Zotero-API-Key` missing.
-- [ ] Existing single-user local dev still works when `AGT_ZOTERO_API_KEY` is set in `.env` (backwards-compat mode).
-- [ ] No credentials appear in `structlog` output (grep test).
-- [ ] LangGraph checkpoint inspection (`SELECT data FROM checkpoints LIMIT 1`) shows no credential bytes.
+- [x] All Python quality gates pass (583 passed, ruff clean, pyright clean).
+- [x] `/health` returns 200 without any user credentials (service-only).
+- [x] `/run` returns 401 if `X-Zotero-API-Key` missing.
+- [x] Existing single-user local dev still works when `AGT_ZOTERO_API_KEY` is set in `.env`.
+- [ ] `/preflight` live smoke: 200 with valid creds, 401 without creds — verify after MU2 deploy.
+- [ ] No credentials appear in `structlog` output — grep test not yet written.
+- [ ] LangGraph checkpoint inspection shows no credential bytes — not yet tested.
 
-### MU2 — Frontend credential UI (0.5–1 day)
+#### Bug fixes shipped alongside MU1
+
+- **Spell check skipped title-cased words** — `token[0].isupper()` guard removed;
+  checker now runs on lowercase form and re-capitalizes the suggestion. "Scpectroscopy"
+  → "Spectroscopy" confirmed.
+- **Author/venue filter reset after search** — `applySnapshot` now preserves
+  `authors`, `venues`, `seed_dois` from the current draft when rebuilding from the
+  backend search plan.
+- **500 on approve/reject from cache hit** — `cached_state` was missing `messages`,
+  `preflight`, `trace_spans`; `finalize_approval` threw `KeyError`. Fixed by
+  populating defaults in the cache reconstruction block in `app.py`.
+
+### MU2 — Frontend credential UI (0.5–1 day) ← **NEXT**
 
 **Goal.** The add-on collects Zotero credentials (always) and LLM credentials (optional)
 from the user and sends them as headers on every backend call.
+
+**Blocker today:** `backendClient.buildHeaders` does not send any Zotero headers.
+Every endpoint gated by `get_credentials` (including `/resume`) returns 401 when
+called from the add-on in remote mode.
 
 #### Files to edit
 
@@ -127,7 +141,7 @@ from the user and sends them as headers on every backend call.
 |---|---|
 | `zotero-addon/src/host/prefs.ts` | Add `zoteroApiKey`, `zoteroLibraryId`, `zoteroLibraryType` (`user` \| `group`), `useCustomLlm`, `customLlmProvider`, `customLlmBaseUrl`, `customLlmModel`, `customLlmApiKey`. Default to empty. |
 | `zotero-addon/src/ui/components/ConfigPanel.tsx` | Add a "Zotero Account" section (required for remote mode). Add a "LLM Override" section gated by a toggle. |
-| `zotero-addon/src/client/backendClient.ts` | `buildHeaders` adds Zotero headers always; LLM headers only if `useCustomLlm`. Add `setUserCredentials(creds)` mutator. |
+| `zotero-addon/src/client/backendClient.ts` | `buildHeaders` adds `X-Zotero-API-Key`, `X-Zotero-Library-ID`, `X-Zotero-Library-Type` always; LLM headers only if `useCustomLlm`. Extend `BackendClientConfig` to carry the new fields. |
 | `zotero-addon/src/ui/App.tsx` / hooks | Pipe prefs into the client constructor. |
 | `zotero-addon/src/ui/components/FirstRunConfigCard.tsx` | First-run flow now prompts for Zotero credentials. LLM key remains optional. |
 | Tests | Vitest for header serialization; assert no LLM headers when toggle is off. |
@@ -137,6 +151,7 @@ from the user and sends them as headers on every backend call.
 - [ ] All Zotero add-on quality gates pass: `npm ci && npm run lint && npm run build && npm run typecheck && npm run test`.
 - [ ] Sending a `/run` without Zotero API key in prefs surfaces a clear error in the UI before hitting the network.
 - [ ] Toggle "Use my own LLM key" shows the four LLM fields; switching off hides them and clears the headers.
+- [ ] `/run` and `/resume` no longer return 401 when Zotero prefs are filled in.
 
 ### MU3 — Cloud Run reconfig (10 min)
 
@@ -249,14 +264,16 @@ Public backend: `https://sciagent-ewpafdgfya-ew.a.run.app`
 ### Current Status
 
 - Single-user deploy ✅ done 2026-05-17 (M0–M4 of `actionable-plan.md`).
-- Current focus: **MU1 — Backend credential injection**
+- MU1 backend ✅ done 2026-05-17 — committed (`0d10e67`), **not yet deployed**.
+- Bug fixes (spell check, author filter reset, cache-hit 500) ✅ done 2026-05-17 — committed (`8324201`), not yet deployed.
+- Current focus: **MU2 — Frontend credential UI** (add-on must send Zotero headers before MU1 deploy is useful)
 
 ### Phase Tracker
 
 - [ ] **MU0** — Verify cost guardrails
-- [ ] **MU1** — Backend credential injection
-- [ ] **MU2** — Frontend credential UI
-- [ ] **MU3** — Cloud Run reconfig
+- [x] **MU1** — Backend credential injection ✅ 2026-05-17
+- [ ] **MU2** — Frontend credential UI ← next
+- [ ] **MU3** — Cloud Run reconfig (blocked: must NOT run before MU1+MU2 deployed)
 - [ ] **MU4** — README + trust statement
 - [ ] **MU5** — End-to-end smoke test
 - [ ] **MU6** — Monitoring (continuous)

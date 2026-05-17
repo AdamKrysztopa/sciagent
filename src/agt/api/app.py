@@ -661,7 +661,6 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     @app.get("/correct-query", response_model=CorrectQueryResponse)
     async def _correct_query_endpoint(  # pyright: ignore[reportUnusedFunction]
         q: str = Query(default="", description="Query to spell-check"),
-        _: None = Depends(_require_backend_key),
     ) -> CorrectQueryResponse:
         corrected = correct_query(q)
         return CorrectQueryResponse(original=q, corrected=corrected, changed=corrected != q)
