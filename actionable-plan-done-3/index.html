@@ -1,0 +1,1968 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="SciAgent documentation site built from Markdown sources in the repository.">
+      
+      
+      
+        <link rel="canonical" href="https://adamkrysztopa.github.io/sciagent/actionable-plan-done-3/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>SciAgent Actionable Plan — P9 (Standalone Distribution + First-Class Search Fields + Docs Overhaul) — DONE - SciAgent Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#sciagent-actionable-plan-p9-standalone-distribution-first-class-search-fields-docs-overhaul-done" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="SciAgent Docs" class="md-header__button md-logo" aria-label="SciAgent Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            SciAgent Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              SciAgent Actionable Plan — P9 (Standalone Distribution + First-Class Search Fields + Docs Overhaul) — DONE
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/AdamKrysztopa/sciagent" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    AdamKrysztopa/sciagent
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="SciAgent Docs" class="md-nav__button md-logo" aria-label="SciAgent Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    SciAgent Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/AdamKrysztopa/sciagent" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    AdamKrysztopa/sciagent
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Overview
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Get Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Get Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../keys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Keys
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-manual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Manual
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Power User
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Power User
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../advanced-config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../manual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration & Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment & Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../providers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provider Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../zotero/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Zotero Add-on
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmark/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    P1 Benchmark
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../local-first/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local-First Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../actionable-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../priorities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Priorities
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../next-steps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Next Steps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#design-philosophy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Philosophy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#release-readiness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Release Readiness
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#execution-tracker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Execution Tracker
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Execution Tracker">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current Status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p9-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P9 Status
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#market-snapshot-what-one-click-research-add-ons-actually-look-like" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Market Snapshot — What "one-click research add-ons" actually look like
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#p9-milestones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P9 Milestones
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="P9 Milestones">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p9a-standalone-xpi-install-2-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P9.A — Standalone XPI Install (2 days)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p9b-first-class-search-fields-125-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P9.B — First-Class Search Fields (1.25 days)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p9c-documentation-overhaul-minimum-config-first-125-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P9.C — Documentation Overhaul: Minimum-Config First (1.25 days)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#proposed-docs-tree-p916" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proposed Docs Tree (P9.16)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sequencing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sequencing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#risk-register" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Risk Register
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quality-gates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quality Gates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#out-of-scope-for-p9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Out of Scope for P9
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="sciagent-actionable-plan-p9-standalone-distribution-first-class-search-fields-docs-overhaul-done">SciAgent Actionable Plan — P9 (Standalone Distribution + First-Class Search Fields + Docs Overhaul) — DONE<a class="headerlink" href="#sciagent-actionable-plan-p9-standalone-distribution-first-class-search-fields-docs-overhaul-done" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>Completed: 2026-05-14</strong> — All P9.0–P9.17 stories complete. Archived 2026-05-17.
+See <a href="../actionable-plan/">actionable-plan.md</a> for the current plan (P10 prereqs + GCP).</p>
+<p><strong>Last audit: 2026-05-13</strong> — All P0–P8 stories complete (see
+<a href="../actionable-plan-done-2/">actionable-plan-done-2.md</a> and
+<a href="../actionable-plan-done/">actionable-plan-done.md</a>).</p>
+<p>This plan covers <strong>P9: Ship SciAgent as one XPI for end-users</strong>, <strong>extend search with a
+first-class Author field (and a few other high-leverage fields)</strong>, and <strong>rebuild the docs
+around the "minimum config to start, more advanced on demand" principle</strong>.</p>
+<p>Canonical execution tracker. Update done/not done state here first.
+Historical, completed work stays in <code>actionable-plan-done*.md</code> — do not re-open closed items.</p>
+</blockquote>
+<h2 id="design-philosophy">Design Philosophy<a class="headerlink" href="#design-philosophy" title="Permanent link">&para;</a></h2>
+<p><strong>One installer.</strong> A researcher should be able to install SciAgent in one step from
+inside Zotero, the same way they install any other Zotero add-on. Today the
+<code>README.md</code> still requires <code>git clone</code>, <code>uv sync</code>, <code>npm ci</code>, and <code>npm run build</code> —
+that is a developer install. The local-first plan
+(<a href="../local-first/">docs/local-first.md</a>) and the embedded-server binary already exist
+and work on macOS arm64; what is missing is the <strong>release pipeline that bundles
+them</strong>, the <strong>default backend mode</strong>, and the <strong>end-user docs that hide the dev
+path</strong>.</p>
+<p><strong>Two distribution shapes from one codebase:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Shape</th>
+<th>Audience</th>
+<th>What ships</th>
+<th>Start cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Standalone</td>
+<td>Researcher</td>
+<td>One XPI · binary downloads on first run</td>
+<td>install XPI + LLM key</td>
+</tr>
+<tr>
+<td>Web / dev</td>
+<td>Developer · SaaS host</td>
+<td>Source + uv + Docker</td>
+<td>the current README path</td>
+</tr>
+</tbody>
+</table>
+<p>The <strong>standalone</strong> shape is the one we are missing. Both shapes run identical
+backend code — the local binary and any future hosted backend are the same
+FastAPI app frozen by PyInstaller.</p>
+<p><strong>Minimum config to start.</strong> The first-time experience is one LLM key (or a
+running Ollama). Everything else — provider keys, polite-pool email, source
+disables, advanced filters — must be discoverable later, not asked up front.
+Today the <code>.env.example</code>, the <code>ConfigPanel</code>, the user manual, and the README
+mix required and optional config in one wall of text. P9 separates them.</p>
+<p><strong>Search has fields, not only natural language.</strong> P8.8 added <code>HardFilters.author_ids</code>
+and a natural-language resolver (<code>by Yoshua Bengio …</code>). It works when the user
+remembers to phrase the query correctly. It does not exist as a UI field, has
+no autocomplete, and silently degrades to topic-only search when the parser
+misses. P9 adds <strong>Author</strong>, <strong>Venue/Journal</strong>, and <strong>DOI/seed paper</strong> as first-class
+search fields with provider-backed suggestions, alongside the existing year and
+keyword controls.</p>
+<hr />
+<h2 id="release-readiness">Release Readiness<a class="headerlink" href="#release-readiness" title="Permanent link">&para;</a></h2>
+<p><strong>P9 release gate</strong> — when the items below pass, the <em>researcher install path</em> is
+one click and the <em>power-user search</em> covers the cases that matter most:</p>
+<ol>
+<li>The Zotero plugin directory and a single GitHub Release page each host one XPI
+   that boots a working SciAgent without any terminal commands on macOS (arm64,
+   x86_64), Linux x86_64, and Windows x64.</li>
+<li>First-run flow inside Zotero downloads the right server binary, starts it,
+   surfaces a green health badge, and renders a one-screen "you only need an LLM
+   key" config card. No <code>.env</code>. No <code>uv</code>.</li>
+<li>Search has explicit fields for <strong>Author</strong>, <strong>Venue</strong>, and <strong>Seed DOI</strong> in
+   addition to the free-text query. Authors come with OpenAlex/S2 autocomplete and
+   resolve to <code>author_ids</code> before search runs.</li>
+<li>The user-facing docs lead with the XPI install + LLM key. The developer
+   install (uv, FastAPI, npm) is one click away, not the front door.</li>
+</ol>
+<p>The four pieces are independent — each ships value on its own, but only the
+combination clears the "use it without reading the manual" bar that the user
+asked for.</p>
+<hr />
+<h2 id="execution-tracker">Execution Tracker<a class="headerlink" href="#execution-tracker" title="Permanent link">&para;</a></h2>
+<h3 id="current-status">Current Status<a class="headerlink" href="#current-status" title="Permanent link">&para;</a></h3>
+<ul>
+<li>All P0–P8 milestones complete as of 2026-05-14. 563 Python / 104 add-on tests green.</li>
+<li>✅ <strong>P9.0 complete (2026-05-13):</strong> <code>backendMode</code> default changed to <code>"local"</code>;
+  <code>runtime.ts</code> <code>createClient</code> uses <code>getResolvedPort()</code> (57321) instead of
+  <code>config.backendUrl</code> (8000), fixing a silent port mismatch; <code>BackendFailurePanel</code>
+  now shows local-aware instructions; health re-check fires automatically after
+  first-run binary download completes; <code>prefs.test.ts</code> asserts the new default.</li>
+<li><strong>Open product gap.</strong> No tagged release yet (next: push a <code>v0.2.0</code> tag to trigger
+  <code>release.yml</code> — P9.3 wires the self-update URL). <code>README.md</code> Quick Start still
+  asks the user to clone the repo and run uvicorn (P9.11). Author search ends at
+  result-card chips — no Author input field (P9.6–P9.8).</li>
+</ul>
+<h3 id="p9-status">P9 Status<a class="headerlink" href="#p9-status" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Story</th>
+<th>Effort</th>
+<th>Owner</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P9.0</td>
+<td>Release-mode default + first-run polish</td>
+<td>~0.25d</td>
+<td>zotero-frontend</td>
+<td>✅ done (2026-05-13)</td>
+</tr>
+<tr>
+<td>P9.1</td>
+<td>Build-binaries CI cross-platform validation</td>
+<td>~0.75d</td>
+<td>settings-bootstrap</td>
+<td>✅ done (2026-05-13)</td>
+</tr>
+<tr>
+<td>P9.2</td>
+<td>Unified <code>release.yml</code> (binaries + XPI + update.rdf)</td>
+<td>~0.5d</td>
+<td>settings-bootstrap</td>
+<td>✅ done (2026-05-13)</td>
+</tr>
+<tr>
+<td>P9.3</td>
+<td><code>update.rdf</code> self-update wiring</td>
+<td>~0.25d</td>
+<td>zotero-frontend</td>
+<td>✅ done (2026-05-13)</td>
+</tr>
+<tr>
+<td>P9.4</td>
+<td>macOS Gatekeeper note + Windows SmartScreen note</td>
+<td>~0.25d</td>
+<td>zotero-addon</td>
+<td>✅ done (2026-05-13)</td>
+</tr>
+<tr>
+<td>P9.5</td>
+<td>Embedded <code>FirstRunConfigCard</code> (LLM key + Zotero)</td>
+<td>~0.5d</td>
+<td>zotero-frontend</td>
+<td>✅ done (2026-05-13)</td>
+</tr>
+<tr>
+<td>P9.6</td>
+<td><code>Author</code> first-class search field (backend)</td>
+<td>~0.5d</td>
+<td>python-backend-engineer</td>
+<td>✅ done (2026-05-13)</td>
+</tr>
+<tr>
+<td>P9.7</td>
+<td><code>Author</code> autocomplete endpoint</td>
+<td>~0.25d</td>
+<td>python-backend-engineer</td>
+<td>✅ done (2026-05-13)</td>
+</tr>
+<tr>
+<td>P9.8</td>
+<td><code>Author</code> UI field with chip autocomplete</td>
+<td>~0.5d</td>
+<td>zotero-frontend</td>
+<td>✅ done (2026-05-13)</td>
+</tr>
+<tr>
+<td>P9.9</td>
+<td><code>Venue/Journal</code> first-class field</td>
+<td>~0.5d</td>
+<td>full-stack</td>
+<td>✅ done (2026-05-13)</td>
+</tr>
+<tr>
+<td>P9.10</td>
+<td><code>Seed DOI</code> paste field (drives <code>seed_dois</code>)</td>
+<td>~0.25d</td>
+<td>zotero-frontend</td>
+<td>✅ done (2026-05-13)</td>
+</tr>
+<tr>
+<td>P9.11</td>
+<td>README rewrite: XPI-first quick start</td>
+<td>~0.25d</td>
+<td>core-planner</td>
+<td>✅ done (2026-05-14)</td>
+</tr>
+<tr>
+<td>P9.12</td>
+<td><code>docs/user-manual.md</code> rewrite (minimum-config path)</td>
+<td>~0.5d</td>
+<td>core-planner</td>
+<td>✅ done (2026-05-14)</td>
+</tr>
+<tr>
+<td>P9.13</td>
+<td>New <code>docs/install.md</code> (single source for install flow)</td>
+<td>~0.25d</td>
+<td>core-planner</td>
+<td>✅ done (2026-05-14)</td>
+</tr>
+<tr>
+<td>P9.14</td>
+<td>New <code>docs/keys.md</code> (how to get every key)</td>
+<td>~0.5d</td>
+<td>core-planner</td>
+<td>✅ done (2026-05-14)</td>
+</tr>
+<tr>
+<td>P9.15</td>
+<td><code>docs/advanced-config.md</code> (everything that is optional)</td>
+<td>~0.25d</td>
+<td>core-planner</td>
+<td>✅ done (2026-05-14)</td>
+</tr>
+<tr>
+<td>P9.16</td>
+<td><code>mkdocs.yml</code> nav reshuffle + landing-page redesign</td>
+<td>~0.25d</td>
+<td>core-planner</td>
+<td>✅ done (2026-05-14)</td>
+</tr>
+<tr>
+<td>P9.17</td>
+<td>Telemetry-free first-run smoke (manual checklist)</td>
+<td>~0.25d</td>
+<td>sciagent-orchestrator</td>
+<td>✅ done (2026-05-14)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Total estimate:</strong> ~6.25 days.</p>
+<hr />
+<h2 id="market-snapshot-what-one-click-research-add-ons-actually-look-like">Market Snapshot — What "one-click research add-ons" actually look like<a class="headerlink" href="#market-snapshot-what-one-click-research-add-ons-actually-look-like" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>Source: independent review of the active 2025–2026 research-tool landscape.
+Reread before each P9 milestone closes. SciAgent is not Elicit; it is
+closest to Zotero Connector + Inciteful + Litmaps with approval-gated writes.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Install model</th>
+<th>Free tier</th>
+<th>Search fields beyond query</th>
+<th>Notes for SciAgent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Zotero Connector</td>
+<td>One click from zotero.org</td>
+<td>Free</td>
+<td>n/a (browser capture, no federated search)</td>
+<td>Sets the <strong>bar for install friction</strong>. Anything more than "click → install" loses casual users.</td>
+</tr>
+<tr>
+<td>Zotero built-in lookup</td>
+<td>Bundled</td>
+<td>Free</td>
+<td>DOI, ISBN, PMID</td>
+<td>We must at minimum cover <strong>DOI seed lookup</strong> to match parity.</td>
+</tr>
+<tr>
+<td>ResearchRabbit</td>
+<td>Web app, account</td>
+<td>Free</td>
+<td>Seed paper, author, keyword</td>
+<td>First-class <strong>seed paper + author</strong> controls — close to our planned P9.6/P9.10 shape.</td>
+</tr>
+<tr>
+<td>Litmaps</td>
+<td>Web app, account</td>
+<td>Freemium</td>
+<td>Seed paper, author, year, keyword</td>
+<td>Markets "explore by paper" — implies seed-DOI is table stakes. Author autocomplete is theirs by default.</td>
+</tr>
+<tr>
+<td>Connected Papers</td>
+<td>Web, no account for one map/day</td>
+<td>Limited free</td>
+<td>Seed paper</td>
+<td>Search is <strong>single seed DOI / title</strong>. Confirms that a seed-DOI field on its own is enough for many workflows.</td>
+</tr>
+<tr>
+<td>Inciteful</td>
+<td>Web app</td>
+<td>Free</td>
+<td>Seed paper, author, year range</td>
+<td>Pure web, no install. Their author field is plain text with no resolver — we can beat them by autocompleting.</td>
+</tr>
+<tr>
+<td>Elicit</td>
+<td>Web app, account</td>
+<td>Limited free queries</td>
+<td>Topic, optional filters</td>
+<td>Strong on natural-language Q&amp;A, weak on author/venue search. Different niche.</td>
+</tr>
+<tr>
+<td>Consensus</td>
+<td>Web app, account</td>
+<td>Limited free queries</td>
+<td>Topic</td>
+<td>Same niche as Elicit.</td>
+</tr>
+<tr>
+<td>Scite</td>
+<td>Web + Zotero plugin</td>
+<td>Subscription</td>
+<td>DOI, citation type</td>
+<td>Zotero plugin model proves users <strong>will install a domain add-on if the install is trivial</strong>.</td>
+</tr>
+<tr>
+<td>Paperpile</td>
+<td>Browser ext + macOS app</td>
+<td>Subscription</td>
+<td>Topic, author, year</td>
+<td>Has the standalone macOS app pattern we are emulating — bundled binary, no Python prompt.</td>
+</tr>
+<tr>
+<td>Semantic Scholar</td>
+<td>Web + API</td>
+<td>Free</td>
+<td>Topic, author, year, venue</td>
+<td>Their UI exposes <strong>all four fields explicitly</strong>. We already query S2 — we should expose the same shape.</td>
+</tr>
+<tr>
+<td>OpenAlex Works UI</td>
+<td>Web</td>
+<td>Free</td>
+<td>Topic, author, venue, year, OA, type</td>
+<td>Same — confirms author + venue belong in the UI, not just the URL grammar.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Gaps SciAgent fills uniquely</strong> — Zotero-native, approval-gated, deterministic
+filters with provenance, federated across 9 free sources, runs locally with no
+account. Those are differentiators we must keep visible in the install path,
+not bury under three terminal commands.</p>
+<p><strong>Gaps SciAgent must close (P9 scope)</strong> —</p>
+<ol>
+<li><strong>Install friction</strong>: every comparable Zotero add-on installs from one XPI.
+   SciAgent must match that or lose every user who would not run <code>uv sync</code>.</li>
+<li><strong>Author/Venue/Seed fields</strong>: every comparable tool exposes these as fields.
+   We expose them only as natural-language hints today.</li>
+<li><strong>Onboarding clarity</strong>: every comparable tool asks for at most one credential
+   on first use. SciAgent's <code>.env.example</code> lists 14+ keys. Most are optional but
+   the doc reads as if they are not.</li>
+</ol>
+<hr />
+<h2 id="p9-milestones">P9 Milestones<a class="headerlink" href="#p9-milestones" title="Permanent link">&para;</a></h2>
+<h3 id="p9a-standalone-xpi-install-2-days">P9.A — Standalone XPI Install <em>(2 days)</em><a class="headerlink" href="#p9a-standalone-xpi-install-2-days" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>Source: docs/local-first.md (already designed; this is the integration and
+release pass). Everything below builds on existing code — no new architecture.</p>
+</blockquote>
+<p><strong>Goal:</strong> A researcher downloads one XPI from a GitHub Release, installs it from
+inside Zotero, opens it, pastes an LLM key, and runs a search. No terminal.</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Story</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P9.0</td>
+<td><strong>Release-mode default.</strong> In <code>zotero-addon/src/host/prefs.ts</code>, set <code>backendMode</code> default to <code>"local"</code> (it may already be — verify and document). Confirm <code>bootstrap.js</code> calls <code>serverManager.startServer()</code> on plugin load and <code>stopServer()</code> on shutdown. Add an integration check that warns if the binary is missing <strong>and</strong> <code>backendMode === "local"</code>.</td>
+<td>~0.25d</td>
+</tr>
+<tr>
+<td>P9.1</td>
+<td><strong>Cross-platform binary validation.</strong> Trigger <code>.github/workflows/build-binaries.yml</code> on a release-candidate branch. Confirm <code>linux-x86_64</code>, <code>macos-arm64</code>, <code>macos-x86_64</code>, <code>windows-x64</code> binaries all pass the <code>--version</code> and <code>/health</code> smoke step. Fix any platform-specific PyInstaller hooks (most likely Linux missing <code>anyio</code> backends, Windows missing console subsystem flags). Record SHA256s in CI logs and in <code>docs/install.md</code>.</td>
+<td>~0.75d</td>
+</tr>
+<tr>
+<td>P9.2</td>
+<td><strong>Unified release workflow.</strong> Either extend <code>build-binaries.yml</code> to also run the existing XPI build (already present in <code>package-xpi</code> job) and publish <code>update.rdf</code>, or merge <code>zotero-addon-release.yml</code> into <code>build-binaries.yml</code>. Outcome: one tag (<code>v1.0.0</code>) produces one GitHub Release that contains: four signed binaries, four <code>.sha256</code>, one XPI, one <code>update.rdf</code>. Verify by tagging <code>v1.0.0-rc.1</code> from a branch.</td>
+<td>~0.5d</td>
+</tr>
+<tr>
+<td>P9.3</td>
+<td><strong>Self-update wiring.</strong> The XPI metadata already declares <code>updateURL</code>; point it at the <code>update.rdf</code> published in P9.2. After the next tag, an installed plugin must offer to auto-update without a re-download. Test by installing <code>v1.0.0-rc.1</code> and tagging <code>v1.0.0-rc.2</code> 10 minutes later.</td>
+<td>~0.25d</td>
+</tr>
+<tr>
+<td>P9.4</td>
+<td><strong>Code-signing notes.</strong> Add a short admonition block to <code>docs/install.md</code> for macOS Gatekeeper (<code>right-click → Open</code>) and Windows SmartScreen ("More info → Run anyway"). Keep the long-term Apple Developer / EV cert plan in <code>docs/local-first.md</code> Part 7 — do not block P9 on it.</td>
+<td>~0.25d</td>
+</tr>
+<tr>
+<td>P9.5</td>
+<td><strong>Embedded First-Run Config Card.</strong> After the binary downloads and the server is healthy, the sidebar must show a single card: one input for an LLM key (pre-selected provider auto-detected from key prefix) and one input for the Zotero API key + Library ID with a "Find these on zotero.org/settings/keys" link. Saving the card writes to Zotero prefs and triggers a <code>/health</code> re-check. Hide every other config (sources, depth, advanced filters) behind a "Show advanced" toggle.</td>
+<td>~0.5d</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Acceptance (P9.A):</strong></p>
+<ul>
+<li><code>https://github.com/AdamKrysztopa/sciagent/releases/latest</code> shows one XPI and
+  four binaries from a single workflow run.</li>
+<li>Fresh macOS arm64 box: install Zotero 9 → install the XPI → open Tools →
+  SciAgent → first-run dialog auto-downloads the binary → config card asks for
+  one LLM key + one Zotero key → first search returns results — all without a
+  terminal.</li>
+<li>The same flow tested manually on Linux x86_64 and Windows x64 (one each,
+  documented in <code>docs/install.md</code> § Verified Platforms).</li>
+</ul>
+<hr />
+<h3 id="p9b-first-class-search-fields-125-days">P9.B — First-Class Search Fields <em>(1.25 days)</em><a class="headerlink" href="#p9b-first-class-search-fields-125-days" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>Source: market gap + user request. Natural-language author hints exist
+(P8.8) but no UI field. P9 adds the field, the autocomplete, and similar
+first-class controls for venue and seed-DOI.</p>
+</blockquote>
+<p><strong>Goal:</strong> A user searching for "papers by Yoshua Bengio on attention" types
+"attention" in the query box and "Yoshua Bengio" in the Author box — both
+fields go through the deterministic filter contract, both are visible in the
+search plan, neither relies on the LLM rewriter to guess intent.</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Story</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P9.6</td>
+<td><strong>Author field in the contract.</strong> Extend <code>FilterEditContract</code> in <code>src/agt/models.py</code> with <code>authors: list[ResolvedAuthor]</code> (a small Pydantic model wrapping <code>name</code>, <code>openalex_id</code>, <code>orcid</code>, <code>s2_author_id</code>). Wire <code>run_search_phase</code> so that any resolved IDs land in <code>HardFilters.author_ids</code> <em>and</em> <code>HardFilters.author_names</code> for providers that do not support ID-based queries (Crossref query.author, arXiv <code>au:</code>). Add <code>author</code> push-down in <code>SearchPlan.filters_pushed_down</code>.</td>
+<td>~0.5d</td>
+</tr>
+<tr>
+<td>P9.7</td>
+<td><strong>Autocomplete endpoint.</strong> Add <code>GET /authors/suggest?q=...&amp;limit=5</code> to <code>src/agt/api/app.py</code>. Implementation reuses <code>author_resolver.py</code> (<code>resolve_author</code> already hits OpenAlex <code>/authors?search=</code> and S2 <code>/author/search</code>). Cap at 5 candidates ranked by works_count. Cache aggressively (in-process LRU, 15 min TTL).</td>
+<td>~0.25d</td>
+</tr>
+<tr>
+<td>P9.8</td>
+<td><strong>Author chip input.</strong> In <code>FilterEditor.tsx</code> add a new section "Author" above "Year". A text input fires the suggest endpoint with a 200 ms debounce. Selected authors render as chips that include the resolved IDs (OpenAlex/ORCID badges as in <code>ResultsList</code>). Chips are removable. Saving the draft attaches resolved IDs to the <code>FilterEditContract.authors</code> array. The result card "Author chip → new scoped search" path already exists (P8.8) and should keep working — clicking a chip in a result now pre-fills the Author field instead of re-issuing a natural-language query.</td>
+<td>~0.5d</td>
+</tr>
+<tr>
+<td>P9.9</td>
+<td><strong>Venue / Journal field.</strong> Same shape as Author but resolves via OpenAlex <code>/venues?search=</code> and Crossref <code>/journals?query=</code>. Adds <code>HardFilters.venue_ids</code> and <code>HardFilters.venue_names</code>. Push-down on OpenAlex <code>filter=primary_location.source.id</code>, Crossref <code>query.container-title</code>. Show as chips below Author.</td>
+<td>~0.5d</td>
+</tr>
+<tr>
+<td>P9.10</td>
+<td><strong>Seed DOI paste field.</strong> <code>SearchPlan.seed_dois</code> already exists (P8.9). Surface it as a textarea in <code>FilterEditor.tsx</code> labelled "Seed papers (DOI, one per line)". Show a small inline preview of the resolved title once the backend echoes the citation graph. This lets users do "papers citing X" without typing the special phrase.</td>
+<td>~0.25d</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Acceptance (P9.B):</strong></p>
+<ul>
+<li>Searching for "attention" with an empty Author field returns the same top
+  results as today.</li>
+<li>Searching for "attention" with "Yoshua Bengio" in the Author field returns
+  only papers that name him (with the standard provenance chips), and the
+  search plan shows <code>authors: ["A5023888391" /* OpenAlex */]</code> and
+  <code>filters_pushed_down.openalex: ["author"]</code>.</li>
+<li>Searching for an empty topic with one DOI in Seed papers returns the citation
+  graph of that DOI as today's "citing X" prefix did — but without the user
+  needing to know the prefix.</li>
+<li>Existing benchmark queries (P8.14) remain at ≥15/22 must-find.</li>
+</ul>
+<hr />
+<h3 id="p9c-documentation-overhaul-minimum-config-first-125-days">P9.C — Documentation Overhaul: Minimum-Config First <em>(1.25 days)</em><a class="headerlink" href="#p9c-documentation-overhaul-minimum-config-first-125-days" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>Source: user goal. The current <code>README.md</code> and <code>user-manual.md</code> mix required
+and optional config. The user wants the first page to be reachable by anyone
+with Zotero, and the advanced material to live behind a click.</p>
+</blockquote>
+<p><strong>Goal:</strong> A first-time visitor on the GitHub README or the MkDocs landing page
+reads three things — "install the XPI", "paste your LLM key", "search" — and
+can do all three. Everything beyond that is one link deep.</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Story</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P9.11</td>
+<td><strong>README rewrite.</strong> Front matter: one paragraph, one badge row, one image of the sidebar. Quick Start collapses to three steps — download XPI, install in Zotero, paste LLM key. A second collapsed section labelled "Developer install (uv + npm)" keeps the current <code>uv sync</code> / <code>npm run build</code> path verbatim for contributors. No fewer than four anchor links — Install, Manual, API, Roadmap.</td>
+<td>~0.25d</td>
+</tr>
+<tr>
+<td>P9.12</td>
+<td><strong>User manual rewrite.</strong> Split <code>docs/user-manual.md</code> into three top-of-file sections — <code>## 5 minutes from install to first search</code>, <code>## When something goes wrong</code>, <code>## When you want more</code>. Move everything provider-specific into <code>docs/keys.md</code> (P9.14). Move every optional flag into <code>docs/advanced-config.md</code> (P9.15). Keep the screenshots inline.</td>
+<td>~0.5d</td>
+</tr>
+<tr>
+<td>P9.13</td>
+<td><strong>New <code>docs/install.md</code>.</strong> Single source of truth for installation. Sections: Standalone (XPI), Verified platforms table, Self-update, macOS Gatekeeper / Windows SmartScreen notes, Docker (recommended for self-hosters), Source build (the current README content). Becomes the destination of every "Install" anchor across the docs.</td>
+<td>~0.25d</td>
+</tr>
+<tr>
+<td>P9.14</td>
+<td><strong>New <code>docs/keys.md</code> — "How to get every key".</strong> One section per credential: LLM keys (OpenAI, Anthropic, xAI, Groq, Ollama, custom OpenAI-compatible), Zotero API key + Library ID, optional academic keys (Semantic Scholar, NCBI/PubMed, CORE, SerpAPI, Dimensions), polite-pool email. Each section has: who needs it, why, exact link to the console, the form value to copy, the env var name, the matching sidebar ConfigPanel field name. Screenshots where the console UI is non-obvious (Zotero key page, OpenAI dashboard). Tag every key as <strong>Required</strong>, <strong>Strongly recommended</strong>, or <strong>Optional</strong>. Promise: a researcher reading this can collect every credential SciAgent might want in under 15 minutes — but they only need the <strong>Required</strong> ones to start.</td>
+<td>~0.5d</td>
+</tr>
+<tr>
+<td>P9.15</td>
+<td><strong>New <code>docs/advanced-config.md</code>.</strong> Every <code>AGT_*</code> flag that is not in the <strong>Required</strong> set above. Grouped by purpose: provider tuning, search depth, PDF attachments, rate guards, Docker/data dir, MCP server. Links into <code>docs/api.md</code> and <code>docs/settings.md</code> for canonical definitions. The page makes it explicit that nothing here is needed to start.</td>
+<td>~0.25d</td>
+</tr>
+<tr>
+<td>P9.16</td>
+<td><strong>MkDocs nav and landing redesign.</strong> New nav (see proposed shape in §Docs Tree Below). New <code>docs/index.md</code> lead — three cards: Install, Manual, Power user. Move planning docs and historical action plans into a collapsed "Project" section. Verify <code>mkdocs build --strict</code> is clean and <code>markdownlint-cli2</code> is clean.</td>
+<td>~0.25d</td>
+</tr>
+<tr>
+<td>P9.17</td>
+<td><strong>Telemetry-free first-run manual smoke.</strong> Add a one-page checklist <code>docs/install.md#smoke-checklist</code> that a fresh user can run on macOS, Linux, and Windows. Use it once per platform before tagging the v1.0.0 release and record the verified date in the table.</td>
+<td>~0.25d</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Acceptance (P9.C):</strong></p>
+<ul>
+<li>New <code>docs/install.md</code>, <code>docs/keys.md</code>, <code>docs/advanced-config.md</code> exist and
+  pass <code>markdownlint-cli2</code> and <code>mkdocs build --strict</code>.</li>
+<li><code>README.md</code> Quick Start is three steps. The developer install is one
+  collapsed section.</li>
+<li>The MkDocs landing page has three cards and ten total nav entries (today: 16).</li>
+<li>Every external service that exposes a key referenced in <code>.env.example</code> is
+  documented in <code>docs/keys.md</code> with a link to the console.</li>
+</ul>
+<hr />
+<h2 id="proposed-docs-tree-p916">Proposed Docs Tree (P9.16)<a class="headerlink" href="#proposed-docs-tree-p916" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Overview
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  Home (cards: Install / Manual / API)
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>Get Started
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  Install (docs/install.md)
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  Get Your Keys (docs/keys.md)
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  User Manual (docs/user-manual.md)
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>Power User
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>  Advanced Config (docs/advanced-config.md)
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>  Configuration &amp; Usage (docs/manual.md)
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>  Deployment &amp; Hosting (docs/deployment.md)
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>Reference
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>  REST API (docs/api.md)
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>  Provider Inventory (docs/providers.md)
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>  Settings (docs/settings.md)
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>  Security (docs/security.md)
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>  Zotero Add-on (docs/zotero.md)
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>  P1 Benchmark (docs/benchmark.md)
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>Project
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>  Roadmap (docs/core.md)
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>  Action Plan (docs/actionable-plan.md)
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>  History (docs/actionable-plan-done.md, docs/actionable-plan-done-2.md)
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>  Priorities (docs/priorities.md)
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>  Next Steps (docs/next-steps.md)
+</code></pre></div>
+<hr />
+<h2 id="sequencing">Sequencing<a class="headerlink" href="#sequencing" title="Permanent link">&para;</a></h2>
+<p>Each tranche is shippable on its own. Recommended order:</p>
+<ol>
+<li><strong>P9.A</strong> — release pipeline + first-run polish. This is what unlocks the
+   "share with a friend" path the user wants. Two days of work and most of it
+   is already coded; we are wiring and verifying.</li>
+<li><strong>P9.C</strong> (in parallel after P9.5 lands) — documentation. Writing while the
+   release pipeline cooks. The new docs are the artefact a v1.0.0 release
+   announcement points at.</li>
+<li><strong>P9.B</strong> — search fields. Most valuable to existing users, but the install
+   gap blocks new users entirely, so it goes last. The market table above
+   confirms Author + Venue + Seed DOI as table stakes, not differentiators —
+   we are catching up here, not leading.</li>
+</ol>
+<hr />
+<h2 id="risk-register">Risk Register<a class="headerlink" href="#risk-register" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Likelihood</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Windows / Linux PyInstaller surprises</td>
+<td>Medium</td>
+<td>P9.1 runs in CI before any tag. Time-box at ~0.75d; if a platform refuses, ship macOS + Linux first and Windows in v1.0.1.</td>
+</tr>
+<tr>
+<td>macOS Gatekeeper friction breaks the "no terminal" promise</td>
+<td>Medium</td>
+<td>P9.4 ships an inline note in the FirstRunDialog and a <code>docs/install.md</code> admonition. Long-term: Apple Developer cert.</td>
+</tr>
+<tr>
+<td>Author resolver returns the wrong person ("J. Smith" disambiguation)</td>
+<td>Medium</td>
+<td>P9.7 returns up to 5 ranked candidates with <code>works_count</code>, OpenAlex affiliation, and ORCID. The user picks before search.</td>
+</tr>
+<tr>
+<td>Venue resolution drifts (journal-merge events, deprecated venues)</td>
+<td>Low</td>
+<td>OpenAlex is the canonical source; fall back to free-text venue name only when no ID resolves.</td>
+</tr>
+<tr>
+<td>Docs sprawl — three new MD files plus rewrites</td>
+<td>Low</td>
+<td>P9.16 enforces the new nav and the markdownlint + mkdocs-strict gates catch dead links and stale tables.</td>
+</tr>
+<tr>
+<td>Self-update misfires (<code>update.rdf</code> ID mismatch)</td>
+<td>Low</td>
+<td>P9.2 + P9.3 verified by <code>v1.0.0-rc.1</code> → <code>v1.0.0-rc.2</code> chain before tagging <code>v1.0.0</code>. Roll back is <code>Disable add-on</code>.</td>
+</tr>
+<tr>
+<td>Author/Venue contract change breaks the API contract version</td>
+<td>Medium</td>
+<td>Bump <code>REQUIRED_API_CONTRACT_VERSION</code> in <code>zotero-addon/src/shared/contracts.ts</code>. Plugin already validates compatibility.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="quality-gates">Quality Gates<a class="headerlink" href="#quality-gates" title="Permanent link">&para;</a></h2>
+<p>Every P9 PR runs the same gates as P8:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Python</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>check<span class="w"> </span>.
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>format<span class="w"> </span>--check<span class="w"> </span>.
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>uv<span class="w"> </span>run<span class="w"> </span>pyright
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>-q<span class="w"> </span>--vcr-record<span class="o">=</span>none
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># Zotero add-on</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="nb">cd</span><span class="w"> </span>zotero-addon<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>npm<span class="w"> </span>ci<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>npm<span class="w"> </span>run<span class="w"> </span>lint<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>npm<span class="w"> </span>run<span class="w"> </span>build<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>npm<span class="w"> </span>run<span class="w"> </span>typecheck<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>npm<span class="w"> </span>run<span class="w"> </span><span class="nb">test</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="c1"># Docs</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>npx<span class="w"> </span>--yes<span class="w"> </span>markdownlint-cli2<span class="w"> </span><span class="s2">&quot;README.md&quot;</span><span class="w"> </span><span class="s2">&quot;docs/**/*.md&quot;</span><span class="w"> </span><span class="s2">&quot;examples/**/*.md&quot;</span><span class="w"> </span><span class="s2">&quot;.github/**/*.md&quot;</span><span class="w"> </span><span class="s2">&quot;zotero-addon/README.md&quot;</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>uv<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </span>build<span class="w"> </span>--strict
+</code></pre></div>
+<p>Plus three P9-specific manual smokes recorded in <code>docs/install.md</code>:</p>
+<ul>
+<li>Fresh macOS arm64: install XPI → paste keys → run search → write to Zotero.</li>
+<li>Fresh Linux x86_64: same.</li>
+<li>Fresh Windows x64: same.</li>
+</ul>
+<hr />
+<h2 id="out-of-scope-for-p9">Out of Scope for P9<a class="headerlink" href="#out-of-scope-for-p9" title="Permanent link">&para;</a></h2>
+<ul>
+<li>macOS / Windows code signing (planned for v1.1, see <code>docs/local-first.md</code> Part 7).</li>
+<li>Hosted SaaS tier (planned for "Later / SaaS phase" release in <code>docs/core.md</code>).</li>
+<li>New academic providers beyond the 9 already in P8.</li>
+<li>Reranker / model swaps. P8.10 covered the key-validation surface.</li>
+<li>Title and abstract fields as separate inputs (low marginal value over the
+  query box; revisit if user research shows otherwise).</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.sections", "navigation.expand", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

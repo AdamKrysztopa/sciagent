@@ -2,90 +2,98 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://adamkrysztopa.github.io/sciagent/</loc>
-         <lastmod>2026-05-14</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://adamkrysztopa.github.io/sciagent/actionable-plan-done-2/</loc>
-         <lastmod>2026-05-14</lastmod>
+         <lastmod>2026-05-17</lastmod>
+    </url>
+    <url>
+         <loc>https://adamkrysztopa.github.io/sciagent/actionable-plan-done-3/</loc>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://adamkrysztopa.github.io/sciagent/actionable-plan-done/</loc>
-         <lastmod>2026-05-14</lastmod>
+         <lastmod>2026-05-17</lastmod>
+    </url>
+    <url>
+         <loc>https://adamkrysztopa.github.io/sciagent/actionable-plan-gcp/</loc>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://adamkrysztopa.github.io/sciagent/actionable-plan/</loc>
-         <lastmod>2026-05-14</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://adamkrysztopa.github.io/sciagent/advanced-config/</loc>
-         <lastmod>2026-05-14</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://adamkrysztopa.github.io/sciagent/api/</loc>
-         <lastmod>2026-05-14</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://adamkrysztopa.github.io/sciagent/benchmark/</loc>
-         <lastmod>2026-05-14</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://adamkrysztopa.github.io/sciagent/core/</loc>
-         <lastmod>2026-05-14</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://adamkrysztopa.github.io/sciagent/deployment/</loc>
-         <lastmod>2026-05-14</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://adamkrysztopa.github.io/sciagent/install/</loc>
-         <lastmod>2026-05-14</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://adamkrysztopa.github.io/sciagent/keys/</loc>
-         <lastmod>2026-05-14</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://adamkrysztopa.github.io/sciagent/local-first/</loc>
-         <lastmod>2026-05-14</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://adamkrysztopa.github.io/sciagent/manual/</loc>
-         <lastmod>2026-05-14</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://adamkrysztopa.github.io/sciagent/next-steps/</loc>
-         <lastmod>2026-05-14</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://adamkrysztopa.github.io/sciagent/priorities/</loc>
-         <lastmod>2026-05-14</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://adamkrysztopa.github.io/sciagent/providers/</loc>
-         <lastmod>2026-05-14</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://adamkrysztopa.github.io/sciagent/security/</loc>
-         <lastmod>2026-05-14</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://adamkrysztopa.github.io/sciagent/settings/</loc>
-         <lastmod>2026-05-14</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://adamkrysztopa.github.io/sciagent/user-manual/</loc>
-         <lastmod>2026-05-14</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://adamkrysztopa.github.io/sciagent/zotero/</loc>
-         <lastmod>2026-05-14</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://adamkrysztopa.github.io/sciagent/ui/zotero-addon-expanded-idle-plan/</loc>
-         <lastmod>2026-05-14</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://adamkrysztopa.github.io/sciagent/ui/zotero-addon-ui-plan/</loc>
-         <lastmod>2026-05-14</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
 </urlset>
