@@ -225,11 +225,28 @@ Public backend: `https://sciagent-ewpafdgfya-ew.a.run.app`
 - [ ] Toggle on "Use my own LLM key" with a fresh DeepSeek key. Run a search. Verify in DeepSeek dashboard that the second account's key was charged, not yours.
 - [ ] Toggle off "Use my own LLM key". Run a search. Verify your key was charged.
 
-### MU6 — Monitoring (always-on)
+### MU6 — Monitoring setup ✅ done 2026-05-17
 
-- [ ] Check Cloud Run logs daily for the first week: `gcloud run services logs tail sciagent --region=europe-west1 | grep -E "ERROR|429|401"`.
-- [ ] Cloud Run dashboard: watch p95 latency, instance count, request count. Spike = someone found the URL.
-- [ ] If LLM cost trend looks bad, ratchet down `--max-instances` or add per-IP rate limit (slowapi already in deps).
+Automated monitoring wired up via Cloud Monitoring:
+
+- [x] Initial log scan — clean baseline; only smoke-test 401s present.
+- [x] Email notification channel created → `krysztopa@gmail.com`
+  (channel `3188061815048077143`).
+- [x] Log-based metric `sciagent_errors` — severity≥ERROR in Cloud Run logs.
+- [x] Log-based metric `sciagent_rate_limited` — HTTP 429 responses.
+- [x] Alert policy: any ERROR in a 5-min window → email (max 1/hour).
+- [x] Alert policy: any 429 in a 5-min window → email (max 1/hour).
+- [x] Alert policy: active instance count > 1 for 5 min → email (at-cap warning).
+
+### MU6.1 — Ongoing monitoring (manual, first week)
+
+- [ ] Check Cloud Run logs daily:
+  `gcloud run services logs read sciagent --region=europe-west1 --limit=200 | grep -E "ERROR|429|401"`
+- [ ] Review Cloud Run dashboard weekly: p95 latency, instance count, request count.
+  A sustained spike means someone found the URL.
+- [ ] Check DeepSeek usage dashboard weekly — if cost trend looks bad:
+  - Option A: ratchet down `--max-instances 1`
+  - Option B: add per-IP rate limit via slowapi (already in deps)
 
 ---
 
@@ -266,7 +283,8 @@ Public backend: `https://sciagent-ewpafdgfya-ew.a.run.app`
 - MU2 frontend ✅ done 2026-05-17 — 8 new prefs fields, Zotero/LLM headers in `buildHeaders`, ConfigPanel sections, FirstRunConfigCard adapts to remote mode, pre-search validation, 5 new tests.
 - MU3 Cloud Run reconfig ✅ done 2026-05-17 — deployed image `7b17551`, removed baked-in Zotero/backend secrets, verified `/health` 200 + `/run`-no-creds 401.
 - MU4 README ✅ done 2026-05-17 — "Try the Hosted Demo" section added to README.md; Backend Mode dropdown added to ConfigPanel.
-- Current focus: **MU5 — End-to-end multi-user smoke test**
+- MU6 monitoring setup ✅ done 2026-05-17 — email channel, 2 log-based metrics, 3 alert policies (ERROR/429/instance-cap).
+- Remaining: MU5 (needs second Zotero account — manual), MU6.1 (ongoing weekly checks — manual)
 
 ### Phase Tracker
 
@@ -276,7 +294,8 @@ Public backend: `https://sciagent-ewpafdgfya-ew.a.run.app`
 - [x] **MU3** — Cloud Run reconfig ✅ 2026-05-17
 - [x] **MU4** — README + trust statement ✅ 2026-05-17
 - [ ] **MU5** — End-to-end smoke test
-- [ ] **MU6** — Monitoring (continuous)
+- [x] **MU6** — Monitoring setup ✅ 2026-05-17 (3 alert policies + email channel)
+- [ ] **MU6.1** — Ongoing monitoring (manual, first week — see section above)
 
 ### Tracker Rules
 
