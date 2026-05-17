@@ -1,434 +1,782 @@
-# SciAgent Actionable Plan — P10 (GCP Prerequisites: Cheap LLM + Docker Cloud Readiness)
+# SciAgent Actionable Plan — GCP Deployment (Cloud Run + CI/CD)
 
-> **Last audit: 2026-05-17** — All P0–P9 stories complete (see
-> [actionable-plan-done-3.md](actionable-plan-done-3.md) and earlier archives).
+> **Prerequisite.** Every box in P10 is checked — see
+> [actionable-plan-done-4.md](actionable-plan-done-4.md). This plan assumes:
 >
-> This plan covers **P10: everything that must be true in the codebase and locally
-> before the GCP deployment plan (`docs/actionable-plan-gcp.md`) makes sense.**
-> No GCP commands here — this is the application story. The deployment plan is the
-> infrastructure story. Both must pass before GCP works.
+> - The cheap LLM (DeepSeek or equivalent) is wired and smoke-tested locally.
+> - The `Dockerfile` honors `$PORT`.
+> - `.dockerignore` exists and the image is < 500 MB.
+> - The end-to-end Zotero flow works against `localhost:8080`.
+>
+> **Audience.** You, learning GCP for the first time.
+>
+> **Canonical env var names.** The source design doc used `AGT_OPENAI_API_KEY`
+> for the LLM key. After auditing the code, the correct variable is
+> `AGT_LLM_API_KEY` — that is what `router.py:138` reads for the
+> `openai-compatible` provider. Use `AGT_LLM_API_KEY` everywhere in this plan.
 >
 > Canonical execution tracker. Update done/not done state here first.
 > Historical completed work stays in `actionable-plan-done*.md` — do not re-open closed items.
 
-## Design Philosophy
+---
 
-**Cheap by default.** The codebase already supports every major LLM provider
-through a unified `AGT_LLM_PROVIDER` / `AGT_LLM_BASE_URL` / `AGT_LLM_API_KEY`
-config surface. The `openai-compatible` adapter covers DeepSeek, Groq (via their
-OpenAI-compat endpoint), Together AI, LM Studio, and Ollama — no new code
-required for any of them. What's missing is (a) the operator running the actual
-key setup, (b) a startup log line confirming which provider is active (critical
-for debugging cloud cold-starts), and (c) the Docker image being production-ready
-for Cloud Run.
+## TL;DR — What You Actually Do
 
-**One variable to change.** A researcher self-hosting on GCP should be able to
-swap LLM providers by changing three env vars (`AGT_LLM_PROVIDER`,
-`AGT_LLM_BASE_URL`, `AGT_LLM_API_KEY`) and restarting the container. Zero code
-changes. P10 verifies this end-to-end with DeepSeek as the reference cheap
-provider.
+- [ ] **G1.** Create GCP account, project `sciagent-prod`, billing account, $5 budget alert.
+- [ ] **G2.** Install `gcloud` CLI, run `gcloud init` + `gcloud auth application-default login`.
+- [ ] **G3.** Enable 7 GCP APIs.
+- [ ] **G4.** Create one Artifact Registry Docker repo.
+- [ ] **G5.** Create a least-privilege service account `sciagent-run`.
+- [ ] **G6.** Put every secret into Secret Manager.
+- [ ] **G7.** Build via Cloud Build, push to Artifact Registry, deploy to Cloud Run with `--min-instances=0`.
+- [ ] **G8.** Smoke test `/health` and `/run` via authenticated `curl`.
+- [ ] **G9.** Update the Zotero add-on "Backend URL" preference + add cloud error UX.
+- [ ] **G10.** Wire GitHub Actions → Cloud Build → Cloud Run for auto-deploy on `main`.
+- [ ] **G11.** Set up Cloud Storage for persistent sessions *(Phase 2, only when needed)*.
 
-**Docker-ready before GCP.** Cloud Run is Docker. If the image doesn't work
-locally against DeepSeek with the right env vars, it won't work in the cloud.
-P10 is the local validation pass that makes M4 of the GCP plan a 10-minute
-operation instead of an afternoon of debugging.
+**Cost for solo daily use: $0–$2/month** (mostly $0). See §Cost Model.
 
 ---
 
-## What Is Already Done (Code Audit — 2026-05-17)
+## Tooling Setup
 
-After auditing the codebase, the following items from the original prereq plan
-are **already complete**. They are listed here so they are not re-implemented.
+Set these up before M0. They save time throughout the deployment.
 
-| Item | Location | Status |
+### VS Code Extensions
+
+#### Required for GCP work
+
+| Extension | ID | Why |
 |---|---|---|
-| `AGT_LLM_BASE_URL` config field | `src/agt/config.py:148` | ✅ done |
-| `AGT_LLM_API_KEY` config field | `src/agt/config.py:143` | ✅ done |
-| `AGT_LLM_PROVIDER` auto-detection | `src/agt/config.py:478` | ✅ done |
-| `openai_compatible` provider with `base_url` | `src/agt/providers/openai_compatible.py` | ✅ done |
-| Router wires `llm_base_url` → `openai-compatible` | `src/agt/providers/router.py:132` | ✅ done |
-| `.env.example` DeepSeek recipe | `.env.example:25-28` | ✅ done |
-| Tests: base_url config + routing | `tests/test_config.py:203`, `tests/test_providers.py:365` | ✅ done |
-| CORS via `AGT_CORS_ALLOWED_ORIGINS` | `src/agt/config.py:431`, `src/agt/api/app.py:299` | ✅ done |
-| `AGT_BACKEND_API_KEY` auth middleware | `src/agt/config.py:78` | ✅ done |
+| **Cloud Code** | `googlecloudtools.cloudcode` | Official Google extension. Cloud Run deploy/log sidebar, YAML schema for `cloudbuild.yaml`, in-editor tail of Cloud Logging. |
+| **Docker** | `ms-azuretools.vscode-docker` | Dockerfile lint, local build/run, layer inspection. Helps diagnose image size issues (C4). |
+| **YAML** | `redhat.vscode-yaml` | Schema validation for `cloudbuild.yaml` and `.github/workflows/`. Catches typos before push. |
+| **GitHub Actions** | `github.vscode-github-actions` | Autocomplete and validation for workflow files. |
 
-**Do not re-implement any of the above.** If a future story contradicts this
-table, verify by reading the current file before acting.
+#### Strongly recommended
+
+| Extension | ID | Why |
+|---|---|---|
+| **REST Client** | `humao.rest-client` | Create `.http` files to hit `/health`, `/run`, and `/capabilities` with your API key without copy-pasting `curl` flags every time. Far better than a raw terminal for testing the cloud endpoint. |
+| **Even Better TOML** | `tamasfe.even-better-toml` | `pyproject.toml` editing with schema validation. |
+
+#### Cloud Code commands you will actually use
+
+- **`Cloud Code: Sign In`** — once, before M0.
+- **`Cloud Code: View Logs`** — tail Cloud Logging in-editor during M4/M5 testing.
+- **`Cloud Code: Open Cloud Shell`** — free pre-authenticated Linux shell in the browser if local `gcloud` misbehaves.
+
+Skip "Cloud Code: Deploy to Cloud Run" GUI — it hides the flags. Use the `gcloud`
+commands in M4 explicitly so future-you can reproduce the exact configuration.
 
 ---
 
-## Execution Tracker
+### MCP Servers for GCP Work
 
-### Current Status
+The MCP servers already wired in `CLAUDE.md` cover most of the GCP plan. The table
+below maps each MCP to where it is useful during this plan.
 
-- All P0–P9 milestones complete as of 2026-05-14.
-- Current focus: **C7 — Commit + CI green**.
-- Last completed: **C6 (2026-05-17)** — E2E Zotero → Docker test passed; idempotent write to Zotero collection confirmed.
+| MCP Server | When to use during GCP deployment |
+|---|---|
+| **`context7`** | Before writing or editing `cloudbuild.yaml`, Cloud Run YAML specs, or IAM bindings — fetch current GCP documentation (Cloud Run pricing, Secret Manager limits, Cloud Build config schema). Do not rely on training-data memory for GCP API details; they change frequently. |
+| **`fetch`** | Retrieve current Cloud Run pricing, IAM role documentation, or the Cloud Build substitutions reference directly from `cloud.google.com` while working through milestones. |
+| **`github`** | Checking CI status (Cloud Build trigger → GitHub Actions chain), PR state after M7, verifying the `release.yml` workflow still passes alongside the new `cloudbuild.yaml`. |
+| **`sequential-thinking`** | Before M3 (secrets wiring is multi-step and order-dependent) and before M7 (IAM grants for Cloud Build touch three principals). Use sequential-thinking to reason through the permission graph before running any `gcloud iam` commands. |
+| **`git`** | Structured log / blame when debugging which commit triggered a Cloud Build run that broke the deploy. |
 
-### P10 Status
+#### GCP-specific MCP server (optional, community)
 
-| ID  | Story                                          | Effort  | Owner                    | Status      |
-| --- | ---------------------------------------------- | ------- | ------------------------ | ----------- |
-| C1  | Cheap LLM account + key                        | ~15 min | you (operational)        | ✅ done (2026-05-17) |
-| C2  | Startup LLM config log line                    | ~30 min | python-backend-engineer  | ✅ done (2026-05-17) |
-| C3  | Dockerfile: honor `$PORT`                      | ~5 min  | python-backend-engineer  | ✅ done (2026-05-17) |
-| C4  | Create `.dockerignore`                         | ~5 min  | python-backend-engineer  | ✅ done (2026-05-17) |
-| C5  | Local Docker smoke test with cheap LLM         | ~15 min | you (operational)        | ✅ done (2026-05-17) |
-| C6  | End-to-end Zotero → Docker test                | ~20 min | you (operational)        | ✅ done (2026-05-17) |
-| C7  | Commit + CI green                              | ~10 min | python-backend-engineer  | not started |
+A community `gcloud` MCP server exists that wraps the `gcloud` CLI as an MCP
+tool, allowing Claude Code to run `gcloud` commands directly within the session.
+As of 2026-05, this is experimental and not in the project's default MCP config.
 
-**Total estimate: ~1.5 hours.**
+**If you want to add it:**
+
+```json
+// In .claude/settings.local.json → mcpServers
+"gcloud": {
+  "command": "npx",
+  "args": ["-y", "@anthropic-samples/gcp-mcp"],
+  "env": {}
+}
+```
+
+Use with caution — it runs real `gcloud` commands against your production project.
+Only add it after M2 (IAM is set up) and with the budget alert from M0.4 active.
+The `--max-instances=2` flag in M4.2 is your rate guardrail; make sure it is set
+before giving Claude Code direct `gcloud` access.
+
+Without the GCP MCP server: use the **Bash tool** in Claude Code to run
+`gcloud` commands. This is the safer default and how all milestones in this plan
+are written.
+
+---
+
+## Executive Decisions
+
+| Decision | Choice | Why |
+|---|---|---|
+| Compute | **Cloud Run, request-based billing, min-instances=0** | Scales to zero when idle. Free tier covers solo usage entirely. |
+| Container registry | **Artifact Registry** (Docker format, regional) | GCP-native, replaces deprecated Container Registry. |
+| Build system | **Cloud Build** triggered from GitHub | Free tier: 120 build-minutes/day. No local Docker daemon needed for CI. |
+| Secrets | **Secret Manager**, mounted as env vars on Cloud Run | Encrypted, IAM-controlled, free up to 6 active versions. |
+| LLM | **DeepSeek via `openai-compatible` adapter** | $0.07/month at solo volume. Env var swap, zero code change. |
+| Persistence Phase 1 | **Container filesystem (ephemeral)** | Sessions/cache vanish on cold start. Acceptable for solo use. |
+| Persistence Phase 2 | **Cloud Storage bucket mounted via volume** | ~$0.02/GB-month. No DB cost. Trigger: when cold-start data loss hurts. |
+| Region | **`europe-west1`** (EU) or **`us-central1`** (NA) | Both are Cloud Run Tier 1 (cheapest per-vCPU-second). |
+| Auth Phase 1 | **`X-AGT-API-Key` only**, public Cloud Run URL | Simple. Acceptable for personal use. |
+| Auth Phase 2 | **Cloud Run IAM `--no-allow-unauthenticated`** | Deferred until you have other users. |
+| CI/CD | **GitHub Actions → Cloud Build → Cloud Run** | Integrates with existing `.github/workflows/`. |
+| Logging | **Cloud Logging** (default, free tier) | No external cost. |
+| Google Scholar | **Disabled in production** | Cloud Run IPs get CAPTCHA-walled. Not worth it. See §Don't Bother. |
+
+---
+
+## Cost Model
+
+### Solo usage (~50 requests/day, 3s @ 1 vCPU + 512 MiB)
+
+| Item | Monthly |
+|---|---|
+| Cloud Run vCPU-seconds (4,500) | **$0.00** (180k free) |
+| Cloud Run memory GiB-s (2,250) | **$0.00** (360k free) |
+| Cloud Run requests (1,500) | **$0.00** (2M free) |
+| Artifact Registry (~500 MB) | **~$0.05** |
+| Cloud Build (~5 builds/mo) | **$0.00** (120 build-min/day free) |
+| Secret Manager (≤6 secrets) | **$0.00** (6 versions free) |
+| Logs (< 50 MB) | **$0.00** (50 GiB free) |
+| DeepSeek LLM (~300k tokens) | **~$0.07** |
+| **Total** | **~$0.12/month** |
+
+### Hard guardrails to set on Day 1
+
+- [ ] Budget alert at **$5/month** with email at 50/90/100 %.
+- [ ] `--max-instances=2` while learning.
+- [ ] `--min-instances=0` — the single biggest cost knob.
+- [ ] `--memory=512Mi` — smallest realistic for FastAPI + SciAgent deps.
+- [ ] `--timeout=300` — don't let LLM hangs run for an hour.
+- [ ] `--concurrency=40`.
+
+---
+
+## Google Scholar — Don't Bother
+
+Being on Cloud Run gives zero advantage for Google Scholar. Cloud Run egress comes
+from datacenter IPs — Google's anti-bot systems flag those immediately. You get
+CAPTCHA-walled in minutes. Commercial SERP APIs (SerpAPI) cost $50–$120/month
+minimum — 25–60x your entire GCP bill. The existing keyless sources (OpenAlex,
+Semantic Scholar, Crossref, PubMed, arXiv, Europe PMC) are competitive per
+`docs/benchmark.md`. Leave `AGT_SERPAPI_KEY` unset in production.
+
+---
+
+## Architecture (End State)
+
+```
+              Zotero Desktop (your laptop)
+                        │
+                        │  HTTPS + X-AGT-API-Key + X-AGT-Client-ID
+                        ▼
+        ┌──────────────────────────────────────┐
+        │  Cloud Run service: sciagent         │
+        │  region: europe-west1                │
+        │  min=0, max=2, cpu=1, memory=512Mi   │
+        │  concurrency=40, timeout=300s        │
+        │  identity: sciagent-run@...iam       │
+        └──────────────┬───────────────────────┘
+                       │
+     ┌─────────────────┼──────────────────────┐
+     │                 │                      │
+     ▼                 ▼                      ▼
+┌──────────────┐  ┌──────────────┐  ┌──────────────────┐
+│ Artifact     │  │ Secret       │  │ Cloud Storage    │
+│ Registry     │  │ Manager      │  │ (Phase 2)        │
+│ docker image │  │ secrets      │  │ sciagent-data/   │
+└──────────────┘  └──────────────┘  └──────────────────┘
+                       │
+                       │  outbound HTTPS
+                       ▼
+     ┌──────────────────────────────────────┐
+     │ External APIs                        │
+     │ - api.deepseek.com (LLM)             │
+     │ - api.semanticscholar.org            │
+     │ - api.openalex.org / crossref / etc. │
+     └──────────────────────────────────────┘
+
+              GitHub (main) ──push──▶ Cloud Build ──▶ Cloud Run revision
+```
 
 ---
 
 ## Milestones
 
-### C1 — Cheap LLM Account & Key (15 minutes)
+### M0 — GCP Account & Local Tooling (1 evening)
 
-**Goal.** A working API key for a cheap OpenAI-compatible LLM provider stored in
-your password manager and smoke-tested from the terminal.
+**Goal.** `gcloud run services list` runs without errors against your project.
 
-**Recommended provider: DeepSeek V3** — `$0.14 / $0.28 per million tokens`
-(in/out). At SciAgent's ~300k tokens/month solo volume, that is ~$0.07/month.
-One $5 top-up covers roughly 18 months of solo use.
-
-**Alternatives** (same `openai-compatible` adapter, zero code changes):
-- **Groq** — free tier (`llama-3.3-70b`, `deepseek-r1-distill-*`). Rate-limited but
-  usable for solo dev. Set `AGT_LLM_BASE_URL=https://api.groq.com/openai/v1`.
-- **Ollama** — fully local, free, no key needed. Use `AGT_LLM_PROVIDER=ollama`.
-  Slower cold start; no cloud cost at all.
-- **OpenAI `gpt-4o-mini`** — $0.15/$0.60 per M tokens. Already works; no new setup.
-
-**DeepSeek steps:**
-
-- [ ] **C1.1** Sign up at <https://platform.deepseek.com> (Google OAuth works).
-- [ ] **C1.2** Top up $5. This covers ~30 million tokens of `deepseek-chat` — over
-  a year of solo SciAgent use.
-- [ ] **C1.3** Create an API key. Save to password manager as `DEEPSEEK_API_KEY`.
-- [ ] **C1.4** Verify with a direct curl (replace `<KEY>`):
+- [ ] **M0.1** Create a Google Cloud account at <https://console.cloud.google.com>.
+  New accounts get **$300 free credit for 90 days**.
+- [ ] **M0.2** Create project `sciagent-prod`. Note the **project ID** (globally
+  unique). Set as default: `gcloud config set project sciagent-prod`.
+- [ ] **M0.3** Link a billing account. Required even for free-tier services.
+- [ ] **M0.4** Set the billing budget alert. Console → Billing → Budgets & alerts
+  → Create budget → **$5/month**, alerts at 50/90/100%. **Do this before
+  anything else.**
+- [ ] **M0.5** Install `gcloud`:
+  macOS: `brew install --cask google-cloud-sdk`.
+  Other: <https://cloud.google.com/sdk/docs/install>.
+- [ ] **M0.6** Authenticate:
 
   ```bash
-  curl https://api.deepseek.com/chat/completions \
-    -H "Authorization: Bearer <KEY>" \
-    -H "Content-Type: application/json" \
-    -d '{"model":"deepseek-chat","messages":[{"role":"user","content":"Say hi"}],"max_tokens":10}'
+  gcloud init
+  gcloud auth application-default login
   ```
 
-  Expect 200 JSON. `401` = wrong key. `402` = balance zero (top up first).
-
-- [ ] **C1.5** Verify the SciAgent env var wiring locally (no Docker):
+- [ ] **M0.7** Set default region:
 
   ```bash
-  AGT_LLM_PROVIDER=openai-compatible \
-  AGT_LLM_BASE_URL=https://api.deepseek.com/v1 \
-  AGT_LLM_MODEL=deepseek-chat \
-  AGT_LLM_API_KEY=<KEY> \
-  uv run sciagent-server --port 57322 &
-
-  curl -s http://127.0.0.1:57322/health | python3 -m json.tool
-  kill %1
+  gcloud config set run/region europe-west1
   ```
 
-  Expect `/health` to return 200. If `llm_provider` is not in the health response,
-  that is what C2 fixes.
-
-**Cost: $5 one-time.**
-
----
-
-### C2 — Startup LLM Config Log Line (30 minutes)
-
-**Goal.** `create_app()` in `src/agt/api/app.py` emits one structured log line at
-`INFO` level showing the effective LLM provider, model, and base URL. When
-DeepSeek is on, the log is obvious. When debugging a cold-start failure on Cloud
-Run, this is the first thing to check.
-
-**Why this doesn't exist yet.** `get_settings()` loads and validates settings but
-never logs the resolved LLM config. `create_app()` calls `get_settings()` at line
-297 but only uses it for CORS and rate limits — nothing is logged.
-
-**Implementation target:** `src/agt/api/app.py`, inside `create_app()`, right
-after line 297 (`_settings = get_settings()`).
-
-- [ ] **C2.1** Add a `structlog` import and log call:
-
-  ```python
-  import structlog as _structlog
-
-  _log = _structlog.get_logger()
-
-  def create_app() -> FastAPI:
-      app = FastAPI(title="SciAgent API", version="0.1.0")
-      _settings = get_settings()
-
-      # Log the effective LLM config at startup — visible in Cloud Run logs.
-      _log.info(
-          "sciagent_startup",
-          llm_provider=_settings.resolved_llm_provider,
-          llm_model=_settings.runtime.model_name,
-          llm_base_url=_settings.llm_base_url,  # not a secret; safe to log
-      )
-      # ... rest of create_app unchanged
-  ```
-
-  Place these additions at the top of the file and inside `create_app()` only.
-  Do not move or restructure any existing code.
-
-- [ ] **C2.2** Confirm the redaction processor does NOT redact `llm_base_url` (it
-  shouldn't — the processor in `config.py:546` only redacts keys containing
-  `"key"`, `"token"`, `"secret"`, `"authorization"`, or `"password"`).
-
-- [ ] **C2.3** Run the quality gates:
+- [ ] **M0.8** Verify:
 
   ```bash
-  uv run ruff check . && uv run ruff format --check . && uv run pyright
-  uv run pytest -q --vcr-record=none
-  ```
-
-  No new failures expected. The existing 563+ tests must still pass.
-
-- [ ] **C2.4** Manual verify: `uv run sciagent-server --port 57322` with DeepSeek
-  env vars. Confirm the log line appears in stderr/stdout with the correct values.
-
-**Pitfall:** Do not add `structlog` as a new dependency — it is already in
-`pyproject.toml` (used throughout `src/agt/`). Import it directly.
-
----
-
-### C3 — Dockerfile: Honor `$PORT` (5 minutes)
-
-**Goal.** The container listens on whatever port Cloud Run sets via `$PORT`
-(default 8080). The current `CMD` hardcodes `--port 8000`, which causes Cloud Run
-health checks to fail silently on the first deploy.
-
-**Current state** (`Dockerfile:9`):
-
-```dockerfile
-CMD ["uv", "run", "uvicorn", "agt.api.app:app", "--host", "0.0.0.0", "--port", "8000"]
-```
-
-- [ ] **C3.1** Change to:
-
-  ```dockerfile
-  CMD ["sh", "-c", "uv run uvicorn agt.api.app:app --host 0.0.0.0 --port ${PORT:-8080}"]
-  ```
-
-  The `${PORT:-8080}` idiom: uses Cloud Run's injected `$PORT` if set, falls
-  back to 8080 for local Docker runs.
-
-- [ ] **C3.2** Verify the base image is `python:3.14-slim` (it already is —
-  confirm with `head -1 Dockerfile`).
-
-- [ ] **C3.3** Verify `uv sync --frozen` is in the build (already is — `Dockerfile:6`).
-
-- [ ] **C3.4** Build and confirm the image starts without errors:
-
-  ```bash
-  docker build -t sciagent:port-test .
-  docker run --rm -p 8080:8080 -e PORT=8080 \
-    -e AGT_LLM_PROVIDER=openai-compatible \
-    -e AGT_LLM_BASE_URL=https://api.deepseek.com/v1 \
-    -e AGT_LLM_MODEL=deepseek-chat \
-    -e AGT_LLM_API_KEY=<KEY> \
-    sciagent:port-test &
-  sleep 3 && curl -s http://localhost:8080/health
-  docker stop $(docker ps -q --filter ancestor=sciagent:port-test)
+  gcloud projects describe sciagent-prod
   ```
 
 **Cost: $0.**
 
 ---
 
-### C4 — Create `.dockerignore` (5 minutes)
+### M1 — Enable APIs and Foundation Resources (30 minutes)
 
-**Goal.** Reduce the Docker build context from the full repo to only what the
-backend needs. Target: image < 300 MB. Without `.dockerignore`, `tests/`,
-`zotero-addon/` (with `node_modules/`), and `docs/` all get copied into the
-build context, bloating the image and slowing Cloud Build.
-
-- [ ] **C4.1** Create `.dockerignore` at repo root:
-
-  ```
-  .git
-  .github
-  .venv
-  __pycache__
-  *.pyc
-  *.pyo
-  .pytest_cache
-  .ruff_cache
-  .mypy_cache
-  tests/
-  zotero-addon/
-  docs/
-  examples/
-  *.md
-  .env
-  .env.*
-  !.env.example
-  htmlcov/
-  .coverage
-  build/dist/
-  build/work/
-  ```
-
-- [ ] **C4.2** Build and measure image size:
+- [ ] **M1.1** Enable the 7 required APIs:
 
   ```bash
-  docker build -t sciagent:size-check .
-  docker images sciagent:size-check --format "{{.Size}}"
+  gcloud services enable \
+    run.googleapis.com \
+    artifactregistry.googleapis.com \
+    cloudbuild.googleapis.com \
+    secretmanager.googleapis.com \
+    iam.googleapis.com \
+    logging.googleapis.com \
+    monitoring.googleapis.com
   ```
 
-  Target: **< 500 MB**. The FastAPI + LangGraph + httpx + pyzotero stack lands at
-  ~467 MB. If over 700 MB, `streamlit`/`pandas`/`pyright` got pulled in — confirm
-  the Dockerfile uses `uv sync --frozen --no-dev` and those packages are not in
-  `[project.dependencies]`.
+- [ ] **M1.2** Create the Artifact Registry repo:
+
+  ```bash
+  gcloud artifacts repositories create sciagent \
+    --repository-format=docker \
+    --location=europe-west1 \
+    --description="SciAgent backend images"
+  ```
+
+- [ ] **M1.3** Configure Docker auth to AR:
+
+  ```bash
+  gcloud auth configure-docker europe-west1-docker.pkg.dev
+  ```
+
+- [ ] **M1.4** Verify: `gcloud artifacts repositories list` shows `sciagent`.
+
+**Cost: $0** (empty repos are free).
+
+---
+
+### M2 — Service Account & IAM (20 minutes)
+
+**Goal.** Cloud Run runs as a dedicated identity with only what it needs. Never
+use the default Compute Engine service account.
+
+- [ ] **M2.1** Create the runtime service account:
+
+  ```bash
+  gcloud iam service-accounts create sciagent-run \
+    --display-name="SciAgent Cloud Run runtime"
+  export SA=sciagent-run@$(gcloud config get-value project).iam.gserviceaccount.com
+  ```
+
+- [ ] **M2.2** Grant minimum roles:
+
+  ```bash
+  PROJECT_ID=$(gcloud config get-value project)
+
+  gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:$SA" --role="roles/secretmanager.secretAccessor"
+
+  gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:$SA" --role="roles/logging.logWriter"
+
+  gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:$SA" --role="roles/monitoring.metricWriter"
+  ```
+
+  **Do NOT grant** `roles/owner`, `roles/editor`, or `roles/run.admin` to this
+  account. Those are for your *user*, not the running container.
+
+- [ ] **M2.3** Verify: `gcloud iam service-accounts get-iam-policy $SA`.
 
 **Cost: $0.**
 
 ---
 
-### C5 — Local Docker Smoke Test with Cheap LLM (15 minutes)
+### M3 — Secrets in Secret Manager (45 minutes)
 
-**Goal.** The container runs with DeepSeek env vars, `/health` returns 200, and a
-real `/run` query comes back with results — including evidence that DeepSeek was
-actually called (via the C2 startup log line and the DeepSeek dashboard).
+**Goal.** Nothing sensitive ever in the image, build-time env vars, or shell
+history. Every key fetched at container startup via Secret Manager.
 
-- [ ] **C5.1** Create `.env.docker` at repo root (**add to `.gitignore`**,
-  never commit):
+#### Required secrets
+
+| Secret name | What it holds | Notes |
+|---|---|---|
+| `AGT_BACKEND_API_KEY` | The `X-AGT-API-Key` token the add-on sends | Generate: `python3 -c "import secrets; print(secrets.token_urlsafe(48))"` |
+| `AGT_ZOTERO_API_KEY` | Zotero API key | From zotero.org/settings/keys — read + write scope |
+| `AGT_ZOTERO_LIBRARY_ID` | Zotero user/group ID | Not strictly secret, but treat as private |
+| `AGT_LLM_API_KEY` | Your cheap LLM key (DeepSeek, Groq, etc.) | Read by `src/agt/providers/router.py:138` |
+
+#### Plain env vars (not secret — set via `--set-env-vars` in M4)
+
+| Variable | Value |
+|---|---|
+| `AGT_LLM_PROVIDER` | `openai-compatible` |
+| `AGT_LLM_BASE_URL` | `https://api.deepseek.com/v1` |
+| `AGT_LLM_MODEL` | `deepseek-chat` |
+| `AGT_CORS_ALLOWED_ORIGINS` | `zotero://*,http://localhost:*` |
+| `AGT_LOG_LEVEL` | `INFO` |
+
+These are not secrets — they contain no key material. Store them as plain env
+vars on the Cloud Run service, not in Secret Manager.
+
+#### Optional enrichment secrets (only if you use them)
+
+| Secret name | Source |
+|---|---|
+| `AGT_SEMANTIC_SCHOLAR_API_KEY` | semanticscholar.org/product/api |
+| `AGT_NCBI_API_KEY` | ncbi.nlm.nih.gov/account/settings |
+| `AGT_CORE_API_KEY` | core.ac.uk/services/api |
+
+#### Steps
+
+- [ ] **M3.1** Generate the backend API key:
 
   ```bash
-  AGT_BACKEND_API_KEY=local-test-key-replace-me
-  AGT_LLM_PROVIDER=openai-compatible
-  AGT_LLM_BASE_URL=https://api.deepseek.com/v1
-  AGT_LLM_MODEL=deepseek-chat
-  AGT_LLM_API_KEY=<your-deepseek-key>
-  AGT_ZOTERO_API_KEY=<your-zotero-key>
-  AGT_ZOTERO_LIBRARY_ID=<your-library-id>
-  AGT_LOG_LEVEL=INFO
+  python3 -c "import secrets; print(secrets.token_urlsafe(48))"
   ```
 
-- [ ] **C5.2** Run:
+  Save to your password manager. You will paste it into the Zotero add-on
+  settings in M5.
+
+- [ ] **M3.2** Create each required secret (repeat for every name in the table).
+  The `-n` flag matters — trailing newlines silently cause 401s:
 
   ```bash
-  docker run --rm -p 8080:8080 --env-file .env.docker sciagent:size-check
+  echo -n "your-actual-value-here" | \
+    gcloud secrets create AGT_BACKEND_API_KEY \
+    --data-file=- --replication-policy="automatic"
   ```
 
-  First line to look for in logs: `sciagent_startup` with
-  `llm_provider=openai-compatible` and `llm_base_url=https://api.deepseek.com/v1`
-  (the C2 log line). If that line is missing, C2 isn't complete.
-
-- [ ] **C5.3** In a second terminal, hit `/health`:
+- [ ] **M3.3** Verify each secret reads back:
 
   ```bash
-  curl -H "X-AGT-API-Key: local-test-key-replace-me" \
-       -H "X-AGT-Client-ID: smoke-test" \
-       http://localhost:8080/health
+  gcloud secrets versions access latest --secret=AGT_BACKEND_API_KEY
   ```
 
-  Expect 200 JSON.
-
-- [ ] **C5.4** Run a real search:
+- [ ] **M3.4** (Optional) Grant the service account per-secret access for
+  belt-and-braces control:
 
   ```bash
-  curl -X POST http://localhost:8080/run \
-    -H "X-AGT-API-Key: local-test-key-replace-me" \
-    -H "X-AGT-Client-ID: smoke-test" \
+  for s in AGT_BACKEND_API_KEY AGT_ZOTERO_API_KEY AGT_ZOTERO_LIBRARY_ID AGT_LLM_API_KEY; do
+    gcloud secrets add-iam-policy-binding $s \
+      --member="serviceAccount:$SA" --role="roles/secretmanager.secretAccessor"
+  done
+  ```
+
+  The project-level `secretAccessor` from M2.2 already covers this. Per-secret
+  bindings are optional.
+
+- [ ] **M3.5** Set a 90-day rotation reminder for:
+  - DeepSeek key — via dashboard, then `echo -n "new" | gcloud secrets versions add AGT_LLM_API_KEY --data-file=-`.
+  - Zotero key — via zotero.org settings.
+  - Backend API key — regenerate locally, add new version, update Zotero add-on prefs.
+
+**Cost: $0** (free tier: 6 active versions, 10k access ops/month).
+
+---
+
+### M4 — First Manual Deploy to Cloud Run (1 hour)
+
+**Goal.** `https://sciagent-xxxxx-ew.a.run.app/health` returns 200 with the
+right `X-AGT-API-Key`.
+
+- [ ] **M4.1** Build and push via Cloud Build (no local Docker needed):
+
+  ```bash
+  REGION=europe-west1
+  PROJECT_ID=$(gcloud config get-value project)
+  IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/sciagent/backend:v0.1.0"
+
+  gcloud builds submit --tag $IMAGE .
+  ```
+
+  Takes 2–4 minutes. Free tier covers 120 build-minutes/day.
+
+- [ ] **M4.2** Deploy:
+
+  ```bash
+  gcloud run deploy sciagent \
+    --image=$IMAGE \
+    --region=$REGION \
+    --service-account=$SA \
+    --platform=managed \
+    --allow-unauthenticated \
+    --min-instances=0 \
+    --max-instances=2 \
+    --cpu=1 \
+    --memory=512Mi \
+    --concurrency=40 \
+    --timeout=300 \
+    --port=8080 \
+    --set-secrets="AGT_BACKEND_API_KEY=AGT_BACKEND_API_KEY:latest" \
+    --set-secrets="AGT_ZOTERO_API_KEY=AGT_ZOTERO_API_KEY:latest" \
+    --set-secrets="AGT_ZOTERO_LIBRARY_ID=AGT_ZOTERO_LIBRARY_ID:latest" \
+    --set-secrets="AGT_LLM_API_KEY=AGT_LLM_API_KEY:latest" \
+    --set-env-vars="AGT_LLM_PROVIDER=openai-compatible" \
+    --set-env-vars="AGT_LLM_BASE_URL=https://api.deepseek.com/v1" \
+    --set-env-vars="AGT_LLM_MODEL=deepseek-chat" \
+    --set-env-vars="AGT_CORS_ALLOWED_ORIGINS=zotero://*,http://localhost:*,chrome-extension://*" \
+    --set-env-vars="AGT_LOG_LEVEL=INFO"
+  ```
+
+  Flag notes:
+
+  - `--allow-unauthenticated` — Phase 1 only. App-level `X-AGT-API-Key` is the
+    gate. M6 tightens this.
+  - `--min-instances=0` — scales to zero. The single biggest cost knob.
+  - `--set-secrets` — Secret Manager injects values at startup, not baked into image.
+  - `AGT_LLM_*` env vars — not secrets; set directly.
+
+- [ ] **M4.3** Grab the service URL:
+
+  ```bash
+  URL=$(gcloud run services describe sciagent --region=$REGION --format='value(status.url)')
+  echo $URL
+  ```
+
+- [ ] **M4.4** Smoke test `/health`:
+
+  ```bash
+  API_KEY="<the-AGT_BACKEND_API_KEY-you-saved>"
+  curl -H "X-AGT-API-Key: $API_KEY" \
+       -H "X-AGT-Client-ID: dev-test" \
+       "$URL/health"
+  ```
+
+  Expect 200 JSON. Check for the `sciagent_startup` log line — it should show
+  `llm_provider=openai-compatible` and `llm_base_url=https://api.deepseek.com/v1`.
+
+- [ ] **M4.5** Tail logs:
+
+  ```bash
+  gcloud run services logs tail sciagent --region=$REGION
+  ```
+
+- [ ] **M4.6** Run a real search:
+
+  ```bash
+  curl -X POST "$URL/run" \
+    -H "X-AGT-API-Key: $API_KEY" \
+    -H "X-AGT-Client-ID: dev-test" \
     -H "Content-Type: application/json" \
-    -d '{"query":"retrieval augmented generation","collection_name":"SciAgent Docker Test","limit":5}'
+    -d '{"query":"retrieval augmented generation","collection_name":"SciAgent Cloud Test","limit":5}'
   ```
 
-  Expect a `run_id` and 5 results. Verify in logs that the query-rewrite step
-  hit DeepSeek (look for a log line referencing the LLM call).
+  Expect a `run_id` and 5 results. Watch logs — DeepSeek should be hit.
 
-- [ ] **C5.5** Check the DeepSeek dashboard at <https://platform.deepseek.com>.
-  Expect 1–3 API calls and ~$0.0001 of spend. If spend is zero, query rewriting
-  silently fell through — check `AGT_LLM_API_KEY` is set correctly.
-
-**Cost: ~$0.0001.**
+**Cost: a few cents** for the build + test calls.
 
 ---
 
-### C6 — End-to-End Zotero → Docker Test (20 minutes)
+### M5 — Zotero Add-on Updates for Cloud (1–2 hours)
 
-**Goal.** The Zotero add-on talks to the local Docker container and completes a
-full search → approve → write cycle. This proves the cloud path before any GCP
-cost is incurred.
+**Goal.** The add-on talks to the Cloud Run URL exactly as it talked to
+`localhost:8080`. Two sub-items require code changes to the add-on.
 
-- [ ] **C6.1** Open Zotero. Confirm the SciAgent add-on is installed (XPI from
-  `zotero-addon/build/sciagent-zotero-addon.xpi`).
+#### M5-A — Point at the new backend (10 minutes, no code)
 
-- [ ] **C6.2** In Zotero → Tools → SciAgent → Settings → Connection:
-  - Backend Mode: **Remote** (`backendMode: "remote"` bypasses the binary path).
-  - Backend URL: `http://localhost:8080`.
-  - Backend API Key: `local-test-key-replace-me`.
+- [ ] **M5-A.1** In Zotero → Tools → SciAgent → Settings → Connection:
+  - Backend Mode: **Remote**.
+  - Backend URL: paste `$URL` from M4.3.
+  - Backend API Key: paste your `AGT_BACKEND_API_KEY`.
+- [ ] **M5-A.2** Click "Test Connection" — expect green.
+- [ ] **M5-A.3** Run end-to-end: search → approve → write to a test collection.
+  If this works, the cloud deploy is real. **This is the gate.**
 
-- [ ] **C6.3** Click "Test Connection" — expect green.
+#### M5-B — Surface which backend is active in the UI (30 minutes, code)
 
-- [ ] **C6.4** Run a search from the main-window workspace. Approve 2–3 papers.
-  Write to a test collection ("SciAgent E2E Test" — do not pollute a real
-  collection).
+**Why.** After you have both a local binary and a cloud backend, you will forget
+which one the add-on is hitting. This has no test to catch it.
 
-- [ ] **C6.5** Verify the items appeared in Zotero. Check the per-item outcome
-  (created / unchanged) shown in the add-on UI.
+**Files to change:** `zotero-addon/src/host/runtime.ts` or wherever the health
+badge is rendered (the component that calls `isServerRunning()`). Also potentially
+`zotero-addon/src/ui/components/` — search for where the green/red health dot is
+shown.
 
-- [ ] **C6.6** Re-run the same search. The second write must report `unchanged`
-  for every item (idempotent upsert working).
+- [ ] **M5-B.1** After a successful `/health` call, display the backend URL's
+  hostname in the sidebar status area. Short: `localhost:57321`, `sciagent-xxx.run.app`.
+- [ ] **M5-B.2** Add a Vitest test that asserts the hostname extraction works for
+  localhost, `*.run.app`, and a custom domain.
 
-- [ ] **C6.7** Tear down: stop the Docker container, delete the test Zotero
-  collection.
+#### M5-C — Tighten CORS (15 minutes, no code)
 
-**Cost: $0 (local Docker, no GCP).**
+For Phase 1 the CORS config in M4.2 is correct (`zotero://*`, `localhost:*`). If
+you later add a docs site or admin UI:
+
+- [ ] **M5-C.1** Update the Cloud Run env var:
+
+  ```bash
+  gcloud run services update sciagent --region=$REGION \
+    --update-env-vars="AGT_CORS_ALLOWED_ORIGINS=zotero://*,http://localhost:*,https://yourdomain.com"
+  ```
+
+#### M5-D — Explicit cloud error UX in the add-on (30 minutes, code)
+
+**Why.** In local mode the backend either works or isn't running. In cloud mode
+it can be up but rejecting you (expired key, rate limit, cold-start timeout).
+The current add-on has no specific handling for these statuses.
+
+**File to change:** `zotero-addon/src/client/backendClient.ts`.
+
+- [ ] **M5-D.1** Add explicit status handling in the fetch path:
+  - **401** → `"API key rejected. Check Settings → Connection."` Do not retry.
+  - **403** → `"Origin not allowed."` Do not retry.
+  - **429** → `"Rate limit hit."` Show a countdown if `Retry-After` header is set.
+  - **5xx + timeout** → `"Backend not responding. Falling back to cached results."`
+    Trigger the existing offline cache path (`useOfflineCache.ts`).
+
+- [ ] **M5-D.2** Add one Vitest test per status code — assert the right error
+  message and retry behavior.
+
+- [ ] **M5-D.3** Run the Zotero add-on quality gate:
+
+  ```bash
+  cd zotero-addon && npm ci && npm run lint && npm run build && npm run typecheck && npm run test
+  ```
+
+#### M5-E — Update `docs/deployment.md` (10 minutes)
+
+- [ ] **M5-E.1** Add a "Cloud Run quickstart" subsection pointing at this plan
+  and giving the one-liner for pointing the add-on at a hosted backend.
 
 ---
 
-### C7 — Commit + CI (10 minutes)
+### M6 — Tighten Auth (Optional, Phase 2)
 
-**Goal.** The three code changes (C2, C3, C4) land on `main` with CI green.
+**When.** You share the API key with someone else, or you go public.
 
-- [ ] **C7.1** Stage only the changed files:
+The Cloud Run URL is currently public — anyone can send requests (they still
+need the right `X-AGT-API-Key`, but cold-start CPU is still consumed).
 
-  ```bash
-  git add src/agt/api/app.py Dockerfile .dockerignore
-  ```
-
-- [ ] **C7.2** Run the full local gate before committing:
+- [ ] **M6.1** Disable public access:
 
   ```bash
-  uv run ruff check . && uv run ruff format --check . && uv run pyright
-  uv run pytest -q --vcr-record=none
+  gcloud run services update sciagent --region=$REGION --no-allow-unauthenticated
   ```
 
-  All 563+ existing tests must pass. The `.dockerignore` and `Dockerfile` changes
-  are not covered by the Python suite — that is expected.
-
-- [ ] **C7.3** Commit:
+- [ ] **M6.2** Grant your user invoker rights (for `curl` testing):
 
   ```bash
-  git commit -m "feat(p10): startup LLM log, Dockerfile \$PORT, .dockerignore"
+  USER_EMAIL=$(gcloud config get-value account)
+  gcloud run services add-iam-policy-binding sciagent \
+    --member="user:$USER_EMAIL" \
+    --role="roles/run.invoker" --region=$REGION
   ```
 
-- [ ] **C7.4** Push and verify CI passes all three jobs: `python-quality`,
-  `zotero-addon-quality`, `docs-quality`, and `docker-build`. The `docker-build`
-  job in `ci.yml` will now benefit from `.dockerignore`.
+- [ ] **M6.3** Test with an ID token:
 
-**Cost: $0 (CI is free).**
+  ```bash
+  TOKEN=$(gcloud auth print-identity-token)
+  curl -H "Authorization: Bearer $TOKEN" \
+       -H "X-AGT-API-Key: $API_KEY" \
+       "$URL/health"
+  ```
+
+- [ ] **M6.4** The Zotero add-on needs to mint and send an ID token per request.
+  This is ~50 lines of TypeScript + tests. **Defer until you actually have a
+  second user.** It requires a service-account JSON key stored in the add-on prefs
+  (non-trivial security surface).
 
 ---
 
-## Definition of Done
+### M7 — CI/CD: Auto-Deploy on Push to `main` (1 hour)
 
-All C1–C7 boxes checked. To prove it, you must be able to:
+**Goal.** Every push to `main` triggers a Cloud Build → Cloud Run deploy. No
+manual `gcloud builds submit` needed after this.
 
-1. Show a passing CI run for the commit that adds C2/C3/C4.
-2. Run `docker run ... sciagent:size-check` with DeepSeek env vars and see the
-   `sciagent_startup` log line with `llm_provider=openai-compatible`.
-3. Hit `/health` and `/run` successfully against that container.
-4. Run an end-to-end Zotero search-approve-write against the local Docker container.
-5. Show the DeepSeek dashboard with non-zero usage.
+- [ ] **M7.1** Create `cloudbuild.yaml` at repo root:
 
-When all five are true, **stop**. Switch to `docs/actionable-plan-gcp.md` and
-start with M0.
+  ```yaml
+  steps:
+    - name: gcr.io/cloud-builders/docker
+      args:
+        - build
+        - -t
+        - europe-west1-docker.pkg.dev/$PROJECT_ID/sciagent/backend:$SHORT_SHA
+        - -t
+        - europe-west1-docker.pkg.dev/$PROJECT_ID/sciagent/backend:latest
+        - .
+
+    - name: gcr.io/cloud-builders/docker
+      args:
+        - push
+        - --all-tags
+        - europe-west1-docker.pkg.dev/$PROJECT_ID/sciagent/backend
+
+    - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+      entrypoint: gcloud
+      args:
+        - run
+        - deploy
+        - sciagent
+        - --image=europe-west1-docker.pkg.dev/$PROJECT_ID/sciagent/backend:$SHORT_SHA
+        - --region=europe-west1
+        - --platform=managed
+        - --quiet
+
+  options:
+    logging: CLOUD_LOGGING_ONLY
+  ```
+
+  Secrets and resource flags persist on the service between deploys — `cloudbuild.yaml`
+  only swaps the image. Change CPU/memory/secrets via `gcloud run services update`,
+  not in CI.
+
+- [ ] **M7.2** Create the GitHub trigger:
+
+  ```bash
+  gcloud builds triggers create github \
+    --name="sciagent-main-deploy" \
+    --repo-name="sciagent" \
+    --repo-owner="AdamKrysztopa" \
+    --branch-pattern="^main$" \
+    --build-config="cloudbuild.yaml"
+  ```
+
+  First run prompts you to install the Google Cloud Build GitHub app. Approve it.
+
+- [ ] **M7.3** Grant Cloud Build's service account the permissions it needs:
+
+  ```bash
+  PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format='value(projectNumber)')
+  CB_SA="${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com"
+
+  gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:$CB_SA" --role="roles/run.admin"
+
+  gcloud iam service-accounts add-iam-policy-binding $SA \
+    --member="serviceAccount:$CB_SA" --role="roles/iam.serviceAccountUser"
+  ```
+
+- [ ] **M7.4** Push a trivial commit to `main`. Watch Cloud Console → Cloud Build
+  → History. Within ~3 minutes Cloud Run shows a new revision.
+
+- [ ] **M7.5** Verify: `gcloud run revisions list --service=sciagent --region=$REGION`
+  shows the new revision as ACTIVE.
+
+---
+
+### M8 — Persistence (Phase 2, trigger-based)
+
+**When.** You restart the service and notice your sessions / result cache are gone.
+Do not do this preemptively — the ephemeral filesystem is fine for Phase 1.
+
+The codebase stores sessions in `~/.sciagent/sessions/` (JSON) and result cache
+in `~/.sciagent/cache.sqlite`. On Cloud Run, both vanish on cold start.
+
+- [ ] **M8.1** Create the Cloud Storage bucket:
+
+  ```bash
+  gcloud storage buckets create gs://sciagent-data-$PROJECT_ID --location=$REGION
+  ```
+
+- [ ] **M8.2** Mount it as a volume and point SciAgent at it:
+
+  ```bash
+  gcloud run services update sciagent --region=$REGION \
+    --add-volume=name=data,type=cloud-storage,bucket=sciagent-data-$PROJECT_ID \
+    --add-volume-mount=volume=data,mount-path=/data \
+    --update-env-vars="AGT_DATA_DIR=/data"
+  ```
+
+  `AGT_DATA_DIR` is read by `server.py` and propagated to `SessionStore` and
+  `ResultCache`. No code change required — the server already accepts `--data-dir`
+  and sets `AGT_DATA_DIR` from it.
+
+- [ ] **M8.3** Verify: run a search, restart the service, run the same search
+  again. The result cache should be warm (cache hit logged) and session history
+  should persist.
+
+**Cost: ~$0.02/GB-month.**
+
+---
+
+### M9 — Observability & Cost Control (Always-On)
+
+- [ ] **M9.1** Re-verify the budget alert from M0.4 is still active.
+- [ ] **M9.2** Bookmark the Cloud Run dashboard: Console → Cloud Run → sciagent
+  → Metrics. Key tiles: request count, p50/p95 latency, billable container
+  instance time, memory utilization.
+- [ ] **M9.3** Create one alert policy: "Billable instance time > 10,000
+  vCPU-seconds in a day" → email. Catches runaway loops.
+- [ ] **M9.4** Monthly: `gcloud run services describe sciagent --region=$REGION`.
+  Right-size if p95 memory utilization is < 30%.
+- [ ] **M9.5** Monthly: prune old Artifact Registry images. Keep last 5:
+
+  ```bash
+  gcloud artifacts docker images list \
+    europe-west1-docker.pkg.dev/$PROJECT_ID/sciagent/backend \
+    --sort-by=~CREATE_TIME --limit=999 --format='value(IMAGE)' | tail -n +6 | \
+    xargs -I {} gcloud artifacts docker images delete {} --quiet
+  ```
+
+---
+
+### M10 — Custom Domain (Optional, ~$12/year for the domain)
+
+Only if you want `https://api.sciagent.yourname.dev` instead of `*.run.app`.
+
+- [ ] **M10.1** Buy a domain (Cloudflare Registrar is cheap).
+- [ ] **M10.2** Map it:
+
+  ```bash
+  gcloud beta run domain-mappings create \
+    --service=sciagent \
+    --domain=api.sciagent.yourname.dev \
+    --region=$REGION
+  ```
+
+  Cloud Run issues a managed TLS cert automatically (free).
+
+- [ ] **M10.3** Update the Zotero add-on Backend URL to the new domain.
+- [ ] **M10.4** Update `AGT_CORS_ALLOWED_ORIGINS` if needed.
+
+---
+
+## Hard "Make It Cheaper" Checklist
+
+Walk this top-to-bottom whenever your bill surprises you.
+
+- [ ] `--min-instances=0` set? Verify: `gcloud run services describe sciagent --region=$REGION | grep minScale`.
+- [ ] `--max-instances` ≤ 5 for solo use?
+- [ ] Memory ≤ 512 MiB?
+- [ ] Concurrency ≥ 40?
+- [ ] Region is Tier 1 (`europe-west1` or `us-central1`)?
+- [ ] Image size < 500 MB? (check in M9.5)
+- [ ] Logs not retained beyond 30 days?
+- [ ] No `--cpu-throttling=false`? Default is throttled — correct.
+- [ ] No idle Cloud SQL instance? ($8+/month minimum, no scale-to-zero)
+- [ ] No leftover Artifact Registry images? (M9.5)
+- [ ] LLM model is `deepseek-chat`, not `deepseek-reasoner`? (reasoner burns tokens)
 
 ---
 
@@ -436,82 +784,72 @@ start with M0.
 
 | Risk | Likelihood | Mitigation |
 |---|---|---|
-| DeepSeek API hiccup during smoke test | Low | Use Groq free tier as a same-day fallback — same adapter, different `AGT_LLM_BASE_URL`. |
-| `deepseek-chat` model name changes | Low | Check <https://platform.deepseek.com/models>. The current name is `deepseek-chat` (not `deepseek-v3`). |
-| Docker image > 300 MB despite `.dockerignore` | Low | Confirm `uv sync --frozen` doesn't pull in `[keywords]`/`[rerank]` extras. Check `pyproject.toml` optional groups. |
-| C2 log line triggers the redaction processor | Very low | `llm_base_url` doesn't contain `"key"`, `"token"`, or `"secret"`. Verified against `config.py:546`. |
-| `.env.docker` committed accidentally | Medium | Add it to `.gitignore` immediately in C5.1 before populating it. |
+| Cold-start latency frustrates interactive use | Medium | `--min-instances=0` means first request after idle takes 3–8s. Acceptable for solo use. Set `--min-instances=1` ($1–2/month) if it bothers you. |
+| DeepSeek API outage during a cloud demo | Low | Switch to `AGT_LLM_PROVIDER=openai` + `AGT_LLM_API_KEY=<openai-key>` via `gcloud run services update --update-env-vars`. One command, no redeploy. |
+| Secret rotation breaks the running service | Low | Add a new secret version, deploy a new Cloud Run revision, then delete the old version. Zero downtime. |
+| `cloudbuild.yaml` deploy races with a PR build | Low | Cloud Build triggers are branch-scoped. M7.2 only triggers on `main`, not PRs. |
+| `.dockerignore` misses a heavy file | Low | Check `docker images` size after M4.1. If > 500 MB, inspect with `docker history sciagent:latest`. |
+| M5-D code changes break existing add-on tests | Medium | Run the full Vitest suite before merging. The new error-status tests are additions, not replacements. |
 
 ---
 
-## Common Pitfalls
+## What This Plan Does Not Cover
 
-- **`AGT_LLM_PROVIDER` not set, only `AGT_LLM_BASE_URL`.** The auto-detection in
-  `config.py:483` handles this: when `llm_base_url is not None` and no explicit
-  provider is set, it resolves to `openai-compatible`. Still, set it explicitly in
-  `.env.docker` to be unambiguous.
-- **`AGT_LLM_BASE_URL=https://api.deepseek.com` without `/v1`.** The correct base
-  for the OpenAI-compat path is `https://api.deepseek.com/v1`. Without `/v1`,
-  the SDK double-paths and gets 404.
-- **`AGT_LLM_MODEL` not set.** The default for `openai-compatible` in
-  `_PROVIDER_DEFAULT_MODELS` is `gpt-4o-mini` (`config.py:28`). DeepSeek will
-  reject this model name. Always set `AGT_LLM_MODEL=deepseek-chat` explicitly.
-- **Forgetting `-n` on `echo` when creating env files.** Trailing newlines in API
-  keys cause 401s with no useful error. Always: `echo -n "key" | ...`.
-
----
-
-## Quality Gates
-
-```bash
-# Python (always)
-uv run ruff check .
-uv run ruff format --check .
-uv run pyright
-uv run pytest -q --vcr-record=none
-
-# Docker (C3/C4)
-docker build -t sciagent:ci-check .
-docker images sciagent:ci-check --format "{{.Size}}"
-```
-
-No new dependencies are added in P10. No Zotero add-on code changes.
-No docs changes beyond this plan file.
+- **Multi-user auth / OAuth** — needs Cloud SQL + code work. Deferred.
+- **Async job queue** — Cloud Tasks or Pub/Sub. Only needed if requests exceed
+  Cloud Run's 15-min timeout (current `--timeout=300` is fine).
+- **Terraform / Pulumi IaC** — worth doing before you have > 1 environment.
+- **MkDocs hosting** — GitHub Pages, free, unrelated to backend.
+- **macOS / Windows code signing** — planned for v1.1 (see `docs/local-first.md`).
 
 ---
 
 ## Tracker
 
-### P10 Current Status
+### Current Status
 
-- Current focus: **C5 — Local Docker smoke test**
-- Current next implementation target: **C5.1**
-- Last completed: **C3+C4** (2026-05-17) — Dockerfile CMD uses `/app/.venv/bin/uvicorn` + `${PORT:-8080}`; `uv sync --frozen --no-dev` excludes dev group; `streamlit`/`vcrpy`/`responses` moved out of core deps; `.dockerignore` created; image 467 MB (down from 1.19 GB); smoke test confirms health + startup log.
+- Prerequisite: P10 (`actionable-plan-done-4.md`) ✅ complete (2026-05-17).
+- Current focus: **M0 — GCP Account & Local Tooling**
+- Current next implementation target: **M0.1**
+- Last completed: *(none)*
 
 ### Phase Tracker
 
-- [ ] **C1** — Cheap LLM account + key *(operational)*
-- [ ] **C2** — Startup LLM config log line *(code)*
-- [ ] **C3** — Dockerfile: honor `$PORT` *(code)*
-- [ ] **C4** — Create `.dockerignore` *(code)*
-- [ ] **C5** — Local Docker smoke test *(operational)*
-- [ ] **C6** — End-to-end Zotero → Docker test *(operational)*
-- [ ] **C7** — Commit + CI *(code + operational)*
+- [x] **P10 prereqs done** — gate: do not proceed past this line until checked
+- [ ] **M0** — GCP Account & Local Tooling
+- [ ] **M1** — Enable APIs and Foundation Resources
+- [ ] **M2** — Service Account & IAM
+- [ ] **M3** — Secrets in Secret Manager
+- [ ] **M4** — First Manual Deploy
+- [ ] **M5** — Zotero Add-on Updates for Cloud
+  - [ ] M5-A — Point at new backend *(operational)*
+  - [ ] M5-B — Surface backend hostname in UI *(code)*
+  - [ ] M5-C — Tighten CORS *(operational)*
+  - [ ] M5-D — Cloud error UX in `backendClient.ts` *(code)*
+  - [ ] M5-E — Update `docs/deployment.md` *(docs)*
+- [ ] **M6** — Tighten Auth *(optional, Phase 2)*
+- [ ] **M7** — CI/CD via Cloud Build
+- [ ] **M8** — Persistence *(trigger-based, Phase 2)*
+- [ ] **M9** — Observability
+- [ ] **M10** — Custom Domain *(optional)*
 
 ### Tracker Rules
 
 1. Update status here first.
-2. Treat the first unchecked box as the next implementation target.
-3. Do not start M0 of `actionable-plan-gcp.md` until all C1–C7 are checked.
-4. If a pitfall from the list above bites you, add it to Common Pitfalls with the
-   fix so future-you doesn't repeat it.
+2. The P10 prereq gate is checked — proceed directly to M0.
+3. Treat the first unchecked milestone as the current focus.
+4. Secrets and resource flags persist between Cloud Run deploys. If you change
+   CPU/memory/secrets, do it via `gcloud run services update`, not `cloudbuild.yaml`.
+5. When a decision in the Executive Decisions table changes, write a one-line
+   rationale in the milestone where it changed.
 
 ---
 
 ## See Also
 
-- `docs/actionable-plan-gcp.md` — the GCP deployment plan (start after P10 is done).
-- `docs/actionable-plan-done-3.md` — completed P9 plan.
-- `.env.example` — canonical env var reference (already documents DeepSeek recipe).
-- `src/agt/providers/router.py` — provider routing logic (read before touching providers).
-- `src/agt/config.py` — settings contract (read before adding any new env var).
+- `docs/actionable-plan-done-4.md` — completed P10 prereqs plan.
+- `docs/deployment.md` — user-facing deployment overview (update in M5-E).
+- `docs/api.md` — REST contract the Zotero add-on calls.
+- `src/agt/providers/router.py` — provider routing (read before changing LLM config).
+- `src/agt/config.py` — settings contract (read before adding env vars).
+- [Cloud Run pricing](https://cloud.google.com/run/pricing) — re-check before any architecture change.
