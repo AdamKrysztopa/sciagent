@@ -1122,10 +1122,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#mu0-verify-cost-guardrails-15-min" class="md-nav__link">
+  <a href="#mu0-verify-cost-guardrails-done-2026-05-17" class="md-nav__link">
     <span class="md-ellipsis">
       
-        MU0 — Verify cost guardrails (15 min)
+        MU0 — Verify cost guardrails ✅ done 2026-05-17
       
     </span>
   </a>
@@ -1133,33 +1133,22 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#mu1-backend-credential-injection-115-days" class="md-nav__link">
+  <a href="#mu1-backend-credential-injection-done-2026-05-17" class="md-nav__link">
     <span class="md-ellipsis">
       
-        MU1 — Backend credential injection (1–1.5 days)
+        MU1 — Backend credential injection ✅ done 2026-05-17
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="MU1 — Backend credential injection (1–1.5 days)">
+    <nav class="md-nav" aria-label="MU1 — Backend credential injection ✅ done 2026-05-17">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#new-file-srcagtapicredentialspy" class="md-nav__link">
+  <a href="#delivered" class="md-nav__link">
     <span class="md-ellipsis">
       
-        New file: src/agt/api/credentials.py
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#files-to-refactor" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Files to refactor
+        Delivered
       
     </span>
   </a>
@@ -1177,21 +1166,32 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#bug-fixes-shipped-alongside-mu1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bug fixes shipped alongside MU1
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#mu2-frontend-credential-ui-051-day" class="md-nav__link">
+  <a href="#mu2-frontend-credential-ui-done-2026-05-17" class="md-nav__link">
     <span class="md-ellipsis">
       
-        MU2 — Frontend credential UI (0.5–1 day)
+        MU2 — Frontend credential UI ✅ done 2026-05-17
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="MU2 — Frontend credential UI (0.5–1 day)">
+    <nav class="md-nav" aria-label="MU2 — Frontend credential UI ✅ done 2026-05-17">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1222,10 +1222,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#mu3-cloud-run-reconfig-10-min" class="md-nav__link">
+  <a href="#mu3-cloud-run-reconfig-done-2026-05-17" class="md-nav__link">
     <span class="md-ellipsis">
       
-        MU3 — Cloud Run reconfig (10 min)
+        MU3 — Cloud Run reconfig ✅ done 2026-05-17
       
     </span>
   </a>
@@ -1469,81 +1469,65 @@ tools at write time, never serialized.</p>
 the same credentials on <code>/run</code> and <code>/resume</code>.</p>
 <hr />
 <h2 id="phases">Phases<a class="headerlink" href="#phases" title="Permanent link">&para;</a></h2>
-<h3 id="mu0-verify-cost-guardrails-15-min">MU0 — Verify cost guardrails (15 min)<a class="headerlink" href="#mu0-verify-cost-guardrails-15-min" title="Permanent link">&para;</a></h3>
+<h3 id="mu0-verify-cost-guardrails-done-2026-05-17">MU0 — Verify cost guardrails ✅ done 2026-05-17<a class="headerlink" href="#mu0-verify-cost-guardrails-done-2026-05-17" title="Permanent link">&para;</a></h3>
 <ul>
-<li>[ ] Confirm 50 zł / month budget alert from M0.4 is active.</li>
-<li>[ ] Confirm <code>--max-instances=2</code> on Cloud Run service: <code>gcloud run services describe sciagent --region=europe-west1 | grep -i maxScale</code>.</li>
-<li>[ ] (Optional) Set a hard DeepSeek monthly cap in the DeepSeek dashboard if available.</li>
+<li>[x] <code>--max-instances=2</code> confirmed: <code>autoscaling.knative.dev/maxScale=2</code> on the service.</li>
+<li>[ ] 50 zł / month budget alert — cannot verify via gcloud (Billing Budgets API not enabled);
+  confirm manually in <a href="https://console.cloud.google.com/billing">GCP Console → Billing → Budgets</a>.</li>
+<li>[ ] (Optional) Set a hard DeepSeek monthly cap in the DeepSeek dashboard.</li>
 </ul>
-<h3 id="mu1-backend-credential-injection-115-days">MU1 — Backend credential injection (1–1.5 days)<a class="headerlink" href="#mu1-backend-credential-injection-115-days" title="Permanent link">&para;</a></h3>
+<h3 id="mu1-backend-credential-injection-done-2026-05-17">MU1 — Backend credential injection ✅ done 2026-05-17<a class="headerlink" href="#mu1-backend-credential-injection-done-2026-05-17" title="Permanent link">&para;</a></h3>
 <p><strong>Goal.</strong> Every Zotero/LLM call inside a request reads credentials from a
 request-scoped contextvar, not from <code>settings</code>.</p>
-<h4 id="new-file-srcagtapicredentialspy">New file: <code>src/agt/api/credentials.py</code><a class="headerlink" href="#new-file-srcagtapicredentialspy" title="Permanent link">&para;</a></h4>
+<h4 id="delivered">Delivered<a class="headerlink" href="#delivered" title="Permanent link">&para;</a></h4>
 <ul>
-<li>Define <code>RequestCredentials</code> Pydantic model with optional/required fields per below.</li>
-<li>Define <code>current_credentials: ContextVar[RequestCredentials | None]</code> module-global.</li>
-<li>Define <code>get_credentials(...)</code> FastAPI dependency that:</li>
-<li>Parses headers (<code>X-Zotero-API-Key</code>, <code>X-Zotero-Library-ID</code>, <code>X-Zotero-Library-Type</code>,
-    <code>X-LLM-API-Key</code>, <code>X-LLM-Provider</code>, <code>X-LLM-Model</code>, <code>X-LLM-Base-URL</code>).</li>
-<li>Validates required fields for Zotero-touching endpoints.</li>
-<li>Sets the contextvar, yields, resets in <code>finally</code>.</li>
+<li><code>src/agt/credential_context.py</code> — <code>RequestCredentials</code> model, <code>current_credentials</code>
+  contextvar, <code>resolve_zotero_*</code> / <code>resolve_llm_*</code> helpers with settings fallback for
+  local single-user dev.</li>
+<li><code>src/agt/api/credentials.py</code> — FastAPI <code>get_credentials</code> generator dependency that
+  reads 7 headers, validates Zotero fields, sets/restores contextvar in try/finally
+  (using <code>set(previous)</code> pattern — <code>reset(token)</code> fails across async contexts).</li>
+<li><code>src/agt/api/app.py</code> — <code>/health</code> is service-only (no Zotero call); new <code>/preflight</code>
+  endpoint with <code>Depends(get_credentials)</code>; <code>Depends(get_credentials)</code> on <code>/run</code>,
+  <code>/resume</code>, <code>/library-doctor</code>, <code>/gap-finder</code>, <code>/watches/{id}/rerun</code>.</li>
+<li><code>src/agt/zotero/preflight.py</code> — resolves credentials from contextvar first, falls
+  back to <code>settings</code>.</li>
+<li><code>src/agt/zotero/collection_inspector.py</code>, <code>src/agt/tools/zotero_upsert.py</code>,
+  <code>src/agt/tools/pdf_attach.py</code> — all switched to resolve helpers.</li>
+<li><code>src/agt/providers/router.py</code> — <code>build_provider_for_request(settings)</code> checks
+  contextvar for per-request LLM override, calls <code>settings.model_copy(update=...)</code>.</li>
+<li><code>src/agt/graph/workflow.py</code> — <code>build_provider</code> → <code>build_provider_for_request</code>.</li>
+<li>All tests updated: <code>_ZOTERO_HEADERS</code> added to API tests; <code>build_provider_for_request</code>
+  monkeypatched in workflow/e2e tests. 583 tests pass.</li>
 </ul>
-<h4 id="files-to-refactor">Files to refactor<a class="headerlink" href="#files-to-refactor" title="Permanent link">&para;</a></h4>
-<table>
-<thead>
-<tr>
-<th>File</th>
-<th>Change</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>src/agt/api/app.py</code></td>
-<td>Attach <code>Depends(get_credentials)</code> to <code>/run</code>, <code>/resume</code>, <code>/library-doctor</code>, <code>/gap-finder</code>, <code>/extract-keywords</code>. Add new <code>/preflight</code> endpoint that calls <code>run_preflight(credentials)</code>. Change <code>/health</code> to service-only (drop Zotero preflight).</td>
-</tr>
-<tr>
-<td><code>src/agt/zotero/preflight.py</code></td>
-<td><code>run_preflight(creds: RequestCredentials)</code> — stop reading from <code>settings</code>.</td>
-</tr>
-<tr>
-<td><code>src/agt/zotero/collection_inspector.py</code></td>
-<td>Read from <code>current_credentials.get()</code> instead of <code>settings</code>.</td>
-</tr>
-<tr>
-<td><code>src/agt/tools/zotero_upsert.py</code></td>
-<td>Same: 3 call sites switch to contextvar.</td>
-</tr>
-<tr>
-<td><code>src/agt/tools/pdf_attach.py</code></td>
-<td>Same.</td>
-</tr>
-<tr>
-<td><code>src/agt/providers/router.py</code></td>
-<td><code>get_llm()</code> — if <code>creds.llm_api_key</code> is set, build provider from creds; otherwise use <code>settings</code>.</td>
-</tr>
-<tr>
-<td><code>src/agt/config.py</code></td>
-<td>Mark <code>zotero_*</code> settings as dev-only (kept for local single-user dev). Add <code>multi_user_mode: bool = True</code> (default True; flips to False if <code>AGT_ZOTERO_API_KEY</code> is set, for local backwards compat).</td>
-</tr>
-<tr>
-<td><code>tests/test_zotero_*.py</code>, <code>tests/test_api_*.py</code></td>
-<td>Update fixtures to pass credentials in headers (use a <code>make_credentials_headers()</code> helper).</td>
-</tr>
-</tbody>
-</table>
 <h4 id="acceptance-criteria-mu1">Acceptance criteria (MU1)<a class="headerlink" href="#acceptance-criteria-mu1" title="Permanent link">&para;</a></h4>
 <ul>
-<li>[ ] All Python quality gates pass: <code>uv run ruff check . &amp;&amp; uv run ruff format --check . &amp;&amp; uv run pyright &amp;&amp; uv run pytest -q --vcr-record=none</code>.</li>
-<li>[ ] <code>/health</code> returns 200 without any user credentials (service-only).</li>
-<li>[ ] <code>/preflight</code> returns 200 with valid creds, 401 without creds, 403 with bad Zotero key.</li>
-<li>[ ] <code>/run</code> returns 401 if <code>X-Zotero-API-Key</code> missing.</li>
-<li>[ ] Existing single-user local dev still works when <code>AGT_ZOTERO_API_KEY</code> is set in <code>.env</code> (backwards-compat mode).</li>
-<li>[ ] No credentials appear in <code>structlog</code> output (grep test).</li>
-<li>[ ] LangGraph checkpoint inspection (<code>SELECT data FROM checkpoints LIMIT 1</code>) shows no credential bytes.</li>
+<li>[x] All Python quality gates pass (583 passed, ruff clean, pyright clean).</li>
+<li>[x] <code>/health</code> returns 200 without any user credentials (service-only).</li>
+<li>[x] <code>/run</code> returns 401 if <code>X-Zotero-API-Key</code> missing.</li>
+<li>[x] Existing single-user local dev still works when <code>AGT_ZOTERO_API_KEY</code> is set in <code>.env</code>.</li>
+<li>[ ] <code>/preflight</code> live smoke: 200 with valid creds, 401 without creds — verify after MU2 deploy.</li>
+<li>[ ] No credentials appear in <code>structlog</code> output — grep test not yet written.</li>
+<li>[ ] LangGraph checkpoint inspection shows no credential bytes — not yet tested.</li>
 </ul>
-<h3 id="mu2-frontend-credential-ui-051-day">MU2 — Frontend credential UI (0.5–1 day)<a class="headerlink" href="#mu2-frontend-credential-ui-051-day" title="Permanent link">&para;</a></h3>
+<h4 id="bug-fixes-shipped-alongside-mu1">Bug fixes shipped alongside MU1<a class="headerlink" href="#bug-fixes-shipped-alongside-mu1" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Spell check skipped title-cased words</strong> — <code>token[0].isupper()</code> guard removed;
+  checker now runs on lowercase form and re-capitalizes the suggestion. "Scpectroscopy"
+  → "Spectroscopy" confirmed.</li>
+<li><strong>Author/venue filter reset after search</strong> — <code>applySnapshot</code> now preserves
+  <code>authors</code>, <code>venues</code>, <code>seed_dois</code> from the current draft when rebuilding from the
+  backend search plan.</li>
+<li><strong>500 on approve/reject from cache hit</strong> — <code>cached_state</code> was missing <code>messages</code>,
+  <code>preflight</code>, <code>trace_spans</code>; <code>finalize_approval</code> threw <code>KeyError</code>. Fixed by
+  populating defaults in the cache reconstruction block in <code>app.py</code>.</li>
+</ul>
+<h3 id="mu2-frontend-credential-ui-done-2026-05-17">MU2 — Frontend credential UI ✅ done 2026-05-17<a class="headerlink" href="#mu2-frontend-credential-ui-done-2026-05-17" title="Permanent link">&para;</a></h3>
 <p><strong>Goal.</strong> The add-on collects Zotero credentials (always) and LLM credentials (optional)
 from the user and sends them as headers on every backend call.</p>
+<p><strong>Blocker today:</strong> <code>backendClient.buildHeaders</code> does not send any Zotero headers.
+Every endpoint gated by <code>get_credentials</code> (including <code>/resume</code>) returns 401 when
+called from the add-on in remote mode.</p>
 <h4 id="files-to-edit">Files to edit<a class="headerlink" href="#files-to-edit" title="Permanent link">&para;</a></h4>
 <table>
 <thead>
@@ -1563,7 +1547,7 @@ from the user and sends them as headers on every backend call.</p>
 </tr>
 <tr>
 <td><code>zotero-addon/src/client/backendClient.ts</code></td>
-<td><code>buildHeaders</code> adds Zotero headers always; LLM headers only if <code>useCustomLlm</code>. Add <code>setUserCredentials(creds)</code> mutator.</td>
+<td><code>buildHeaders</code> adds <code>X-Zotero-API-Key</code>, <code>X-Zotero-Library-ID</code>, <code>X-Zotero-Library-Type</code> always; LLM headers only if <code>useCustomLlm</code>. Extend <code>BackendClientConfig</code> to carry the new fields.</td>
 </tr>
 <tr>
 <td><code>zotero-addon/src/ui/App.tsx</code> / hooks</td>
@@ -1581,69 +1565,66 @@ from the user and sends them as headers on every backend call.</p>
 </table>
 <h4 id="acceptance-criteria-mu2">Acceptance criteria (MU2)<a class="headerlink" href="#acceptance-criteria-mu2" title="Permanent link">&para;</a></h4>
 <ul>
-<li>[ ] All Zotero add-on quality gates pass: <code>npm ci &amp;&amp; npm run lint &amp;&amp; npm run build &amp;&amp; npm run typecheck &amp;&amp; npm run test</code>.</li>
-<li>[ ] Sending a <code>/run</code> without Zotero API key in prefs surfaces a clear error in the UI before hitting the network.</li>
-<li>[ ] Toggle "Use my own LLM key" shows the four LLM fields; switching off hides them and clears the headers.</li>
+<li>[x] All Zotero add-on quality gates pass: lint, build, typecheck, 152 tests.</li>
+<li>[x] Sending a <code>/run</code> without Zotero API key in prefs surfaces a clear error in the UI before hitting the network (<code>searchDisabledReason</code>).</li>
+<li>[x] Toggle "Use my own LLM key" shows the four LLM fields; switching off hides them and clears the headers.</li>
+<li>[ ] <code>/run</code> and <code>/resume</code> no longer return 401 when Zotero prefs are filled in — verify after MU3 deploy.</li>
 </ul>
-<h3 id="mu3-cloud-run-reconfig-10-min">MU3 — Cloud Run reconfig (10 min)<a class="headerlink" href="#mu3-cloud-run-reconfig-10-min" title="Permanent link">&para;</a></h3>
+<h3 id="mu3-cloud-run-reconfig-done-2026-05-17">MU3 — Cloud Run reconfig ✅ done 2026-05-17<a class="headerlink" href="#mu3-cloud-run-reconfig-done-2026-05-17" title="Permanent link">&para;</a></h3>
 <ul>
-<li>[ ] Remove user-specific secrets from the service:</li>
+<li>[x] Deployed MU1+MU2 code (image <code>7b17551</code>, revision <code>sciagent-00005-9lb</code>).</li>
+<li>[x] Removed <code>AGT_ZOTERO_API_KEY</code>, <code>AGT_ZOTERO_LIBRARY_ID</code>, <code>AGT_BACKEND_API_KEY</code> from Cloud Run (revision <code>sciagent-00006-zfj</code>).</li>
+<li>[x] <code>AGT_LLM_API_KEY</code> remains bound (Adam's DeepSeek key, shared default).</li>
+<li>[x] <code>/health</code> returns 200 without credentials.</li>
+<li>[x] <code>/run</code> without credentials returns 401.</li>
+<li>[ ] (Optional) Delete the now-unbound secrets from Secret Manager:</li>
 </ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>gcloud<span class="w"> </span>run<span class="w"> </span>services<span class="w"> </span>update<span class="w"> </span>sciagent<span class="w"> </span>--region<span class="o">=</span>europe-west1<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span>--remove-secrets<span class="o">=</span><span class="s2">&quot;AGT_ZOTERO_API_KEY,AGT_ZOTERO_LIBRARY_ID,AGT_BACKEND_API_KEY&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>gcloud<span class="w"> </span>secrets<span class="w"> </span>delete<span class="w"> </span>AGT_ZOTERO_API_KEY<span class="w"> </span>--quiet
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>gcloud<span class="w"> </span>secrets<span class="w"> </span>delete<span class="w"> </span>AGT_ZOTERO_LIBRARY_ID<span class="w"> </span>--quiet
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>gcloud<span class="w"> </span>secrets<span class="w"> </span>delete<span class="w"> </span>AGT_BACKEND_API_KEY<span class="w"> </span>--quiet
 </code></pre></div>
-<ul>
-<li>[ ] Keep <code>AGT_LLM_API_KEY</code> bound (this is Adam's DeepSeek key, used as the default LLM).</li>
-<li>[ ] (Optional) Delete the Zotero/Backend secrets entirely in Secret Manager:</li>
-</ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>gcloud<span class="w"> </span>secrets<span class="w"> </span>delete<span class="w"> </span>AGT_ZOTERO_API_KEY<span class="w"> </span>--quiet
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>gcloud<span class="w"> </span>secrets<span class="w"> </span>delete<span class="w"> </span>AGT_ZOTERO_LIBRARY_ID<span class="w"> </span>--quiet
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>gcloud<span class="w"> </span>secrets<span class="w"> </span>delete<span class="w"> </span>AGT_BACKEND_API_KEY<span class="w"> </span>--quiet
-</code></pre></div>
-<ul>
-<li>[ ] Verify <code>/health</code> from a fresh <code>curl</code> (no <code>X-AGT-API-Key</code>) returns 200.</li>
-<li>[ ] Verify <code>/run</code> with no creds returns 401.</li>
-</ul>
 <h3 id="mu4-readme-trust-statement-30-min">MU4 — README + trust statement (30 min)<a class="headerlink" href="#mu4-readme-trust-statement-30-min" title="Permanent link">&para;</a></h3>
 <p>Add to root <code>README.md</code> a new section near the top:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="gu">## Try the Hosted Demo</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>Public backend: <span class="sb">`https://sciagent-ewpafdgfya-ew.a.run.app`</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="gu">### Setup</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="k">1.</span> Install the SciAgent Zotero add-on (XPI link).
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="k">2.</span> Get a Zotero API key with read+write scope: &lt;https://www.zotero.org/settings/keys/new&gt;.
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="k">3.</span> Find your Zotero user ID: &lt;https://www.zotero.org/settings/keys&gt; → top of page.
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="k">4.</span> In the add-on → Settings → Connection:
-<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">   </span><span class="k">-</span><span class="w"> </span>Backend Mode: Remote
-<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">   </span><span class="k">-</span><span class="w"> </span>Backend URL: <span class="sb">`https://sciagent-ewpafdgfya-ew.a.run.app`</span>
-<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">   </span><span class="k">-</span><span class="w"> </span>Zotero API Key: from step 2
-<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">   </span><span class="k">-</span><span class="w"> </span>Zotero Library ID: from step 3
-<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="k">5.</span> Click &quot;Test Connection&quot; — expect green.
-<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>
-<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="gu">### What the backend sees</span>
-<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="k">-</span><span class="w"> </span>Your search queries
-<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="k">-</span><span class="w"> </span>Your Zotero credentials (transient — used to write to your library, never stored)
-<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="k">-</span><span class="w"> </span>The items it writes to your library (it does NOT read your existing library beyond duplicate detection)
-<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>
-<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="gu">### What the backend does NOT do</span>
-<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="k">-</span><span class="w"> </span>Persist your Zotero credentials beyond a single request
-<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="k">-</span><span class="w"> </span>Log your credentials (structlog redaction enforced)
-<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="k">-</span><span class="w"> </span>Share your data with anyone besides the LLM provider (DeepSeek by default; configurable)
-<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>
-<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a><span class="gu">### LLM costs</span>
-<a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a><span class="k">-</span><span class="w"> </span>By default, LLM calls use the operator&#39;s DeepSeek key. The demo has a $10/month hard cap;
-<a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a>  when it&#39;s gone, the backend stops responding until next month.
-<a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a><span class="k">-</span><span class="w"> </span>To bypass the limit, enable &quot;Use my own LLM key&quot; in add-on settings.
-<a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a>
-<a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a><span class="gu">### This is a demo, not a hosted product.</span>
-<a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a><span class="k">-</span><span class="w"> </span>No SLA. The service may go offline at any time.
-<a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a><span class="k">-</span><span class="w"> </span>No warranty. Use at your own risk.
-<a id="__codelineno-4-34" name="__codelineno-4-34" href="#__codelineno-4-34"></a><span class="k">-</span><span class="w"> </span>Source code: &lt;https://github.com/AdamKrysztopa/sciagent&gt;.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="gu">## Try the Hosted Demo</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>Public backend: <span class="sb">`https://sciagent-ewpafdgfya-ew.a.run.app`</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="gu">### Setup</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="k">1.</span> Install the SciAgent Zotero add-on (XPI link).
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="k">2.</span> Get a Zotero API key with read+write scope: &lt;https://www.zotero.org/settings/keys/new&gt;.
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="k">3.</span> Find your Zotero user ID: &lt;https://www.zotero.org/settings/keys&gt; → top of page.
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="k">4.</span> In the add-on → Settings → Connection:
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">   </span><span class="k">-</span><span class="w"> </span>Backend Mode: Remote
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">   </span><span class="k">-</span><span class="w"> </span>Backend URL: <span class="sb">`https://sciagent-ewpafdgfya-ew.a.run.app`</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">   </span><span class="k">-</span><span class="w"> </span>Zotero API Key: from step 2
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">   </span><span class="k">-</span><span class="w"> </span>Zotero Library ID: from step 3
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="k">5.</span> Click &quot;Test Connection&quot; — expect green.
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="gu">### What the backend sees</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="k">-</span><span class="w"> </span>Your search queries
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="k">-</span><span class="w"> </span>Your Zotero credentials (transient — used to write to your library, never stored)
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="k">-</span><span class="w"> </span>The items it writes to your library (it does NOT read your existing library beyond duplicate detection)
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="gu">### What the backend does NOT do</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="k">-</span><span class="w"> </span>Persist your Zotero credentials beyond a single request
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="k">-</span><span class="w"> </span>Log your credentials (structlog redaction enforced)
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="k">-</span><span class="w"> </span>Share your data with anyone besides the LLM provider (DeepSeek by default; configurable)
+<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>
+<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a><span class="gu">### LLM costs</span>
+<a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span class="k">-</span><span class="w"> </span>By default, LLM calls use the operator&#39;s DeepSeek key. The demo has a $10/month hard cap;
+<a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a>  when it&#39;s gone, the backend stops responding until next month.
+<a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a><span class="k">-</span><span class="w"> </span>To bypass the limit, enable &quot;Use my own LLM key&quot; in add-on settings.
+<a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a>
+<a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a><span class="gu">### This is a demo, not a hosted product.</span>
+<a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a><span class="k">-</span><span class="w"> </span>No SLA. The service may go offline at any time.
+<a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a><span class="k">-</span><span class="w"> </span>No warranty. Use at your own risk.
+<a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a><span class="k">-</span><span class="w"> </span>Source code: &lt;https://github.com/AdamKrysztopa/sciagent&gt;.
 </code></pre></div>
 <h4 id="acceptance-criteria-mu4">Acceptance criteria (MU4)<a class="headerlink" href="#acceptance-criteria-mu4" title="Permanent link">&para;</a></h4>
 <ul>
-<li>[ ] Markdownlint passes on <code>README.md</code>.</li>
+<li>[x] Markdownlint passes on <code>README.md</code> (0 errors).</li>
+<li>[x] "Try the Hosted Demo" section added near the top of README.md.</li>
+<li>[x] Backend Mode dropdown added to ConfigPanel so users can switch local ↔ remote through the UI.</li>
 <li>[ ] Manual: open <code>README.md</code> on GitHub web view, confirm renders correctly.</li>
 </ul>
 <h3 id="mu5-end-to-end-multi-user-smoke-test-30-min">MU5 — End-to-end multi-user smoke test (30 min)<a class="headerlink" href="#mu5-end-to-end-multi-user-smoke-test-30-min" title="Permanent link">&para;</a></h3>
@@ -1724,15 +1705,20 @@ from the user and sends them as headers on every backend call.</p>
 <h3 id="current-status">Current Status<a class="headerlink" href="#current-status" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Single-user deploy ✅ done 2026-05-17 (M0–M4 of <code>actionable-plan.md</code>).</li>
-<li>Current focus: <strong>MU1 — Backend credential injection</strong></li>
+<li>MU1 backend ✅ done 2026-05-17 — committed (<code>0d10e67</code>), <strong>not yet deployed</strong>.</li>
+<li>Bug fixes (spell check, author filter reset, cache-hit 500) ✅ done 2026-05-17 — committed (<code>8324201</code>), not yet deployed.</li>
+<li>MU2 frontend ✅ done 2026-05-17 — 8 new prefs fields, Zotero/LLM headers in <code>buildHeaders</code>, ConfigPanel sections, FirstRunConfigCard adapts to remote mode, pre-search validation, 5 new tests.</li>
+<li>MU3 Cloud Run reconfig ✅ done 2026-05-17 — deployed image <code>7b17551</code>, removed baked-in Zotero/backend secrets, verified <code>/health</code> 200 + <code>/run</code>-no-creds 401.</li>
+<li>MU4 README ✅ done 2026-05-17 — "Try the Hosted Demo" section added to README.md; Backend Mode dropdown added to ConfigPanel.</li>
+<li>Current focus: <strong>MU5 — End-to-end multi-user smoke test</strong></li>
 </ul>
 <h3 id="phase-tracker">Phase Tracker<a class="headerlink" href="#phase-tracker" title="Permanent link">&para;</a></h3>
 <ul>
-<li>[ ] <strong>MU0</strong> — Verify cost guardrails</li>
-<li>[ ] <strong>MU1</strong> — Backend credential injection</li>
-<li>[ ] <strong>MU2</strong> — Frontend credential UI</li>
-<li>[ ] <strong>MU3</strong> — Cloud Run reconfig</li>
-<li>[ ] <strong>MU4</strong> — README + trust statement</li>
+<li>[x] <strong>MU0</strong> — Verify cost guardrails ✅ 2026-05-17 (max-instances=2 confirmed; budget alert needs manual Console check)</li>
+<li>[x] <strong>MU1</strong> — Backend credential injection ✅ 2026-05-17</li>
+<li>[x] <strong>MU2</strong> — Frontend credential UI ✅ 2026-05-17</li>
+<li>[x] <strong>MU3</strong> — Cloud Run reconfig ✅ 2026-05-17</li>
+<li>[x] <strong>MU4</strong> — README + trust statement ✅ 2026-05-17</li>
 <li>[ ] <strong>MU5</strong> — End-to-end smoke test</li>
 <li>[ ] <strong>MU6</strong> — Monitoring (continuous)</li>
 </ul>
