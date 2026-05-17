@@ -417,6 +417,9 @@ def create_app() -> FastAPI:  # noqa: PLR0915
                     "phase": "search_complete",
                     "selected_indices": [],
                     "write_result": None,
+                    "messages": [],
+                    "preflight": {"ok": True},
+                    "trace_spans": [],
                 },
             )
             store.put(

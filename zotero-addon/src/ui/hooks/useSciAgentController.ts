@@ -142,11 +142,16 @@ export function useSciAgentController(services: AddonUiServices) {
             currentDraft !== null && currentDraft.original_query === statusSearchPlan.original_query
               ? currentDraft.result_limit
               : Math.max(nextPapers.length, 10);
-          return filterEditFromSearchPlan(
-            statusSearchPlan.original_query,
-            statusSearchPlan,
-            resultLimit,
-          );
+          return {
+            ...filterEditFromSearchPlan(
+              statusSearchPlan.original_query,
+              statusSearchPlan,
+              resultLimit,
+            ),
+            authors: currentDraft?.authors ?? [],
+            venues: currentDraft?.venues ?? [],
+            seed_dois: currentDraft?.seed_dois ?? [],
+          };
         });
       } else {
         setFilterDraft(null);
