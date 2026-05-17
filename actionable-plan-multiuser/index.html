@@ -1,0 +1,1810 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="SciAgent documentation site built from Markdown sources in the repository.">
+      
+      
+      
+        <link rel="canonical" href="https://adamkrysztopa.github.io/sciagent/actionable-plan-multiuser/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>SciAgent Multi-User Plan — Open Backend with BYO Credentials - SciAgent Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#sciagent-multi-user-plan-open-backend-with-byo-credentials" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="SciAgent Docs" class="md-header__button md-logo" aria-label="SciAgent Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            SciAgent Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              SciAgent Multi-User Plan — Open Backend with BYO Credentials
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/AdamKrysztopa/sciagent" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    AdamKrysztopa/sciagent
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="SciAgent Docs" class="md-nav__button md-logo" aria-label="SciAgent Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    SciAgent Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/AdamKrysztopa/sciagent" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    AdamKrysztopa/sciagent
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Overview
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Get Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Get Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../keys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Keys
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-manual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Manual
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Power User
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Power User
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../advanced-config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../manual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration & Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment & Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../providers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provider Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../zotero/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Zotero Add-on
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmark/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    P1 Benchmark
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../local-first/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local-First Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../actionable-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../priorities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Priorities
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../next-steps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Next Steps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#executive-decisions-locked-2026-05-17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Executive Decisions (locked, 2026-05-17)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-diff" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture Diff
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture Diff">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#before-m4-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Before (M4 state)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#after-this-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        After (this plan)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#credentials-threading-contextvar-not-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Credentials Threading: Contextvar, Not State
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mu0-verify-cost-guardrails-15-min" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MU0 — Verify cost guardrails (15 min)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mu1-backend-credential-injection-115-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MU1 — Backend credential injection (1–1.5 days)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MU1 — Backend credential injection (1–1.5 days)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#new-file-srcagtapicredentialspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New file: src/agt/api/credentials.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files-to-refactor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Files to refactor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#acceptance-criteria-mu1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acceptance criteria (MU1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mu2-frontend-credential-ui-051-day" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MU2 — Frontend credential UI (0.5–1 day)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MU2 — Frontend credential UI (0.5–1 day)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#files-to-edit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Files to edit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#acceptance-criteria-mu2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acceptance criteria (MU2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mu3-cloud-run-reconfig-10-min" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MU3 — Cloud Run reconfig (10 min)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mu4-readme-trust-statement-30-min" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MU4 — README + trust statement (30 min)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MU4 — README + trust statement (30 min)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#acceptance-criteria-mu4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acceptance criteria (MU4)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mu5-end-to-end-multi-user-smoke-test-30-min" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MU5 — End-to-end multi-user smoke test (30 min)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mu6-monitoring-always-on" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MU6 — Monitoring (always-on)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#risk-register" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Risk Register
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#out-of-scope-phase-3-if-needed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Out of Scope (Phase 3+ if needed)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tracker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tracker
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tracker">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current Status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-tracker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase Tracker
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tracker-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tracker Rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        See Also
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="sciagent-multi-user-plan-open-backend-with-byo-credentials">SciAgent Multi-User Plan — Open Backend with BYO Credentials<a class="headerlink" href="#sciagent-multi-user-plan-open-backend-with-byo-credentials" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>Supersedes M5–M10 of <code>actionable-plan.md</code>.</strong> Single-user Cloud Run deploy
+(M0–M4) is the prerequisite; this plan converts it into a shared demo where
+users bring their own Zotero credentials and (optionally) their own LLM key.</p>
+<p><strong>Authored 2026-05-17 after live deploy at <code>https://sciagent-ewpafdgfya-ew.a.run.app</code>.</strong></p>
+</blockquote>
+<hr />
+<h2 id="executive-decisions-locked-2026-05-17">Executive Decisions (locked, 2026-05-17)<a class="headerlink" href="#executive-decisions-locked-2026-05-17" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Choice</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LLM cost model</td>
+<td><strong>Hybrid</strong> — backend's DeepSeek key by default; users can BYO LLM key via headers to override.</td>
+</tr>
+<tr>
+<td>Access control</td>
+<td><strong>Open</strong> — no <code>X-AGT-API-Key</code> gate. Anyone with the add-on URL can use the backend.</td>
+</tr>
+<tr>
+<td>Cost cap</td>
+<td><strong>$10 hard cap</strong> via existing 50 zł budget alert (M0.4) + scale-to-zero + <code>--max-instances=2</code>.</td>
+</tr>
+<tr>
+<td>Trust model</td>
+<td>Stated explicitly in README. Backend never persists user credentials. Logs redact secrets.</td>
+</tr>
+<tr>
+<td>Credential transport</td>
+<td>HTTPS request headers only. Never in URL, body, or cache.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="architecture-diff">Architecture Diff<a class="headerlink" href="#architecture-diff" title="Permanent link">&para;</a></h2>
+<h3 id="before-m4-state">Before (M4 state)<a class="headerlink" href="#before-m4-state" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Zotero add-on ──HTTPS──&gt; Cloud Run (sciagent)
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>                          │
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>                          │ uses BAKED-IN secrets:
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>                          │   AGT_ZOTERO_API_KEY     (Adam&#39;s)
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>                          │   AGT_ZOTERO_LIBRARY_ID  (Adam&#39;s)
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>                          │   AGT_LLM_API_KEY        (Adam&#39;s)
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>                          ▼
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>                       Adam&#39;s Zotero  +  DeepSeek (Adam pays)
+</code></pre></div>
+<h3 id="after-this-plan">After (this plan)<a class="headerlink" href="#after-this-plan" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Zotero add-on ──HTTPS + per-request headers──&gt; Cloud Run (sciagent)
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>   │   X-Zotero-API-Key      (user&#39;s)              │
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>   │   X-Zotero-Library-ID   (user&#39;s)              │ no bound Zotero secrets
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>   │   X-Zotero-Library-Type (user&#39;s)              │ shared default LLM key
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>   │   X-LLM-API-Key         (user&#39;s, optional)    │
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>   │   X-LLM-Provider        (user&#39;s, optional)    │
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>   │   X-LLM-Model           (user&#39;s, optional)    │
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>   │   X-LLM-Base-URL        (user&#39;s, optional)    │
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>   ▼                                                ▼
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>User&#39;s Zotero (per request)         DeepSeek (Adam&#39;s key) OR user&#39;s LLM
+</code></pre></div>
+<hr />
+<h2 id="credentials-threading-contextvar-not-state">Credentials Threading: Contextvar, Not State<a class="headerlink" href="#credentials-threading-contextvar-not-state" title="Permanent link">&para;</a></h2>
+<p>LangGraph state checkpoints survive across <code>/run</code> → <code>awaiting_approval</code> → <code>/resume</code>.
+We do <strong>NOT</strong> want credentials persisted in those checkpoints.</p>
+<p><strong>Pattern:</strong> request-scoped <code>contextvars.ContextVar</code> set at endpoint entry, read by
+tools at write time, never serialized.</p>
+<ul>
+<li><code>/run</code> extracts headers → sets contextvar → invokes graph</li>
+<li>Graph pauses at human-in-loop → contextvar evaporates (graph is dehydrated, OK)</li>
+<li><code>/resume</code> extracts headers <strong>again</strong> → sets contextvar → resumes graph</li>
+<li>Tools (<code>zotero_upsert</code>, <code>pdf_attach</code>, etc.) read from contextvar at execution time</li>
+</ul>
+<p>Result: zero credential leakage through the session store. The add-on must send
+the same credentials on <code>/run</code> and <code>/resume</code>.</p>
+<hr />
+<h2 id="phases">Phases<a class="headerlink" href="#phases" title="Permanent link">&para;</a></h2>
+<h3 id="mu0-verify-cost-guardrails-15-min">MU0 — Verify cost guardrails (15 min)<a class="headerlink" href="#mu0-verify-cost-guardrails-15-min" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] Confirm 50 zł / month budget alert from M0.4 is active.</li>
+<li>[ ] Confirm <code>--max-instances=2</code> on Cloud Run service: <code>gcloud run services describe sciagent --region=europe-west1 | grep -i maxScale</code>.</li>
+<li>[ ] (Optional) Set a hard DeepSeek monthly cap in the DeepSeek dashboard if available.</li>
+</ul>
+<h3 id="mu1-backend-credential-injection-115-days">MU1 — Backend credential injection (1–1.5 days)<a class="headerlink" href="#mu1-backend-credential-injection-115-days" title="Permanent link">&para;</a></h3>
+<p><strong>Goal.</strong> Every Zotero/LLM call inside a request reads credentials from a
+request-scoped contextvar, not from <code>settings</code>.</p>
+<h4 id="new-file-srcagtapicredentialspy">New file: <code>src/agt/api/credentials.py</code><a class="headerlink" href="#new-file-srcagtapicredentialspy" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Define <code>RequestCredentials</code> Pydantic model with optional/required fields per below.</li>
+<li>Define <code>current_credentials: ContextVar[RequestCredentials | None]</code> module-global.</li>
+<li>Define <code>get_credentials(...)</code> FastAPI dependency that:</li>
+<li>Parses headers (<code>X-Zotero-API-Key</code>, <code>X-Zotero-Library-ID</code>, <code>X-Zotero-Library-Type</code>,
+    <code>X-LLM-API-Key</code>, <code>X-LLM-Provider</code>, <code>X-LLM-Model</code>, <code>X-LLM-Base-URL</code>).</li>
+<li>Validates required fields for Zotero-touching endpoints.</li>
+<li>Sets the contextvar, yields, resets in <code>finally</code>.</li>
+</ul>
+<h4 id="files-to-refactor">Files to refactor<a class="headerlink" href="#files-to-refactor" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/agt/api/app.py</code></td>
+<td>Attach <code>Depends(get_credentials)</code> to <code>/run</code>, <code>/resume</code>, <code>/library-doctor</code>, <code>/gap-finder</code>, <code>/extract-keywords</code>. Add new <code>/preflight</code> endpoint that calls <code>run_preflight(credentials)</code>. Change <code>/health</code> to service-only (drop Zotero preflight).</td>
+</tr>
+<tr>
+<td><code>src/agt/zotero/preflight.py</code></td>
+<td><code>run_preflight(creds: RequestCredentials)</code> — stop reading from <code>settings</code>.</td>
+</tr>
+<tr>
+<td><code>src/agt/zotero/collection_inspector.py</code></td>
+<td>Read from <code>current_credentials.get()</code> instead of <code>settings</code>.</td>
+</tr>
+<tr>
+<td><code>src/agt/tools/zotero_upsert.py</code></td>
+<td>Same: 3 call sites switch to contextvar.</td>
+</tr>
+<tr>
+<td><code>src/agt/tools/pdf_attach.py</code></td>
+<td>Same.</td>
+</tr>
+<tr>
+<td><code>src/agt/providers/router.py</code></td>
+<td><code>get_llm()</code> — if <code>creds.llm_api_key</code> is set, build provider from creds; otherwise use <code>settings</code>.</td>
+</tr>
+<tr>
+<td><code>src/agt/config.py</code></td>
+<td>Mark <code>zotero_*</code> settings as dev-only (kept for local single-user dev). Add <code>multi_user_mode: bool = True</code> (default True; flips to False if <code>AGT_ZOTERO_API_KEY</code> is set, for local backwards compat).</td>
+</tr>
+<tr>
+<td><code>tests/test_zotero_*.py</code>, <code>tests/test_api_*.py</code></td>
+<td>Update fixtures to pass credentials in headers (use a <code>make_credentials_headers()</code> helper).</td>
+</tr>
+</tbody>
+</table>
+<h4 id="acceptance-criteria-mu1">Acceptance criteria (MU1)<a class="headerlink" href="#acceptance-criteria-mu1" title="Permanent link">&para;</a></h4>
+<ul>
+<li>[ ] All Python quality gates pass: <code>uv run ruff check . &amp;&amp; uv run ruff format --check . &amp;&amp; uv run pyright &amp;&amp; uv run pytest -q --vcr-record=none</code>.</li>
+<li>[ ] <code>/health</code> returns 200 without any user credentials (service-only).</li>
+<li>[ ] <code>/preflight</code> returns 200 with valid creds, 401 without creds, 403 with bad Zotero key.</li>
+<li>[ ] <code>/run</code> returns 401 if <code>X-Zotero-API-Key</code> missing.</li>
+<li>[ ] Existing single-user local dev still works when <code>AGT_ZOTERO_API_KEY</code> is set in <code>.env</code> (backwards-compat mode).</li>
+<li>[ ] No credentials appear in <code>structlog</code> output (grep test).</li>
+<li>[ ] LangGraph checkpoint inspection (<code>SELECT data FROM checkpoints LIMIT 1</code>) shows no credential bytes.</li>
+</ul>
+<h3 id="mu2-frontend-credential-ui-051-day">MU2 — Frontend credential UI (0.5–1 day)<a class="headerlink" href="#mu2-frontend-credential-ui-051-day" title="Permanent link">&para;</a></h3>
+<p><strong>Goal.</strong> The add-on collects Zotero credentials (always) and LLM credentials (optional)
+from the user and sends them as headers on every backend call.</p>
+<h4 id="files-to-edit">Files to edit<a class="headerlink" href="#files-to-edit" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>zotero-addon/src/host/prefs.ts</code></td>
+<td>Add <code>zoteroApiKey</code>, <code>zoteroLibraryId</code>, <code>zoteroLibraryType</code> (<code>user</code> | <code>group</code>), <code>useCustomLlm</code>, <code>customLlmProvider</code>, <code>customLlmBaseUrl</code>, <code>customLlmModel</code>, <code>customLlmApiKey</code>. Default to empty.</td>
+</tr>
+<tr>
+<td><code>zotero-addon/src/ui/components/ConfigPanel.tsx</code></td>
+<td>Add a "Zotero Account" section (required for remote mode). Add a "LLM Override" section gated by a toggle.</td>
+</tr>
+<tr>
+<td><code>zotero-addon/src/client/backendClient.ts</code></td>
+<td><code>buildHeaders</code> adds Zotero headers always; LLM headers only if <code>useCustomLlm</code>. Add <code>setUserCredentials(creds)</code> mutator.</td>
+</tr>
+<tr>
+<td><code>zotero-addon/src/ui/App.tsx</code> / hooks</td>
+<td>Pipe prefs into the client constructor.</td>
+</tr>
+<tr>
+<td><code>zotero-addon/src/ui/components/FirstRunConfigCard.tsx</code></td>
+<td>First-run flow now prompts for Zotero credentials. LLM key remains optional.</td>
+</tr>
+<tr>
+<td>Tests</td>
+<td>Vitest for header serialization; assert no LLM headers when toggle is off.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="acceptance-criteria-mu2">Acceptance criteria (MU2)<a class="headerlink" href="#acceptance-criteria-mu2" title="Permanent link">&para;</a></h4>
+<ul>
+<li>[ ] All Zotero add-on quality gates pass: <code>npm ci &amp;&amp; npm run lint &amp;&amp; npm run build &amp;&amp; npm run typecheck &amp;&amp; npm run test</code>.</li>
+<li>[ ] Sending a <code>/run</code> without Zotero API key in prefs surfaces a clear error in the UI before hitting the network.</li>
+<li>[ ] Toggle "Use my own LLM key" shows the four LLM fields; switching off hides them and clears the headers.</li>
+</ul>
+<h3 id="mu3-cloud-run-reconfig-10-min">MU3 — Cloud Run reconfig (10 min)<a class="headerlink" href="#mu3-cloud-run-reconfig-10-min" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] Remove user-specific secrets from the service:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>gcloud<span class="w"> </span>run<span class="w"> </span>services<span class="w"> </span>update<span class="w"> </span>sciagent<span class="w"> </span>--region<span class="o">=</span>europe-west1<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span>--remove-secrets<span class="o">=</span><span class="s2">&quot;AGT_ZOTERO_API_KEY,AGT_ZOTERO_LIBRARY_ID,AGT_BACKEND_API_KEY&quot;</span>
+</code></pre></div>
+<ul>
+<li>[ ] Keep <code>AGT_LLM_API_KEY</code> bound (this is Adam's DeepSeek key, used as the default LLM).</li>
+<li>[ ] (Optional) Delete the Zotero/Backend secrets entirely in Secret Manager:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>gcloud<span class="w"> </span>secrets<span class="w"> </span>delete<span class="w"> </span>AGT_ZOTERO_API_KEY<span class="w"> </span>--quiet
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>gcloud<span class="w"> </span>secrets<span class="w"> </span>delete<span class="w"> </span>AGT_ZOTERO_LIBRARY_ID<span class="w"> </span>--quiet
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>gcloud<span class="w"> </span>secrets<span class="w"> </span>delete<span class="w"> </span>AGT_BACKEND_API_KEY<span class="w"> </span>--quiet
+</code></pre></div>
+<ul>
+<li>[ ] Verify <code>/health</code> from a fresh <code>curl</code> (no <code>X-AGT-API-Key</code>) returns 200.</li>
+<li>[ ] Verify <code>/run</code> with no creds returns 401.</li>
+</ul>
+<h3 id="mu4-readme-trust-statement-30-min">MU4 — README + trust statement (30 min)<a class="headerlink" href="#mu4-readme-trust-statement-30-min" title="Permanent link">&para;</a></h3>
+<p>Add to root <code>README.md</code> a new section near the top:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="gu">## Try the Hosted Demo</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>Public backend: <span class="sb">`https://sciagent-ewpafdgfya-ew.a.run.app`</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="gu">### Setup</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="k">1.</span> Install the SciAgent Zotero add-on (XPI link).
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="k">2.</span> Get a Zotero API key with read+write scope: &lt;https://www.zotero.org/settings/keys/new&gt;.
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="k">3.</span> Find your Zotero user ID: &lt;https://www.zotero.org/settings/keys&gt; → top of page.
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="k">4.</span> In the add-on → Settings → Connection:
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">   </span><span class="k">-</span><span class="w"> </span>Backend Mode: Remote
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">   </span><span class="k">-</span><span class="w"> </span>Backend URL: <span class="sb">`https://sciagent-ewpafdgfya-ew.a.run.app`</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">   </span><span class="k">-</span><span class="w"> </span>Zotero API Key: from step 2
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">   </span><span class="k">-</span><span class="w"> </span>Zotero Library ID: from step 3
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="k">5.</span> Click &quot;Test Connection&quot; — expect green.
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="gu">### What the backend sees</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="k">-</span><span class="w"> </span>Your search queries
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="k">-</span><span class="w"> </span>Your Zotero credentials (transient — used to write to your library, never stored)
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="k">-</span><span class="w"> </span>The items it writes to your library (it does NOT read your existing library beyond duplicate detection)
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="gu">### What the backend does NOT do</span>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="k">-</span><span class="w"> </span>Persist your Zotero credentials beyond a single request
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="k">-</span><span class="w"> </span>Log your credentials (structlog redaction enforced)
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="k">-</span><span class="w"> </span>Share your data with anyone besides the LLM provider (DeepSeek by default; configurable)
+<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>
+<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a><span class="gu">### LLM costs</span>
+<a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a><span class="k">-</span><span class="w"> </span>By default, LLM calls use the operator&#39;s DeepSeek key. The demo has a $10/month hard cap;
+<a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a>  when it&#39;s gone, the backend stops responding until next month.
+<a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a><span class="k">-</span><span class="w"> </span>To bypass the limit, enable &quot;Use my own LLM key&quot; in add-on settings.
+<a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a>
+<a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a><span class="gu">### This is a demo, not a hosted product.</span>
+<a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a><span class="k">-</span><span class="w"> </span>No SLA. The service may go offline at any time.
+<a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a><span class="k">-</span><span class="w"> </span>No warranty. Use at your own risk.
+<a id="__codelineno-4-34" name="__codelineno-4-34" href="#__codelineno-4-34"></a><span class="k">-</span><span class="w"> </span>Source code: &lt;https://github.com/AdamKrysztopa/sciagent&gt;.
+</code></pre></div>
+<h4 id="acceptance-criteria-mu4">Acceptance criteria (MU4)<a class="headerlink" href="#acceptance-criteria-mu4" title="Permanent link">&para;</a></h4>
+<ul>
+<li>[ ] Markdownlint passes on <code>README.md</code>.</li>
+<li>[ ] Manual: open <code>README.md</code> on GitHub web view, confirm renders correctly.</li>
+</ul>
+<h3 id="mu5-end-to-end-multi-user-smoke-test-30-min">MU5 — End-to-end multi-user smoke test (30 min)<a class="headerlink" href="#mu5-end-to-end-multi-user-smoke-test-30-min" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] Create a second Zotero account (or use a friend's, with permission).</li>
+<li>[ ] From that account's add-on settings, point at the Cloud Run URL with the new credentials.</li>
+<li>[ ] Run a search → approve → verify the items land in the <strong>second account's</strong> library, not yours.</li>
+<li>[ ] Toggle on "Use my own LLM key" with a fresh DeepSeek key. Run a search. Verify in DeepSeek dashboard that the second account's key was charged, not yours.</li>
+<li>[ ] Toggle off "Use my own LLM key". Run a search. Verify your key was charged.</li>
+</ul>
+<h3 id="mu6-monitoring-always-on">MU6 — Monitoring (always-on)<a class="headerlink" href="#mu6-monitoring-always-on" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] Check Cloud Run logs daily for the first week: <code>gcloud run services logs tail sciagent --region=europe-west1 | grep -E "ERROR|429|401"</code>.</li>
+<li>[ ] Cloud Run dashboard: watch p95 latency, instance count, request count. Spike = someone found the URL.</li>
+<li>[ ] If LLM cost trend looks bad, ratchet down <code>--max-instances</code> or add per-IP rate limit (slowapi already in deps).</li>
+</ul>
+<hr />
+<h2 id="risk-register">Risk Register<a class="headerlink" href="#risk-register" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Likelihood</th>
+<th>Severity</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LLM cost blowup from an abusive user</td>
+<td>Medium</td>
+<td>High</td>
+<td>Budget alert at 50 zł (50% of $10 cap); manual revoke by adding <code>AGT_BACKEND_API_KEY</code> back to require an invite token.</td>
+</tr>
+<tr>
+<td>Bot scanning Cloud Run URLs hits /run</td>
+<td>Low</td>
+<td>Medium</td>
+<td><code>/run</code> requires valid Zotero creds; bots without those get 401 cheap.</td>
+</tr>
+<tr>
+<td>Credential leak via logs</td>
+<td>Low</td>
+<td>Critical</td>
+<td>Add a unit test that asserts <code>Zotero-API-Key</code> substring never appears in <code>structlog</code> output for any test request.</td>
+</tr>
+<tr>
+<td>Credential leak via LangGraph checkpoint</td>
+<td>Low</td>
+<td>Critical</td>
+<td>Contextvar pattern (above) ensures creds never enter state. Add a checkpoint-inspection test.</td>
+</tr>
+<tr>
+<td>User confused about "where do my papers go"</td>
+<td>High</td>
+<td>Low</td>
+<td>README diagram + first-run dialog explicitly state "items will be written to YOUR Zotero library at ID X".</td>
+</tr>
+<tr>
+<td>User uses wrong library ID</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Preflight call validates the ID resolves before any write. Surface "Library <code>&lt;name&gt;</code> (user/group <code>&lt;id&gt;</code>)" in the add-on after a successful preflight.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="out-of-scope-phase-3-if-needed">Out of Scope (Phase 3+ if needed)<a class="headerlink" href="#out-of-scope-phase-3-if-needed" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Multi-tenant rate limiting (per-Zotero-key, not per-IP) — not needed until abuse appears.</li>
+<li>Per-user usage dashboards — needs a database. The demo is fire-and-forget.</li>
+<li>OAuth-based Zotero auth (instead of raw API keys) — friendlier but requires server-side OAuth flow. Demo uses raw keys for now.</li>
+<li>Terraform / IaC — useful once we have &gt; 1 environment.</li>
+<li>Custom domain — see M10 in <code>actionable-plan.md</code>.</li>
+</ul>
+<hr />
+<h2 id="tracker">Tracker<a class="headerlink" href="#tracker" title="Permanent link">&para;</a></h2>
+<h3 id="current-status">Current Status<a class="headerlink" href="#current-status" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Single-user deploy ✅ done 2026-05-17 (M0–M4 of <code>actionable-plan.md</code>).</li>
+<li>Current focus: <strong>MU1 — Backend credential injection</strong></li>
+</ul>
+<h3 id="phase-tracker">Phase Tracker<a class="headerlink" href="#phase-tracker" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] <strong>MU0</strong> — Verify cost guardrails</li>
+<li>[ ] <strong>MU1</strong> — Backend credential injection</li>
+<li>[ ] <strong>MU2</strong> — Frontend credential UI</li>
+<li>[ ] <strong>MU3</strong> — Cloud Run reconfig</li>
+<li>[ ] <strong>MU4</strong> — README + trust statement</li>
+<li>[ ] <strong>MU5</strong> — End-to-end smoke test</li>
+<li>[ ] <strong>MU6</strong> — Monitoring (continuous)</li>
+</ul>
+<h3 id="tracker-rules">Tracker Rules<a class="headerlink" href="#tracker-rules" title="Permanent link">&para;</a></h3>
+<ol>
+<li>MU1 must land before MU2 (frontend needs the new backend contract).</li>
+<li>MU3 must NOT run before MU1 + MU2 are deployed — removing the Zotero secrets while the backend still reads them would break the live service.</li>
+<li>MU4 happens last so the README matches the live behavior.</li>
+</ol>
+<hr />
+<h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>docs/actionable-plan.md</code> — single-user deploy plan (M0–M4 done, M5–M10 superseded by this file).</li>
+<li><code>docs/api.md</code> — REST contract; update headers section as part of MU1.</li>
+<li><code>src/agt/api/app.py</code> — endpoint definitions.</li>
+<li><code>src/agt/zotero/preflight.py</code> — preflight logic to refactor.</li>
+<li><code>zotero-addon/src/host/prefs.ts</code> — prefs schema to extend.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.sections", "navigation.expand", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
