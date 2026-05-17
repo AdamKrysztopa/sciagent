@@ -106,6 +106,17 @@ export function ConfigPanel({ addonVersion, config, onChange, onSave, saveError,
       <p className="agt-small-note">
         Provider and source API keys are backend-owned. Configure them in the backend <code>.env</code> file, not here.
       </p>
+      <div className="agt-field">
+        <span>Backend Mode</span>
+        <CustomSelect
+          onChange={(v) => onChange("backendMode", v)}
+          options={[
+            { value: "remote", label: "Remote (hosted backend)" },
+            { value: "local", label: "Local (embedded server)" },
+          ]}
+          value={config.backendMode}
+        />
+      </div>
       <div className="agt-grid">
         <label className="agt-field">
           <span>Backend URL</span>

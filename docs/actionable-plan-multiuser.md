@@ -153,26 +153,20 @@ called from the add-on in remote mode.
 - [x] Toggle "Use my own LLM key" shows the four LLM fields; switching off hides them and clears the headers.
 - [ ] `/run` and `/resume` no longer return 401 when Zotero prefs are filled in — verify after MU3 deploy.
 
-### MU3 — Cloud Run reconfig (10 min)
+### MU3 — Cloud Run reconfig ✅ done 2026-05-17
 
-- [ ] Remove user-specific secrets from the service:
-
-  ```bash
-  gcloud run services update sciagent --region=europe-west1 \
-    --remove-secrets="AGT_ZOTERO_API_KEY,AGT_ZOTERO_LIBRARY_ID,AGT_BACKEND_API_KEY"
-  ```
-
-- [ ] Keep `AGT_LLM_API_KEY` bound (this is Adam's DeepSeek key, used as the default LLM).
-- [ ] (Optional) Delete the Zotero/Backend secrets entirely in Secret Manager:
+- [x] Deployed MU1+MU2 code (image `7b17551`, revision `sciagent-00005-9lb`).
+- [x] Removed `AGT_ZOTERO_API_KEY`, `AGT_ZOTERO_LIBRARY_ID`, `AGT_BACKEND_API_KEY` from Cloud Run (revision `sciagent-00006-zfj`).
+- [x] `AGT_LLM_API_KEY` remains bound (Adam's DeepSeek key, shared default).
+- [x] `/health` returns 200 without credentials.
+- [x] `/run` without credentials returns 401.
+- [ ] (Optional) Delete the now-unbound secrets from Secret Manager:
 
   ```bash
   gcloud secrets delete AGT_ZOTERO_API_KEY --quiet
   gcloud secrets delete AGT_ZOTERO_LIBRARY_ID --quiet
   gcloud secrets delete AGT_BACKEND_API_KEY --quiet
   ```
-
-- [ ] Verify `/health` from a fresh `curl` (no `X-AGT-API-Key`) returns 200.
-- [ ] Verify `/run` with no creds returns 401.
 
 ### MU4 — README + trust statement (30 min)
 
@@ -217,7 +211,9 @@ Public backend: `https://sciagent-ewpafdgfya-ew.a.run.app`
 
 #### Acceptance criteria (MU4)
 
-- [ ] Markdownlint passes on `README.md`.
+- [x] Markdownlint passes on `README.md` (0 errors).
+- [x] "Try the Hosted Demo" section added near the top of README.md.
+- [x] Backend Mode dropdown added to ConfigPanel so users can switch local ↔ remote through the UI.
 - [ ] Manual: open `README.md` on GitHub web view, confirm renders correctly.
 
 ### MU5 — End-to-end multi-user smoke test (30 min)
@@ -267,15 +263,17 @@ Public backend: `https://sciagent-ewpafdgfya-ew.a.run.app`
 - MU1 backend ✅ done 2026-05-17 — committed (`0d10e67`), **not yet deployed**.
 - Bug fixes (spell check, author filter reset, cache-hit 500) ✅ done 2026-05-17 — committed (`8324201`), not yet deployed.
 - MU2 frontend ✅ done 2026-05-17 — 8 new prefs fields, Zotero/LLM headers in `buildHeaders`, ConfigPanel sections, FirstRunConfigCard adapts to remote mode, pre-search validation, 5 new tests.
-- Current focus: **MU3 — Cloud Run reconfig** (remove baked-in Zotero secrets; then deploy MU1+MU2 together)
+- MU3 Cloud Run reconfig ✅ done 2026-05-17 — deployed image `7b17551`, removed baked-in Zotero/backend secrets, verified `/health` 200 + `/run`-no-creds 401.
+- MU4 README ✅ done 2026-05-17 — "Try the Hosted Demo" section added to README.md; Backend Mode dropdown added to ConfigPanel.
+- Current focus: **MU5 — End-to-end multi-user smoke test**
 
 ### Phase Tracker
 
 - [ ] **MU0** — Verify cost guardrails
 - [x] **MU1** — Backend credential injection ✅ 2026-05-17
 - [x] **MU2** — Frontend credential UI ✅ 2026-05-17
-- [ ] **MU3** — Cloud Run reconfig (blocked: must NOT run before MU1+MU2 deployed)
-- [ ] **MU4** — README + trust statement
+- [x] **MU3** — Cloud Run reconfig ✅ 2026-05-17
+- [x] **MU4** — README + trust statement ✅ 2026-05-17
 - [ ] **MU5** — End-to-end smoke test
 - [ ] **MU6** — Monitoring (continuous)
 
