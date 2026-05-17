@@ -30,6 +30,7 @@ nav:
   - Overview:
       - Home: index.md
   - Get Started:
+      - Hosted Demo Guide: hosted-demo-guide.md
       - Installation: install.md
       - API Keys: keys.md
       - User Manual: user-manual.md

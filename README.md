@@ -8,6 +8,55 @@ Zotero library without silent writes.
 
 [![CI](https://github.com/AdamKrysztopa/sciagent/actions/workflows/ci.yml/badge.svg)](https://github.com/AdamKrysztopa/sciagent/actions/workflows/ci.yml)
 
+## Try the Hosted Demo
+
+Public backend: `https://sciagent-ewpafdgfya-ew.a.run.app`
+
+### Setup
+
+1. Install the SciAgent Zotero add-on — download
+   `sciagent-zotero-addon.xpi` from the
+   [latest release](https://github.com/AdamKrysztopa/sciagent/releases/latest).
+2. Get a Zotero API key with read+write scope:
+   <https://www.zotero.org/settings/keys/new>
+3. Find your Zotero user ID: <https://www.zotero.org/settings/keys> → top of page.
+4. Open **Tools → SciAgent → Preferences** and configure:
+   - **Backend Mode:** Remote (hosted backend)
+   - **Backend URL:** `https://sciagent-ewpafdgfya-ew.a.run.app`
+   - **Zotero API Key:** (from step 2)
+   - **Library ID:** (from step 3)
+5. Save Preferences — the status pill should turn green.
+
+### What the backend sees
+
+- Your search queries.
+- Your Zotero credentials (transient — used to write to your library,
+  never stored server-side).
+- The items it writes to your library (it does NOT read your existing
+  library beyond duplicate detection).
+
+### What the backend does NOT do
+
+- Persist your Zotero credentials beyond a single request.
+- Log your credentials (structlog redaction enforced).
+- Share your data with anyone besides the LLM provider (DeepSeek by
+  default; configurable per-request via the LLM Override toggle).
+
+### LLM costs
+
+By default, LLM calls use the operator's DeepSeek key. The demo has a
+$10/month hard cap — when it runs out, the backend stops responding
+until next month. Enable **Use my own LLM key** in Preferences to use
+your own key instead.
+
+### This is a demo, not a hosted product
+
+- No SLA. The service may go offline at any time.
+- No warranty. Use at your own risk.
+- Source code: <https://github.com/AdamKrysztopa/sciagent>
+
+---
+
 ## Why Researchers Use It
 
 - Review the search plan before retrieval so year limits, exclusion terms, and

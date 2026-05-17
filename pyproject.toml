@@ -15,20 +15,20 @@ dependencies = [
   "pydantic-settings>=2.6",
   "pyspellchecker>=0.8.1",
   "pyzotero",
-  "responses",
   "semanticscholar",
   "slowapi>=0.1.9",
-  "streamlit>=1.40",
   "structlog",
   "tenacity",
-  "uvicorn>=0.33.0",
-  "vcrpy"
+  "uvicorn>=0.33.0"
 ]
 
 [project.scripts]
 sciagent-server = "agt.server:main"
 
 [project.optional-dependencies]
+ui = [
+  "streamlit>=1.40"
+]
 keywords = [
   "keybert>=0.8.5",
   "sentence-transformers>=3.0.0"
@@ -50,7 +50,10 @@ dev = [
   "pytest",
   "pytest-asyncio",
   "pytest-vcr",
-  "ruff"
+  "responses",
+  "ruff",
+  "streamlit>=1.40",
+  "vcrpy"
 ]
 
 [build-system]

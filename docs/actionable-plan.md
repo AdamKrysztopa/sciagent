@@ -1,348 +1,789 @@
-# SciAgent Actionable Plan — P9 (Standalone Distribution + First-Class Search Fields + Docs Overhaul)
+# SciAgent Actionable Plan — GCP Deployment (Cloud Run + CI/CD)
 
-> **Last audit: 2026-05-13** — All P0–P8 stories complete (see
-> [actionable-plan-done-2.md](actionable-plan-done-2.md) and
-> [actionable-plan-done.md](actionable-plan-done.md)).
+> **⚠ Pivot 2026-05-17.** Single-user deploy (M0–M4) is **done** and live at
+> `https://sciagent-ewpafdgfya-ew.a.run.app`. M5–M10 are **superseded** by the
+> multi-user pivot — see [`actionable-plan-multiuser.md`](actionable-plan-multiuser.md)
+> for the open-backend / BYO-credentials redesign. Do not execute M5–M10 of this
+> plan; they assume single-user secrets baked into the service.
 >
-> This plan covers **P9: Ship SciAgent as one XPI for end-users**, **extend search with a
-> first-class Author field (and a few other high-leverage fields)**, and **rebuild the docs
-> around the "minimum config to start, more advanced on demand" principle**.
+> **Prerequisite.** Every box in P10 is checked — see
+> [actionable-plan-done-4.md](actionable-plan-done-4.md). This plan assumes:
+>
+> - The cheap LLM (DeepSeek or equivalent) is wired and smoke-tested locally.
+> - The `Dockerfile` honors `$PORT`.
+> - `.dockerignore` exists and the image is < 500 MB.
+> - The end-to-end Zotero flow works against `localhost:8080`.
+>
+> **Audience.** You, learning GCP for the first time.
+>
+> **Canonical env var names.** The source design doc used `AGT_OPENAI_API_KEY`
+> for the LLM key. After auditing the code, the correct variable is
+> `AGT_LLM_API_KEY` — that is what `router.py:138` reads for the
+> `openai-compatible` provider. Use `AGT_LLM_API_KEY` everywhere in this plan.
 >
 > Canonical execution tracker. Update done/not done state here first.
-> Historical, completed work stays in `actionable-plan-done*.md` — do not re-open closed items.
-
-## Design Philosophy
-
-**One installer.** A researcher should be able to install SciAgent in one step from
-inside Zotero, the same way they install any other Zotero add-on. Today the
-`README.md` still requires `git clone`, `uv sync`, `npm ci`, and `npm run build` —
-that is a developer install. The local-first plan
-([docs/local-first.md](local-first.md)) and the embedded-server binary already exist
-and work on macOS arm64; what is missing is the **release pipeline that bundles
-them**, the **default backend mode**, and the **end-user docs that hide the dev
-path**.
-
-**Two distribution shapes from one codebase:**
-
-| Shape         | Audience       | What ships                                | Start cost           |
-| ------------- | -------------- | ----------------------------------------- | -------------------- |
-| Standalone    | Researcher     | One XPI · binary downloads on first run   | install XPI + LLM key |
-| Web / dev     | Developer · SaaS host | Source + uv + Docker                | the current README path |
-
-The **standalone** shape is the one we are missing. Both shapes run identical
-backend code — the local binary and any future hosted backend are the same
-FastAPI app frozen by PyInstaller.
-
-**Minimum config to start.** The first-time experience is one LLM key (or a
-running Ollama). Everything else — provider keys, polite-pool email, source
-disables, advanced filters — must be discoverable later, not asked up front.
-Today the `.env.example`, the `ConfigPanel`, the user manual, and the README
-mix required and optional config in one wall of text. P9 separates them.
-
-**Search has fields, not only natural language.** P8.8 added `HardFilters.author_ids`
-and a natural-language resolver (`by Yoshua Bengio …`). It works when the user
-remembers to phrase the query correctly. It does not exist as a UI field, has
-no autocomplete, and silently degrades to topic-only search when the parser
-misses. P9 adds **Author**, **Venue/Journal**, and **DOI/seed paper** as first-class
-search fields with provider-backed suggestions, alongside the existing year and
-keyword controls.
+> Historical completed work stays in `actionable-plan-done*.md` — do not re-open closed items.
 
 ---
 
-## Release Readiness
+## TL;DR — What You Actually Do
 
-**P9 release gate** — when the items below pass, the *researcher install path* is
-one click and the *power-user search* covers the cases that matter most:
+- [ ] **G1.** Create GCP account, project `sciagent-prod`, billing account, $5 budget alert.
+- [ ] **G2.** Install `gcloud` CLI, run `gcloud init` + `gcloud auth application-default login`.
+- [ ] **G3.** Enable 7 GCP APIs.
+- [ ] **G4.** Create one Artifact Registry Docker repo.
+- [ ] **G5.** Create a least-privilege service account `sciagent-run`.
+- [ ] **G6.** Put every secret into Secret Manager.
+- [ ] **G7.** Build via Cloud Build, push to Artifact Registry, deploy to Cloud Run with `--min-instances=0`.
+- [ ] **G8.** Smoke test `/health` and `/run` via authenticated `curl`.
+- [ ] **G9.** Update the Zotero add-on "Backend URL" preference + add cloud error UX.
+- [ ] **G10.** Wire GitHub Actions → Cloud Build → Cloud Run for auto-deploy on `main`.
+- [ ] **G11.** Set up Cloud Storage for persistent sessions *(Phase 2, only when needed)*.
 
-1. The Zotero plugin directory and a single GitHub Release page each host one XPI
-   that boots a working SciAgent without any terminal commands on macOS (arm64,
-   x86_64), Linux x86_64, and Windows x64.
-2. First-run flow inside Zotero downloads the right server binary, starts it,
-   surfaces a green health badge, and renders a one-screen "you only need an LLM
-   key" config card. No `.env`. No `uv`.
-3. Search has explicit fields for **Author**, **Venue**, and **Seed DOI** in
-   addition to the free-text query. Authors come with OpenAlex/S2 autocomplete and
-   resolve to `author_ids` before search runs.
-4. The user-facing docs lead with the XPI install + LLM key. The developer
-   install (uv, FastAPI, npm) is one click away, not the front door.
-
-The four pieces are independent — each ships value on its own, but only the
-combination clears the "use it without reading the manual" bar that the user
-asked for.
+**Cost for solo daily use: $0–$2/month** (mostly $0). See §Cost Model.
 
 ---
 
-## Execution Tracker
+## Tooling Setup
 
-### Current Status
+Set these up before M0. They save time throughout the deployment.
 
-- All P0–P8 milestones complete as of 2026-05-14. 563 Python / 104 add-on tests green.
-- ✅ **P9.0 complete (2026-05-13):** `backendMode` default changed to `"local"`;
-  `runtime.ts` `createClient` uses `getResolvedPort()` (57321) instead of
-  `config.backendUrl` (8000), fixing a silent port mismatch; `BackendFailurePanel`
-  now shows local-aware instructions; health re-check fires automatically after
-  first-run binary download completes; `prefs.test.ts` asserts the new default.
-- **Open product gap.** No tagged release yet (next: push a `v0.2.0` tag to trigger
-  `release.yml` — P9.3 wires the self-update URL). `README.md` Quick Start still
-  asks the user to clone the repo and run uvicorn (P9.11). Author search ends at
-  result-card chips — no Author input field (P9.6–P9.8).
+### VS Code Extensions
 
-### P9 Status
+#### Required for GCP work
 
-| ID    | Story                                                  | Effort | Owner          | Status |
-| ----- | ------------------------------------------------------ | ------ | -------------- | ------ |
-| P9.0  | Release-mode default + first-run polish                | ~0.25d | zotero-frontend | ✅ done (2026-05-13) |
-| P9.1  | Build-binaries CI cross-platform validation            | ~0.75d | settings-bootstrap | ✅ done (2026-05-13) |
-| P9.2  | Unified `release.yml` (binaries + XPI + update.rdf)    | ~0.5d  | settings-bootstrap | ✅ done (2026-05-13) |
-| P9.3  | `update.rdf` self-update wiring                        | ~0.25d | zotero-frontend | ✅ done (2026-05-13) |
-| P9.4  | macOS Gatekeeper note + Windows SmartScreen note       | ~0.25d | zotero-addon  | ✅ done (2026-05-13) |
-| P9.5  | Embedded `FirstRunConfigCard` (LLM key + Zotero)       | ~0.5d  | zotero-frontend | ✅ done (2026-05-13) |
-| P9.6  | `Author` first-class search field (backend)            | ~0.5d  | python-backend-engineer | ✅ done (2026-05-13) |
-| P9.7  | `Author` autocomplete endpoint                         | ~0.25d | python-backend-engineer | ✅ done (2026-05-13) |
-| P9.8  | `Author` UI field with chip autocomplete               | ~0.5d  | zotero-frontend | ✅ done (2026-05-13) |
-| P9.9  | `Venue/Journal` first-class field                      | ~0.5d  | full-stack    | ✅ done (2026-05-13) |
-| P9.10 | `Seed DOI` paste field (drives `seed_dois`)            | ~0.25d | zotero-frontend | ✅ done (2026-05-13) |
-| P9.11 | README rewrite: XPI-first quick start                  | ~0.25d | core-planner  | ✅ done (2026-05-14) |
-| P9.12 | `docs/user-manual.md` rewrite (minimum-config path)    | ~0.5d  | core-planner  | ✅ done (2026-05-14) |
-| P9.13 | New `docs/install.md` (single source for install flow) | ~0.25d | core-planner  | ✅ done (2026-05-14) |
-| P9.14 | New `docs/keys.md` (how to get every key)              | ~0.5d  | core-planner  | ✅ done (2026-05-14) |
-| P9.15 | `docs/advanced-config.md` (everything that is optional) | ~0.25d | core-planner | ✅ done (2026-05-14) |
-| P9.16 | `mkdocs.yml` nav reshuffle + landing-page redesign     | ~0.25d | core-planner  | ✅ done (2026-05-14) |
-| P9.17 | Telemetry-free first-run smoke (manual checklist)      | ~0.25d | sciagent-orchestrator | ✅ done (2026-05-14) |
+| Extension | ID | Why |
+|---|---|---|
+| **Cloud Code** | `googlecloudtools.cloudcode` | Official Google extension. Cloud Run deploy/log sidebar, YAML schema for `cloudbuild.yaml`, in-editor tail of Cloud Logging. |
+| **Docker** | `ms-azuretools.vscode-docker` | Dockerfile lint, local build/run, layer inspection. Helps diagnose image size issues (C4). |
+| **YAML** | `redhat.vscode-yaml` | Schema validation for `cloudbuild.yaml` and `.github/workflows/`. Catches typos before push. |
+| **GitHub Actions** | `github.vscode-github-actions` | Autocomplete and validation for workflow files. |
 
-**Total estimate:** ~6.25 days.
+#### Strongly recommended
+
+| Extension | ID | Why |
+|---|---|---|
+| **REST Client** | `humao.rest-client` | Create `.http` files to hit `/health`, `/run`, and `/capabilities` with your API key without copy-pasting `curl` flags every time. Far better than a raw terminal for testing the cloud endpoint. |
+| **Even Better TOML** | `tamasfe.even-better-toml` | `pyproject.toml` editing with schema validation. |
+
+#### Cloud Code commands you will actually use
+
+- **`Cloud Code: Sign In`** — once, before M0.
+- **`Cloud Code: View Logs`** — tail Cloud Logging in-editor during M4/M5 testing.
+- **`Cloud Code: Open Cloud Shell`** — free pre-authenticated Linux shell in the browser if local `gcloud` misbehaves.
+
+Skip "Cloud Code: Deploy to Cloud Run" GUI — it hides the flags. Use the `gcloud`
+commands in M4 explicitly so futurev-you can reproduce the exact configuration.
 
 ---
 
-## Market Snapshot — What "one-click research add-ons" actually look like
+### MCP Servers for GCP Work
 
-> Source: independent review of the active 2025–2026 research-tool landscape.
-> Reread before each P9 milestone closes. SciAgent is not Elicit; it is
-> closest to Zotero Connector + Inciteful + Litmaps with approval-gated writes.
+The MCP servers already wired in `CLAUDE.md` cover most of the GCP plan. The table
+below maps each MCP to where it is useful during this plan.
 
-| Tool                  | Install model                          | Free tier                | Search fields beyond query                 | Notes for SciAgent                                                                                              |
-| --------------------- | -------------------------------------- | ------------------------ | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
-| Zotero Connector      | One click from zotero.org              | Free                     | n/a (browser capture, no federated search) | Sets the **bar for install friction**. Anything more than "click → install" loses casual users.                  |
-| Zotero built-in lookup | Bundled                              | Free                     | DOI, ISBN, PMID                            | We must at minimum cover **DOI seed lookup** to match parity.                                                   |
-| ResearchRabbit         | Web app, account                       | Free                     | Seed paper, author, keyword                | First-class **seed paper + author** controls — close to our planned P9.6/P9.10 shape.                            |
-| Litmaps                | Web app, account                       | Freemium                 | Seed paper, author, year, keyword          | Markets "explore by paper" — implies seed-DOI is table stakes. Author autocomplete is theirs by default.        |
-| Connected Papers       | Web, no account for one map/day        | Limited free             | Seed paper                                 | Search is **single seed DOI / title**. Confirms that a seed-DOI field on its own is enough for many workflows.  |
-| Inciteful              | Web app                                | Free                     | Seed paper, author, year range             | Pure web, no install. Their author field is plain text with no resolver — we can beat them by autocompleting.    |
-| Elicit                 | Web app, account                       | Limited free queries     | Topic, optional filters                    | Strong on natural-language Q&A, weak on author/venue search. Different niche.                                  |
-| Consensus              | Web app, account                       | Limited free queries     | Topic                                      | Same niche as Elicit.                                                                                            |
-| Scite                  | Web + Zotero plugin                    | Subscription             | DOI, citation type                         | Zotero plugin model proves users **will install a domain add-on if the install is trivial**.                    |
-| Paperpile              | Browser ext + macOS app                | Subscription             | Topic, author, year                        | Has the standalone macOS app pattern we are emulating — bundled binary, no Python prompt.                       |
-| Semantic Scholar       | Web + API                              | Free                     | Topic, author, year, venue                 | Their UI exposes **all four fields explicitly**. We already query S2 — we should expose the same shape.         |
-| OpenAlex Works UI      | Web                                    | Free                     | Topic, author, venue, year, OA, type       | Same — confirms author + venue belong in the UI, not just the URL grammar.                                       |
+| MCP Server | When to use during GCP deployment |
+|---|---|
+| **`context7`** | Before writing or editing `cloudbuild.yaml`, Cloud Run YAML specs, or IAM bindings — fetch current GCP documentation (Cloud Run pricing, Secret Manager limits, Cloud Build config schema). Do not rely on training-data memory for GCP API details; they change frequently. |
+| **`fetch`** | Retrieve current Cloud Run pricing, IAM role documentation, or the Cloud Build substitutions reference directly from `cloud.google.com` while working through milestones. |
+| **`github`** | Checking CI status (Cloud Build trigger → GitHub Actions chain), PR state after M7, verifying the `release.yml` workflow still passes alongside the new `cloudbuild.yaml`. |
+| **`sequential-thinking`** | Before M3 (secrets wiring is multi-step and order-dependent) and before M7 (IAM grants for Cloud Build touch three principals). Use sequential-thinking to reason through the permission graph before running any `gcloud iam` commands. |
+| **`git`** | Structured log / blame when debugging which commit triggered a Cloud Build run that broke the deploy. |
 
-**Gaps SciAgent fills uniquely** — Zotero-native, approval-gated, deterministic
-filters with provenance, federated across 9 free sources, runs locally with no
-account. Those are differentiators we must keep visible in the install path,
-not bury under three terminal commands.
+#### GCP-specific MCP server (optional, community)
 
-**Gaps SciAgent must close (P9 scope)** —
+A community `gcloud` MCP server exists that wraps the `gcloud` CLI as an MCP
+tool, allowing Claude Code to run `gcloud` commands directly within the session.
+As of 2026-05, this is experimental and not in the project's default MCP config.
 
-1. **Install friction**: every comparable Zotero add-on installs from one XPI.
-   SciAgent must match that or lose every user who would not run `uv sync`.
-2. **Author/Venue/Seed fields**: every comparable tool exposes these as fields.
-   We expose them only as natural-language hints today.
-3. **Onboarding clarity**: every comparable tool asks for at most one credential
-   on first use. SciAgent's `.env.example` lists 14+ keys. Most are optional but
-   the doc reads as if they are not.
+**If you want to add it:**
 
----
+```json
+// In .claude/settings.local.json → mcpServers
+"gcloud": {
+  "command": "npx",
+  "args": ["-y", "@anthropic-samples/gcp-mcp"],
+  "env": {}
+}
+```
 
-## P9 Milestones
+Use with caution — it runs real `gcloud` commands against your production project.
+Only add it after M2 (IAM is set up) and with the budget alert from M0.4 active.
+The `--max-instances=2` flag in M4.2 is your rate guardrail; make sure it is set
+before giving Claude Code direct `gcloud` access.
 
-### P9.A — Standalone XPI Install *(2 days)*
-
-> Source: docs/local-first.md (already designed; this is the integration and
-> release pass). Everything below builds on existing code — no new architecture.
-
-**Goal:** A researcher downloads one XPI from a GitHub Release, installs it from
-inside Zotero, opens it, pastes an LLM key, and runs a search. No terminal.
-
-| ID    | Story                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Effort |
-| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| P9.0  | **Release-mode default.** In `zotero-addon/src/host/prefs.ts`, set `backendMode` default to `"local"` (it may already be — verify and document). Confirm `bootstrap.js` calls `serverManager.startServer()` on plugin load and `stopServer()` on shutdown. Add an integration check that warns if the binary is missing **and** `backendMode === "local"`.                                                                                                                                                                                  | ~0.25d |
-| P9.1  | **Cross-platform binary validation.** Trigger `.github/workflows/build-binaries.yml` on a release-candidate branch. Confirm `linux-x86_64`, `macos-arm64`, `macos-x86_64`, `windows-x64` binaries all pass the `--version` and `/health` smoke step. Fix any platform-specific PyInstaller hooks (most likely Linux missing `anyio` backends, Windows missing console subsystem flags). Record SHA256s in CI logs and in `docs/install.md`.                                                                                                  | ~0.75d |
-| P9.2  | **Unified release workflow.** Either extend `build-binaries.yml` to also run the existing XPI build (already present in `package-xpi` job) and publish `update.rdf`, or merge `zotero-addon-release.yml` into `build-binaries.yml`. Outcome: one tag (`v1.0.0`) produces one GitHub Release that contains: four signed binaries, four `.sha256`, one XPI, one `update.rdf`. Verify by tagging `v1.0.0-rc.1` from a branch.                                                                                                                  | ~0.5d  |
-| P9.3  | **Self-update wiring.** The XPI metadata already declares `updateURL`; point it at the `update.rdf` published in P9.2. After the next tag, an installed plugin must offer to auto-update without a re-download. Test by installing `v1.0.0-rc.1` and tagging `v1.0.0-rc.2` 10 minutes later.                                                                                                                                                                                                                                                | ~0.25d |
-| P9.4  | **Code-signing notes.** Add a short admonition block to `docs/install.md` for macOS Gatekeeper (`right-click → Open`) and Windows SmartScreen ("More info → Run anyway"). Keep the long-term Apple Developer / EV cert plan in `docs/local-first.md` Part 7 — do not block P9 on it.                                                                                                                                                                                                                                                       | ~0.25d |
-| P9.5  | **Embedded First-Run Config Card.** After the binary downloads and the server is healthy, the sidebar must show a single card: one input for an LLM key (pre-selected provider auto-detected from key prefix) and one input for the Zotero API key + Library ID with a "Find these on zotero.org/settings/keys" link. Saving the card writes to Zotero prefs and triggers a `/health` re-check. Hide every other config (sources, depth, advanced filters) behind a "Show advanced" toggle.                                                  | ~0.5d  |
-
-**Acceptance (P9.A):**
-
-- `https://github.com/AdamKrysztopa/sciagent/releases/latest` shows one XPI and
-  four binaries from a single workflow run.
-- Fresh macOS arm64 box: install Zotero 9 → install the XPI → open Tools →
-  SciAgent → first-run dialog auto-downloads the binary → config card asks for
-  one LLM key + one Zotero key → first search returns results — all without a
-  terminal.
-- The same flow tested manually on Linux x86_64 and Windows x64 (one each,
-  documented in `docs/install.md` § Verified Platforms).
+Without the GCP MCP server: use the **Bash tool** in Claude Code to run
+`gcloud` commands. This is the safer default and how all milestones in this plan
+are written.
 
 ---
 
-### P9.B — First-Class Search Fields *(1.25 days)*
+## Executive Decisions
 
-> Source: market gap + user request. Natural-language author hints exist
-> (P8.8) but no UI field. P9 adds the field, the autocomplete, and similar
-> first-class controls for venue and seed-DOI.
-
-**Goal:** A user searching for "papers by Yoshua Bengio on attention" types
-"attention" in the query box and "Yoshua Bengio" in the Author box — both
-fields go through the deterministic filter contract, both are visible in the
-search plan, neither relies on the LLM rewriter to guess intent.
-
-| ID    | Story                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Effort |
-| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| P9.6  | **Author field in the contract.** Extend `FilterEditContract` in `src/agt/models.py` with `authors: list[ResolvedAuthor]` (a small Pydantic model wrapping `name`, `openalex_id`, `orcid`, `s2_author_id`). Wire `run_search_phase` so that any resolved IDs land in `HardFilters.author_ids` *and* `HardFilters.author_names` for providers that do not support ID-based queries (Crossref query.author, arXiv `au:`). Add `author` push-down in `SearchPlan.filters_pushed_down`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | ~0.5d  |
-| P9.7  | **Autocomplete endpoint.** Add `GET /authors/suggest?q=...&limit=5` to `src/agt/api/app.py`. Implementation reuses `author_resolver.py` (`resolve_author` already hits OpenAlex `/authors?search=` and S2 `/author/search`). Cap at 5 candidates ranked by works_count. Cache aggressively (in-process LRU, 15 min TTL).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | ~0.25d |
-| P9.8  | **Author chip input.** In `FilterEditor.tsx` add a new section "Author" above "Year". A text input fires the suggest endpoint with a 200 ms debounce. Selected authors render as chips that include the resolved IDs (OpenAlex/ORCID badges as in `ResultsList`). Chips are removable. Saving the draft attaches resolved IDs to the `FilterEditContract.authors` array. The result card "Author chip → new scoped search" path already exists (P8.8) and should keep working — clicking a chip in a result now pre-fills the Author field instead of re-issuing a natural-language query.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | ~0.5d  |
-| P9.9  | **Venue / Journal field.** Same shape as Author but resolves via OpenAlex `/venues?search=` and Crossref `/journals?query=`. Adds `HardFilters.venue_ids` and `HardFilters.venue_names`. Push-down on OpenAlex `filter=primary_location.source.id`, Crossref `query.container-title`. Show as chips below Author.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | ~0.5d  |
-| P9.10 | **Seed DOI paste field.** `SearchPlan.seed_dois` already exists (P8.9). Surface it as a textarea in `FilterEditor.tsx` labelled "Seed papers (DOI, one per line)". Show a small inline preview of the resolved title once the backend echoes the citation graph. This lets users do "papers citing X" without typing the special phrase.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | ~0.25d |
-
-**Acceptance (P9.B):**
-
-- Searching for "attention" with an empty Author field returns the same top
-  results as today.
-- Searching for "attention" with "Yoshua Bengio" in the Author field returns
-  only papers that name him (with the standard provenance chips), and the
-  search plan shows `authors: ["A5023888391" /* OpenAlex */]` and
-  `filters_pushed_down.openalex: ["author"]`.
-- Searching for an empty topic with one DOI in Seed papers returns the citation
-  graph of that DOI as today's "citing X" prefix did — but without the user
-  needing to know the prefix.
-- Existing benchmark queries (P8.14) remain at ≥15/22 must-find.
+| Decision | Choice | Why |
+|---|---|---|
+| Compute | **Cloud Run, request-based billing, min-instances=0** | Scales to zero when idle. Free tier covers solo usage entirely. |
+| Container registry | **Artifact Registry** (Docker format, regional) | GCP-native, replaces deprecated Container Registry. |
+| Build system | **Cloud Build** triggered from GitHub | Free tier: 120 build-minutes/day. No local Docker daemon needed for CI. |
+| Secrets | **Secret Manager**, mounted as env vars on Cloud Run | Encrypted, IAM-controlled, free up to 6 active versions. |
+| LLM | **DeepSeek via `openai-compatible` adapter** | $0.07/month at solo volume. Env var swap, zero code change. |
+| Persistence Phase 1 | **Container filesystem (ephemeral)** | Sessions/cache vanish on cold start. Acceptable for solo use. |
+| Persistence Phase 2 | **Cloud Storage bucket mounted via volume** | ~$0.02/GB-month. No DB cost. Trigger: when cold-start data loss hurts. |
+| Region | **`europe-west1`** (EU) or **`us-central1`** (NA) | Both are Cloud Run Tier 1 (cheapest per-vCPU-second). |
+| Auth Phase 1 | **`X-AGT-API-Key` only**, public Cloud Run URL | Simple. Acceptable for personal use. |
+| Auth Phase 2 | **Cloud Run IAM `--no-allow-unauthenticated`** | Deferred until you have other users. |
+| CI/CD | **GitHub Actions → Cloud Build → Cloud Run** | Integrates with existing `.github/workflows/`. |
+| Logging | **Cloud Logging** (default, free tier) | No external cost. |
+| Google Scholar | **Disabled in production** | Cloud Run IPs get CAPTCHA-walled. Not worth it. See §Don't Bother. |
 
 ---
 
-### P9.C — Documentation Overhaul: Minimum-Config First *(1.25 days)*
+## Cost Model
 
-> Source: user goal. The current `README.md` and `user-manual.md` mix required
-> and optional config. The user wants the first page to be reachable by anyone
-> with Zotero, and the advanced material to live behind a click.
+### Solo usage (~50 requests/day, 3s @ 1 vCPU + 512 MiB)
 
-**Goal:** A first-time visitor on the GitHub README or the MkDocs landing page
-reads three things — "install the XPI", "paste your LLM key", "search" — and
-can do all three. Everything beyond that is one link deep.
+| Item | Monthly |
+|---|---|
+| Cloud Run vCPU-seconds (4,500) | **$0.00** (180k free) |
+| Cloud Run memory GiB-s (2,250) | **$0.00** (360k free) |
+| Cloud Run requests (1,500) | **$0.00** (2M free) |
+| Artifact Registry (~500 MB) | **~$0.05** |
+| Cloud Build (~5 builds/mo) | **$0.00** (120 build-min/day free) |
+| Secret Manager (≤6 secrets) | **$0.00** (6 versions free) |
+| Logs (< 50 MB) | **$0.00** (50 GiB free) |
+| DeepSeek LLM (~300k tokens) | **~$0.07** |
+| **Total** | **~$0.12/month** |
 
-| ID    | Story                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Effort |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| P9.11 | **README rewrite.** Front matter: one paragraph, one badge row, one image of the sidebar. Quick Start collapses to three steps — download XPI, install in Zotero, paste LLM key. A second collapsed section labelled "Developer install (uv + npm)" keeps the current `uv sync` / `npm run build` path verbatim for contributors. No fewer than four anchor links — Install, Manual, API, Roadmap.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | ~0.25d |
-| P9.12 | **User manual rewrite.** Split `docs/user-manual.md` into three top-of-file sections — `## 5 minutes from install to first search`, `## When something goes wrong`, `## When you want more`. Move everything provider-specific into `docs/keys.md` (P9.14). Move every optional flag into `docs/advanced-config.md` (P9.15). Keep the screenshots inline.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | ~0.5d  |
-| P9.13 | **New `docs/install.md`.** Single source of truth for installation. Sections: Standalone (XPI), Verified platforms table, Self-update, macOS Gatekeeper / Windows SmartScreen notes, Docker (recommended for self-hosters), Source build (the current README content). Becomes the destination of every "Install" anchor across the docs.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | ~0.25d |
-| P9.14 | **New `docs/keys.md` — "How to get every key".** One section per credential: LLM keys (OpenAI, Anthropic, xAI, Groq, Ollama, custom OpenAI-compatible), Zotero API key + Library ID, optional academic keys (Semantic Scholar, NCBI/PubMed, CORE, SerpAPI, Dimensions), polite-pool email. Each section has: who needs it, why, exact link to the console, the form value to copy, the env var name, the matching sidebar ConfigPanel field name. Screenshots where the console UI is non-obvious (Zotero key page, OpenAI dashboard). Tag every key as **Required**, **Strongly recommended**, or **Optional**. Promise: a researcher reading this can collect every credential SciAgent might want in under 15 minutes — but they only need the **Required** ones to start.                                                                                                                                                                                                                | ~0.5d  |
-| P9.15 | **New `docs/advanced-config.md`.** Every `AGT_*` flag that is not in the **Required** set above. Grouped by purpose: provider tuning, search depth, PDF attachments, rate guards, Docker/data dir, MCP server. Links into `docs/api.md` and `docs/settings.md` for canonical definitions. The page makes it explicit that nothing here is needed to start.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | ~0.25d |
-| P9.16 | **MkDocs nav and landing redesign.** New nav (see proposed shape in §Docs Tree Below). New `docs/index.md` lead — three cards: Install, Manual, Power user. Move planning docs and historical action plans into a collapsed "Project" section. Verify `mkdocs build --strict` is clean and `markdownlint-cli2` is clean.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | ~0.25d |
-| P9.17 | **Telemetry-free first-run manual smoke.** Add a one-page checklist `docs/install.md#smoke-checklist` that a fresh user can run on macOS, Linux, and Windows. Use it once per platform before tagging the v1.0.0 release and record the verified date in the table.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | ~0.25d |
+### Hard guardrails to set on Day 1
 
-**Acceptance (P9.C):**
-
-- New `docs/install.md`, `docs/keys.md`, `docs/advanced-config.md` exist and
-  pass `markdownlint-cli2` and `mkdocs build --strict`.
-- `README.md` Quick Start is three steps. The developer install is one
-  collapsed section.
-- The MkDocs landing page has three cards and ten total nav entries (today: 16).
-- Every external service that exposes a key referenced in `.env.example` is
-  documented in `docs/keys.md` with a link to the console.
+- [ ] Budget alert at **$5/month** with email at 50/90/100 %.
+- [ ] `--max-instances=2` while learning.
+- [ ] `--min-instances=0` — the single biggest cost knob.
+- [ ] `--memory=512Mi` — smallest realistic for FastAPI + SciAgent deps.
+- [ ] `--timeout=300` — don't let LLM hangs run for an hour.
+- [ ] `--concurrency=40`.
 
 ---
 
-## Proposed Docs Tree (P9.16)
+## Google Scholar — Don't Bother
 
-```text
-Overview
-  Home (cards: Install / Manual / API)
-Get Started
-  Install (docs/install.md)
-  Get Your Keys (docs/keys.md)
-  User Manual (docs/user-manual.md)
-Power User
-  Advanced Config (docs/advanced-config.md)
-  Configuration & Usage (docs/manual.md)
-  Deployment & Hosting (docs/deployment.md)
-Reference
-  REST API (docs/api.md)
-  Provider Inventory (docs/providers.md)
-  Settings (docs/settings.md)
-  Security (docs/security.md)
-  Zotero Add-on (docs/zotero.md)
-  P1 Benchmark (docs/benchmark.md)
-Project
-  Roadmap (docs/core.md)
-  Action Plan (docs/actionable-plan.md)
-  History (docs/actionable-plan-done.md, docs/actionable-plan-done-2.md)
-  Priorities (docs/priorities.md)
-  Next Steps (docs/next-steps.md)
+Being on Cloud Run gives zero advantage for Google Scholar. Cloud Run egress comes
+from datacenter IPs — Google's anti-bot systems flag those immediately. You get
+CAPTCHA-walled in minutes. Commercial SERP APIs (SerpAPI) cost $50–$120/month
+minimum — 25–60x your entire GCP bill. The existing keyless sources (OpenAlex,
+Semantic Scholar, Crossref, PubMed, arXiv, Europe PMC) are competitive per
+`docs/benchmark.md`. Leave `AGT_SERPAPI_KEY` unset in production.
+
+---
+
+## Architecture (End State)
+
+```
+              Zotero Desktop (your laptop)
+                        │
+                        │  HTTPS + X-AGT-API-Key + X-AGT-Client-ID
+                        ▼
+        ┌──────────────────────────────────────┐
+        │  Cloud Run service: sciagent         │
+        │  region: europe-west1                │
+        │  min=0, max=2, cpu=1, memory=512Mi   │
+        │  concurrency=40, timeout=300s        │
+        │  identity: sciagent-run@...iam       │
+        └──────────────┬───────────────────────┘
+                       │
+     ┌─────────────────┼──────────────────────┐
+     │                 │                      │
+     ▼                 ▼                      ▼
+┌──────────────┐  ┌──────────────┐  ┌──────────────────┐
+│ Artifact     │  │ Secret       │  │ Cloud Storage    │
+│ Registry     │  │ Manager      │  │ (Phase 2)        │
+│ docker image │  │ secrets      │  │ sciagent-data/   │
+└──────────────┘  └──────────────┘  └──────────────────┘
+                       │
+                       │  outbound HTTPS
+                       ▼
+     ┌──────────────────────────────────────┐
+     │ External APIs                        │
+     │ - api.deepseek.com (LLM)             │
+     │ - api.semanticscholar.org            │
+     │ - api.openalex.org / crossref / etc. │
+     └──────────────────────────────────────┘
+
+              GitHub (main) ──push──▶ Cloud Build ──▶ Cloud Run revision
 ```
 
 ---
 
-## Sequencing
+## Milestones
 
-Each tranche is shippable on its own. Recommended order:
+### M0 — GCP Account & Local Tooling (1 evening)
 
-1. **P9.A** — release pipeline + first-run polish. This is what unlocks the
-   "share with a friend" path the user wants. Two days of work and most of it
-   is already coded; we are wiring and verifying.
-2. **P9.C** (in parallel after P9.5 lands) — documentation. Writing while the
-   release pipeline cooks. The new docs are the artefact a v1.0.0 release
-   announcement points at.
-3. **P9.B** — search fields. Most valuable to existing users, but the install
-   gap blocks new users entirely, so it goes last. The market table above
-   confirms Author + Venue + Seed DOI as table stakes, not differentiators —
-   we are catching up here, not leading.
+**Goal.** `gcloud run services list` runs without errors against your project.
+
+- [x] **M0.1** Create a Google Cloud account at <https://console.cloud.google.com>.
+  New accounts get **$300 free credit for 90 days**.
+- [x] **M0.2** ~~Create project `sciagent-prod`.~~ Project created as **`sciagent-496617`**
+  (project number: 358017232995). Set as default: `gcloud config set project sciagent-496617`.
+  Use `sciagent-496617` everywhere this plan references `sciagent-prod`.
+- [x] **M0.3** Link a billing account. Required even for free-tier services.
+- [x] **M0.4** Set the billing budget alert — "Alert" budget, **50 zł/month**, alerts at 50/90/100%. Done 2026-05-17.
+- [x] **M0.5** Install `gcloud` via `brew install --cask google-cloud-sdk`. Done 2026-05-17.
+- [x] **M0.6** Authenticate:
+  - [x] `gcloud init` — signed in as `krysztopa@gmail.com`, project sciagent-496617 set. Done 2026-05-17.
+  - [x] `gcloud auth application-default login` — ADC saved. Done 2026-05-17.
+
+- [x] **M0.7** Set default region: `gcloud config set run/region europe-west1`. Done 2026-05-17.
+
+- [x] **M0.8** Verify: `gcloud projects describe sciagent-496617` → ACTIVE. Done 2026-05-17.
+
+**Cost: $0.**
+
+---
+
+### M1 — Enable APIs and Foundation Resources (30 minutes)
+
+- [x] **M1.1** Enable the 7 required APIs. Done 2026-05-17.
+- [x] **M1.2** Create Artifact Registry repo `sciagent` in `europe-west1`. Done 2026-05-17.
+- [x] **M1.3** Configure Docker auth to AR. Done 2026-05-17.
+- [x] **M1.4** Verify: `gcloud artifacts repositories list` shows `sciagent`. Done 2026-05-17.
+
+**Cost: $0** (empty repos are free).
+
+---
+
+### M2 — Service Account & IAM (20 minutes)
+
+**Goal.** Cloud Run runs as a dedicated identity with only what it needs. Never
+use the default Compute Engine service account.
+
+- [x] **M2.1** Created service account `sciagent-run@sciagent-496617.iam.gserviceaccount.com`. Done 2026-05-17.
+- [x] **M2.2** Granted 3 minimum roles: `secretmanager.secretAccessor`, `logging.logWriter`, `monitoring.metricWriter`. Done 2026-05-17.
+- [x] **M2.3** Verified: all 3 roles confirmed at project level. Done 2026-05-17.
+
+**Cost: $0.**
+
+---
+
+### M3 — Secrets in Secret Manager (45 minutes)
+
+**Goal.** Nothing sensitive ever in the image, build-time env vars, or shell
+history. Every key fetched at container startup via Secret Manager.
+
+#### Required secrets
+
+| Secret name | What it holds | Notes |
+|---|---|---|
+| `AGT_BACKEND_API_KEY` | The `X-AGT-API-Key` token the add-on sends | Generate: `python3 -c "import secrets; print(secrets.token_urlsafe(48))"` |
+| `AGT_ZOTERO_API_KEY` | Zotero API key | From zotero.org/settings/keys — read + write scope |
+| `AGT_ZOTERO_LIBRARY_ID` | Zotero user/group ID | Not strictly secret, but treat as private |
+| `AGT_LLM_API_KEY` | Your cheap LLM key (DeepSeek, Groq, etc.) | Read by `src/agt/providers/router.py:138` |
+
+#### Plain env vars (not secret — set via `--set-env-vars` in M4)
+
+| Variable | Value |
+|---|---|
+| `AGT_LLM_PROVIDER` | `openai-compatible` |
+| `AGT_LLM_BASE_URL` | `https://api.deepseek.com/v1` |
+| `AGT_LLM_MODEL` | `deepseek-chat` |
+| `AGT_CORS_ALLOWED_ORIGINS` | `zotero://*,http://localhost:*` |
+| `AGT_LOG_LEVEL` | `INFO` |
+
+These are not secrets — they contain no key material. Store them as plain env
+vars on the Cloud Run service, not in Secret Manager.
+
+#### Optional enrichment secrets (only if you use them)
+
+| Secret name | Source |
+|---|---|
+| `AGT_SEMANTIC_SCHOLAR_API_KEY` | semanticscholar.org/product/api |
+| `AGT_NCBI_API_KEY` | ncbi.nlm.nih.gov/account/settings |
+| `AGT_CORE_API_KEY` | core.ac.uk/services/api |
+
+#### Steps
+
+- [x] **M3.1** Generate the backend API key:
+
+  ```bash
+  python3 -c "import secrets; print(secrets.token_urlsafe(48))"
+  ```
+
+  Save to your password manager. You will paste it into the Zotero add-on
+  settings in M5.
+
+- [x] **M3.2** Created all 4 secrets from `.env` directly into Secret Manager. Done 2026-05-17.
+  Note: `AGT_BACKEND_API_KEY` v1 was the placeholder (14 chars); v2 is the correct generated key (64 chars).
+
+- [x] **M3.3** Verified: all 4 secrets readable, correct lengths. Done 2026-05-17.
+
+- [ ] **M3.4** (Optional) Grant the service account per-secret access for
+  belt-and-braces control:
+
+  ```bash
+  for s in AGT_BACKEND_API_KEY AGT_ZOTERO_API_KEY AGT_ZOTERO_LIBRARY_ID AGT_LLM_API_KEY; do
+    gcloud secrets add-iam-policy-binding $s \
+      --member="serviceAccount:$SA" --role="roles/secretmanager.secretAccessor"
+  done
+  ```
+
+  The project-level `secretAccessor` from M2.2 already covers this. Per-secret
+  bindings are optional.
+
+- [ ] **M3.5** Set a 90-day rotation reminder for:
+  - DeepSeek key — via dashboard, then `echo -n "new" | gcloud secrets versions add AGT_LLM_API_KEY --data-file=-`.
+  - Zotero key — via zotero.org settings.
+  - Backend API key — regenerate locally, add new version, update Zotero add-on prefs.
+
+**Cost: $0** (free tier: 6 active versions, 10k access ops/month).
+
+---
+
+### M4 — First Manual Deploy to Cloud Run ✅ Done 2026-05-17
+
+**Goal.** `https://sciagent-ewpafdgfya-ew.a.run.app/health` returns 200 — ACHIEVED.
+
+- [x] **M4.1** Build and push via Cloud Build (no local Docker needed):
+
+  ```bash
+  REGION=europe-west1
+  PROJECT_ID=$(gcloud config get-value project)
+  IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/sciagent/backend:v0.1.0"
+
+  gcloud builds submit --tag $IMAGE .
+  ```
+
+  Takes 2–4 minutes. Free tier covers 120 build-minutes/day.
+
+- [ ] **M4.2** Deploy:
+
+  ```bash
+  gcloud run deploy sciagent \
+    --image=$IMAGE \
+    --region=$REGION \
+    --service-account=$SA \
+    --platform=managed \
+    --allow-unauthenticated \
+    --min-instances=0 \
+    --max-instances=2 \
+    --cpu=1 \
+    --memory=512Mi \
+    --concurrency=40 \
+    --timeout=300 \
+    --port=8080 \
+    --set-secrets="AGT_BACKEND_API_KEY=AGT_BACKEND_API_KEY:latest" \
+    --set-secrets="AGT_ZOTERO_API_KEY=AGT_ZOTERO_API_KEY:latest" \
+    --set-secrets="AGT_ZOTERO_LIBRARY_ID=AGT_ZOTERO_LIBRARY_ID:latest" \
+    --set-secrets="AGT_LLM_API_KEY=AGT_LLM_API_KEY:latest" \
+    --set-env-vars="AGT_LLM_PROVIDER=openai-compatible" \
+    --set-env-vars="AGT_LLM_BASE_URL=https://api.deepseek.com/v1" \
+    --set-env-vars="AGT_LLM_MODEL=deepseek-chat" \
+    --set-env-vars="AGT_CORS_ALLOWED_ORIGINS=zotero://*,http://localhost:*,chrome-extension://*" \
+    --set-env-vars="AGT_LOG_LEVEL=INFO"
+  ```
+
+  Flag notes:
+
+  - `--allow-unauthenticated` — Phase 1 only. App-level `X-AGT-API-Key` is the
+    gate. M6 tightens this.
+  - `--min-instances=0` — scales to zero. The single biggest cost knob.
+  - `--set-secrets` — Secret Manager injects values at startup, not baked into image.
+  - `AGT_LLM_*` env vars — not secrets; set directly.
+
+- [ ] **M4.3** Grab the service URL:
+
+  ```bash
+  URL=$(gcloud run services describe sciagent --region=$REGION --format='value(status.url)')
+  echo $URL
+  ```
+
+- [ ] **M4.4** Smoke test `/health`:
+
+  ```bash
+  API_KEY="<the-AGT_BACKEND_API_KEY-you-saved>"
+  curl -H "X-AGT-API-Key: $API_KEY" \
+       -H "X-AGT-Client-ID: dev-test" \
+       "$URL/health"
+  ```
+
+  Expect 200 JSON. Check for the `sciagent_startup` log line — it should show
+  `llm_provider=openai-compatible` and `llm_base_url=https://api.deepseek.com/v1`.
+
+- [ ] **M4.5** Tail logs:
+
+  ```bash
+  gcloud run services logs tail sciagent --region=$REGION
+  ```
+
+- [ ] **M4.6** Run a real search:
+
+  ```bash
+  curl -X POST "$URL/run" \
+    -H "X-AGT-API-Key: $API_KEY" \
+    -H "X-AGT-Client-ID: dev-test" \
+    -H "Content-Type: application/json" \
+    -d '{"query":"retrieval augmented generation","collection_name":"SciAgent Cloud Test","limit":5}'
+  ```
+
+  Expect a `run_id` and 5 results. Watch logs — DeepSeek should be hit.
+
+**Cost: a few cents** for the build + test calls.
+
+---
+
+### M5 — Zotero Add-on Updates for Cloud (1–2 hours)
+
+**Goal.** The add-on talks to the Cloud Run URL exactly as it talked to
+`localhost:8080`. Two sub-items require code changes to the add-on.
+
+#### M5-A — Point at the new backend (10 minutes, no code)
+
+- [ ] **M5-A.1** In Zotero → Tools → SciAgent → Settings → Connection:
+  - Backend Mode: **Remote**.
+  - Backend URL: paste `$URL` from M4.3.
+  - Backend API Key: paste your `AGT_BACKEND_API_KEY`.
+- [ ] **M5-A.2** Click "Test Connection" — expect green.
+- [ ] **M5-A.3** Run end-to-end: search → approve → write to a test collection.
+  If this works, the cloud deploy is real. **This is the gate.**
+
+#### M5-B — Surface which backend is active in the UI (30 minutes, code)
+
+**Why.** After you have both a local binary and a cloud backend, you will forget
+which one the add-on is hitting. This has no test to catch it.
+
+**Files to change:** `zotero-addon/src/host/runtime.ts` or wherever the health
+badge is rendered (the component that calls `isServerRunning()`). Also potentially
+`zotero-addon/src/ui/components/` — search for where the green/red health dot is
+shown.
+
+- [ ] **M5-B.1** After a successful `/health` call, display the backend URL's
+  hostname in the sidebar status area. Short: `localhost:57321`, `sciagent-xxx.run.app`.
+- [ ] **M5-B.2** Add a Vitest test that asserts the hostname extraction works for
+  localhost, `*.run.app`, and a custom domain.
+
+#### M5-C — Tighten CORS (15 minutes, no code)
+
+For Phase 1 the CORS config in M4.2 is correct (`zotero://*`, `localhost:*`). If
+you later add a docs site or admin UI:
+
+- [ ] **M5-C.1** Update the Cloud Run env var:
+
+  ```bash
+  gcloud run services update sciagent --region=$REGION \
+    --update-env-vars="AGT_CORS_ALLOWED_ORIGINS=zotero://*,http://localhost:*,https://yourdomain.com"
+  ```
+
+#### M5-D — Explicit cloud error UX in the add-on (30 minutes, code)
+
+**Why.** In local mode the backend either works or isn't running. In cloud mode
+it can be up but rejecting you (expired key, rate limit, cold-start timeout).
+The current add-on has no specific handling for these statuses.
+
+**File to change:** `zotero-addon/src/client/backendClient.ts`.
+
+- [ ] **M5-D.1** Add explicit status handling in the fetch path:
+  - **401** → `"API key rejected. Check Settings → Connection."` Do not retry.
+  - **403** → `"Origin not allowed."` Do not retry.
+  - **429** → `"Rate limit hit."` Show a countdown if `Retry-After` header is set.
+  - **5xx + timeout** → `"Backend not responding. Falling back to cached results."`
+    Trigger the existing offline cache path (`useOfflineCache.ts`).
+
+- [ ] **M5-D.2** Add one Vitest test per status code — assert the right error
+  message and retry behavior.
+
+- [ ] **M5-D.3** Run the Zotero add-on quality gate:
+
+  ```bash
+  cd zotero-addon && npm ci && npm run lint && npm run build && npm run typecheck && npm run test
+  ```
+
+#### M5-E — Update `docs/deployment.md` (10 minutes)
+
+- [ ] **M5-E.1** Add a "Cloud Run quickstart" subsection pointing at this plan
+  and giving the one-liner for pointing the add-on at a hosted backend.
+
+---
+
+### M6 — Tighten Auth (Optional, Phase 2)
+
+**When.** You share the API key with someone else, or you go public.
+
+The Cloud Run URL is currently public — anyone can send requests (they still
+need the right `X-AGT-API-Key`, but cold-start CPU is still consumed).
+
+- [ ] **M6.1** Disable public access:
+
+  ```bash
+  gcloud run services update sciagent --region=$REGION --no-allow-unauthenticated
+  ```
+
+- [ ] **M6.2** Grant your user invoker rights (for `curl` testing):
+
+  ```bash
+  USER_EMAIL=$(gcloud config get-value account)
+  gcloud run services add-iam-policy-binding sciagent \
+    --member="user:$USER_EMAIL" \
+    --role="roles/run.invoker" --region=$REGION
+  ```
+
+- [ ] **M6.3** Test with an ID token:
+
+  ```bash
+  TOKEN=$(gcloud auth print-identity-token)
+  curl -H "Authorization: Bearer $TOKEN" \
+       -H "X-AGT-API-Key: $API_KEY" \
+       "$URL/health"
+  ```
+
+- [ ] **M6.4** The Zotero add-on needs to mint and send an ID token per request.
+  This is ~50 lines of TypeScript + tests. **Defer until you actually have a
+  second user.** It requires a service-account JSON key stored in the add-on prefs
+  (non-trivial security surface).
+
+---
+
+### M7 — CI/CD: Auto-Deploy on Push to `main` (1 hour)
+
+**Goal.** Every push to `main` triggers a Cloud Build → Cloud Run deploy. No
+manual `gcloud builds submit` needed after this.
+
+- [ ] **M7.1** Create `cloudbuild.yaml` at repo root:
+
+  ```yaml
+  steps:
+    - name: gcr.io/cloud-builders/docker
+      args:
+        - build
+        - -t
+        - europe-west1-docker.pkg.dev/$PROJECT_ID/sciagent/backend:$SHORT_SHA
+        - -t
+        - europe-west1-docker.pkg.dev/$PROJECT_ID/sciagent/backend:latest
+        - .
+
+    - name: gcr.io/cloud-builders/docker
+      args:
+        - push
+        - --all-tags
+        - europe-west1-docker.pkg.dev/$PROJECT_ID/sciagent/backend
+
+    - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+      entrypoint: gcloud
+      args:
+        - run
+        - deploy
+        - sciagent
+        - --image=europe-west1-docker.pkg.dev/$PROJECT_ID/sciagent/backend:$SHORT_SHA
+        - --region=europe-west1
+        - --platform=managed
+        - --quiet
+
+  options:
+    logging: CLOUD_LOGGING_ONLY
+  ```
+
+  Secrets and resource flags persist on the service between deploys — `cloudbuild.yaml`
+  only swaps the image. Change CPU/memory/secrets via `gcloud run services update`,
+  not in CI.
+
+- [ ] **M7.2** Create the GitHub trigger:
+
+  ```bash
+  gcloud builds triggers create github \
+    --name="sciagent-main-deploy" \
+    --repo-name="sciagent" \
+    --repo-owner="AdamKrysztopa" \
+    --branch-pattern="^main$" \
+    --build-config="cloudbuild.yaml"
+  ```
+
+  First run prompts you to install the Google Cloud Build GitHub app. Approve it.
+
+- [ ] **M7.3** Grant Cloud Build's service account the permissions it needs:
+
+  ```bash
+  PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format='value(projectNumber)')
+  CB_SA="${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com"
+
+  gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:$CB_SA" --role="roles/run.admin"
+
+  gcloud iam service-accounts add-iam-policy-binding $SA \
+    --member="serviceAccount:$CB_SA" --role="roles/iam.serviceAccountUser"
+  ```
+
+- [ ] **M7.4** Push a trivial commit to `main`. Watch Cloud Console → Cloud Build
+  → History. Within ~3 minutes Cloud Run shows a new revision.
+
+- [ ] **M7.5** Verify: `gcloud run revisions list --service=sciagent --region=$REGION`
+  shows the new revision as ACTIVE.
+
+---
+
+### M8 — Persistence (Phase 2, trigger-based)
+
+**When.** You restart the service and notice your sessions / result cache are gone.
+Do not do this preemptively — the ephemeral filesystem is fine for Phase 1.
+
+The codebase stores sessions in `~/.sciagent/sessions/` (JSON) and result cache
+in `~/.sciagent/cache.sqlite`. On Cloud Run, both vanish on cold start.
+
+- [ ] **M8.1** Create the Cloud Storage bucket:
+
+  ```bash
+  gcloud storage buckets create gs://sciagent-data-$PROJECT_ID --location=$REGION
+  ```
+
+- [ ] **M8.2** Mount it as a volume and point SciAgent at it:
+
+  ```bash
+  gcloud run services update sciagent --region=$REGION \
+    --add-volume=name=data,type=cloud-storage,bucket=sciagent-data-$PROJECT_ID \
+    --add-volume-mount=volume=data,mount-path=/data \
+    --update-env-vars="AGT_DATA_DIR=/data"
+  ```
+
+  `AGT_DATA_DIR` is read by `server.py` and propagated to `SessionStore` and
+  `ResultCache`. No code change required — the server already accepts `--data-dir`
+  and sets `AGT_DATA_DIR` from it.
+
+- [ ] **M8.3** Verify: run a search, restart the service, run the same search
+  again. The result cache should be warm (cache hit logged) and session history
+  should persist.
+
+**Cost: ~$0.02/GB-month.**
+
+---
+
+### M9 — Observability & Cost Control (Always-On)
+
+- [ ] **M9.1** Re-verify the budget alert from M0.4 is still active.
+- [ ] **M9.2** Bookmark the Cloud Run dashboard: Console → Cloud Run → sciagent
+  → Metrics. Key tiles: request count, p50/p95 latency, billable container
+  instance time, memory utilization.
+- [ ] **M9.3** Create one alert policy: "Billable instance time > 10,000
+  vCPU-seconds in a day" → email. Catches runaway loops.
+- [ ] **M9.4** Monthly: `gcloud run services describe sciagent --region=$REGION`.
+  Right-size if p95 memory utilization is < 30%.
+- [ ] **M9.5** Monthly: prune old Artifact Registry images. Keep last 5:
+
+  ```bash
+  gcloud artifacts docker images list \
+    europe-west1-docker.pkg.dev/$PROJECT_ID/sciagent/backend \
+    --sort-by=~CREATE_TIME --limit=999 --format='value(IMAGE)' | tail -n +6 | \
+    xargs -I {} gcloud artifacts docker images delete {} --quiet
+  ```
+
+---
+
+### M10 — Custom Domain (Optional, ~$12/year for the domain)
+
+Only if you want `https://api.sciagent.yourname.dev` instead of `*.run.app`.
+
+- [ ] **M10.1** Buy a domain (Cloudflare Registrar is cheap).
+- [ ] **M10.2** Map it:
+
+  ```bash
+  gcloud beta run domain-mappings create \
+    --service=sciagent \
+    --domain=api.sciagent.yourname.dev \
+    --region=$REGION
+  ```
+
+  Cloud Run issues a managed TLS cert automatically (free).
+
+- [ ] **M10.3** Update the Zotero add-on Backend URL to the new domain.
+- [ ] **M10.4** Update `AGT_CORS_ALLOWED_ORIGINS` if needed.
+
+---
+
+## Hard "Make It Cheaper" Checklist
+
+Walk this top-to-bottom whenever your bill surprises you.
+
+- [ ] `--min-instances=0` set? Verify: `gcloud run services describe sciagent --region=$REGION | grep minScale`.
+- [ ] `--max-instances` ≤ 5 for solo use?
+- [ ] Memory ≤ 512 MiB?
+- [ ] Concurrency ≥ 40?
+- [ ] Region is Tier 1 (`europe-west1` or `us-central1`)?
+- [ ] Image size < 500 MB? (check in M9.5)
+- [ ] Logs not retained beyond 30 days?
+- [ ] No `--cpu-throttling=false`? Default is throttled — correct.
+- [ ] No idle Cloud SQL instance? ($8+/month minimum, no scale-to-zero)
+- [ ] No leftover Artifact Registry images? (M9.5)
+- [ ] LLM model is `deepseek-chat`, not `deepseek-reasoner`? (reasoner burns tokens)
 
 ---
 
 ## Risk Register
 
-| Risk                                                                  | Likelihood | Mitigation                                                                                                                  |
-| --------------------------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Windows / Linux PyInstaller surprises                                  | Medium     | P9.1 runs in CI before any tag. Time-box at ~0.75d; if a platform refuses, ship macOS + Linux first and Windows in v1.0.1. |
-| macOS Gatekeeper friction breaks the "no terminal" promise            | Medium     | P9.4 ships an inline note in the FirstRunDialog and a `docs/install.md` admonition. Long-term: Apple Developer cert.       |
-| Author resolver returns the wrong person ("J. Smith" disambiguation)  | Medium     | P9.7 returns up to 5 ranked candidates with `works_count`, OpenAlex affiliation, and ORCID. The user picks before search. |
-| Venue resolution drifts (journal-merge events, deprecated venues)     | Low        | OpenAlex is the canonical source; fall back to free-text venue name only when no ID resolves.                              |
-| Docs sprawl — three new MD files plus rewrites                        | Low        | P9.16 enforces the new nav and the markdownlint + mkdocs-strict gates catch dead links and stale tables.                   |
-| Self-update misfires (`update.rdf` ID mismatch)                        | Low        | P9.2 + P9.3 verified by `v1.0.0-rc.1` → `v1.0.0-rc.2` chain before tagging `v1.0.0`. Roll back is `Disable add-on`.        |
-| Author/Venue contract change breaks the API contract version          | Medium     | Bump `REQUIRED_API_CONTRACT_VERSION` in `zotero-addon/src/shared/contracts.ts`. Plugin already validates compatibility.   |
+| Risk | Likelihood | Mitigation |
+|---|---|---|
+| Cold-start latency frustrates interactive use | Medium | `--min-instances=0` means first request after idle takes 3–8s. Acceptable for solo use. Set `--min-instances=1` ($1–2/month) if it bothers you. |
+| DeepSeek API outage during a cloud demo | Low | Switch to `AGT_LLM_PROVIDER=openai` + `AGT_LLM_API_KEY=<openai-key>` via `gcloud run services update --update-env-vars`. One command, no redeploy. |
+| Secret rotation breaks the running service | Low | Add a new secret version, deploy a new Cloud Run revision, then delete the old version. Zero downtime. |
+| `cloudbuild.yaml` deploy races with a PR build | Low | Cloud Build triggers are branch-scoped. M7.2 only triggers on `main`, not PRs. |
+| `.dockerignore` misses a heavy file | Low | Check `docker images` size after M4.1. If > 500 MB, inspect with `docker history sciagent:latest`. |
+| M5-D code changes break existing add-on tests | Medium | Run the full Vitest suite before merging. The new error-status tests are additions, not replacements. |
 
 ---
 
-## Quality Gates
+## What This Plan Does Not Cover
 
-Every P9 PR runs the same gates as P8:
-
-```bash
-# Python
-uv run ruff check .
-uv run ruff format --check .
-uv run pyright
-uv run pytest -q --vcr-record=none
-
-# Zotero add-on
-cd zotero-addon && npm ci && npm run lint && npm run build && npm run typecheck && npm run test
-
-# Docs
-npx --yes markdownlint-cli2 "README.md" "docs/**/*.md" "examples/**/*.md" ".github/**/*.md" "zotero-addon/README.md"
-uv run mkdocs build --strict
-```
-
-Plus three P9-specific manual smokes recorded in `docs/install.md`:
-
-- Fresh macOS arm64: install XPI → paste keys → run search → write to Zotero.
-- Fresh Linux x86_64: same.
-- Fresh Windows x64: same.
+- **Multi-user auth / OAuth** — needs Cloud SQL + code work. Deferred.
+- **Async job queue** — Cloud Tasks or Pub/Sub. Only needed if requests exceed
+  Cloud Run's 15-min timeout (current `--timeout=300` is fine).
+- **Terraform / Pulumi IaC** — worth doing before you have > 1 environment.
+- **MkDocs hosting** — GitHub Pages, free, unrelated to backend.
+- **macOS / Windows code signing** — planned for v1.1 (see `docs/local-first.md`).
 
 ---
 
-## Out of Scope for P9
+## Tracker
 
-- macOS / Windows code signing (planned for v1.1, see `docs/local-first.md` Part 7).
-- Hosted SaaS tier (planned for "Later / SaaS phase" release in `docs/core.md`).
-- New academic providers beyond the 9 already in P8.
-- Reranker / model swaps. P8.10 covered the key-validation surface.
-- Title and abstract fields as separate inputs (low marginal value over the
-  query box; revisit if user research shows otherwise).
+### Current Status
+
+- Prerequisite: P10 (`actionable-plan-done-4.md`) ✅ complete (2026-05-17).
+- Current focus: **M0 — GCP Account & Local Tooling**
+- Current next implementation target: **MU1** in [`actionable-plan-multiuser.md`](actionable-plan-multiuser.md) — backend credential injection
+- Last completed: M5 done 2026-05-17 (M5-B and M5-D shipped, will be revised in MU2)
+- **Pivoted to multi-user 2026-05-17.** M6–M10 of this plan are no longer applicable.
+- **Note:** Project ID is `sciagent-496617` — replace `sciagent-prod` everywhere in this plan.
+
+### Phase Tracker
+
+- [x] **P10 prereqs done** — gate: do not proceed past this line until checked
+- [ ] **M0** — GCP Account & Local Tooling
+- [ ] **M1** — Enable APIs and Foundation Resources
+- [ ] **M2** — Service Account & IAM
+- [ ] **M3** — Secrets in Secret Manager
+- [ ] **M4** — First Manual Deploy
+- [ ] **M5** — Zotero Add-on Updates for Cloud
+  - [ ] M5-A — Point at new backend *(operational)*
+  - [ ] M5-B — Surface backend hostname in UI *(code)*
+  - [ ] M5-C — Tighten CORS *(operational)*
+  - [ ] M5-D — Cloud error UX in `backendClient.ts` *(code)*
+  - [ ] M5-E — Update `docs/deployment.md` *(docs)*
+- [ ] **M6** — Tighten Auth *(optional, Phase 2)*
+- [ ] **M7** — CI/CD via Cloud Build
+- [ ] **M8** — Persistence *(trigger-based, Phase 2)*
+- [ ] **M9** — Observability
+- [ ] **M10** — Custom Domain *(optional)*
+
+### Tracker Rules
+
+1. Update status here first.
+2. The P10 prereq gate is checked — proceed directly to M0.
+3. Treat the first unchecked milestone as the current focus.
+4. Secrets and resource flags persist between Cloud Run deploys. If you change
+   CPU/memory/secrets, do it via `gcloud run services update`, not `cloudbuild.yaml`.
+5. When a decision in the Executive Decisions table changes, write a one-line
+   rationale in the milestone where it changed.
+
+---
+
+## See Also
+
+- `docs/actionable-plan-done-4.md` — completed P10 prereqs plan.
+- `docs/deployment.md` — user-facing deployment overview (update in M5-E).
+- `docs/api.md` — REST contract the Zotero add-on calls.
+- `src/agt/providers/router.py` — provider routing (read before changing LLM config).
+- `src/agt/config.py` — settings contract (read before adding env vars).
+- [Cloud Run pricing](https://cloud.google.com/run/pricing) — re-check before any architecture change.

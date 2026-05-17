@@ -116,7 +116,11 @@ def client(monkeypatch: pytest.MonkeyPatch) -> TestClient:
     return TestClient(app)
 
 
-_AUTH = {"X-AGT-API-Key": "backend-key"}
+_AUTH = {
+    "X-AGT-API-Key": "backend-key",
+    "X-Zotero-API-Key": "fake-zotero-key",
+    "X-Zotero-Library-ID": "12345678",
+}
 
 
 # ---------------------------------------------------------------------------

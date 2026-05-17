@@ -114,12 +114,13 @@ def correct_query(query: str) -> str:
         lower = token.lower()
         if (
             lower in _DOMAIN_TERMS
-            or token.isupper()
-            or token[0].isupper()  # proper nouns / titles
+            or token.isupper()  # ALL-CAPS acronym — skip
             or len(token) <= 2  # noqa: PLR2004
         ):
             continue
-        suggestion = _checker.correction(token)
-        if suggestion is not None and suggestion.lower() != lower:
+        suggestion = _checker.correction(lower)
+        if suggestion is not None and suggestion != lower:
+            if token[0].isupper():
+                suggestion = suggestion.capitalize()
             corrected = re.sub(rf"\b{re.escape(token)}\b", suggestion, corrected)
     return corrected

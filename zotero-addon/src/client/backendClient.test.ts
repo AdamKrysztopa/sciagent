@@ -70,6 +70,42 @@ describe("SciAgentBackendClient", () => {
     await expect(client.health()).rejects.toMatchObject({ status: 401 });
   });
 
+  it("returns a human-readable message for 401", async () => {
+    const fetchImpl = vi.fn(async () => jsonResponse({ detail: "invalid_api_key" }, 401));
+    const client = createBackendClient({ apiKey: "bad", baseUrl: "http://localhost:8000", clientId: "c", fetchImpl });
+    await expect(client.health()).rejects.toMatchObject({
+      message: "API key rejected. Check Settings → Connection.",
+      status: 401,
+    });
+  });
+
+  it("returns a human-readable message for 403", async () => {
+    const fetchImpl = vi.fn(async () => jsonResponse({ detail: "forbidden" }, 403));
+    const client = createBackendClient({ apiKey: "k", baseUrl: "http://localhost:8000", clientId: "c", fetchImpl });
+    await expect(client.run({ query: "rag", collection_name: "Inbox" })).rejects.toMatchObject({
+      message: "Origin not allowed.",
+      status: 403,
+    });
+  });
+
+  it("returns a rate-limit message for 429 without Retry-After", async () => {
+    const fetchImpl = vi.fn(async () => new Response(null, { status: 429 }));
+    const client = createBackendClient({ apiKey: "k", baseUrl: "http://localhost:8000", clientId: "c", fetchImpl });
+    await expect(client.health()).rejects.toMatchObject({ message: "Rate limit hit.", status: 429 });
+  });
+
+  it("includes retry countdown in 429 message when Retry-After is set", async () => {
+    const fetchImpl = vi.fn(async () => new Response(null, { headers: { "Retry-After": "30" }, status: 429 }));
+    const client = createBackendClient({ apiKey: "k", baseUrl: "http://localhost:8000", clientId: "c", fetchImpl });
+    await expect(client.health()).rejects.toMatchObject({ message: "Rate limit hit. Retry in 30s.", status: 429 });
+  });
+
+  it("returns a not-responding message for 5xx", async () => {
+    const fetchImpl = vi.fn(async () => new Response(null, { status: 503 }));
+    const client = createBackendClient({ apiKey: "k", baseUrl: "http://localhost:8000", clientId: "c", fetchImpl });
+    await expect(client.health()).rejects.toMatchObject({ message: "Backend not responding.", status: 503 });
+  });
+
   it("treats a reachable OpenAPI document as online when /health is absent", async () => {
     const calls: string[] = [];
     const fetchImpl = vi.fn(async (url: RequestInfo | URL) => {
@@ -224,6 +260,122 @@ describe("SciAgentBackendClient", () => {
     expect(result.reasoning).toContain("transformer");
     expect(result.papers).toHaveLength(1);
     expect(result.papers[0]?.title).toBe("Attention Is All You Need");
+  });
+
+  it("sends Zotero credential headers when configured", async () => {
+    const calls: Array<{ init?: RequestInit }> = [];
+    const fetchImpl = vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => {
+      calls.push({ init });
+      return jsonResponse({ run_id: "r1", thread_id: "r1", status: "awaiting_approval" });
+    });
+    const client = createBackendClient({
+      apiKey: "",
+      baseUrl: "http://localhost:8000",
+      clientId: "c",
+      fetchImpl,
+      zoteroApiKey: "zotero-key-123",
+      zoteroLibraryId: "9876543",
+      zoteroLibraryType: "user",
+    });
+
+    await client.run({ query: "rag", collection_name: "Inbox" });
+
+    const headers = calls[0]?.init?.headers as Headers;
+    expect(headers.get("X-Zotero-API-Key")).toBe("zotero-key-123");
+    expect(headers.get("X-Zotero-Library-ID")).toBe("9876543");
+    expect(headers.get("X-Zotero-Library-Type")).toBe("user");
+  });
+
+  it("does not send Zotero headers when credentials are empty", async () => {
+    const calls: Array<{ init?: RequestInit }> = [];
+    const fetchImpl = vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => {
+      calls.push({ init });
+      return jsonResponse({ ok: true, message: "ok" });
+    });
+    const client = createBackendClient({
+      apiKey: "",
+      baseUrl: "http://localhost:8000",
+      clientId: "c",
+      fetchImpl,
+    });
+
+    await client.health();
+
+    const headers = calls[0]?.init?.headers as Headers;
+    expect(headers.get("X-Zotero-API-Key")).toBeNull();
+    expect(headers.get("X-Zotero-Library-ID")).toBeNull();
+    expect(headers.get("X-Zotero-Library-Type")).toBeNull();
+  });
+
+  it("sends LLM override headers when useCustomLlm is true and key is set", async () => {
+    const calls: Array<{ init?: RequestInit }> = [];
+    const fetchImpl = vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => {
+      calls.push({ init });
+      return jsonResponse({ run_id: "r2", thread_id: "r2", status: "awaiting_approval" });
+    });
+    const client = createBackendClient({
+      apiKey: "",
+      baseUrl: "http://localhost:8000",
+      clientId: "c",
+      fetchImpl,
+      useCustomLlm: true,
+      customLlmApiKey: "my-llm-key",
+      customLlmProvider: "deepseek",
+      customLlmBaseUrl: "https://api.deepseek.com/v1",
+      customLlmModel: "deepseek-chat",
+    });
+
+    await client.run({ query: "rag", collection_name: "Inbox" });
+
+    const headers = calls[0]?.init?.headers as Headers;
+    expect(headers.get("X-LLM-API-Key")).toBe("my-llm-key");
+    expect(headers.get("X-LLM-Provider")).toBe("deepseek");
+    expect(headers.get("X-LLM-Base-URL")).toBe("https://api.deepseek.com/v1");
+    expect(headers.get("X-LLM-Model")).toBe("deepseek-chat");
+  });
+
+  it("does not send LLM headers when useCustomLlm is false", async () => {
+    const calls: Array<{ init?: RequestInit }> = [];
+    const fetchImpl = vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => {
+      calls.push({ init });
+      return jsonResponse({ ok: true, message: "ok" });
+    });
+    const client = createBackendClient({
+      apiKey: "",
+      baseUrl: "http://localhost:8000",
+      clientId: "c",
+      fetchImpl,
+      useCustomLlm: false,
+      customLlmApiKey: "my-llm-key",
+      customLlmProvider: "deepseek",
+    });
+
+    await client.health();
+
+    const headers = calls[0]?.init?.headers as Headers;
+    expect(headers.get("X-LLM-API-Key")).toBeNull();
+    expect(headers.get("X-LLM-Provider")).toBeNull();
+  });
+
+  it("does not send LLM headers when useCustomLlm is true but key is empty", async () => {
+    const calls: Array<{ init?: RequestInit }> = [];
+    const fetchImpl = vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => {
+      calls.push({ init });
+      return jsonResponse({ ok: true, message: "ok" });
+    });
+    const client = createBackendClient({
+      apiKey: "",
+      baseUrl: "http://localhost:8000",
+      clientId: "c",
+      fetchImpl,
+      useCustomLlm: true,
+      customLlmApiKey: "",
+    });
+
+    await client.health();
+
+    const headers = calls[0]?.init?.headers as Headers;
+    expect(headers.get("X-LLM-API-Key")).toBeNull();
   });
 
   it("calls /capabilities and returns the response", async () => {

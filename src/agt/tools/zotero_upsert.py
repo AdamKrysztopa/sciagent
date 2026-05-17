@@ -9,6 +9,11 @@ from typing import Any, cast
 import httpx
 
 from agt.config import Settings, get_settings
+from agt.credential_context import (
+    resolve_zotero_api_key,
+    resolve_zotero_library_id,
+    resolve_zotero_library_type,
+)
 from agt.guardrails import current_thread_id, get_guardrails
 from agt.models import CollectionResult, ItemWriteOutcome, NormalizedPaper, WriteResult
 
@@ -29,9 +34,11 @@ class _CreateItemRequest:
 
 
 def _library_prefix(settings: Settings) -> str:
-    if settings.zotero_library_type == "group":
-        return f"/groups/{settings.zotero_library_id}"
-    return f"/users/{settings.zotero_library_id}"
+    lib_type = resolve_zotero_library_type(settings)
+    lib_id = resolve_zotero_library_id(settings)
+    if lib_type == "group":
+        return f"/groups/{lib_id}"
+    return f"/users/{lib_id}"
 
 
 def _normalize_collection_name(name: str) -> str:
@@ -252,8 +259,7 @@ async def _resolve_collection(
     collection_name: str,
     parent_collection_name: str | None,
 ) -> CollectionResult:
-    assert settings.zotero_api_key is not None, "Zotero API key required"
-    headers = {"Zotero-API-Key": settings.zotero_api_key.get_secret_value()}
+    headers = {"Zotero-API-Key": resolve_zotero_api_key(settings)}
     prefix = _library_prefix(settings)
     list_resp = await client.get(f"{prefix}/collections", headers=headers, params={"limit": 200})
     list_resp.raise_for_status()
@@ -310,8 +316,7 @@ async def _fetch_existing_signatures(
     settings: Settings,
     collection_key: str,
 ) -> tuple[set[str], set[str]]:
-    assert settings.zotero_api_key is not None, "Zotero API key required"
-    headers = {"Zotero-API-Key": settings.zotero_api_key.get_secret_value()}
+    headers = {"Zotero-API-Key": resolve_zotero_api_key(settings)}
     prefix = _library_prefix(settings)
     response = await client.get(
         f"{prefix}/collections/{collection_key}/items/top",
@@ -497,10 +502,9 @@ async def _upsert_with_client(
         collection_key=collection.key,
     )
 
-    assert settings.zotero_api_key is not None, "Zotero API key required"
     create_request = _CreateItemRequest(
         endpoint=f"{_library_prefix(settings)}/items",
-        headers={"Zotero-API-Key": settings.zotero_api_key.get_secret_value()},
+        headers={"Zotero-API-Key": resolve_zotero_api_key(settings)},
     )
 
     created = 0

@@ -142,11 +142,16 @@ export function useSciAgentController(services: AddonUiServices) {
             currentDraft !== null && currentDraft.original_query === statusSearchPlan.original_query
               ? currentDraft.result_limit
               : Math.max(nextPapers.length, 10);
-          return filterEditFromSearchPlan(
-            statusSearchPlan.original_query,
-            statusSearchPlan,
-            resultLimit,
-          );
+          return {
+            ...filterEditFromSearchPlan(
+              statusSearchPlan.original_query,
+              statusSearchPlan,
+              resultLimit,
+            ),
+            authors: currentDraft?.authors ?? [],
+            venues: currentDraft?.venues ?? [],
+            seed_dois: currentDraft?.seed_dois ?? [],
+          };
         });
       } else {
         setFilterDraft(null);
@@ -244,6 +249,7 @@ export function useSciAgentController(services: AddonUiServices) {
       return;
     }
 
+    const isRerun = runView.snapshot !== null;
     setNativeWriteResult(null);
     setRunView({ error: null, phase: "submitting", snapshot: runView.snapshot });
     try {
@@ -253,6 +259,7 @@ export function useSciAgentController(services: AddonUiServices) {
           filterDraft !== null && filterDraft.original_query.trim() === trimmedQuery
             ? filterDraft
             : undefined,
+        force_refresh: isRerun ? true : undefined,
         query: trimmedQuery,
         search_depth: searchDepth,
       });

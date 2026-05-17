@@ -8,6 +8,11 @@ from typing import Any, cast
 import httpx
 
 from agt.config import Settings
+from agt.credential_context import (
+    resolve_zotero_api_key,
+    resolve_zotero_library_id,
+    resolve_zotero_library_type,
+)
 
 ZOTERO_API_BASE = "https://api.zotero.org"
 HTTP_OK = 200
@@ -44,55 +49,42 @@ def _get_write_capability(payload: dict[str, Any], library_type: str) -> bool:
     )
 
 
-def _library_probe_path(settings: Settings) -> str:
-    if settings.zotero_library_type == "group":
-        return f"/groups/{settings.zotero_library_id}/collections?limit=1"
-    return f"/users/{settings.zotero_library_id}/collections?limit=1"
+def _library_probe_path(lib_type: str, lib_id: str) -> str:
+    if lib_type == "group":
+        return f"/groups/{lib_id}/collections?limit=1"
+    return f"/users/{lib_id}/collections?limit=1"
 
 
-def _validate_zotero_settings(settings: Settings) -> PreflightResult | None:
-    """Return error PreflightResult if settings are invalid or incomplete, None if valid."""
-    missing = [
-        name
-        for name, val in [
-            ("AGT_ZOTERO_API_KEY", settings.zotero_api_key),
-            ("AGT_ZOTERO_LIBRARY_ID", settings.zotero_library_id),
-        ]
-        if val is None
-    ]
-    if missing:
+def run_zotero_preflight(settings: Settings, client: httpx.Client | None = None) -> PreflightResult:  # noqa: PLR0911
+    """Verify Zotero key validity and target-library read/write capability.
+
+    Credentials are resolved from the request contextvar first, falling back to
+    ``settings`` for local single-user dev mode.
+    """
+    try:
+        api_key = resolve_zotero_api_key(settings)
+        lib_id = resolve_zotero_library_id(settings)
+    except ValueError as exc:
         return PreflightResult(
             ok=False,
-            message=f"Missing required Zotero settings: {', '.join(missing)}",
+            message=str(exc),
             can_read=False,
             can_write=False,
             key_valid=False,
         )
 
-    assert settings.zotero_api_key is not None
-    api_key = settings.zotero_api_key.get_secret_value()
+    lib_type = resolve_zotero_library_type(settings)
+
     try:
         api_key.encode("ascii")
     except UnicodeEncodeError:
         return PreflightResult(
             ok=False,
-            message="AGT_ZOTERO_API_KEY contains non-ASCII characters — check for lookalike Unicode letters in the key",
+            message="Zotero API key contains non-ASCII characters — check for lookalike Unicode letters",
             can_read=False,
             can_write=False,
             key_valid=False,
         )
-    return None
-
-
-def run_zotero_preflight(settings: Settings, client: httpx.Client | None = None) -> PreflightResult:
-    """Verify Zotero key validity and target-library read/write capability."""
-    validation_error = _validate_zotero_settings(settings)
-    if validation_error is not None:
-        return validation_error
-
-    assert settings.zotero_api_key is not None
-    assert settings.zotero_library_id is not None
-    api_key = settings.zotero_api_key.get_secret_value()
 
     owns_client = client is None
     api_client = client or httpx.Client(base_url=ZOTERO_API_BASE, timeout=settings.timeout_seconds)
@@ -111,9 +103,9 @@ def run_zotero_preflight(settings: Settings, client: httpx.Client | None = None)
         key_resp.raise_for_status()
         key_payload = key_resp.json()
 
-        can_write = _get_write_capability(key_payload, settings.zotero_library_type)
+        can_write = _get_write_capability(key_payload, lib_type)
 
-        probe_resp = api_client.get(_library_probe_path(settings), headers=headers)
+        probe_resp = api_client.get(_library_probe_path(lib_type, lib_id), headers=headers)
         can_read = probe_resp.status_code == HTTP_OK
 
         if not can_read:

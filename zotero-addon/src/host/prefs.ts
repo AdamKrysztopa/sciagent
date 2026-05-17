@@ -26,6 +26,16 @@ export interface AddonConfig {
   backendMode: string;
   // First-run capability banner (OPN-16)
   bannerDismissed: boolean;
+  // Zotero credentials for remote backend mode (MU2)
+  zoteroApiKey: string;
+  zoteroLibraryId: string;
+  zoteroLibraryType: "user" | "group";
+  // LLM override for remote backend mode (MU2)
+  useCustomLlm: boolean;
+  customLlmProvider: string;
+  customLlmBaseUrl: string;
+  customLlmModel: string;
+  customLlmApiKey: string;
 }
 
 export interface PreferenceStore {
@@ -57,6 +67,16 @@ export const PREF_KEYS = {
   backendMode: "extensions.agt.backendMode",
   // First-run capability banner (OPN-16)
   bannerDismissed: "extensions.agt.bannerDismissed",
+  // Zotero credentials for remote backend mode (MU2)
+  zoteroApiKey: "extensions.agt.zoteroApiKey",
+  zoteroLibraryId: "extensions.agt.zoteroLibraryId",
+  zoteroLibraryType: "extensions.agt.zoteroLibraryType",
+  // LLM override for remote backend mode (MU2)
+  useCustomLlm: "extensions.agt.useCustomLlm",
+  customLlmProvider: "extensions.agt.customLlmProvider",
+  customLlmBaseUrl: "extensions.agt.customLlmBaseUrl",
+  customLlmModel: "extensions.agt.customLlmModel",
+  customLlmApiKey: "extensions.agt.customLlmApiKey",
 } as const;
 
 export const DEFAULT_ADDON_CONFIG: AddonConfig = {
@@ -84,6 +104,16 @@ export const DEFAULT_ADDON_CONFIG: AddonConfig = {
   backendMode: "local",
   // First-run capability banner (OPN-16)
   bannerDismissed: false,
+  // Zotero credentials for remote backend mode (MU2)
+  zoteroApiKey: "",
+  zoteroLibraryId: "",
+  zoteroLibraryType: "user",
+  // LLM override for remote backend mode (MU2)
+  useCustomLlm: false,
+  customLlmProvider: "",
+  customLlmBaseUrl: "",
+  customLlmModel: "",
+  customLlmApiKey: "",
 };
 
 function normalizeBackendUrl(value: string): string {
@@ -191,6 +221,14 @@ export function createZoteroPreferenceStore(zotero: ZoteroGlobal): PreferenceSto
           PREF_KEYS.bannerDismissed,
           DEFAULT_ADDON_CONFIG.bannerDismissed,
         ),
+        zoteroApiKey: readStringPref(zotero, PREF_KEYS.zoteroApiKey, DEFAULT_ADDON_CONFIG.zoteroApiKey),
+        zoteroLibraryId: readStringPref(zotero, PREF_KEYS.zoteroLibraryId, DEFAULT_ADDON_CONFIG.zoteroLibraryId),
+        zoteroLibraryType: readStringPref(zotero, PREF_KEYS.zoteroLibraryType, DEFAULT_ADDON_CONFIG.zoteroLibraryType) as "user" | "group",
+        useCustomLlm: readBooleanPref(zotero, PREF_KEYS.useCustomLlm, DEFAULT_ADDON_CONFIG.useCustomLlm),
+        customLlmProvider: readStringPref(zotero, PREF_KEYS.customLlmProvider, DEFAULT_ADDON_CONFIG.customLlmProvider),
+        customLlmBaseUrl: readStringPref(zotero, PREF_KEYS.customLlmBaseUrl, DEFAULT_ADDON_CONFIG.customLlmBaseUrl),
+        customLlmModel: readStringPref(zotero, PREF_KEYS.customLlmModel, DEFAULT_ADDON_CONFIG.customLlmModel),
+        customLlmApiKey: readStringPref(zotero, PREF_KEYS.customLlmApiKey, DEFAULT_ADDON_CONFIG.customLlmApiKey),
       };
     },
 
@@ -232,6 +270,14 @@ export function createZoteroPreferenceStore(zotero: ZoteroGlobal): PreferenceSto
       zotero.Prefs.set(PREF_KEYS.llmModel, nextConfig.llmModel);
       zotero.Prefs.set(PREF_KEYS.backendMode, nextConfig.backendMode);
       zotero.Prefs.set(PREF_KEYS.bannerDismissed, nextConfig.bannerDismissed);
+      zotero.Prefs.set(PREF_KEYS.zoteroApiKey, nextConfig.zoteroApiKey.trim());
+      zotero.Prefs.set(PREF_KEYS.zoteroLibraryId, nextConfig.zoteroLibraryId.trim());
+      zotero.Prefs.set(PREF_KEYS.zoteroLibraryType, nextConfig.zoteroLibraryType);
+      zotero.Prefs.set(PREF_KEYS.useCustomLlm, nextConfig.useCustomLlm);
+      zotero.Prefs.set(PREF_KEYS.customLlmProvider, nextConfig.customLlmProvider.trim());
+      zotero.Prefs.set(PREF_KEYS.customLlmBaseUrl, nextConfig.customLlmBaseUrl.trim());
+      zotero.Prefs.set(PREF_KEYS.customLlmModel, nextConfig.customLlmModel.trim());
+      zotero.Prefs.set(PREF_KEYS.customLlmApiKey, nextConfig.customLlmApiKey.trim());
 
       return nextConfig;
     },

@@ -21,6 +21,11 @@ HTTP_UNPROCESSABLE_ENTITY = 422
 FILTER_EDIT_RESULT_LIMIT = 5
 FILTER_EDIT_MIN_YEAR = 2024
 
+_ZOTERO_HEADERS = {
+    "X-Zotero-API-Key": "fake-zotero-key",
+    "X-Zotero-Library-ID": "12345678",
+}
+
 
 @dataclass(slots=True)
 class _Secret:
@@ -33,6 +38,7 @@ class _Secret:
 @dataclass(slots=True)
 class _Runtime:
     provider: str = "xai"
+    model_name: str = "gpt-4o-mini"
 
 
 @dataclass(slots=True)
@@ -61,38 +67,25 @@ class _Settings:
     cache_ttl_seconds: int = 3600
     cors_allowed_origins: list[str] = field(default_factory=lambda: ["*"])
     api_rate_limit: str = "200/minute"
+    resolved_llm_provider: str = "xai"
+    llm_base_url: str | None = None
 
     def provider_api_key(self, provider: str) -> _Secret | None:
         return getattr(self, f"{provider}_api_key", None)
 
 
-def test_health_requires_valid_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_health_returns_ok_without_credentials(monkeypatch: pytest.MonkeyPatch) -> None:
     app = create_app()
 
     def fake_get_settings() -> _Settings:
         return _Settings()
 
-    class _Preflight:
-        ok = True
-        message = "ok"
-
-        def to_dict(self) -> dict[str, object]:
-            return {"ok": True}
-
-    def fake_preflight(settings: object) -> _Preflight:
-        _ = settings
-        return _Preflight()
-
-    monkeypatch.setattr(api_module, "run_zotero_preflight", fake_preflight)
     app.dependency_overrides[get_settings] = fake_get_settings
 
     with TestClient(app) as client:
-        unauthorized = client.get("/health")
-        assert unauthorized.status_code == HTTP_UNAUTHORIZED
-
-        authorized = client.get("/health", headers={"X-AGT-API-Key": "backend-key"})
-        assert authorized.status_code == HTTP_OK
-        payload = authorized.json()
+        resp = client.get("/health")
+        assert resp.status_code == HTTP_OK
+        payload = resp.json()
         assert payload["ok"] is True
         assert "api_contract_version" in payload
         assert isinstance(payload["api_contract_version"], str)
@@ -165,10 +158,12 @@ def test_run_resume_status_flow_with_owner_isolation(monkeypatch: pytest.MonkeyP
         headers_owner_a = {
             "X-AGT-API-Key": "backend-key",
             "X-AGT-Client-ID": "owner-a",
+            **_ZOTERO_HEADERS,
         }
         headers_owner_b = {
             "X-AGT-API-Key": "backend-key",
             "X-AGT-Client-ID": "owner-b",
+            **_ZOTERO_HEADERS,
         }
 
         run_response = client.post(
@@ -262,6 +257,7 @@ def test_resume_failed_phase_maps_to_failed_status(monkeypatch: pytest.MonkeyPat
         headers = {
             "X-AGT-API-Key": "backend-key",
             "X-AGT-Client-ID": "owner-a",
+            **_ZOTERO_HEADERS,
         }
 
         run_response = client.post(
@@ -333,7 +329,11 @@ def test_run_accepts_filter_edit_and_forwards_it(monkeypatch: pytest.MonkeyPatch
     with TestClient(app) as client:
         response = client.post(
             "/run",
-            headers={"X-AGT-API-Key": "backend-key", "X-AGT-Client-ID": "owner-a"},
+            headers={
+                "X-AGT-API-Key": "backend-key",
+                "X-AGT-Client-ID": "owner-a",
+                **_ZOTERO_HEADERS,
+            },
             json={
                 "query": "graph neural networks",
                 "collection_name": "Inbox",
@@ -461,6 +461,7 @@ def test_resume_native_write_returns_approved_papers(monkeypatch: pytest.MonkeyP
         headers = {
             "X-AGT-API-Key": "backend-key",
             "X-AGT-Client-ID": "owner-nw",
+            **_ZOTERO_HEADERS,
         }
         run_resp = client.post(
             "/run",
@@ -501,7 +502,11 @@ def test_run_rejects_filter_edit_query_mismatch(monkeypatch: pytest.MonkeyPatch)
     with TestClient(app) as client:
         response = client.post(
             "/run",
-            headers={"X-AGT-API-Key": "backend-key", "X-AGT-Client-ID": "owner-a"},
+            headers={
+                "X-AGT-API-Key": "backend-key",
+                "X-AGT-Client-ID": "owner-a",
+                **_ZOTERO_HEADERS,
+            },
             json={
                 "query": "graph neural networks",
                 "collection_name": "Inbox",
@@ -574,7 +579,11 @@ def test_resume_accepts_enable_pdf_imports_field(monkeypatch: pytest.MonkeyPatch
     app.dependency_overrides[get_settings] = fake_get_settings
 
     with TestClient(app) as client:
-        headers = {"X-AGT-API-Key": "backend-key", "X-AGT-Client-ID": "owner-pdf"}
+        headers = {
+            "X-AGT-API-Key": "backend-key",
+            "X-AGT-Client-ID": "owner-pdf",
+            **_ZOTERO_HEADERS,
+        }
 
         run_resp = client.post(
             "/run",
@@ -619,7 +628,7 @@ def test_library_doctor_endpoint(monkeypatch: pytest.MonkeyPatch) -> None:
     with TestClient(app) as client:
         resp = client.post(
             "/library-doctor",
-            headers={"X-AGT-API-Key": "backend-key"},
+            headers={"X-AGT-API-Key": "backend-key", **_ZOTERO_HEADERS},
             json={"collection_name": "My Papers"},
         )
         assert resp.status_code == HTTP_OK
@@ -686,13 +695,13 @@ def test_gap_finder_endpoint(monkeypatch: pytest.MonkeyPatch) -> None:
         )
 
     monkeypatch.setattr(api_module, "find_gaps", fake_find_gaps)
-    monkeypatch.setattr(api_module, "build_provider", fake_build_provider)
+    monkeypatch.setattr(api_module, "build_provider_for_request", fake_build_provider)
     app.dependency_overrides[get_settings] = fake_get_settings
 
     with TestClient(app) as client:
         resp = client.post(
             "/gap-finder",
-            headers={"X-AGT-API-Key": "backend-key"},
+            headers={"X-AGT-API-Key": "backend-key", **_ZOTERO_HEADERS},
             json={"collection_name": "My Papers"},
         )
         assert resp.status_code == HTTP_OK

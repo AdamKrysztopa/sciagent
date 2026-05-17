@@ -18,7 +18,7 @@ from agt.models import (
     WriteResult,
 )
 from agt.observability import TraceContext, serialize_spans, trace_step
-from agt.providers.router import build_provider
+from agt.providers.router import build_provider_for_request
 from agt.tools.capabilities import ALL_PROVIDER_CAPS, ProviderField
 from agt.tools.citation_expander import expand_citations
 from agt.tools.explain_missing import annotate_missing
@@ -122,7 +122,7 @@ async def run_search_phase(  # noqa: PLR0913
 
     with thread_context(trace.thread_id):
         with trace_step(trace, "provider_init", provider=active_settings.runtime.provider):
-            provider = build_provider(active_settings)
+            provider = build_provider_for_request(active_settings)
             logger.info(
                 "provider_selected",
                 provider=active_settings.runtime.provider,

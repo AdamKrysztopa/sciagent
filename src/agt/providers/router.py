@@ -5,7 +5,10 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from typing import Any
 
+from pydantic import SecretStr
+
 from agt.config import LLMProviderName, Settings, provider_env_aliases
+from agt.credential_context import current_credentials
 from agt.providers.anthropic import AnthropicProvider
 from agt.providers.groq import GroqProvider
 from agt.providers.openai import OpenAIProvider
@@ -206,3 +209,25 @@ def build_provider(settings: Settings) -> LLMProvider:
         failover_on_timeout=settings.llm_failover_on_timeout,
         failover_on_rate_limit=settings.llm_failover_on_rate_limit,
     )
+
+
+def build_provider_for_request(settings: Settings) -> LLMProvider:
+    """Build provider, applying a per-request LLM override from headers when present.
+
+    Falls back to ``build_provider(settings)`` when no override is in the contextvar.
+    """
+    creds = current_credentials.get()
+    if creds is None or not creds.llm_api_key:
+        return build_provider(settings)
+
+    override: dict[str, object] = {
+        "llm_api_key": SecretStr(creds.llm_api_key),
+        "llm_provider": creds.llm_provider or "openai-compatible",
+    }
+    if creds.llm_base_url:
+        override["llm_base_url"] = creds.llm_base_url
+    if creds.llm_model:
+        override["model_name"] = creds.llm_model
+
+    overridden = settings.model_copy(update=override)
+    return build_provider(overridden)

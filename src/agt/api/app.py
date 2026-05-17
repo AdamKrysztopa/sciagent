@@ -4,20 +4,24 @@ from __future__ import annotations
 
 import importlib.metadata
 import time
+import traceback
 import uuid
 from dataclasses import dataclass
 from typing import Any, Literal, cast
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Query, status
+import structlog
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import PlainTextResponse, RedirectResponse
+from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse
 from pydantic import BaseModel, Field, model_validator
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
 
+from agt.api.credentials import get_credentials
 from agt.config import Settings, get_settings
+from agt.credential_context import RequestCredentials
 from agt.graph.workflow import resume_workflow, run_search_phase
 from agt.models import (
     AgentState,
@@ -29,7 +33,7 @@ from agt.models import (
     ResolvedVenue,
     SourceCapability,
 )
-from agt.providers.router import build_provider
+from agt.providers.router import build_provider_for_request
 from agt.result_cache import ResultCache
 from agt.session_export import ExportFormat, export_session
 from agt.session_store import SessionStore
@@ -57,6 +61,7 @@ class RunRequest(BaseModel):
     thread_id: str | None = None
     filter_edit: FilterEditContract | None = None
     search_depth: Literal["quick", "balanced", "deep"] | None = None
+    force_refresh: bool = False
 
     @model_validator(mode="after")
     def validate_filter_edit_query(self) -> RunRequest:
@@ -292,9 +297,18 @@ class _AppState:
         return self._watch_store
 
 
+_log = structlog.get_logger()
+
+
 def create_app() -> FastAPI:  # noqa: PLR0915
     app = FastAPI(title="SciAgent API", version="0.1.0")
     _settings = get_settings()
+    _log.info(
+        "sciagent_startup",
+        llm_provider=_settings.resolved_llm_provider,
+        llm_model=_settings.runtime.model_name,
+        llm_base_url=_settings.llm_base_url,
+    )
     app.add_middleware(
         CORSMiddleware,
         allow_origins=_settings.cors_allowed_origins,
@@ -309,6 +323,26 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     app.state.limiter = _limiter
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
     app.add_middleware(SlowAPIMiddleware)
+
+    _unhandled_logger = structlog.get_logger("agt.api.unhandled")
+
+    @app.exception_handler(Exception)
+    async def _unhandled_exception_handler(  # pyright: ignore[reportUnusedFunction]
+        request: Request, exc: Exception
+    ) -> JSONResponse:
+        _unhandled_logger.exception(
+            "unhandled_exception",
+            path=str(request.url.path),
+            method=request.method,
+            error_type=type(exc).__name__,
+            error=str(exc),
+            traceback=traceback.format_exc(),
+        )
+        return JSONResponse(
+            status_code=500,
+            content={"detail": f"internal_server_error:{type(exc).__name__}:{exc}"},
+        )
+
     store = _RunStore()
     app_state = _AppState()
 
@@ -318,7 +352,20 @@ def create_app() -> FastAPI:  # noqa: PLR0915
 
     @app.get("/health")
     async def _health(  # pyright: ignore[reportUnusedFunction]
-        _: None = Depends(_require_backend_key),
+        settings: Settings = Depends(get_settings),
+    ) -> dict[str, Any]:
+        return {
+            "ok": True,
+            "message": "service is up",
+            "preflight": {"ok": None, "message": "call /preflight with Zotero credentials"},
+            "provider": settings.runtime.provider,
+            "fallback_provider": settings.llm_fallback_provider,
+            "api_contract_version": API_CONTRACT_VERSION,
+        }
+
+    @app.get("/preflight")
+    async def _preflight(  # pyright: ignore[reportUnusedFunction]
+        _creds: RequestCredentials = Depends(get_credentials),
         settings: Settings = Depends(get_settings),
     ) -> dict[str, Any]:
         preflight = run_zotero_preflight(settings)
@@ -343,16 +390,19 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     async def _run(  # pyright: ignore[reportUnusedFunction]
         payload: RunRequest,
         _: None = Depends(_require_backend_key),
+        _creds: RequestCredentials = Depends(get_credentials),
         settings: Settings = Depends(get_settings),
         client_id: str = Depends(_client_id_header),
     ) -> RunAcceptedResponse:
         collection_name = payload.collection_name or settings.zotero_collection_name
         cache = app_state.result_cache(settings)
-        hard_filters = (
-            payload.filter_edit.hard_filters.model_dump() if payload.filter_edit is not None else {}
-        )
-        result_limit = payload.filter_edit.result_limit if payload.filter_edit is not None else 10
-        cached = cache.get(payload.query, hard_filters, result_limit)
+        if payload.filter_edit is not None:
+            fe_dump = payload.filter_edit.model_dump(exclude={"original_query"})
+            result_limit = payload.filter_edit.result_limit
+        else:
+            fe_dump = {}
+            result_limit = 10
+        cached = None if payload.force_refresh else cache.get(payload.query, fe_dump, result_limit)
         if cached is not None:
             run_id = payload.thread_id or str(uuid.uuid4())
             cached_state = cast(
@@ -367,6 +417,9 @@ def create_app() -> FastAPI:  # noqa: PLR0915
                     "phase": "search_complete",
                     "selected_indices": [],
                     "write_result": None,
+                    "messages": [],
+                    "preflight": {"ok": True},
+                    "trace_spans": [],
                 },
             )
             store.put(
@@ -420,7 +473,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
 
         cache.set(
             payload.query,
-            hard_filters,
+            fe_dump,
             result_limit,
             {"papers": state.get("papers", []), "search_metadata": state.get("search_metadata")},
         )
@@ -446,6 +499,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     async def _resume(  # pyright: ignore[reportUnusedFunction]
         payload: ResumeRequest,
         _: None = Depends(_require_backend_key),
+        _creds: RequestCredentials = Depends(get_credentials),
         settings: Settings = Depends(get_settings),
         client_id: str = Depends(_client_id_header),
     ) -> RunAcceptedResponse:
@@ -607,7 +661,6 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     @app.get("/correct-query", response_model=CorrectQueryResponse)
     async def _correct_query_endpoint(  # pyright: ignore[reportUnusedFunction]
         q: str = Query(default="", description="Query to spell-check"),
-        _: None = Depends(_require_backend_key),
     ) -> CorrectQueryResponse:
         corrected = correct_query(q)
         return CorrectQueryResponse(original=q, corrected=corrected, changed=corrected != q)
@@ -619,7 +672,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
         settings: Settings = Depends(get_settings),
     ) -> ExtractKeywordsResponse:
         try:
-            provider = build_provider(settings)
+            provider = build_provider_for_request(settings)
             result: KeywordExtraction = await extract_keywords(body.query, provider)
         except Exception:
             result = KeywordExtraction()
@@ -773,6 +826,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     async def _library_doctor(  # pyright: ignore[reportUnusedFunction]
         body: LibraryDoctorRequest,
         _: None = Depends(_require_backend_key),
+        _creds: RequestCredentials = Depends(get_credentials),
         settings: Settings = Depends(get_settings),
     ) -> DoctorReport:
         return await scan_collection(body.collection_name, settings)
@@ -781,9 +835,10 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     async def _gap_finder(  # pyright: ignore[reportUnusedFunction]
         body: GapFinderRequest,
         _: None = Depends(_require_backend_key),
+        _creds: RequestCredentials = Depends(get_credentials),
         settings: Settings = Depends(get_settings),
     ) -> GapFinderResponse:
-        provider = build_provider(settings)
+        provider = build_provider_for_request(settings)
         suggestion: GapSuggestion = await find_gaps(body.collection_name, settings, provider)
         return GapFinderResponse(
             reasoning=suggestion.reasoning,
@@ -845,6 +900,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     async def _rerun_watch(  # pyright: ignore[reportUnusedFunction]
         watch_id: str,
         _: None = Depends(_require_backend_key),
+        _creds: RequestCredentials = Depends(get_credentials),
         settings: Settings = Depends(get_settings),
         client_id: str = Depends(_client_id_header),
     ) -> WatchRerunResponse:
