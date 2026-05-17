@@ -54,6 +54,14 @@ function createPanelServices(zotero: ZoteroGlobal): AddonUiServices {
         baseUrl: config.backendUrl,
         clientId: config.clientId,
         fetchImpl: globalThis.fetch.bind(globalThis),
+        zoteroApiKey: config.zoteroApiKey,
+        zoteroLibraryId: config.zoteroLibraryId,
+        zoteroLibraryType: config.zoteroLibraryType,
+        useCustomLlm: config.useCustomLlm,
+        customLlmProvider: config.customLlmProvider,
+        customLlmBaseUrl: config.customLlmBaseUrl,
+        customLlmModel: config.customLlmModel,
+        customLlmApiKey: config.customLlmApiKey,
       });
     },
 

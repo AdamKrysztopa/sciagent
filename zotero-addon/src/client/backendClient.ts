@@ -39,6 +39,16 @@ export interface BackendClientConfig {
   baseUrl: string;
   clientId: string;
   fetchImpl?: FetchImplementation;
+  // Zotero credentials for remote mode (MU2)
+  zoteroApiKey?: string;
+  zoteroLibraryId?: string;
+  zoteroLibraryType?: string;
+  // LLM override for remote mode (MU2)
+  useCustomLlm?: boolean;
+  customLlmProvider?: string;
+  customLlmBaseUrl?: string;
+  customLlmModel?: string;
+  customLlmApiKey?: string;
 }
 
 function normalizeBaseUrl(value: string): string {
@@ -74,12 +84,28 @@ export class SciAgentBackendClient {
   private readonly baseUrl: string;
   private readonly clientId: string;
   private readonly fetchImpl: FetchImplementation;
+  private readonly zoteroApiKey: string;
+  private readonly zoteroLibraryId: string;
+  private readonly zoteroLibraryType: string;
+  private readonly useCustomLlm: boolean;
+  private readonly customLlmProvider: string;
+  private readonly customLlmBaseUrl: string;
+  private readonly customLlmModel: string;
+  private readonly customLlmApiKey: string;
 
   constructor(config: BackendClientConfig) {
     this.apiKey = config.apiKey.trim();
     this.baseUrl = normalizeBaseUrl(config.baseUrl);
     this.clientId = config.clientId.trim() || "anonymous";
     this.fetchImpl = config.fetchImpl ?? fetch;
+    this.zoteroApiKey = (config.zoteroApiKey ?? "").trim();
+    this.zoteroLibraryId = (config.zoteroLibraryId ?? "").trim();
+    this.zoteroLibraryType = (config.zoteroLibraryType ?? "user").trim();
+    this.useCustomLlm = config.useCustomLlm ?? false;
+    this.customLlmProvider = (config.customLlmProvider ?? "").trim();
+    this.customLlmBaseUrl = (config.customLlmBaseUrl ?? "").trim();
+    this.customLlmModel = (config.customLlmModel ?? "").trim();
+    this.customLlmApiKey = (config.customLlmApiKey ?? "").trim();
   }
 
   async health(): Promise<HealthResponse> {
@@ -212,6 +238,19 @@ export class SciAgentBackendClient {
     }
     if (withJsonBody) {
       headers.set("Content-Type", "application/json");
+    }
+    if (this.zoteroApiKey.length > 0) {
+      headers.set("X-Zotero-API-Key", this.zoteroApiKey);
+    }
+    if (this.zoteroLibraryId.length > 0) {
+      headers.set("X-Zotero-Library-ID", this.zoteroLibraryId);
+      headers.set("X-Zotero-Library-Type", this.zoteroLibraryType || "user");
+    }
+    if (this.useCustomLlm && this.customLlmApiKey.length > 0) {
+      headers.set("X-LLM-API-Key", this.customLlmApiKey);
+      if (this.customLlmProvider.length > 0) headers.set("X-LLM-Provider", this.customLlmProvider);
+      if (this.customLlmBaseUrl.length > 0) headers.set("X-LLM-Base-URL", this.customLlmBaseUrl);
+      if (this.customLlmModel.length > 0) headers.set("X-LLM-Model", this.customLlmModel);
     }
     return headers;
   }

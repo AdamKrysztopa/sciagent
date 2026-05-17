@@ -5,6 +5,20 @@ import { VALIDATABLE_PROVIDERS } from "../../shared/contracts";
 import type { AddonConfig } from "../../host/prefs";
 import { CustomSelect } from "./CustomSelect";
 
+const LIBRARY_TYPE_OPTIONS = [
+  { value: "user", label: "User library" },
+  { value: "group", label: "Group library" },
+] as const;
+
+const LLM_PROVIDER_OPTIONS = [
+  { value: "openai", label: "OpenAI" },
+  { value: "anthropic", label: "Anthropic" },
+  { value: "deepseek", label: "DeepSeek" },
+  { value: "xai", label: "xAI (Grok)" },
+  { value: "groq", label: "Groq" },
+  { value: "openai-compatible", label: "OpenAI-compatible" },
+] as const;
+
 type SaveState = "idle" | "saving" | "saved" | "error";
 type ValidationState = "idle" | "validating" | "valid" | "invalid";
 
@@ -122,6 +136,45 @@ export function ConfigPanel({ addonVersion, config, onChange, onSave, saveError,
         />
       </label>
 
+      <h3 className="agt-subsection-heading">Zotero Account</h3>
+      <p className="agt-small-note">
+        Required when using a remote backend. The backend writes to your Zotero library using these
+        credentials — they are never stored server-side.
+      </p>
+      <label className="agt-field">
+        <span>Zotero API Key</span>
+        <input
+          className="agt-input"
+          onChange={(event) => onChange("zoteroApiKey", event.target.value)}
+          placeholder="your Zotero Web API key"
+          type="password"
+          value={config.zoteroApiKey}
+        />
+      </label>
+      <label className="agt-field">
+        <span>Library ID</span>
+        <input
+          className="agt-input"
+          onChange={(event) => onChange("zoteroLibraryId", event.target.value)}
+          placeholder="e.g. 1234567"
+          type="text"
+          value={config.zoteroLibraryId}
+        />
+      </label>
+      <div className="agt-field">
+        <span>Library Type</span>
+        <CustomSelect
+          onChange={(v) => onChange("zoteroLibraryType", v)}
+          options={[...LIBRARY_TYPE_OPTIONS]}
+          value={config.zoteroLibraryType}
+        />
+      </div>
+      <p className="agt-small-note">
+        <a href="https://www.zotero.org/settings/keys" rel="noreferrer" target="_blank">
+          Get your API key and library ID on zotero.org
+        </a>
+      </p>
+
       <h3 className="agt-subsection-heading">LLM Provider</h3>
       <p className="agt-small-note">
         Select the LLM provider to use for query rewriting and summarization.
@@ -230,6 +283,62 @@ export function ConfigPanel({ addonVersion, config, onChange, onSave, saveError,
         />
       </label>
       <p className="agt-small-note">Leave blank to use the provider default.</p>
+
+      <h3 className="agt-subsection-heading">LLM Override (Remote Mode)</h3>
+      <p className="agt-small-note">
+        The remote backend uses its own LLM key by default. Enable this to use your own key instead
+        (charged to your account, not the operator&apos;s).
+      </p>
+      <label className="agt-checkbox-row">
+        <input
+          checked={config.useCustomLlm}
+          onChange={(event) => onChange("useCustomLlm", event.target.checked)}
+          type="checkbox"
+        />
+        <span>Use my own LLM key for remote backend</span>
+      </label>
+      {config.useCustomLlm ? (
+        <>
+          <div className="agt-field">
+            <span>LLM Provider</span>
+            <CustomSelect
+              onChange={(v) => onChange("customLlmProvider", v)}
+              options={[...LLM_PROVIDER_OPTIONS]}
+              value={config.customLlmProvider || "openai"}
+            />
+          </div>
+          <label className="agt-field">
+            <span>API Key</span>
+            <input
+              className="agt-input"
+              onChange={(event) => onChange("customLlmApiKey", event.target.value)}
+              placeholder="your LLM provider key"
+              type="password"
+              value={config.customLlmApiKey}
+            />
+          </label>
+          <label className="agt-field">
+            <span>Base URL <span className="agt-meta">(optional)</span></span>
+            <input
+              className="agt-input"
+              onChange={(event) => onChange("customLlmBaseUrl", event.target.value)}
+              placeholder="https://api.openai.com/v1"
+              type="url"
+              value={config.customLlmBaseUrl}
+            />
+          </label>
+          <label className="agt-field">
+            <span>Model <span className="agt-meta">(optional)</span></span>
+            <input
+              className="agt-input"
+              onChange={(event) => onChange("customLlmModel", event.target.value)}
+              placeholder="leave blank for provider default"
+              type="text"
+              value={config.customLlmModel}
+            />
+          </label>
+        </>
+      ) : null}
 
       <h3 className="agt-subsection-heading">Search Defaults</h3>
       <p className="agt-small-note">

@@ -179,6 +179,12 @@ function searchDisabledReason(controller: SciAgentController): string | null {
   if (controller.query.trim().length === 0) {
     return "Enter a query before searching.";
   }
+  if (controller.config.backendMode === "remote" && controller.config.zoteroApiKey.trim().length === 0) {
+    return "Set your Zotero API key in Settings → Zotero Account before searching.";
+  }
+  if (controller.config.backendMode === "remote" && controller.config.zoteroLibraryId.trim().length === 0) {
+    return "Set your Zotero Library ID in Settings → Zotero Account before searching.";
+  }
   if (controller.healthBusy) {
     return "Checking the backend connection.";
   }
@@ -596,14 +602,22 @@ function AppContent({ services }: { services: AddonUiServices }) {
     }
   }, [binarySetup, controller]);
 
-  // First-run config card: shown when binary is ready but no LLM key is configured.
+  // First-run config card: shown when binary is ready but required credentials are missing.
+  // Local mode: requires an LLM key. Remote mode: requires Zotero API key + library ID.
   const [firstRunConfigDone, setFirstRunConfigDone] = useState(false);
   const hasLlmKey =
     controller.config.openaiApiKey.length > 0 ||
     controller.config.anthropicApiKey.length > 0 ||
     controller.config.xaiApiKey.length > 0 ||
     controller.config.groqApiKey.length > 0;
-  const showFirstRunConfig = binarySetup === "ready" && !hasLlmKey && !firstRunConfigDone;
+  const hasZoteroRemoteCreds =
+    controller.config.zoteroApiKey.length > 0 &&
+    controller.config.zoteroLibraryId.length > 0;
+  const isRemoteMode = controller.config.backendMode === "remote";
+  const showFirstRunConfig =
+    binarySetup === "ready" &&
+    !firstRunConfigDone &&
+    (isRemoteMode ? !hasZoteroRemoteCreds : !hasLlmKey);
 
   if (binarySetup === "needed") {
     return (

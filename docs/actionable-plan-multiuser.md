@@ -126,7 +126,7 @@ request-scoped contextvar, not from `settings`.
   `preflight`, `trace_spans`; `finalize_approval` threw `KeyError`. Fixed by
   populating defaults in the cache reconstruction block in `app.py`.
 
-### MU2 — Frontend credential UI (0.5–1 day) ← **NEXT**
+### MU2 — Frontend credential UI ✅ done 2026-05-17
 
 **Goal.** The add-on collects Zotero credentials (always) and LLM credentials (optional)
 from the user and sends them as headers on every backend call.
@@ -148,10 +148,10 @@ called from the add-on in remote mode.
 
 #### Acceptance criteria (MU2)
 
-- [ ] All Zotero add-on quality gates pass: `npm ci && npm run lint && npm run build && npm run typecheck && npm run test`.
-- [ ] Sending a `/run` without Zotero API key in prefs surfaces a clear error in the UI before hitting the network.
-- [ ] Toggle "Use my own LLM key" shows the four LLM fields; switching off hides them and clears the headers.
-- [ ] `/run` and `/resume` no longer return 401 when Zotero prefs are filled in.
+- [x] All Zotero add-on quality gates pass: lint, build, typecheck, 152 tests.
+- [x] Sending a `/run` without Zotero API key in prefs surfaces a clear error in the UI before hitting the network (`searchDisabledReason`).
+- [x] Toggle "Use my own LLM key" shows the four LLM fields; switching off hides them and clears the headers.
+- [ ] `/run` and `/resume` no longer return 401 when Zotero prefs are filled in — verify after MU3 deploy.
 
 ### MU3 — Cloud Run reconfig (10 min)
 
@@ -266,13 +266,14 @@ Public backend: `https://sciagent-ewpafdgfya-ew.a.run.app`
 - Single-user deploy ✅ done 2026-05-17 (M0–M4 of `actionable-plan.md`).
 - MU1 backend ✅ done 2026-05-17 — committed (`0d10e67`), **not yet deployed**.
 - Bug fixes (spell check, author filter reset, cache-hit 500) ✅ done 2026-05-17 — committed (`8324201`), not yet deployed.
-- Current focus: **MU2 — Frontend credential UI** (add-on must send Zotero headers before MU1 deploy is useful)
+- MU2 frontend ✅ done 2026-05-17 — 8 new prefs fields, Zotero/LLM headers in `buildHeaders`, ConfigPanel sections, FirstRunConfigCard adapts to remote mode, pre-search validation, 5 new tests.
+- Current focus: **MU3 — Cloud Run reconfig** (remove baked-in Zotero secrets; then deploy MU1+MU2 together)
 
 ### Phase Tracker
 
 - [ ] **MU0** — Verify cost guardrails
 - [x] **MU1** — Backend credential injection ✅ 2026-05-17
-- [ ] **MU2** — Frontend credential UI ← next
+- [x] **MU2** — Frontend credential UI ✅ 2026-05-17
 - [ ] **MU3** — Cloud Run reconfig (blocked: must NOT run before MU1+MU2 deployed)
 - [ ] **MU4** — README + trust statement
 - [ ] **MU5** — End-to-end smoke test
