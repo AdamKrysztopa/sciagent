@@ -72,11 +72,12 @@ the same credentials on `/run` and `/resume`.
 
 ## Phases
 
-### MU0 — Verify cost guardrails (15 min)
+### MU0 — Verify cost guardrails ✅ done 2026-05-17
 
-- [ ] Confirm 50 zł / month budget alert from M0.4 is active.
-- [ ] Confirm `--max-instances=2` on Cloud Run service: `gcloud run services describe sciagent --region=europe-west1 | grep -i maxScale`.
-- [ ] (Optional) Set a hard DeepSeek monthly cap in the DeepSeek dashboard if available.
+- [x] `--max-instances=2` confirmed: `autoscaling.knative.dev/maxScale=2` on the service.
+- [ ] 50 zł / month budget alert — cannot verify via gcloud (Billing Budgets API not enabled);
+  confirm manually in [GCP Console → Billing → Budgets](https://console.cloud.google.com/billing).
+- [ ] (Optional) Set a hard DeepSeek monthly cap in the DeepSeek dashboard.
 
 ### MU1 — Backend credential injection ✅ done 2026-05-17
 
@@ -269,7 +270,7 @@ Public backend: `https://sciagent-ewpafdgfya-ew.a.run.app`
 
 ### Phase Tracker
 
-- [ ] **MU0** — Verify cost guardrails
+- [x] **MU0** — Verify cost guardrails ✅ 2026-05-17 (max-instances=2 confirmed; budget alert needs manual Console check)
 - [x] **MU1** — Backend credential injection ✅ 2026-05-17
 - [x] **MU2** — Frontend credential UI ✅ 2026-05-17
 - [x] **MU3** — Cloud Run reconfig ✅ 2026-05-17
