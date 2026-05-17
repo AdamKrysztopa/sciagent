@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import type { AddonConfig } from "../../host/prefs";
+import { CustomSelect } from "./CustomSelect";
 
 const PROVIDER_OPTIONS = [
   { label: "OpenAI", value: "openai" },
@@ -109,18 +110,14 @@ export function FirstRunConfigCard({ config, onSave, onSkip }: FirstRunConfigCar
 
         {showAdvanced ? (
           <div className="agt-advanced-section">
-            <label className="agt-field">
+            <div className="agt-field">
               <span>LLM Provider</span>
-              <select
-                className="agt-input"
-                onChange={(e) => { setProvider(e.target.value); }}
+              <CustomSelect
+                onChange={setProvider}
+                options={[...PROVIDER_OPTIONS]}
                 value={provider}
-              >
-                {PROVIDER_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-            </label>
+              />
+            </div>
           </div>
         ) : null}
 

@@ -246,6 +246,7 @@ export interface RunRequest {
   thread_id?: string;
   filter_edit?: FilterEditContract;
   search_depth?: "quick" | "balanced" | "deep";
+  force_refresh?: boolean;
 }
 
 export interface ResumeRequest {

@@ -1,5 +1,11 @@
 # SciAgent Actionable Plan — GCP Deployment (Cloud Run + CI/CD)
 
+> **⚠ Pivot 2026-05-17.** Single-user deploy (M0–M4) is **done** and live at
+> `https://sciagent-ewpafdgfya-ew.a.run.app`. M5–M10 are **superseded** by the
+> multi-user pivot — see [`actionable-plan-multiuser.md`](actionable-plan-multiuser.md)
+> for the open-backend / BYO-credentials redesign. Do not execute M5–M10 of this
+> plan; they assume single-user secrets baked into the service.
+>
 > **Prerequisite.** Every box in P10 is checked — see
 > [actionable-plan-done-4.md](actionable-plan-done-4.md). This plan assumes:
 >
@@ -67,7 +73,7 @@ Set these up before M0. They save time throughout the deployment.
 - **`Cloud Code: Open Cloud Shell`** — free pre-authenticated Linux shell in the browser if local `gcloud` misbehaves.
 
 Skip "Cloud Code: Deploy to Cloud Run" GUI — it hides the flags. Use the `gcloud`
-commands in M4 explicitly so future-you can reproduce the exact configuration.
+commands in M4 explicitly so futurev-you can reproduce the exact configuration.
 
 ---
 
@@ -214,35 +220,21 @@ Semantic Scholar, Crossref, PubMed, arXiv, Europe PMC) are competitive per
 
 **Goal.** `gcloud run services list` runs without errors against your project.
 
-- [ ] **M0.1** Create a Google Cloud account at <https://console.cloud.google.com>.
+- [x] **M0.1** Create a Google Cloud account at <https://console.cloud.google.com>.
   New accounts get **$300 free credit for 90 days**.
-- [ ] **M0.2** Create project `sciagent-prod`. Note the **project ID** (globally
-  unique). Set as default: `gcloud config set project sciagent-prod`.
-- [ ] **M0.3** Link a billing account. Required even for free-tier services.
-- [ ] **M0.4** Set the billing budget alert. Console → Billing → Budgets & alerts
-  → Create budget → **$5/month**, alerts at 50/90/100%. **Do this before
-  anything else.**
-- [ ] **M0.5** Install `gcloud`:
-  macOS: `brew install --cask google-cloud-sdk`.
-  Other: <https://cloud.google.com/sdk/docs/install>.
-- [ ] **M0.6** Authenticate:
+- [x] **M0.2** ~~Create project `sciagent-prod`.~~ Project created as **`sciagent-496617`**
+  (project number: 358017232995). Set as default: `gcloud config set project sciagent-496617`.
+  Use `sciagent-496617` everywhere this plan references `sciagent-prod`.
+- [x] **M0.3** Link a billing account. Required even for free-tier services.
+- [x] **M0.4** Set the billing budget alert — "Alert" budget, **50 zł/month**, alerts at 50/90/100%. Done 2026-05-17.
+- [x] **M0.5** Install `gcloud` via `brew install --cask google-cloud-sdk`. Done 2026-05-17.
+- [x] **M0.6** Authenticate:
+  - [x] `gcloud init` — signed in as `krysztopa@gmail.com`, project sciagent-496617 set. Done 2026-05-17.
+  - [x] `gcloud auth application-default login` — ADC saved. Done 2026-05-17.
 
-  ```bash
-  gcloud init
-  gcloud auth application-default login
-  ```
+- [x] **M0.7** Set default region: `gcloud config set run/region europe-west1`. Done 2026-05-17.
 
-- [ ] **M0.7** Set default region:
-
-  ```bash
-  gcloud config set run/region europe-west1
-  ```
-
-- [ ] **M0.8** Verify:
-
-  ```bash
-  gcloud projects describe sciagent-prod
-  ```
+- [x] **M0.8** Verify: `gcloud projects describe sciagent-496617` → ACTIVE. Done 2026-05-17.
 
 **Cost: $0.**
 
@@ -250,35 +242,10 @@ Semantic Scholar, Crossref, PubMed, arXiv, Europe PMC) are competitive per
 
 ### M1 — Enable APIs and Foundation Resources (30 minutes)
 
-- [ ] **M1.1** Enable the 7 required APIs:
-
-  ```bash
-  gcloud services enable \
-    run.googleapis.com \
-    artifactregistry.googleapis.com \
-    cloudbuild.googleapis.com \
-    secretmanager.googleapis.com \
-    iam.googleapis.com \
-    logging.googleapis.com \
-    monitoring.googleapis.com
-  ```
-
-- [ ] **M1.2** Create the Artifact Registry repo:
-
-  ```bash
-  gcloud artifacts repositories create sciagent \
-    --repository-format=docker \
-    --location=europe-west1 \
-    --description="SciAgent backend images"
-  ```
-
-- [ ] **M1.3** Configure Docker auth to AR:
-
-  ```bash
-  gcloud auth configure-docker europe-west1-docker.pkg.dev
-  ```
-
-- [ ] **M1.4** Verify: `gcloud artifacts repositories list` shows `sciagent`.
+- [x] **M1.1** Enable the 7 required APIs. Done 2026-05-17.
+- [x] **M1.2** Create Artifact Registry repo `sciagent` in `europe-west1`. Done 2026-05-17.
+- [x] **M1.3** Configure Docker auth to AR. Done 2026-05-17.
+- [x] **M1.4** Verify: `gcloud artifacts repositories list` shows `sciagent`. Done 2026-05-17.
 
 **Cost: $0** (empty repos are free).
 
@@ -289,33 +256,9 @@ Semantic Scholar, Crossref, PubMed, arXiv, Europe PMC) are competitive per
 **Goal.** Cloud Run runs as a dedicated identity with only what it needs. Never
 use the default Compute Engine service account.
 
-- [ ] **M2.1** Create the runtime service account:
-
-  ```bash
-  gcloud iam service-accounts create sciagent-run \
-    --display-name="SciAgent Cloud Run runtime"
-  export SA=sciagent-run@$(gcloud config get-value project).iam.gserviceaccount.com
-  ```
-
-- [ ] **M2.2** Grant minimum roles:
-
-  ```bash
-  PROJECT_ID=$(gcloud config get-value project)
-
-  gcloud projects add-iam-policy-binding $PROJECT_ID \
-    --member="serviceAccount:$SA" --role="roles/secretmanager.secretAccessor"
-
-  gcloud projects add-iam-policy-binding $PROJECT_ID \
-    --member="serviceAccount:$SA" --role="roles/logging.logWriter"
-
-  gcloud projects add-iam-policy-binding $PROJECT_ID \
-    --member="serviceAccount:$SA" --role="roles/monitoring.metricWriter"
-  ```
-
-  **Do NOT grant** `roles/owner`, `roles/editor`, or `roles/run.admin` to this
-  account. Those are for your *user*, not the running container.
-
-- [ ] **M2.3** Verify: `gcloud iam service-accounts get-iam-policy $SA`.
+- [x] **M2.1** Created service account `sciagent-run@sciagent-496617.iam.gserviceaccount.com`. Done 2026-05-17.
+- [x] **M2.2** Granted 3 minimum roles: `secretmanager.secretAccessor`, `logging.logWriter`, `monitoring.metricWriter`. Done 2026-05-17.
+- [x] **M2.3** Verified: all 3 roles confirmed at project level. Done 2026-05-17.
 
 **Cost: $0.**
 
@@ -358,7 +301,7 @@ vars on the Cloud Run service, not in Secret Manager.
 
 #### Steps
 
-- [ ] **M3.1** Generate the backend API key:
+- [x] **M3.1** Generate the backend API key:
 
   ```bash
   python3 -c "import secrets; print(secrets.token_urlsafe(48))"
@@ -367,20 +310,10 @@ vars on the Cloud Run service, not in Secret Manager.
   Save to your password manager. You will paste it into the Zotero add-on
   settings in M5.
 
-- [ ] **M3.2** Create each required secret (repeat for every name in the table).
-  The `-n` flag matters — trailing newlines silently cause 401s:
+- [x] **M3.2** Created all 4 secrets from `.env` directly into Secret Manager. Done 2026-05-17.
+  Note: `AGT_BACKEND_API_KEY` v1 was the placeholder (14 chars); v2 is the correct generated key (64 chars).
 
-  ```bash
-  echo -n "your-actual-value-here" | \
-    gcloud secrets create AGT_BACKEND_API_KEY \
-    --data-file=- --replication-policy="automatic"
-  ```
-
-- [ ] **M3.3** Verify each secret reads back:
-
-  ```bash
-  gcloud secrets versions access latest --secret=AGT_BACKEND_API_KEY
-  ```
+- [x] **M3.3** Verified: all 4 secrets readable, correct lengths. Done 2026-05-17.
 
 - [ ] **M3.4** (Optional) Grant the service account per-secret access for
   belt-and-braces control:
@@ -404,12 +337,11 @@ vars on the Cloud Run service, not in Secret Manager.
 
 ---
 
-### M4 — First Manual Deploy to Cloud Run (1 hour)
+### M4 — First Manual Deploy to Cloud Run ✅ Done 2026-05-17
 
-**Goal.** `https://sciagent-xxxxx-ew.a.run.app/health` returns 200 with the
-right `X-AGT-API-Key`.
+**Goal.** `https://sciagent-ewpafdgfya-ew.a.run.app/health` returns 200 — ACHIEVED.
 
-- [ ] **M4.1** Build and push via Cloud Build (no local Docker needed):
+- [x] **M4.1** Build and push via Cloud Build (no local Docker needed):
 
   ```bash
   REGION=europe-west1
@@ -810,8 +742,10 @@ Walk this top-to-bottom whenever your bill surprises you.
 
 - Prerequisite: P10 (`actionable-plan-done-4.md`) ✅ complete (2026-05-17).
 - Current focus: **M0 — GCP Account & Local Tooling**
-- Current next implementation target: **M0.1**
-- Last completed: *(none)*
+- Current next implementation target: **MU1** in [`actionable-plan-multiuser.md`](actionable-plan-multiuser.md) — backend credential injection
+- Last completed: M5 done 2026-05-17 (M5-B and M5-D shipped, will be revised in MU2)
+- **Pivoted to multi-user 2026-05-17.** M6–M10 of this plan are no longer applicable.
+- **Note:** Project ID is `sciagent-496617` — replace `sciagent-prod` everywhere in this plan.
 
 ### Phase Tracker
 

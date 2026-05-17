@@ -58,6 +58,17 @@ function endpointCanUseReachabilityFallback(error: BackendClientError): boolean 
   return error.status === 404 || error.status === 405;
 }
 
+function cloudErrorMessage(response: Response): string | null {
+  if (response.status === 401) return "API key rejected. Check Settings → Connection.";
+  if (response.status === 403) return "Origin not allowed.";
+  if (response.status === 429) {
+    const retryAfter = response.headers.get("Retry-After");
+    return retryAfter ? `Rate limit hit. Retry in ${retryAfter}s.` : "Rate limit hit.";
+  }
+  if (response.status >= 500) return "Backend not responding.";
+  return null;
+}
+
 export class SciAgentBackendClient {
   private readonly apiKey: string;
   private readonly baseUrl: string;
@@ -212,6 +223,8 @@ export class SciAgentBackendClient {
       headers: this.buildHeaders(hasBody),
     });
     if (!response.ok) {
+      const cloud = cloudErrorMessage(response);
+      if (cloud !== null) throw new BackendClientError(cloud, response.status, null);
       const detail = await parseErrorPayload(response);
       const message = typeof detail === "string" ? detail : `backend_request_failed:${response.status}`;
       throw new BackendClientError(message, response.status, detail);
@@ -226,6 +239,8 @@ export class SciAgentBackendClient {
     });
 
     if (!response.ok) {
+      const cloud = cloudErrorMessage(response);
+      if (cloud !== null) throw new BackendClientError(cloud, response.status, null);
       const detail = await parseErrorPayload(response);
       const message = typeof detail === "string" ? detail : `backend_request_failed:${response.status}`;
       throw new BackendClientError(message, response.status, detail);

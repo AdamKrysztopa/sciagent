@@ -244,6 +244,7 @@ export function useSciAgentController(services: AddonUiServices) {
       return;
     }
 
+    const isRerun = runView.snapshot !== null;
     setNativeWriteResult(null);
     setRunView({ error: null, phase: "submitting", snapshot: runView.snapshot });
     try {
@@ -253,6 +254,7 @@ export function useSciAgentController(services: AddonUiServices) {
           filterDraft !== null && filterDraft.original_query.trim() === trimmedQuery
             ? filterDraft
             : undefined,
+        force_refresh: isRerun ? true : undefined,
         query: trimmedQuery,
         search_depth: searchDepth,
       });

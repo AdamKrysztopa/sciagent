@@ -310,6 +310,7 @@ function IdleView({ controller, addonVersion }: { controller: SciAgentController
       {controller.sourcePolicy.length > 0 ? <SourceToggles sourcePolicy={controller.sourcePolicy} /> : null}
 
       <HealthStatus
+        backendUrl={controller.config.backendUrl}
         busy={controller.healthBusy}
         error={controller.healthError}
         onRefresh={controller.onRefreshHealth}

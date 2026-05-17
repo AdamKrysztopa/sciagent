@@ -70,6 +70,42 @@ describe("SciAgentBackendClient", () => {
     await expect(client.health()).rejects.toMatchObject({ status: 401 });
   });
 
+  it("returns a human-readable message for 401", async () => {
+    const fetchImpl = vi.fn(async () => jsonResponse({ detail: "invalid_api_key" }, 401));
+    const client = createBackendClient({ apiKey: "bad", baseUrl: "http://localhost:8000", clientId: "c", fetchImpl });
+    await expect(client.health()).rejects.toMatchObject({
+      message: "API key rejected. Check Settings → Connection.",
+      status: 401,
+    });
+  });
+
+  it("returns a human-readable message for 403", async () => {
+    const fetchImpl = vi.fn(async () => jsonResponse({ detail: "forbidden" }, 403));
+    const client = createBackendClient({ apiKey: "k", baseUrl: "http://localhost:8000", clientId: "c", fetchImpl });
+    await expect(client.run({ query: "rag", collection_name: "Inbox" })).rejects.toMatchObject({
+      message: "Origin not allowed.",
+      status: 403,
+    });
+  });
+
+  it("returns a rate-limit message for 429 without Retry-After", async () => {
+    const fetchImpl = vi.fn(async () => new Response(null, { status: 429 }));
+    const client = createBackendClient({ apiKey: "k", baseUrl: "http://localhost:8000", clientId: "c", fetchImpl });
+    await expect(client.health()).rejects.toMatchObject({ message: "Rate limit hit.", status: 429 });
+  });
+
+  it("includes retry countdown in 429 message when Retry-After is set", async () => {
+    const fetchImpl = vi.fn(async () => new Response(null, { headers: { "Retry-After": "30" }, status: 429 }));
+    const client = createBackendClient({ apiKey: "k", baseUrl: "http://localhost:8000", clientId: "c", fetchImpl });
+    await expect(client.health()).rejects.toMatchObject({ message: "Rate limit hit. Retry in 30s.", status: 429 });
+  });
+
+  it("returns a not-responding message for 5xx", async () => {
+    const fetchImpl = vi.fn(async () => new Response(null, { status: 503 }));
+    const client = createBackendClient({ apiKey: "k", baseUrl: "http://localhost:8000", clientId: "c", fetchImpl });
+    await expect(client.health()).rejects.toMatchObject({ message: "Backend not responding.", status: 503 });
+  });
+
   it("treats a reachable OpenAPI document as online when /health is absent", async () => {
     const calls: string[] = [];
     const fetchImpl = vi.fn(async (url: RequestInfo | URL) => {

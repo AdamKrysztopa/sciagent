@@ -4,14 +4,15 @@ from __future__ import annotations
 
 import importlib.metadata
 import time
+import traceback
 import uuid
 from dataclasses import dataclass
 from typing import Any, Literal, cast
 
 import structlog
-from fastapi import Depends, FastAPI, Header, HTTPException, Query, status
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import PlainTextResponse, RedirectResponse
+from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse
 from pydantic import BaseModel, Field, model_validator
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -58,6 +59,7 @@ class RunRequest(BaseModel):
     thread_id: str | None = None
     filter_edit: FilterEditContract | None = None
     search_depth: Literal["quick", "balanced", "deep"] | None = None
+    force_refresh: bool = False
 
     @model_validator(mode="after")
     def validate_filter_edit_query(self) -> RunRequest:
@@ -319,6 +321,26 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     app.state.limiter = _limiter
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
     app.add_middleware(SlowAPIMiddleware)
+
+    _unhandled_logger = structlog.get_logger("agt.api.unhandled")
+
+    @app.exception_handler(Exception)
+    async def _unhandled_exception_handler(  # pyright: ignore[reportUnusedFunction]
+        request: Request, exc: Exception
+    ) -> JSONResponse:
+        _unhandled_logger.exception(
+            "unhandled_exception",
+            path=str(request.url.path),
+            method=request.method,
+            error_type=type(exc).__name__,
+            error=str(exc),
+            traceback=traceback.format_exc(),
+        )
+        return JSONResponse(
+            status_code=500,
+            content={"detail": f"internal_server_error:{type(exc).__name__}:{exc}"},
+        )
+
     store = _RunStore()
     app_state = _AppState()
 
@@ -358,11 +380,13 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     ) -> RunAcceptedResponse:
         collection_name = payload.collection_name or settings.zotero_collection_name
         cache = app_state.result_cache(settings)
-        hard_filters = (
-            payload.filter_edit.hard_filters.model_dump() if payload.filter_edit is not None else {}
-        )
-        result_limit = payload.filter_edit.result_limit if payload.filter_edit is not None else 10
-        cached = cache.get(payload.query, hard_filters, result_limit)
+        if payload.filter_edit is not None:
+            fe_dump = payload.filter_edit.model_dump(exclude={"original_query"})
+            result_limit = payload.filter_edit.result_limit
+        else:
+            fe_dump = {}
+            result_limit = 10
+        cached = None if payload.force_refresh else cache.get(payload.query, fe_dump, result_limit)
         if cached is not None:
             run_id = payload.thread_id or str(uuid.uuid4())
             cached_state = cast(
@@ -430,7 +454,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
 
         cache.set(
             payload.query,
-            hard_filters,
+            fe_dump,
             result_limit,
             {"papers": state.get("papers", []), "search_metadata": state.get("search_metadata")},
         )
