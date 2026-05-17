@@ -2229,14 +2229,11 @@ dependencies = [
     { name = "pydantic-settings" },
     { name = "pyspellchecker" },
     { name = "pyzotero" },
-    { name = "responses" },
     { name = "semanticscholar" },
     { name = "slowapi" },
-    { name = "streamlit" },
     { name = "structlog" },
     { name = "tenacity" },
     { name = "uvicorn" },
-    { name = "vcrpy" },
 ]
 
 [package.optional-dependencies]
@@ -2250,6 +2247,9 @@ rerank = [
 spell = [
     { name = "pyspellchecker" },
 ]
+ui = [
+    { name = "streamlit" },
+]
 
 [package.dev-dependencies]
 dev = [
@@ -2261,7 +2261,10 @@ dev = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-vcr" },
+    { name = "responses" },
     { name = "ruff" },
+    { name = "streamlit" },
+    { name = "vcrpy" },
 ]
 
 [package.metadata]
@@ -2278,18 +2281,16 @@ requires-dist = [
     { name = "pyspellchecker", specifier = ">=0.8.1" },
     { name = "pyspellchecker", marker = "extra == 'spell'", specifier = ">=0.8.1" },
     { name = "pyzotero" },
-    { name = "responses" },
     { name = "semanticscholar" },
     { name = "sentence-transformers", marker = "extra == 'keywords'", specifier = ">=3.0.0" },
     { name = "sentence-transformers", marker = "extra == 'rerank'", specifier = ">=3.0.0" },
     { name = "slowapi", specifier = ">=0.1.9" },
-    { name = "streamlit", specifier = ">=1.40" },
+    { name = "streamlit", marker = "extra == 'ui'", specifier = ">=1.40" },
     { name = "structlog" },
     { name = "tenacity" },
     { name = "uvicorn", specifier = ">=0.33.0" },
-    { name = "vcrpy" },
 ]
-provides-extras = ["keywords", "spell", "rerank"]
+provides-extras = ["ui", "keywords", "spell", "rerank"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -2301,7 +2302,10 @@ dev = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-vcr" },
+    { name = "responses" },
     { name = "ruff" },
+    { name = "streamlit", specifier = ">=1.40" },
+    { name = "vcrpy" },
 ]
 
 [[package]]

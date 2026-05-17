@@ -33,6 +33,7 @@ class _Secret:
 @dataclass(slots=True)
 class _Runtime:
     provider: str = "xai"
+    model_name: str = "gpt-4o-mini"
 
 
 @dataclass(slots=True)
@@ -61,6 +62,8 @@ class _Settings:
     cache_ttl_seconds: int = 3600
     cors_allowed_origins: list[str] = field(default_factory=lambda: ["*"])
     api_rate_limit: str = "200/minute"
+    resolved_llm_provider: str = "xai"
+    llm_base_url: str | None = None
 
     def provider_api_key(self, provider: str) -> _Secret | None:
         return getattr(self, f"{provider}_api_key", None)

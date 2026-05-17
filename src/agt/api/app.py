@@ -8,6 +8,7 @@ import uuid
 from dataclasses import dataclass
 from typing import Any, Literal, cast
 
+import structlog
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse, RedirectResponse
@@ -292,9 +293,18 @@ class _AppState:
         return self._watch_store
 
 
+_log = structlog.get_logger()
+
+
 def create_app() -> FastAPI:  # noqa: PLR0915
     app = FastAPI(title="SciAgent API", version="0.1.0")
     _settings = get_settings()
+    _log.info(
+        "sciagent_startup",
+        llm_provider=_settings.resolved_llm_provider,
+        llm_model=_settings.runtime.model_name,
+        llm_base_url=_settings.llm_base_url,
+    )
     app.add_middleware(
         CORSMiddleware,
         allow_origins=_settings.cors_allowed_origins,
