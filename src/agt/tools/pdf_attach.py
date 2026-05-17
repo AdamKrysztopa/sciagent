@@ -12,8 +12,13 @@ import httpx
 import structlog
 
 from agt.config import Settings
+from agt.credential_context import (
+    resolve_zotero_api_key,
+    resolve_zotero_library_id,
+    resolve_zotero_library_type,
+)
 from agt.models import NormalizedPaper, WriteResult
-from agt.tools.zotero_upsert import ZOTERO_API_BASE, library_prefix
+from agt.tools.zotero_upsert import ZOTERO_API_BASE
 
 _logger = structlog.get_logger("agt.pdf_attach")
 
@@ -201,16 +206,21 @@ async def attach_pdfs_to_items(  # noqa: PLR0912, PLR0915
     logged, and counted in ``result.failed``.
     If Zotero credentials are absent, returns an all-skipped result.
     """
-    if settings.zotero_api_key is None or settings.zotero_library_id is None:
+    try:
+        api_key = resolve_zotero_api_key(settings)
+        lib_id = resolve_zotero_library_id(settings)
+    except ValueError:
         return PdfAttachResult(attached=0, failed=0, skipped=len(papers))
+
+    lib_type = resolve_zotero_library_type(settings)
+    lib_prefix = f"/groups/{lib_id}" if lib_type == "group" else f"/users/{lib_id}"
 
     key_by_index: dict[int, str] = {}
     for outcome in write_result.outcomes:
         if outcome.status == "created" and outcome.item_key is not None:
             key_by_index[outcome.index] = outcome.item_key
 
-    zotero_headers = {"Zotero-API-Key": settings.zotero_api_key.get_secret_value()}
-    lib_prefix = library_prefix(settings)
+    zotero_headers = {"Zotero-API-Key": api_key}
     enable_download = settings.enable_pdf_attachment
     download_timeout = float(settings.pdf_download_timeout)
 

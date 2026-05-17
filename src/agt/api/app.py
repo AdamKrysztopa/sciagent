@@ -19,7 +19,9 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
 
+from agt.api.credentials import get_credentials
 from agt.config import Settings, get_settings
+from agt.credential_context import RequestCredentials
 from agt.graph.workflow import resume_workflow, run_search_phase
 from agt.models import (
     AgentState,
@@ -31,7 +33,7 @@ from agt.models import (
     ResolvedVenue,
     SourceCapability,
 )
-from agt.providers.router import build_provider
+from agt.providers.router import build_provider_for_request
 from agt.result_cache import ResultCache
 from agt.session_export import ExportFormat, export_session
 from agt.session_store import SessionStore
@@ -350,7 +352,20 @@ def create_app() -> FastAPI:  # noqa: PLR0915
 
     @app.get("/health")
     async def _health(  # pyright: ignore[reportUnusedFunction]
-        _: None = Depends(_require_backend_key),
+        settings: Settings = Depends(get_settings),
+    ) -> dict[str, Any]:
+        return {
+            "ok": True,
+            "message": "service is up",
+            "preflight": {"ok": None, "message": "call /preflight with Zotero credentials"},
+            "provider": settings.runtime.provider,
+            "fallback_provider": settings.llm_fallback_provider,
+            "api_contract_version": API_CONTRACT_VERSION,
+        }
+
+    @app.get("/preflight")
+    async def _preflight(  # pyright: ignore[reportUnusedFunction]
+        _creds: RequestCredentials = Depends(get_credentials),
         settings: Settings = Depends(get_settings),
     ) -> dict[str, Any]:
         preflight = run_zotero_preflight(settings)
@@ -375,6 +390,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     async def _run(  # pyright: ignore[reportUnusedFunction]
         payload: RunRequest,
         _: None = Depends(_require_backend_key),
+        _creds: RequestCredentials = Depends(get_credentials),
         settings: Settings = Depends(get_settings),
         client_id: str = Depends(_client_id_header),
     ) -> RunAcceptedResponse:
@@ -480,6 +496,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     async def _resume(  # pyright: ignore[reportUnusedFunction]
         payload: ResumeRequest,
         _: None = Depends(_require_backend_key),
+        _creds: RequestCredentials = Depends(get_credentials),
         settings: Settings = Depends(get_settings),
         client_id: str = Depends(_client_id_header),
     ) -> RunAcceptedResponse:
@@ -653,7 +670,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
         settings: Settings = Depends(get_settings),
     ) -> ExtractKeywordsResponse:
         try:
-            provider = build_provider(settings)
+            provider = build_provider_for_request(settings)
             result: KeywordExtraction = await extract_keywords(body.query, provider)
         except Exception:
             result = KeywordExtraction()
@@ -807,6 +824,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     async def _library_doctor(  # pyright: ignore[reportUnusedFunction]
         body: LibraryDoctorRequest,
         _: None = Depends(_require_backend_key),
+        _creds: RequestCredentials = Depends(get_credentials),
         settings: Settings = Depends(get_settings),
     ) -> DoctorReport:
         return await scan_collection(body.collection_name, settings)
@@ -815,9 +833,10 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     async def _gap_finder(  # pyright: ignore[reportUnusedFunction]
         body: GapFinderRequest,
         _: None = Depends(_require_backend_key),
+        _creds: RequestCredentials = Depends(get_credentials),
         settings: Settings = Depends(get_settings),
     ) -> GapFinderResponse:
-        provider = build_provider(settings)
+        provider = build_provider_for_request(settings)
         suggestion: GapSuggestion = await find_gaps(body.collection_name, settings, provider)
         return GapFinderResponse(
             reasoning=suggestion.reasoning,
@@ -879,6 +898,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     async def _rerun_watch(  # pyright: ignore[reportUnusedFunction]
         watch_id: str,
         _: None = Depends(_require_backend_key),
+        _creds: RequestCredentials = Depends(get_credentials),
         settings: Settings = Depends(get_settings),
         client_id: str = Depends(_client_id_header),
     ) -> WatchRerunResponse:

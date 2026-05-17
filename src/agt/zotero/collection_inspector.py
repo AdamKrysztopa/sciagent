@@ -8,10 +8,14 @@ from typing import Any, Literal, cast
 import httpx
 
 from agt.config import Settings
+from agt.credential_context import (
+    resolve_zotero_api_key,
+    resolve_zotero_library_id,
+    resolve_zotero_library_type,
+)
 from agt.models import NormalizedPaper
 from agt.tools.zotero_upsert import (
     ZOTERO_API_BASE,
-    library_prefix,
     normalize_doi,
     title_author_fingerprint,
 )
@@ -146,11 +150,15 @@ async def fetch_library_index(
 
     Returns an empty LibraryIndex if Zotero credentials are not configured.
     """
-    if settings.zotero_api_key is None or settings.zotero_library_id is None:
+    try:
+        api_key = resolve_zotero_api_key(settings)
+        lib_id = resolve_zotero_library_id(settings)
+    except ValueError:
         return LibraryIndex()
 
-    headers = {"Zotero-API-Key": settings.zotero_api_key.get_secret_value()}
-    prefix = library_prefix(settings)
+    lib_type = resolve_zotero_library_type(settings)
+    prefix = f"/groups/{lib_id}" if lib_type == "group" else f"/users/{lib_id}"
+    headers = {"Zotero-API-Key": api_key}
 
     owns_client = client is None
     api_client = client or httpx.AsyncClient(

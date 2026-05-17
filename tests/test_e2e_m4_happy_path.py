@@ -121,7 +121,7 @@ async def test_m4_end_to_end_happy_path_with_mocked_externals(
 
     monkeypatch.setattr(workflow, "get_settings", _fake_get_settings)
     monkeypatch.setattr(workflow, "configure_logging", _fake_configure_logging)
-    monkeypatch.setattr(workflow, "build_provider", _fake_build_provider)
+    monkeypatch.setattr(workflow, "build_provider_for_request", _fake_build_provider)
     monkeypatch.setattr(workflow, "run_zotero_preflight", _fake_preflight_ok)
     monkeypatch.setattr(workflow, "search_papers", fake_search)
     monkeypatch.setattr(workflow, "upsert_papers", fake_upsert)

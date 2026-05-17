@@ -123,7 +123,7 @@ async def test_workflow_contains_ids_preflight_and_spans(monkeypatch: pytest.Mon
 
     monkeypatch.setattr(workflow, "get_settings", _fake_get_settings)
     monkeypatch.setattr(workflow, "configure_logging", _fake_configure_logging)
-    monkeypatch.setattr(workflow, "build_provider", _fake_build_provider)
+    monkeypatch.setattr(workflow, "build_provider_for_request", _fake_build_provider)
     monkeypatch.setattr(workflow, "run_zotero_preflight", _fake_preflight_ok)
     monkeypatch.setattr(workflow, "search_papers", fake_search)
     monkeypatch.setattr(workflow, "upsert_papers", fake_upsert)
@@ -165,7 +165,7 @@ async def test_workflow_contains_ids_preflight_and_spans(monkeypatch: pytest.Mon
 async def test_workflow_fails_fast_when_preflight_fails(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(workflow, "get_settings", _fake_get_settings)
     monkeypatch.setattr(workflow, "configure_logging", _fake_configure_logging)
-    monkeypatch.setattr(workflow, "build_provider", _fake_build_provider)
+    monkeypatch.setattr(workflow, "build_provider_for_request", _fake_build_provider)
     monkeypatch.setattr(workflow, "run_zotero_preflight", _fake_preflight_fail)
 
     with pytest.raises(RuntimeError, match="missing write scope"):
@@ -205,7 +205,7 @@ async def test_finalize_reject_skips_write(monkeypatch: pytest.MonkeyPatch) -> N
 
     monkeypatch.setattr(workflow, "get_settings", _fake_get_settings)
     monkeypatch.setattr(workflow, "configure_logging", _fake_configure_logging)
-    monkeypatch.setattr(workflow, "build_provider", _fake_build_provider)
+    monkeypatch.setattr(workflow, "build_provider_for_request", _fake_build_provider)
     monkeypatch.setattr(workflow, "run_zotero_preflight", _fake_preflight_ok)
     monkeypatch.setattr(workflow, "search_papers", fake_search)
     monkeypatch.setattr(workflow, "upsert_papers", fail_upsert)
@@ -276,7 +276,7 @@ async def test_finalize_approval_supports_selection_and_collection_rename(
 
     monkeypatch.setattr(workflow, "get_settings", _fake_get_settings)
     monkeypatch.setattr(workflow, "configure_logging", _fake_configure_logging)
-    monkeypatch.setattr(workflow, "build_provider", _fake_build_provider)
+    monkeypatch.setattr(workflow, "build_provider_for_request", _fake_build_provider)
     monkeypatch.setattr(workflow, "run_zotero_preflight", _fake_preflight_ok)
     monkeypatch.setattr(workflow, "search_papers", fake_search)
     monkeypatch.setattr(workflow, "upsert_papers", fake_upsert)
@@ -327,7 +327,7 @@ async def test_run_search_phase_forwards_filter_edit_to_search(
 
     monkeypatch.setattr(workflow, "get_settings", _fake_get_settings)
     monkeypatch.setattr(workflow, "configure_logging", _fake_configure_logging)
-    monkeypatch.setattr(workflow, "build_provider", _fake_build_provider)
+    monkeypatch.setattr(workflow, "build_provider_for_request", _fake_build_provider)
     monkeypatch.setattr(workflow, "run_zotero_preflight", _fake_preflight_ok)
     monkeypatch.setattr(workflow, "search_papers", fake_search)
 
@@ -396,7 +396,7 @@ async def test_resume_completed_checkpoint_reuses_state_without_write(
 
     monkeypatch.setattr(workflow, "get_settings", _fake_get_settings)
     monkeypatch.setattr(workflow, "configure_logging", _fake_configure_logging)
-    monkeypatch.setattr(workflow, "build_provider", _fake_build_provider)
+    monkeypatch.setattr(workflow, "build_provider_for_request", _fake_build_provider)
     monkeypatch.setattr(workflow, "run_zotero_preflight", _fake_preflight_ok)
     monkeypatch.setattr(workflow, "search_papers", fake_search)
     monkeypatch.setattr(workflow, "upsert_papers", fake_upsert)
@@ -446,7 +446,7 @@ async def test_finalize_write_error_returns_deterministic_retry_safe_failure(
 
     monkeypatch.setattr(workflow, "get_settings", _fake_get_settings)
     monkeypatch.setattr(workflow, "configure_logging", _fake_configure_logging)
-    monkeypatch.setattr(workflow, "build_provider", _fake_build_provider)
+    monkeypatch.setattr(workflow, "build_provider_for_request", _fake_build_provider)
     monkeypatch.setattr(workflow, "run_zotero_preflight", _fake_preflight_ok)
     monkeypatch.setattr(workflow, "search_papers", fake_search)
     monkeypatch.setattr(workflow, "upsert_papers", fail_upsert)
@@ -511,7 +511,7 @@ async def test_finalize_partial_write_failure_keeps_completed_phase(
 
     monkeypatch.setattr(workflow, "get_settings", _fake_get_settings)
     monkeypatch.setattr(workflow, "configure_logging", _fake_configure_logging)
-    monkeypatch.setattr(workflow, "build_provider", _fake_build_provider)
+    monkeypatch.setattr(workflow, "build_provider_for_request", _fake_build_provider)
     monkeypatch.setattr(workflow, "run_zotero_preflight", _fake_preflight_ok)
     monkeypatch.setattr(workflow, "search_papers", fake_search)
     monkeypatch.setattr(workflow, "upsert_papers", partially_failing_upsert)
@@ -573,7 +573,7 @@ async def test_resume_after_failed_write_retries_and_can_complete(
 
     monkeypatch.setattr(workflow, "get_settings", _fake_get_settings)
     monkeypatch.setattr(workflow, "configure_logging", _fake_configure_logging)
-    monkeypatch.setattr(workflow, "build_provider", _fake_build_provider)
+    monkeypatch.setattr(workflow, "build_provider_for_request", _fake_build_provider)
     monkeypatch.setattr(workflow, "run_zotero_preflight", _fake_preflight_ok)
     monkeypatch.setattr(workflow, "search_papers", fake_search)
     monkeypatch.setattr(workflow, "upsert_papers", flaky_upsert)
