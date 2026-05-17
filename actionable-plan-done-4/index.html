@@ -1,0 +1,1653 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="SciAgent documentation site built from Markdown sources in the repository.">
+      
+      
+      
+        <link rel="canonical" href="https://adamkrysztopa.github.io/sciagent/actionable-plan-done-4/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>SciAgent Actionable Plan — P10 (GCP Prerequisites: Cheap LLM + Docker Cloud Readiness) — DONE - SciAgent Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#sciagent-actionable-plan-p10-gcp-prerequisites-cheap-llm-docker-cloud-readiness-done" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="SciAgent Docs" class="md-header__button md-logo" aria-label="SciAgent Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            SciAgent Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              SciAgent Actionable Plan — P10 (GCP Prerequisites: Cheap LLM + Docker Cloud Readiness) — DONE
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/AdamKrysztopa/sciagent" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    AdamKrysztopa/sciagent
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="SciAgent Docs" class="md-nav__button md-logo" aria-label="SciAgent Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    SciAgent Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/AdamKrysztopa/sciagent" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    AdamKrysztopa/sciagent
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Overview
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Get Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Get Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../keys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Keys
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-manual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Manual
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Power User
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Power User
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../advanced-config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../manual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration & Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment & Hosting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../providers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Provider Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../zotero/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Zotero Add-on
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../benchmark/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    P1 Benchmark
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../local-first/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local-First Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../actionable-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Action Plan
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../priorities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Priorities
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../next-steps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Next Steps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#design-philosophy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Philosophy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-already-done-code-audit-2026-05-17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Is Already Done (Code Audit — 2026-05-17)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#execution-tracker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Execution Tracker
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Execution Tracker">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current Status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p10-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P10 Status
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#milestones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Milestones
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Milestones">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c1-cheap-llm-account-key-15-minutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C1 — Cheap LLM Account &amp; Key (15 minutes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c2-startup-llm-config-log-line-30-minutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C2 — Startup LLM Config Log Line (30 minutes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c3-dockerfile-honor-port-5-minutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C3 — Dockerfile: Honor $PORT (5 minutes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c4-create-dockerignore-5-minutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C4 — Create .dockerignore (5 minutes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c5-local-docker-smoke-test-with-cheap-llm-15-minutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C5 — Local Docker Smoke Test with Cheap LLM (15 minutes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c6-end-to-end-zotero-docker-test-20-minutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C6 — End-to-End Zotero → Docker Test (20 minutes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c7-commit-ci-10-minutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C7 — Commit + CI (10 minutes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#definition-of-done" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Definition of Done
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#risk-register" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Risk Register
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-pitfalls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Pitfalls
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quality-gates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quality Gates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        See Also
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="sciagent-actionable-plan-p10-gcp-prerequisites-cheap-llm-docker-cloud-readiness-done">SciAgent Actionable Plan — P10 (GCP Prerequisites: Cheap LLM + Docker Cloud Readiness) — DONE<a class="headerlink" href="#sciagent-actionable-plan-p10-gcp-prerequisites-cheap-llm-docker-cloud-readiness-done" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>Completed: 2026-05-17</strong> — All C1–C7 stories complete. Archived 2026-05-17.
+See <a href="../actionable-plan/">actionable-plan.md</a> for the current plan (GCP Deployment).</p>
+<p><strong>Last audit: 2026-05-17</strong> — All P0–P9 stories complete (see
+<a href="../actionable-plan-done-3/">actionable-plan-done-3.md</a> and earlier archives).</p>
+<p>This plan covers <strong>P10: everything that must be true in the codebase and locally
+before the GCP deployment plan makes sense.</strong>
+No GCP commands here — this is the application story. The deployment plan is the
+infrastructure story. Both must pass before GCP works.</p>
+</blockquote>
+<h2 id="design-philosophy">Design Philosophy<a class="headerlink" href="#design-philosophy" title="Permanent link">&para;</a></h2>
+<p><strong>Cheap by default.</strong> The codebase already supports every major LLM provider
+through a unified <code>AGT_LLM_PROVIDER</code> / <code>AGT_LLM_BASE_URL</code> / <code>AGT_LLM_API_KEY</code>
+config surface. The <code>openai-compatible</code> adapter covers DeepSeek, Groq (via their
+OpenAI-compat endpoint), Together AI, LM Studio, and Ollama — no new code
+required for any of them. What's missing is (a) the operator running the actual
+key setup, (b) a startup log line confirming which provider is active (critical
+for debugging cloud cold-starts), and (c) the Docker image being production-ready
+for Cloud Run.</p>
+<p><strong>One variable to change.</strong> A researcher self-hosting on GCP should be able to
+swap LLM providers by changing three env vars (<code>AGT_LLM_PROVIDER</code>,
+<code>AGT_LLM_BASE_URL</code>, <code>AGT_LLM_API_KEY</code>) and restarting the container. Zero code
+changes. P10 verifies this end-to-end with DeepSeek as the reference cheap
+provider.</p>
+<p><strong>Docker-ready before GCP.</strong> Cloud Run is Docker. If the image doesn't work
+locally against DeepSeek with the right env vars, it won't work in the cloud.
+P10 is the local validation pass that makes M4 of the GCP plan a 10-minute
+operation instead of an afternoon of debugging.</p>
+<hr />
+<h2 id="what-is-already-done-code-audit-2026-05-17">What Is Already Done (Code Audit — 2026-05-17)<a class="headerlink" href="#what-is-already-done-code-audit-2026-05-17" title="Permanent link">&para;</a></h2>
+<p>After auditing the codebase, the following items from the original prereq plan
+are <strong>already complete</strong>. They are listed here so they are not re-implemented.</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Location</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AGT_LLM_BASE_URL</code> config field</td>
+<td><code>src/agt/config.py:148</code></td>
+<td>✅ done</td>
+</tr>
+<tr>
+<td><code>AGT_LLM_API_KEY</code> config field</td>
+<td><code>src/agt/config.py:143</code></td>
+<td>✅ done</td>
+</tr>
+<tr>
+<td><code>AGT_LLM_PROVIDER</code> auto-detection</td>
+<td><code>src/agt/config.py:478</code></td>
+<td>✅ done</td>
+</tr>
+<tr>
+<td><code>openai_compatible</code> provider with <code>base_url</code></td>
+<td><code>src/agt/providers/openai_compatible.py</code></td>
+<td>✅ done</td>
+</tr>
+<tr>
+<td>Router wires <code>llm_base_url</code> → <code>openai-compatible</code></td>
+<td><code>src/agt/providers/router.py:132</code></td>
+<td>✅ done</td>
+</tr>
+<tr>
+<td><code>.env.example</code> DeepSeek recipe</td>
+<td><code>.env.example:25-28</code></td>
+<td>✅ done</td>
+</tr>
+<tr>
+<td>Tests: base_url config + routing</td>
+<td><code>tests/test_config.py:203</code>, <code>tests/test_providers.py:365</code></td>
+<td>✅ done</td>
+</tr>
+<tr>
+<td>CORS via <code>AGT_CORS_ALLOWED_ORIGINS</code></td>
+<td><code>src/agt/config.py:431</code>, <code>src/agt/api/app.py:299</code></td>
+<td>✅ done</td>
+</tr>
+<tr>
+<td><code>AGT_BACKEND_API_KEY</code> auth middleware</td>
+<td><code>src/agt/config.py:78</code></td>
+<td>✅ done</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="execution-tracker">Execution Tracker<a class="headerlink" href="#execution-tracker" title="Permanent link">&para;</a></h2>
+<h3 id="current-status">Current Status<a class="headerlink" href="#current-status" title="Permanent link">&para;</a></h3>
+<ul>
+<li>All P0–P9 milestones complete as of 2026-05-14.</li>
+<li><strong>P10 complete.</strong> All C1–C7 done as of 2026-05-17.</li>
+<li>Last completed: <strong>C7 (2026-05-17)</strong> — commit 509561c pushed, all pre-push hooks green (ruff, pyright, markdownlint, zotero-addon, docs).</li>
+</ul>
+<h3 id="p10-status">P10 Status<a class="headerlink" href="#p10-status" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Story</th>
+<th>Effort</th>
+<th>Owner</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C1</td>
+<td>Cheap LLM account + key</td>
+<td>~15 min</td>
+<td>you (operational)</td>
+<td>✅ done (2026-05-17)</td>
+</tr>
+<tr>
+<td>C2</td>
+<td>Startup LLM config log line</td>
+<td>~30 min</td>
+<td>python-backend-engineer</td>
+<td>✅ done (2026-05-17)</td>
+</tr>
+<tr>
+<td>C3</td>
+<td>Dockerfile: honor <code>$PORT</code></td>
+<td>~5 min</td>
+<td>python-backend-engineer</td>
+<td>✅ done (2026-05-17)</td>
+</tr>
+<tr>
+<td>C4</td>
+<td>Create <code>.dockerignore</code></td>
+<td>~5 min</td>
+<td>python-backend-engineer</td>
+<td>✅ done (2026-05-17)</td>
+</tr>
+<tr>
+<td>C5</td>
+<td>Local Docker smoke test with cheap LLM</td>
+<td>~15 min</td>
+<td>you (operational)</td>
+<td>✅ done (2026-05-17)</td>
+</tr>
+<tr>
+<td>C6</td>
+<td>End-to-end Zotero → Docker test</td>
+<td>~20 min</td>
+<td>you (operational)</td>
+<td>✅ done (2026-05-17)</td>
+</tr>
+<tr>
+<td>C7</td>
+<td>Commit + CI green</td>
+<td>~10 min</td>
+<td>python-backend-engineer</td>
+<td>✅ done (2026-05-17)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Total estimate: ~1.5 hours.</strong></p>
+<hr />
+<h2 id="milestones">Milestones<a class="headerlink" href="#milestones" title="Permanent link">&para;</a></h2>
+<h3 id="c1-cheap-llm-account-key-15-minutes">C1 — Cheap LLM Account &amp; Key (15 minutes)<a class="headerlink" href="#c1-cheap-llm-account-key-15-minutes" title="Permanent link">&para;</a></h3>
+<p><strong>Goal.</strong> A working API key for a cheap OpenAI-compatible LLM provider stored in
+your password manager and smoke-tested from the terminal.</p>
+<p><strong>Recommended provider: DeepSeek V3</strong> — <code>$0.14 / $0.28 per million tokens</code>
+(in/out). At SciAgent's ~300k tokens/month solo volume, that is ~$0.07/month.
+One $5 top-up covers roughly 18 months of solo use.</p>
+<p><strong>Alternatives</strong> (same <code>openai-compatible</code> adapter, zero code changes):</p>
+<ul>
+<li><strong>Groq</strong> — free tier (<code>llama-3.3-70b</code>, <code>deepseek-r1-distill-*</code>). Rate-limited but
+  usable for solo dev. Set <code>AGT_LLM_BASE_URL=https://api.groq.com/openai/v1</code>.</li>
+<li><strong>Ollama</strong> — fully local, free, no key needed. Use <code>AGT_LLM_PROVIDER=ollama</code>.
+  Slower cold start; no cloud cost at all.</li>
+<li><strong>OpenAI <code>gpt-4o-mini</code></strong> — $0.15/$0.60 per M tokens. Already works; no new setup.</li>
+</ul>
+<p><strong>DeepSeek steps:</strong></p>
+<ul>
+<li>[x] <strong>C1.1</strong> Sign up at <a href="https://platform.deepseek.com">https://platform.deepseek.com</a> (Google OAuth works).</li>
+<li>[x] <strong>C1.2</strong> Top up $5. This covers ~30 million tokens of <code>deepseek-chat</code> — over
+  a year of solo SciAgent use.</li>
+<li>[x] <strong>C1.3</strong> Create an API key. Save to password manager as <code>DEEPSEEK_API_KEY</code>.</li>
+<li>[x] <strong>C1.4</strong> Verify with a direct curl (replace <code>&lt;KEY&gt;</code>):</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>curl<span class="w"> </span>https://api.deepseek.com/chat/completions<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer &lt;KEY&gt;&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;model&quot;:&quot;deepseek-chat&quot;,&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;Say hi&quot;}],&quot;max_tokens&quot;:10}&#39;</span>
+</code></pre></div>
+<p>Expect 200 JSON. <code>401</code> = wrong key. <code>402</code> = balance zero (top up first).</p>
+<ul>
+<li>[x] <strong>C1.5</strong> Verify the SciAgent env var wiring locally (no Docker):</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nv">AGT_LLM_PROVIDER</span><span class="o">=</span>openai-compatible<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nv">AGT_LLM_BASE_URL</span><span class="o">=</span>https://api.deepseek.com/v1<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nv">AGT_LLM_MODEL</span><span class="o">=</span>deepseek-chat<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="nv">AGT_LLM_API_KEY</span><span class="o">=</span>&lt;KEY&gt;<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>uv<span class="w"> </span>run<span class="w"> </span>sciagent-server<span class="w"> </span>--port<span class="w"> </span><span class="m">57322</span><span class="w"> </span><span class="p">&amp;</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>curl<span class="w"> </span>-s<span class="w"> </span>http://127.0.0.1:57322/health<span class="w"> </span><span class="p">|</span><span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>json.tool
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="nb">kill</span><span class="w"> </span>%1
+</code></pre></div>
+<p>Expect <code>/health</code> to return 200.</p>
+<p><strong>Cost: $5 one-time.</strong></p>
+<hr />
+<h3 id="c2-startup-llm-config-log-line-30-minutes">C2 — Startup LLM Config Log Line (30 minutes)<a class="headerlink" href="#c2-startup-llm-config-log-line-30-minutes" title="Permanent link">&para;</a></h3>
+<p><strong>Goal.</strong> <code>create_app()</code> in <code>src/agt/api/app.py</code> emits one structured log line at
+<code>INFO</code> level showing the effective LLM provider, model, and base URL.</p>
+<p><strong>Implemented:</strong> <code>src/agt/api/app.py</code> — <code>structlog</code> import + <code>_log.info("sciagent_startup", ...)</code> inside <code>create_app()</code> right after <code>_settings = get_settings()</code>. Confirmed via Docker smoke test C5.</p>
+<hr />
+<h3 id="c3-dockerfile-honor-port-5-minutes">C3 — Dockerfile: Honor <code>$PORT</code> (5 minutes)<a class="headerlink" href="#c3-dockerfile-honor-port-5-minutes" title="Permanent link">&para;</a></h3>
+<p><strong>Goal.</strong> The container listens on whatever port Cloud Run sets via <code>$PORT</code>.</p>
+<p><strong>Implemented:</strong> <code>Dockerfile</code> CMD now uses <code>/app/.venv/bin/uvicorn ... --port ${PORT:-8080}</code>.
+Image also uses <code>uv sync --frozen --no-dev</code>, eliminating dev dependencies from the image.</p>
+<hr />
+<h3 id="c4-create-dockerignore-5-minutes">C4 — Create <code>.dockerignore</code> (5 minutes)<a class="headerlink" href="#c4-create-dockerignore-5-minutes" title="Permanent link">&para;</a></h3>
+<p><strong>Goal.</strong> Reduce the Docker build context. Image shrank from 1.19 GB → 467 MB.</p>
+<p><strong>Implemented:</strong> <code>.dockerignore</code> at repo root excludes <code>tests/</code>, <code>zotero-addon/</code>, <code>docs/</code>, dev caches, <code>.env</code> files (with <code>!README.md</code> and <code>!.env.example</code> exceptions required by hatchling).</p>
+<hr />
+<h3 id="c5-local-docker-smoke-test-with-cheap-llm-15-minutes">C5 — Local Docker Smoke Test with Cheap LLM (15 minutes)<a class="headerlink" href="#c5-local-docker-smoke-test-with-cheap-llm-15-minutes" title="Permanent link">&para;</a></h3>
+<p><strong>Completed 2026-05-17.</strong> Container started, <code>/health</code> returned 200 with
+<code>provider=openai-compatible</code>. <code>/run</code> query returned <code>status: "awaiting_approval"</code>.
+Docker logs confirmed DeepSeek called 10× with HTTP 200 OK. Startup log showed
+correct <code>llm_provider</code>, <code>llm_model</code>, <code>llm_base_url</code>.</p>
+<hr />
+<h3 id="c6-end-to-end-zotero-docker-test-20-minutes">C6 — End-to-End Zotero → Docker Test (20 minutes)<a class="headerlink" href="#c6-end-to-end-zotero-docker-test-20-minutes" title="Permanent link">&para;</a></h3>
+<p><strong>Completed 2026-05-17.</strong> Add-on set to <code>backendMode=remote</code>, URL
+<code>http://localhost:8080</code>, API key <code>local-test-key</code>. Search → approve → write to
+test collection succeeded. Second write confirmed idempotent (<code>unchanged</code> for all
+items).</p>
+<hr />
+<h3 id="c7-commit-ci-10-minutes">C7 — Commit + CI (10 minutes)<a class="headerlink" href="#c7-commit-ci-10-minutes" title="Permanent link">&para;</a></h3>
+<p><strong>Completed 2026-05-17.</strong> Commit <code>509561c</code> on <code>main</code>. All pre-push hooks green:
+ruff, pyright, markdownlint, zotero-addon-quality, docs-quality.</p>
+<hr />
+<h2 id="definition-of-done">Definition of Done<a class="headerlink" href="#definition-of-done" title="Permanent link">&para;</a></h2>
+<p>All C1–C7 complete. ✅</p>
+<hr />
+<h2 id="risk-register">Risk Register<a class="headerlink" href="#risk-register" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Likelihood</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DeepSeek API hiccup during smoke test</td>
+<td>Low</td>
+<td>Use Groq free tier as a same-day fallback — same adapter, different <code>AGT_LLM_BASE_URL</code>.</td>
+</tr>
+<tr>
+<td><code>deepseek-chat</code> model name changes</td>
+<td>Low</td>
+<td>Check <a href="https://platform.deepseek.com/models">https://platform.deepseek.com/models</a>. The current name is <code>deepseek-chat</code> (not <code>deepseek-v3</code>).</td>
+</tr>
+<tr>
+<td>Docker image &gt; 300 MB despite <code>.dockerignore</code></td>
+<td>Low</td>
+<td>Confirm <code>uv sync --frozen</code> doesn't pull in <code>[keywords]</code>/<code>[rerank]</code> extras. Check <code>pyproject.toml</code> optional groups.</td>
+</tr>
+<tr>
+<td>C2 log line triggers the redaction processor</td>
+<td>Very low</td>
+<td><code>llm_base_url</code> doesn't contain <code>"key"</code>, <code>"token"</code>, or <code>"secret"</code>. Verified against <code>config.py:546</code>.</td>
+</tr>
+<tr>
+<td><code>.env.docker</code> committed accidentally</td>
+<td>Medium</td>
+<td>Add it to <code>.gitignore</code> immediately in C5.1 before populating it.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="common-pitfalls">Common Pitfalls<a class="headerlink" href="#common-pitfalls" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong><code>AGT_LLM_PROVIDER</code> not set, only <code>AGT_LLM_BASE_URL</code>.</strong> The auto-detection in
+  <code>config.py:483</code> handles this: when <code>llm_base_url is not None</code> and no explicit
+  provider is set, it resolves to <code>openai-compatible</code>. Still, set it explicitly to
+  be unambiguous.</li>
+<li><strong><code>AGT_LLM_BASE_URL=https://api.deepseek.com</code> without <code>/v1</code>.</strong> The correct base
+  for the OpenAI-compat path is <code>https://api.deepseek.com/v1</code>. Without <code>/v1</code>,
+  the SDK double-paths and gets 404.</li>
+<li><strong><code>AGT_LLM_MODEL</code> not set.</strong> The default for <code>openai-compatible</code> in
+  <code>_PROVIDER_DEFAULT_MODELS</code> is <code>gpt-4o-mini</code> (<code>config.py:28</code>). DeepSeek will
+  reject this model name. Always set <code>AGT_LLM_MODEL=deepseek-chat</code> explicitly.</li>
+<li><strong><code>uv sync</code> without <code>--no-dev</code> in Dockerfile.</strong> Pulls in streamlit, pyright,
+  mkdocs — balloons the image to 1.19 GB. Always use <code>--no-dev</code>.</li>
+<li><strong><code>uv run uvicorn</code> as CMD.</strong> Triggers implicit re-sync at container startup.
+  Use <code>/app/.venv/bin/uvicorn</code> directly.</li>
+</ul>
+<hr />
+<h2 id="quality-gates">Quality Gates<a class="headerlink" href="#quality-gates" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Python (always)</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>check<span class="w"> </span>.
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>format<span class="w"> </span>--check<span class="w"> </span>.
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>uv<span class="w"> </span>run<span class="w"> </span>pyright
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>-q<span class="w"> </span>--vcr-record<span class="o">=</span>none
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1"># Docker (C3/C4)</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>sciagent:ci-check<span class="w"> </span>.
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>docker<span class="w"> </span>images<span class="w"> </span>sciagent:ci-check<span class="w"> </span>--format<span class="w"> </span><span class="s2">&quot;{{.Size}}&quot;</span>
+</code></pre></div>
+<p>No new dependencies added in P10. No Zotero add-on code changes.</p>
+<hr />
+<h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>docs/actionable-plan.md</code> — current plan (GCP Deployment).</li>
+<li><code>docs/actionable-plan-done-3.md</code> — completed P9 plan.</li>
+<li><code>.env.example</code> — canonical env var reference (documents DeepSeek recipe).</li>
+<li><code>src/agt/providers/router.py</code> — provider routing logic.</li>
+<li><code>src/agt/config.py</code> — settings contract.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.sections", "navigation.expand", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

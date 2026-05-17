@@ -68,7 +68,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#sciagent-actionable-plan-p10-gcp-prerequisites-cheap-llm-docker-cloud-readiness" class="md-skip">
+        <a href="#sciagent-actionable-plan-gcp-deployment-cloud-run-cicd" class="md-skip">
           Skip to content
         </a>
       
@@ -1002,10 +1002,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#design-philosophy" class="md-nav__link">
+  <a href="#tldr-what-you-actually-do" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Design Philosophy
+        TL;DR — What You Actually Do
       
     </span>
   </a>
@@ -1013,33 +1013,34 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#what-is-already-done-code-audit-2026-05-17" class="md-nav__link">
+  <a href="#tooling-setup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What Is Already Done (Code Audit — 2026-05-17)
+        Tooling Setup
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#execution-tracker" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Execution Tracker
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Execution Tracker">
+    <nav class="md-nav" aria-label="Tooling Setup">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#current-status" class="md-nav__link">
+  <a href="#vs-code-extensions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Current Status
+        VS Code Extensions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="VS Code Extensions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#required-for-gcp-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required for GCP work
       
     </span>
   </a>
@@ -1047,10 +1048,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#p10-status" class="md-nav__link">
+  <a href="#strongly-recommended" class="md-nav__link">
     <span class="md-ellipsis">
       
-        P10 Status
+        Strongly recommended
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cloud-code-commands-you-will-actually-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cloud Code commands you will actually use
       
     </span>
   </a>
@@ -1059,6 +1071,111 @@
         
       </ul>
     </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mcp-servers-for-gcp-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MCP Servers for GCP Work
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MCP Servers for GCP Work">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gcp-specific-mcp-server-optional-community" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GCP-specific MCP server (optional, community)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#executive-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Executive Decisions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cost-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cost Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cost Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solo-usage-50-requestsday-3s-1-vcpu-512-mib" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Solo usage (~50 requests/day, 3s @ 1 vCPU + 512 MiB)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hard-guardrails-to-set-on-day-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hard guardrails to set on Day 1
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#google-scholar-dont-bother" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Google Scholar — Don't Bother
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-end-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture (End State)
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1075,10 +1192,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#c1-cheap-llm-account-key-15-minutes" class="md-nav__link">
+  <a href="#m0-gcp-account-local-tooling-1-evening" class="md-nav__link">
     <span class="md-ellipsis">
       
-        C1 — Cheap LLM Account &amp; Key (15 minutes)
+        M0 — GCP Account &amp; Local Tooling (1 evening)
       
     </span>
   </a>
@@ -1086,10 +1203,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#c2-startup-llm-config-log-line-30-minutes" class="md-nav__link">
+  <a href="#m1-enable-apis-and-foundation-resources-30-minutes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        C2 — Startup LLM Config Log Line (30 minutes)
+        M1 — Enable APIs and Foundation Resources (30 minutes)
       
     </span>
   </a>
@@ -1097,10 +1214,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#c3-dockerfile-honor-port-5-minutes" class="md-nav__link">
+  <a href="#m2-service-account-iam-20-minutes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        C3 — Dockerfile: Honor $PORT (5 minutes)
+        M2 — Service Account &amp; IAM (20 minutes)
       
     </span>
   </a>
@@ -1108,10 +1225,22 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#c4-create-dockerignore-5-minutes" class="md-nav__link">
+  <a href="#m3-secrets-in-secret-manager-45-minutes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        C4 — Create .dockerignore (5 minutes)
+        M3 — Secrets in Secret Manager (45 minutes)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="M3 — Secrets in Secret Manager (45 minutes)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#required-secrets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required secrets
       
     </span>
   </a>
@@ -1119,10 +1248,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#c5-local-docker-smoke-test-with-cheap-llm-15-minutes" class="md-nav__link">
+  <a href="#plain-env-vars-not-secret-set-via-set-env-vars-in-m4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        C5 — Local Docker Smoke Test with Cheap LLM (15 minutes)
+        Plain env vars (not secret — set via --set-env-vars in M4)
       
     </span>
   </a>
@@ -1130,10 +1259,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#c6-end-to-end-zotero-docker-test-20-minutes" class="md-nav__link">
+  <a href="#optional-enrichment-secrets-only-if-you-use-them" class="md-nav__link">
     <span class="md-ellipsis">
       
-        C6 — End-to-End Zotero → Docker Test (20 minutes)
+        Optional enrichment secrets (only if you use them)
       
     </span>
   </a>
@@ -1141,10 +1270,153 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#c7-commit-ci-10-minutes" class="md-nav__link">
+  <a href="#steps" class="md-nav__link">
     <span class="md-ellipsis">
       
-        C7 — Commit + CI (10 minutes)
+        Steps
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m4-first-manual-deploy-to-cloud-run-1-hour" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M4 — First Manual Deploy to Cloud Run (1 hour)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m5-zotero-add-on-updates-for-cloud-12-hours" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M5 — Zotero Add-on Updates for Cloud (1–2 hours)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="M5 — Zotero Add-on Updates for Cloud (1–2 hours)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#m5-a-point-at-the-new-backend-10-minutes-no-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M5-A — Point at the new backend (10 minutes, no code)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m5-b-surface-which-backend-is-active-in-the-ui-30-minutes-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M5-B — Surface which backend is active in the UI (30 minutes, code)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m5-c-tighten-cors-15-minutes-no-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M5-C — Tighten CORS (15 minutes, no code)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m5-d-explicit-cloud-error-ux-in-the-add-on-30-minutes-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M5-D — Explicit cloud error UX in the add-on (30 minutes, code)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m5-e-update-docsdeploymentmd-10-minutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M5-E — Update docs/deployment.md (10 minutes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m6-tighten-auth-optional-phase-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M6 — Tighten Auth (Optional, Phase 2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m7-cicd-auto-deploy-on-push-to-main-1-hour" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M7 — CI/CD: Auto-Deploy on Push to main (1 hour)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m8-persistence-phase-2-trigger-based" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M8 — Persistence (Phase 2, trigger-based)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m9-observability-cost-control-always-on" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M9 — Observability &amp; Cost Control (Always-On)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m10-custom-domain-optional-12year-for-the-domain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M10 — Custom Domain (Optional, ~$12/year for the domain)
       
     </span>
   </a>
@@ -1157,10 +1429,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#definition-of-done" class="md-nav__link">
+  <a href="#hard-make-it-cheaper-checklist" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Definition of Done
+        Hard "Make It Cheaper" Checklist
       
     </span>
   </a>
@@ -1179,21 +1451,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#common-pitfalls" class="md-nav__link">
+  <a href="#what-this-plan-does-not-cover" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Common Pitfalls
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#quality-gates" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Quality Gates
+        What This Plan Does Not Cover
       
     </span>
   </a>
@@ -1213,10 +1474,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#p10-current-status" class="md-nav__link">
+  <a href="#current-status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        P10 Current Status
+        Current Status
       
     </span>
   </a>
@@ -1360,10 +1621,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#design-philosophy" class="md-nav__link">
+  <a href="#tldr-what-you-actually-do" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Design Philosophy
+        TL;DR — What You Actually Do
       
     </span>
   </a>
@@ -1371,33 +1632,34 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#what-is-already-done-code-audit-2026-05-17" class="md-nav__link">
+  <a href="#tooling-setup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What Is Already Done (Code Audit — 2026-05-17)
+        Tooling Setup
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#execution-tracker" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Execution Tracker
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Execution Tracker">
+    <nav class="md-nav" aria-label="Tooling Setup">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#current-status" class="md-nav__link">
+  <a href="#vs-code-extensions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Current Status
+        VS Code Extensions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="VS Code Extensions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#required-for-gcp-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required for GCP work
       
     </span>
   </a>
@@ -1405,10 +1667,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#p10-status" class="md-nav__link">
+  <a href="#strongly-recommended" class="md-nav__link">
     <span class="md-ellipsis">
       
-        P10 Status
+        Strongly recommended
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cloud-code-commands-you-will-actually-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cloud Code commands you will actually use
       
     </span>
   </a>
@@ -1417,6 +1690,111 @@
         
       </ul>
     </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mcp-servers-for-gcp-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MCP Servers for GCP Work
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MCP Servers for GCP Work">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gcp-specific-mcp-server-optional-community" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GCP-specific MCP server (optional, community)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#executive-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Executive Decisions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cost-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cost Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cost Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solo-usage-50-requestsday-3s-1-vcpu-512-mib" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Solo usage (~50 requests/day, 3s @ 1 vCPU + 512 MiB)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hard-guardrails-to-set-on-day-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hard guardrails to set on Day 1
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#google-scholar-dont-bother" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Google Scholar — Don't Bother
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-end-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture (End State)
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1433,10 +1811,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#c1-cheap-llm-account-key-15-minutes" class="md-nav__link">
+  <a href="#m0-gcp-account-local-tooling-1-evening" class="md-nav__link">
     <span class="md-ellipsis">
       
-        C1 — Cheap LLM Account &amp; Key (15 minutes)
+        M0 — GCP Account &amp; Local Tooling (1 evening)
       
     </span>
   </a>
@@ -1444,10 +1822,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#c2-startup-llm-config-log-line-30-minutes" class="md-nav__link">
+  <a href="#m1-enable-apis-and-foundation-resources-30-minutes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        C2 — Startup LLM Config Log Line (30 minutes)
+        M1 — Enable APIs and Foundation Resources (30 minutes)
       
     </span>
   </a>
@@ -1455,10 +1833,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#c3-dockerfile-honor-port-5-minutes" class="md-nav__link">
+  <a href="#m2-service-account-iam-20-minutes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        C3 — Dockerfile: Honor $PORT (5 minutes)
+        M2 — Service Account &amp; IAM (20 minutes)
       
     </span>
   </a>
@@ -1466,10 +1844,22 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#c4-create-dockerignore-5-minutes" class="md-nav__link">
+  <a href="#m3-secrets-in-secret-manager-45-minutes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        C4 — Create .dockerignore (5 minutes)
+        M3 — Secrets in Secret Manager (45 minutes)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="M3 — Secrets in Secret Manager (45 minutes)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#required-secrets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required secrets
       
     </span>
   </a>
@@ -1477,10 +1867,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#c5-local-docker-smoke-test-with-cheap-llm-15-minutes" class="md-nav__link">
+  <a href="#plain-env-vars-not-secret-set-via-set-env-vars-in-m4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        C5 — Local Docker Smoke Test with Cheap LLM (15 minutes)
+        Plain env vars (not secret — set via --set-env-vars in M4)
       
     </span>
   </a>
@@ -1488,10 +1878,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#c6-end-to-end-zotero-docker-test-20-minutes" class="md-nav__link">
+  <a href="#optional-enrichment-secrets-only-if-you-use-them" class="md-nav__link">
     <span class="md-ellipsis">
       
-        C6 — End-to-End Zotero → Docker Test (20 minutes)
+        Optional enrichment secrets (only if you use them)
       
     </span>
   </a>
@@ -1499,10 +1889,153 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#c7-commit-ci-10-minutes" class="md-nav__link">
+  <a href="#steps" class="md-nav__link">
     <span class="md-ellipsis">
       
-        C7 — Commit + CI (10 minutes)
+        Steps
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m4-first-manual-deploy-to-cloud-run-1-hour" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M4 — First Manual Deploy to Cloud Run (1 hour)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m5-zotero-add-on-updates-for-cloud-12-hours" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M5 — Zotero Add-on Updates for Cloud (1–2 hours)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="M5 — Zotero Add-on Updates for Cloud (1–2 hours)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#m5-a-point-at-the-new-backend-10-minutes-no-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M5-A — Point at the new backend (10 minutes, no code)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m5-b-surface-which-backend-is-active-in-the-ui-30-minutes-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M5-B — Surface which backend is active in the UI (30 minutes, code)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m5-c-tighten-cors-15-minutes-no-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M5-C — Tighten CORS (15 minutes, no code)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m5-d-explicit-cloud-error-ux-in-the-add-on-30-minutes-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M5-D — Explicit cloud error UX in the add-on (30 minutes, code)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m5-e-update-docsdeploymentmd-10-minutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M5-E — Update docs/deployment.md (10 minutes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m6-tighten-auth-optional-phase-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M6 — Tighten Auth (Optional, Phase 2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m7-cicd-auto-deploy-on-push-to-main-1-hour" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M7 — CI/CD: Auto-Deploy on Push to main (1 hour)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m8-persistence-phase-2-trigger-based" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M8 — Persistence (Phase 2, trigger-based)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m9-observability-cost-control-always-on" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M9 — Observability &amp; Cost Control (Always-On)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m10-custom-domain-optional-12year-for-the-domain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M10 — Custom Domain (Optional, ~$12/year for the domain)
       
     </span>
   </a>
@@ -1515,10 +2048,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#definition-of-done" class="md-nav__link">
+  <a href="#hard-make-it-cheaper-checklist" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Definition of Done
+        Hard "Make It Cheaper" Checklist
       
     </span>
   </a>
@@ -1537,21 +2070,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#common-pitfalls" class="md-nav__link">
+  <a href="#what-this-plan-does-not-cover" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Common Pitfalls
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#quality-gates" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Quality Gates
+        What This Plan Does Not Cover
       
     </span>
   </a>
@@ -1571,10 +2093,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#p10-current-status" class="md-nav__link">
+  <a href="#current-status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        P10 Current Status
+        Current Status
       
     </span>
   </a>
@@ -1639,476 +2161,893 @@
   
 
 
-<h1 id="sciagent-actionable-plan-p10-gcp-prerequisites-cheap-llm-docker-cloud-readiness">SciAgent Actionable Plan — P10 (GCP Prerequisites: Cheap LLM + Docker Cloud Readiness)<a class="headerlink" href="#sciagent-actionable-plan-p10-gcp-prerequisites-cheap-llm-docker-cloud-readiness" title="Permanent link">&para;</a></h1>
+<h1 id="sciagent-actionable-plan-gcp-deployment-cloud-run-cicd">SciAgent Actionable Plan — GCP Deployment (Cloud Run + CI/CD)<a class="headerlink" href="#sciagent-actionable-plan-gcp-deployment-cloud-run-cicd" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p><strong>Last audit: 2026-05-17</strong> — All P0–P9 stories complete (see
-<a href="../actionable-plan-done-3/">actionable-plan-done-3.md</a> and earlier archives).</p>
-<p>This plan covers <strong>P10: everything that must be true in the codebase and locally
-before the GCP deployment plan (<code>docs/actionable-plan-gcp.md</code>) makes sense.</strong>
-No GCP commands here — this is the application story. The deployment plan is the
-infrastructure story. Both must pass before GCP works.</p>
+<p><strong>Prerequisite.</strong> Every box in P10 is checked — see
+<a href="../actionable-plan-done-4/">actionable-plan-done-4.md</a>. This plan assumes:</p>
+<ul>
+<li>The cheap LLM (DeepSeek or equivalent) is wired and smoke-tested locally.</li>
+<li>The <code>Dockerfile</code> honors <code>$PORT</code>.</li>
+<li><code>.dockerignore</code> exists and the image is &lt; 500 MB.</li>
+<li>The end-to-end Zotero flow works against <code>localhost:8080</code>.</li>
+</ul>
+<p><strong>Audience.</strong> You, learning GCP for the first time.</p>
+<p><strong>Canonical env var names.</strong> The source design doc used <code>AGT_OPENAI_API_KEY</code>
+for the LLM key. After auditing the code, the correct variable is
+<code>AGT_LLM_API_KEY</code> — that is what <code>router.py:138</code> reads for the
+<code>openai-compatible</code> provider. Use <code>AGT_LLM_API_KEY</code> everywhere in this plan.</p>
 <p>Canonical execution tracker. Update done/not done state here first.
 Historical completed work stays in <code>actionable-plan-done*.md</code> — do not re-open closed items.</p>
 </blockquote>
-<h2 id="design-philosophy">Design Philosophy<a class="headerlink" href="#design-philosophy" title="Permanent link">&para;</a></h2>
-<p><strong>Cheap by default.</strong> The codebase already supports every major LLM provider
-through a unified <code>AGT_LLM_PROVIDER</code> / <code>AGT_LLM_BASE_URL</code> / <code>AGT_LLM_API_KEY</code>
-config surface. The <code>openai-compatible</code> adapter covers DeepSeek, Groq (via their
-OpenAI-compat endpoint), Together AI, LM Studio, and Ollama — no new code
-required for any of them. What's missing is (a) the operator running the actual
-key setup, (b) a startup log line confirming which provider is active (critical
-for debugging cloud cold-starts), and (c) the Docker image being production-ready
-for Cloud Run.</p>
-<p><strong>One variable to change.</strong> A researcher self-hosting on GCP should be able to
-swap LLM providers by changing three env vars (<code>AGT_LLM_PROVIDER</code>,
-<code>AGT_LLM_BASE_URL</code>, <code>AGT_LLM_API_KEY</code>) and restarting the container. Zero code
-changes. P10 verifies this end-to-end with DeepSeek as the reference cheap
-provider.</p>
-<p><strong>Docker-ready before GCP.</strong> Cloud Run is Docker. If the image doesn't work
-locally against DeepSeek with the right env vars, it won't work in the cloud.
-P10 is the local validation pass that makes M4 of the GCP plan a 10-minute
-operation instead of an afternoon of debugging.</p>
 <hr />
-<h2 id="what-is-already-done-code-audit-2026-05-17">What Is Already Done (Code Audit — 2026-05-17)<a class="headerlink" href="#what-is-already-done-code-audit-2026-05-17" title="Permanent link">&para;</a></h2>
-<p>After auditing the codebase, the following items from the original prereq plan
-are <strong>already complete</strong>. They are listed here so they are not re-implemented.</p>
+<h2 id="tldr-what-you-actually-do">TL;DR — What You Actually Do<a class="headerlink" href="#tldr-what-you-actually-do" title="Permanent link">&para;</a></h2>
+<ul>
+<li>[ ] <strong>G1.</strong> Create GCP account, project <code>sciagent-prod</code>, billing account, $5 budget alert.</li>
+<li>[ ] <strong>G2.</strong> Install <code>gcloud</code> CLI, run <code>gcloud init</code> + <code>gcloud auth application-default login</code>.</li>
+<li>[ ] <strong>G3.</strong> Enable 7 GCP APIs.</li>
+<li>[ ] <strong>G4.</strong> Create one Artifact Registry Docker repo.</li>
+<li>[ ] <strong>G5.</strong> Create a least-privilege service account <code>sciagent-run</code>.</li>
+<li>[ ] <strong>G6.</strong> Put every secret into Secret Manager.</li>
+<li>[ ] <strong>G7.</strong> Build via Cloud Build, push to Artifact Registry, deploy to Cloud Run with <code>--min-instances=0</code>.</li>
+<li>[ ] <strong>G8.</strong> Smoke test <code>/health</code> and <code>/run</code> via authenticated <code>curl</code>.</li>
+<li>[ ] <strong>G9.</strong> Update the Zotero add-on "Backend URL" preference + add cloud error UX.</li>
+<li>[ ] <strong>G10.</strong> Wire GitHub Actions → Cloud Build → Cloud Run for auto-deploy on <code>main</code>.</li>
+<li>[ ] <strong>G11.</strong> Set up Cloud Storage for persistent sessions <em>(Phase 2, only when needed)</em>.</li>
+</ul>
+<p><strong>Cost for solo daily use: $0–$2/month</strong> (mostly $0). See §Cost Model.</p>
+<hr />
+<h2 id="tooling-setup">Tooling Setup<a class="headerlink" href="#tooling-setup" title="Permanent link">&para;</a></h2>
+<p>Set these up before M0. They save time throughout the deployment.</p>
+<h3 id="vs-code-extensions">VS Code Extensions<a class="headerlink" href="#vs-code-extensions" title="Permanent link">&para;</a></h3>
+<h4 id="required-for-gcp-work">Required for GCP work<a class="headerlink" href="#required-for-gcp-work" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Extension</th>
+<th>ID</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Cloud Code</strong></td>
+<td><code>googlecloudtools.cloudcode</code></td>
+<td>Official Google extension. Cloud Run deploy/log sidebar, YAML schema for <code>cloudbuild.yaml</code>, in-editor tail of Cloud Logging.</td>
+</tr>
+<tr>
+<td><strong>Docker</strong></td>
+<td><code>ms-azuretools.vscode-docker</code></td>
+<td>Dockerfile lint, local build/run, layer inspection. Helps diagnose image size issues (C4).</td>
+</tr>
+<tr>
+<td><strong>YAML</strong></td>
+<td><code>redhat.vscode-yaml</code></td>
+<td>Schema validation for <code>cloudbuild.yaml</code> and <code>.github/workflows/</code>. Catches typos before push.</td>
+</tr>
+<tr>
+<td><strong>GitHub Actions</strong></td>
+<td><code>github.vscode-github-actions</code></td>
+<td>Autocomplete and validation for workflow files.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="strongly-recommended">Strongly recommended<a class="headerlink" href="#strongly-recommended" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Extension</th>
+<th>ID</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>REST Client</strong></td>
+<td><code>humao.rest-client</code></td>
+<td>Create <code>.http</code> files to hit <code>/health</code>, <code>/run</code>, and <code>/capabilities</code> with your API key without copy-pasting <code>curl</code> flags every time. Far better than a raw terminal for testing the cloud endpoint.</td>
+</tr>
+<tr>
+<td><strong>Even Better TOML</strong></td>
+<td><code>tamasfe.even-better-toml</code></td>
+<td><code>pyproject.toml</code> editing with schema validation.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="cloud-code-commands-you-will-actually-use">Cloud Code commands you will actually use<a class="headerlink" href="#cloud-code-commands-you-will-actually-use" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong><code>Cloud Code: Sign In</code></strong> — once, before M0.</li>
+<li><strong><code>Cloud Code: View Logs</code></strong> — tail Cloud Logging in-editor during M4/M5 testing.</li>
+<li><strong><code>Cloud Code: Open Cloud Shell</code></strong> — free pre-authenticated Linux shell in the browser if local <code>gcloud</code> misbehaves.</li>
+</ul>
+<p>Skip "Cloud Code: Deploy to Cloud Run" GUI — it hides the flags. Use the <code>gcloud</code>
+commands in M4 explicitly so future-you can reproduce the exact configuration.</p>
+<hr />
+<h3 id="mcp-servers-for-gcp-work">MCP Servers for GCP Work<a class="headerlink" href="#mcp-servers-for-gcp-work" title="Permanent link">&para;</a></h3>
+<p>The MCP servers already wired in <code>CLAUDE.md</code> cover most of the GCP plan. The table
+below maps each MCP to where it is useful during this plan.</p>
+<table>
+<thead>
+<tr>
+<th>MCP Server</th>
+<th>When to use during GCP deployment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><code>context7</code></strong></td>
+<td>Before writing or editing <code>cloudbuild.yaml</code>, Cloud Run YAML specs, or IAM bindings — fetch current GCP documentation (Cloud Run pricing, Secret Manager limits, Cloud Build config schema). Do not rely on training-data memory for GCP API details; they change frequently.</td>
+</tr>
+<tr>
+<td><strong><code>fetch</code></strong></td>
+<td>Retrieve current Cloud Run pricing, IAM role documentation, or the Cloud Build substitutions reference directly from <code>cloud.google.com</code> while working through milestones.</td>
+</tr>
+<tr>
+<td><strong><code>github</code></strong></td>
+<td>Checking CI status (Cloud Build trigger → GitHub Actions chain), PR state after M7, verifying the <code>release.yml</code> workflow still passes alongside the new <code>cloudbuild.yaml</code>.</td>
+</tr>
+<tr>
+<td><strong><code>sequential-thinking</code></strong></td>
+<td>Before M3 (secrets wiring is multi-step and order-dependent) and before M7 (IAM grants for Cloud Build touch three principals). Use sequential-thinking to reason through the permission graph before running any <code>gcloud iam</code> commands.</td>
+</tr>
+<tr>
+<td><strong><code>git</code></strong></td>
+<td>Structured log / blame when debugging which commit triggered a Cloud Build run that broke the deploy.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="gcp-specific-mcp-server-optional-community">GCP-specific MCP server (optional, community)<a class="headerlink" href="#gcp-specific-mcp-server-optional-community" title="Permanent link">&para;</a></h4>
+<p>A community <code>gcloud</code> MCP server exists that wraps the <code>gcloud</code> CLI as an MCP
+tool, allowing Claude Code to run <code>gcloud</code> commands directly within the session.
+As of 2026-05, this is experimental and not in the project's default MCP config.</p>
+<p><strong>If you want to add it:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// In .claude/settings.local.json → mcpServers</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nt">&quot;gcloud&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;npx&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">&quot;args&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;-y&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;@anthropic-samples/gcp-mcp&quot;</span><span class="p">],</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">&quot;env&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">}</span>
+</code></pre></div>
+<p>Use with caution — it runs real <code>gcloud</code> commands against your production project.
+Only add it after M2 (IAM is set up) and with the budget alert from M0.4 active.
+The <code>--max-instances=2</code> flag in M4.2 is your rate guardrail; make sure it is set
+before giving Claude Code direct <code>gcloud</code> access.</p>
+<p>Without the GCP MCP server: use the <strong>Bash tool</strong> in Claude Code to run
+<code>gcloud</code> commands. This is the safer default and how all milestones in this plan
+are written.</p>
+<hr />
+<h2 id="executive-decisions">Executive Decisions<a class="headerlink" href="#executive-decisions" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Choice</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Compute</td>
+<td><strong>Cloud Run, request-based billing, min-instances=0</strong></td>
+<td>Scales to zero when idle. Free tier covers solo usage entirely.</td>
+</tr>
+<tr>
+<td>Container registry</td>
+<td><strong>Artifact Registry</strong> (Docker format, regional)</td>
+<td>GCP-native, replaces deprecated Container Registry.</td>
+</tr>
+<tr>
+<td>Build system</td>
+<td><strong>Cloud Build</strong> triggered from GitHub</td>
+<td>Free tier: 120 build-minutes/day. No local Docker daemon needed for CI.</td>
+</tr>
+<tr>
+<td>Secrets</td>
+<td><strong>Secret Manager</strong>, mounted as env vars on Cloud Run</td>
+<td>Encrypted, IAM-controlled, free up to 6 active versions.</td>
+</tr>
+<tr>
+<td>LLM</td>
+<td><strong>DeepSeek via <code>openai-compatible</code> adapter</strong></td>
+<td>$0.07/month at solo volume. Env var swap, zero code change.</td>
+</tr>
+<tr>
+<td>Persistence Phase 1</td>
+<td><strong>Container filesystem (ephemeral)</strong></td>
+<td>Sessions/cache vanish on cold start. Acceptable for solo use.</td>
+</tr>
+<tr>
+<td>Persistence Phase 2</td>
+<td><strong>Cloud Storage bucket mounted via volume</strong></td>
+<td>~$0.02/GB-month. No DB cost. Trigger: when cold-start data loss hurts.</td>
+</tr>
+<tr>
+<td>Region</td>
+<td><strong><code>europe-west1</code></strong> (EU) or <strong><code>us-central1</code></strong> (NA)</td>
+<td>Both are Cloud Run Tier 1 (cheapest per-vCPU-second).</td>
+</tr>
+<tr>
+<td>Auth Phase 1</td>
+<td><strong><code>X-AGT-API-Key</code> only</strong>, public Cloud Run URL</td>
+<td>Simple. Acceptable for personal use.</td>
+</tr>
+<tr>
+<td>Auth Phase 2</td>
+<td><strong>Cloud Run IAM <code>--no-allow-unauthenticated</code></strong></td>
+<td>Deferred until you have other users.</td>
+</tr>
+<tr>
+<td>CI/CD</td>
+<td><strong>GitHub Actions → Cloud Build → Cloud Run</strong></td>
+<td>Integrates with existing <code>.github/workflows/</code>.</td>
+</tr>
+<tr>
+<td>Logging</td>
+<td><strong>Cloud Logging</strong> (default, free tier)</td>
+<td>No external cost.</td>
+</tr>
+<tr>
+<td>Google Scholar</td>
+<td><strong>Disabled in production</strong></td>
+<td>Cloud Run IPs get CAPTCHA-walled. Not worth it. See §Don't Bother.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="cost-model">Cost Model<a class="headerlink" href="#cost-model" title="Permanent link">&para;</a></h2>
+<h3 id="solo-usage-50-requestsday-3s-1-vcpu-512-mib">Solo usage (~50 requests/day, 3s @ 1 vCPU + 512 MiB)<a class="headerlink" href="#solo-usage-50-requestsday-3s-1-vcpu-512-mib" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
 <th>Item</th>
-<th>Location</th>
-<th>Status</th>
+<th>Monthly</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>AGT_LLM_BASE_URL</code> config field</td>
-<td><code>src/agt/config.py:148</code></td>
-<td>✅ done</td>
+<td>Cloud Run vCPU-seconds (4,500)</td>
+<td><strong>$0.00</strong> (180k free)</td>
 </tr>
 <tr>
-<td><code>AGT_LLM_API_KEY</code> config field</td>
-<td><code>src/agt/config.py:143</code></td>
-<td>✅ done</td>
+<td>Cloud Run memory GiB-s (2,250)</td>
+<td><strong>$0.00</strong> (360k free)</td>
 </tr>
 <tr>
-<td><code>AGT_LLM_PROVIDER</code> auto-detection</td>
-<td><code>src/agt/config.py:478</code></td>
-<td>✅ done</td>
+<td>Cloud Run requests (1,500)</td>
+<td><strong>$0.00</strong> (2M free)</td>
 </tr>
 <tr>
-<td><code>openai_compatible</code> provider with <code>base_url</code></td>
-<td><code>src/agt/providers/openai_compatible.py</code></td>
-<td>✅ done</td>
+<td>Artifact Registry (~500 MB)</td>
+<td><strong>~$0.05</strong></td>
 </tr>
 <tr>
-<td>Router wires <code>llm_base_url</code> → <code>openai-compatible</code></td>
-<td><code>src/agt/providers/router.py:132</code></td>
-<td>✅ done</td>
+<td>Cloud Build (~5 builds/mo)</td>
+<td><strong>$0.00</strong> (120 build-min/day free)</td>
 </tr>
 <tr>
-<td><code>.env.example</code> DeepSeek recipe</td>
-<td><code>.env.example:25-28</code></td>
-<td>✅ done</td>
+<td>Secret Manager (≤6 secrets)</td>
+<td><strong>$0.00</strong> (6 versions free)</td>
 </tr>
 <tr>
-<td>Tests: base_url config + routing</td>
-<td><code>tests/test_config.py:203</code>, <code>tests/test_providers.py:365</code></td>
-<td>✅ done</td>
+<td>Logs (&lt; 50 MB)</td>
+<td><strong>$0.00</strong> (50 GiB free)</td>
 </tr>
 <tr>
-<td>CORS via <code>AGT_CORS_ALLOWED_ORIGINS</code></td>
-<td><code>src/agt/config.py:431</code>, <code>src/agt/api/app.py:299</code></td>
-<td>✅ done</td>
+<td>DeepSeek LLM (~300k tokens)</td>
+<td><strong>~$0.07</strong></td>
 </tr>
 <tr>
-<td><code>AGT_BACKEND_API_KEY</code> auth middleware</td>
-<td><code>src/agt/config.py:78</code></td>
-<td>✅ done</td>
+<td><strong>Total</strong></td>
+<td><strong>~$0.12/month</strong></td>
 </tr>
 </tbody>
 </table>
-<p><strong>Do not re-implement any of the above.</strong> If a future story contradicts this
-table, verify by reading the current file before acting.</p>
-<hr />
-<h2 id="execution-tracker">Execution Tracker<a class="headerlink" href="#execution-tracker" title="Permanent link">&para;</a></h2>
-<h3 id="current-status">Current Status<a class="headerlink" href="#current-status" title="Permanent link">&para;</a></h3>
+<h3 id="hard-guardrails-to-set-on-day-1">Hard guardrails to set on Day 1<a class="headerlink" href="#hard-guardrails-to-set-on-day-1" title="Permanent link">&para;</a></h3>
 <ul>
-<li>All P0–P9 milestones complete as of 2026-05-14.</li>
-<li>Current focus: <strong>C7 — Commit + CI green</strong>.</li>
-<li>Last completed: <strong>C6 (2026-05-17)</strong> — E2E Zotero → Docker test passed; idempotent write to Zotero collection confirmed.</li>
+<li>[ ] Budget alert at <strong>$5/month</strong> with email at 50/90/100 %.</li>
+<li>[ ] <code>--max-instances=2</code> while learning.</li>
+<li>[ ] <code>--min-instances=0</code> — the single biggest cost knob.</li>
+<li>[ ] <code>--memory=512Mi</code> — smallest realistic for FastAPI + SciAgent deps.</li>
+<li>[ ] <code>--timeout=300</code> — don't let LLM hangs run for an hour.</li>
+<li>[ ] <code>--concurrency=40</code>.</li>
 </ul>
-<h3 id="p10-status">P10 Status<a class="headerlink" href="#p10-status" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="google-scholar-dont-bother">Google Scholar — Don't Bother<a class="headerlink" href="#google-scholar-dont-bother" title="Permanent link">&para;</a></h2>
+<p>Being on Cloud Run gives zero advantage for Google Scholar. Cloud Run egress comes
+from datacenter IPs — Google's anti-bot systems flag those immediately. You get
+CAPTCHA-walled in minutes. Commercial SERP APIs (SerpAPI) cost $50–$120/month
+minimum — 25–60x your entire GCP bill. The existing keyless sources (OpenAlex,
+Semantic Scholar, Crossref, PubMed, arXiv, Europe PMC) are competitive per
+<code>docs/benchmark.md</code>. Leave <code>AGT_SERPAPI_KEY</code> unset in production.</p>
+<hr />
+<h2 id="architecture-end-state">Architecture (End State)<a class="headerlink" href="#architecture-end-state" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>              Zotero Desktop (your laptop)
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>                        │
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>                        │  HTTPS + X-AGT-API-Key + X-AGT-Client-ID
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>                        ▼
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>        ┌──────────────────────────────────────┐
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>        │  Cloud Run service: sciagent         │
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>        │  region: europe-west1                │
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>        │  min=0, max=2, cpu=1, memory=512Mi   │
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>        │  concurrency=40, timeout=300s        │
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>        │  identity: sciagent-run@...iam       │
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>        └──────────────┬───────────────────────┘
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>                       │
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>     ┌─────────────────┼──────────────────────┐
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>     │                 │                      │
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>     ▼                 ▼                      ▼
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>┌──────────────┐  ┌──────────────┐  ┌──────────────────┐
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>│ Artifact     │  │ Secret       │  │ Cloud Storage    │
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>│ Registry     │  │ Manager      │  │ (Phase 2)        │
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>│ docker image │  │ secrets      │  │ sciagent-data/   │
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>└──────────────┘  └──────────────┘  └──────────────────┘
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>                       │
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>                       │  outbound HTTPS
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>                       ▼
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>     ┌──────────────────────────────────────┐
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>     │ External APIs                        │
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>     │ - api.deepseek.com (LLM)             │
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>     │ - api.semanticscholar.org            │
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>     │ - api.openalex.org / crossref / etc. │
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>     └──────────────────────────────────────┘
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>              GitHub (main) ──push──▶ Cloud Build ──▶ Cloud Run revision
+</code></pre></div>
+<hr />
+<h2 id="milestones">Milestones<a class="headerlink" href="#milestones" title="Permanent link">&para;</a></h2>
+<h3 id="m0-gcp-account-local-tooling-1-evening">M0 — GCP Account &amp; Local Tooling (1 evening)<a class="headerlink" href="#m0-gcp-account-local-tooling-1-evening" title="Permanent link">&para;</a></h3>
+<p><strong>Goal.</strong> <code>gcloud run services list</code> runs without errors against your project.</p>
+<ul>
+<li>[ ] <strong>M0.1</strong> Create a Google Cloud account at <a href="https://console.cloud.google.com">https://console.cloud.google.com</a>.
+  New accounts get <strong>$300 free credit for 90 days</strong>.</li>
+<li>[ ] <strong>M0.2</strong> Create project <code>sciagent-prod</code>. Note the <strong>project ID</strong> (globally
+  unique). Set as default: <code>gcloud config set project sciagent-prod</code>.</li>
+<li>[ ] <strong>M0.3</strong> Link a billing account. Required even for free-tier services.</li>
+<li>[ ] <strong>M0.4</strong> Set the billing budget alert. Console → Billing → Budgets &amp; alerts
+  → Create budget → <strong>$5/month</strong>, alerts at 50/90/100%. <strong>Do this before
+  anything else.</strong></li>
+<li>[ ] <strong>M0.5</strong> Install <code>gcloud</code>:
+  macOS: <code>brew install --cask google-cloud-sdk</code>.
+  Other: <a href="https://cloud.google.com/sdk/docs/install">https://cloud.google.com/sdk/docs/install</a>.</li>
+<li>[ ] <strong>M0.6</strong> Authenticate:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>gcloud<span class="w"> </span>init
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>gcloud<span class="w"> </span>auth<span class="w"> </span>application-default<span class="w"> </span>login
+</code></pre></div>
+<ul>
+<li>[ ] <strong>M0.7</strong> Set default region:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>gcloud<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>run/region<span class="w"> </span>europe-west1
+</code></pre></div>
+<ul>
+<li>[ ] <strong>M0.8</strong> Verify:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>gcloud<span class="w"> </span>projects<span class="w"> </span>describe<span class="w"> </span>sciagent-prod
+</code></pre></div>
+<p><strong>Cost: $0.</strong></p>
+<hr />
+<h3 id="m1-enable-apis-and-foundation-resources-30-minutes">M1 — Enable APIs and Foundation Resources (30 minutes)<a class="headerlink" href="#m1-enable-apis-and-foundation-resources-30-minutes" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] <strong>M1.1</strong> Enable the 7 required APIs:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>gcloud<span class="w"> </span>services<span class="w"> </span><span class="nb">enable</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span>run.googleapis.com<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span>artifactregistry.googleapis.com<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span>cloudbuild.googleapis.com<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">  </span>secretmanager.googleapis.com<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">  </span>iam.googleapis.com<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">  </span>logging.googleapis.com<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">  </span>monitoring.googleapis.com
+</code></pre></div>
+<ul>
+<li>[ ] <strong>M1.2</strong> Create the Artifact Registry repo:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>gcloud<span class="w"> </span>artifacts<span class="w"> </span>repositories<span class="w"> </span>create<span class="w"> </span>sciagent<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span>--repository-format<span class="o">=</span>docker<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span>--location<span class="o">=</span>europe-west1<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span>--description<span class="o">=</span><span class="s2">&quot;SciAgent backend images&quot;</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>M1.3</strong> Configure Docker auth to AR:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>gcloud<span class="w"> </span>auth<span class="w"> </span>configure-docker<span class="w"> </span>europe-west1-docker.pkg.dev
+</code></pre></div>
+<ul>
+<li>[ ] <strong>M1.4</strong> Verify: <code>gcloud artifacts repositories list</code> shows <code>sciagent</code>.</li>
+</ul>
+<p><strong>Cost: $0</strong> (empty repos are free).</p>
+<hr />
+<h3 id="m2-service-account-iam-20-minutes">M2 — Service Account &amp; IAM (20 minutes)<a class="headerlink" href="#m2-service-account-iam-20-minutes" title="Permanent link">&para;</a></h3>
+<p><strong>Goal.</strong> Cloud Run runs as a dedicated identity with only what it needs. Never
+use the default Compute Engine service account.</p>
+<ul>
+<li>[ ] <strong>M2.1</strong> Create the runtime service account:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>gcloud<span class="w"> </span>iam<span class="w"> </span>service-accounts<span class="w"> </span>create<span class="w"> </span>sciagent-run<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span>--display-name<span class="o">=</span><span class="s2">&quot;SciAgent Cloud Run runtime&quot;</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SA</span><span class="o">=</span>sciagent-run@<span class="k">$(</span>gcloud<span class="w"> </span>config<span class="w"> </span>get-value<span class="w"> </span>project<span class="k">)</span>.iam.gserviceaccount.com
+</code></pre></div>
+<ul>
+<li>[ ] <strong>M2.2</strong> Grant minimum roles:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nv">PROJECT_ID</span><span class="o">=</span><span class="k">$(</span>gcloud<span class="w"> </span>config<span class="w"> </span>get-value<span class="w"> </span>project<span class="k">)</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>gcloud<span class="w"> </span>projects<span class="w"> </span>add-iam-policy-binding<span class="w"> </span><span class="nv">$PROJECT_ID</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">  </span>--member<span class="o">=</span><span class="s2">&quot;serviceAccount:</span><span class="nv">$SA</span><span class="s2">&quot;</span><span class="w"> </span>--role<span class="o">=</span><span class="s2">&quot;roles/secretmanager.secretAccessor&quot;</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>gcloud<span class="w"> </span>projects<span class="w"> </span>add-iam-policy-binding<span class="w"> </span><span class="nv">$PROJECT_ID</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">  </span>--member<span class="o">=</span><span class="s2">&quot;serviceAccount:</span><span class="nv">$SA</span><span class="s2">&quot;</span><span class="w"> </span>--role<span class="o">=</span><span class="s2">&quot;roles/logging.logWriter&quot;</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>gcloud<span class="w"> </span>projects<span class="w"> </span>add-iam-policy-binding<span class="w"> </span><span class="nv">$PROJECT_ID</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">  </span>--member<span class="o">=</span><span class="s2">&quot;serviceAccount:</span><span class="nv">$SA</span><span class="s2">&quot;</span><span class="w"> </span>--role<span class="o">=</span><span class="s2">&quot;roles/monitoring.metricWriter&quot;</span>
+</code></pre></div>
+<p><strong>Do NOT grant</strong> <code>roles/owner</code>, <code>roles/editor</code>, or <code>roles/run.admin</code> to this
+  account. Those are for your <em>user</em>, not the running container.</p>
+<ul>
+<li>[ ] <strong>M2.3</strong> Verify: <code>gcloud iam service-accounts get-iam-policy $SA</code>.</li>
+</ul>
+<p><strong>Cost: $0.</strong></p>
+<hr />
+<h3 id="m3-secrets-in-secret-manager-45-minutes">M3 — Secrets in Secret Manager (45 minutes)<a class="headerlink" href="#m3-secrets-in-secret-manager-45-minutes" title="Permanent link">&para;</a></h3>
+<p><strong>Goal.</strong> Nothing sensitive ever in the image, build-time env vars, or shell
+history. Every key fetched at container startup via Secret Manager.</p>
+<h4 id="required-secrets">Required secrets<a class="headerlink" href="#required-secrets" title="Permanent link">&para;</a></h4>
 <table>
 <thead>
 <tr>
-<th>ID</th>
-<th>Story</th>
-<th>Effort</th>
-<th>Owner</th>
-<th>Status</th>
+<th>Secret name</th>
+<th>What it holds</th>
+<th>Notes</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>C1</td>
-<td>Cheap LLM account + key</td>
-<td>~15 min</td>
-<td>you (operational)</td>
-<td>✅ done (2026-05-17)</td>
+<td><code>AGT_BACKEND_API_KEY</code></td>
+<td>The <code>X-AGT-API-Key</code> token the add-on sends</td>
+<td>Generate: <code>python3 -c "import secrets; print(secrets.token_urlsafe(48))"</code></td>
 </tr>
 <tr>
-<td>C2</td>
-<td>Startup LLM config log line</td>
-<td>~30 min</td>
-<td>python-backend-engineer</td>
-<td>✅ done (2026-05-17)</td>
+<td><code>AGT_ZOTERO_API_KEY</code></td>
+<td>Zotero API key</td>
+<td>From zotero.org/settings/keys — read + write scope</td>
 </tr>
 <tr>
-<td>C3</td>
-<td>Dockerfile: honor <code>$PORT</code></td>
-<td>~5 min</td>
-<td>python-backend-engineer</td>
-<td>✅ done (2026-05-17)</td>
+<td><code>AGT_ZOTERO_LIBRARY_ID</code></td>
+<td>Zotero user/group ID</td>
+<td>Not strictly secret, but treat as private</td>
 </tr>
 <tr>
-<td>C4</td>
-<td>Create <code>.dockerignore</code></td>
-<td>~5 min</td>
-<td>python-backend-engineer</td>
-<td>✅ done (2026-05-17)</td>
-</tr>
-<tr>
-<td>C5</td>
-<td>Local Docker smoke test with cheap LLM</td>
-<td>~15 min</td>
-<td>you (operational)</td>
-<td>✅ done (2026-05-17)</td>
-</tr>
-<tr>
-<td>C6</td>
-<td>End-to-end Zotero → Docker test</td>
-<td>~20 min</td>
-<td>you (operational)</td>
-<td>✅ done (2026-05-17)</td>
-</tr>
-<tr>
-<td>C7</td>
-<td>Commit + CI green</td>
-<td>~10 min</td>
-<td>python-backend-engineer</td>
-<td>not started</td>
+<td><code>AGT_LLM_API_KEY</code></td>
+<td>Your cheap LLM key (DeepSeek, Groq, etc.)</td>
+<td>Read by <code>src/agt/providers/router.py:138</code></td>
 </tr>
 </tbody>
 </table>
-<p><strong>Total estimate: ~1.5 hours.</strong></p>
+<h4 id="plain-env-vars-not-secret-set-via-set-env-vars-in-m4">Plain env vars (not secret — set via <code>--set-env-vars</code> in M4)<a class="headerlink" href="#plain-env-vars-not-secret-set-via-set-env-vars-in-m4" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AGT_LLM_PROVIDER</code></td>
+<td><code>openai-compatible</code></td>
+</tr>
+<tr>
+<td><code>AGT_LLM_BASE_URL</code></td>
+<td><code>https://api.deepseek.com/v1</code></td>
+</tr>
+<tr>
+<td><code>AGT_LLM_MODEL</code></td>
+<td><code>deepseek-chat</code></td>
+</tr>
+<tr>
+<td><code>AGT_CORS_ALLOWED_ORIGINS</code></td>
+<td><code>zotero://*,http://localhost:*</code></td>
+</tr>
+<tr>
+<td><code>AGT_LOG_LEVEL</code></td>
+<td><code>INFO</code></td>
+</tr>
+</tbody>
+</table>
+<p>These are not secrets — they contain no key material. Store them as plain env
+vars on the Cloud Run service, not in Secret Manager.</p>
+<h4 id="optional-enrichment-secrets-only-if-you-use-them">Optional enrichment secrets (only if you use them)<a class="headerlink" href="#optional-enrichment-secrets-only-if-you-use-them" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Secret name</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AGT_SEMANTIC_SCHOLAR_API_KEY</code></td>
+<td>semanticscholar.org/product/api</td>
+</tr>
+<tr>
+<td><code>AGT_NCBI_API_KEY</code></td>
+<td>ncbi.nlm.nih.gov/account/settings</td>
+</tr>
+<tr>
+<td><code>AGT_CORE_API_KEY</code></td>
+<td>core.ac.uk/services/api</td>
+</tr>
+</tbody>
+</table>
+<h4 id="steps">Steps<a class="headerlink" href="#steps" title="Permanent link">&para;</a></h4>
+<ul>
+<li>[ ] <strong>M3.1</strong> Generate the backend API key:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import secrets; print(secrets.token_urlsafe(48))&quot;</span>
+</code></pre></div>
+<p>Save to your password manager. You will paste it into the Zotero add-on
+  settings in M5.</p>
+<ul>
+<li>[ ] <strong>M3.2</strong> Create each required secret (repeat for every name in the table).
+  The <code>-n</code> flag matters — trailing newlines silently cause 401s:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nb">echo</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;your-actual-value-here&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span>gcloud<span class="w"> </span>secrets<span class="w"> </span>create<span class="w"> </span>AGT_BACKEND_API_KEY<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span>--data-file<span class="o">=</span>-<span class="w"> </span>--replication-policy<span class="o">=</span><span class="s2">&quot;automatic&quot;</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>M3.3</strong> Verify each secret reads back:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>gcloud<span class="w"> </span>secrets<span class="w"> </span>versions<span class="w"> </span>access<span class="w"> </span>latest<span class="w"> </span>--secret<span class="o">=</span>AGT_BACKEND_API_KEY
+</code></pre></div>
+<ul>
+<li>[ ] <strong>M3.4</strong> (Optional) Grant the service account per-secret access for
+  belt-and-braces control:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="k">for</span><span class="w"> </span>s<span class="w"> </span><span class="k">in</span><span class="w"> </span>AGT_BACKEND_API_KEY<span class="w"> </span>AGT_ZOTERO_API_KEY<span class="w"> </span>AGT_ZOTERO_LIBRARY_ID<span class="w"> </span>AGT_LLM_API_KEY<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span>gcloud<span class="w"> </span>secrets<span class="w"> </span>add-iam-policy-binding<span class="w"> </span><span class="nv">$s</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">    </span>--member<span class="o">=</span><span class="s2">&quot;serviceAccount:</span><span class="nv">$SA</span><span class="s2">&quot;</span><span class="w"> </span>--role<span class="o">=</span><span class="s2">&quot;roles/secretmanager.secretAccessor&quot;</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="k">done</span>
+</code></pre></div>
+<p>The project-level <code>secretAccessor</code> from M2.2 already covers this. Per-secret
+  bindings are optional.</p>
+<ul>
+<li>[ ] <strong>M3.5</strong> Set a 90-day rotation reminder for:</li>
+<li>DeepSeek key — via dashboard, then <code>echo -n "new" | gcloud secrets versions add AGT_LLM_API_KEY --data-file=-</code>.</li>
+<li>Zotero key — via zotero.org settings.</li>
+<li>Backend API key — regenerate locally, add new version, update Zotero add-on prefs.</li>
+</ul>
+<p><strong>Cost: $0</strong> (free tier: 6 active versions, 10k access ops/month).</p>
 <hr />
-<h2 id="milestones">Milestones<a class="headerlink" href="#milestones" title="Permanent link">&para;</a></h2>
-<h3 id="c1-cheap-llm-account-key-15-minutes">C1 — Cheap LLM Account &amp; Key (15 minutes)<a class="headerlink" href="#c1-cheap-llm-account-key-15-minutes" title="Permanent link">&para;</a></h3>
-<p><strong>Goal.</strong> A working API key for a cheap OpenAI-compatible LLM provider stored in
-your password manager and smoke-tested from the terminal.</p>
-<p><strong>Recommended provider: DeepSeek V3</strong> — <code>$0.14 / $0.28 per million tokens</code>
-(in/out). At SciAgent's ~300k tokens/month solo volume, that is ~$0.07/month.
-One $5 top-up covers roughly 18 months of solo use.</p>
-<p><strong>Alternatives</strong> (same <code>openai-compatible</code> adapter, zero code changes):
-- <strong>Groq</strong> — free tier (<code>llama-3.3-70b</code>, <code>deepseek-r1-distill-*</code>). Rate-limited but
-  usable for solo dev. Set <code>AGT_LLM_BASE_URL=https://api.groq.com/openai/v1</code>.
-- <strong>Ollama</strong> — fully local, free, no key needed. Use <code>AGT_LLM_PROVIDER=ollama</code>.
-  Slower cold start; no cloud cost at all.
-- <strong>OpenAI <code>gpt-4o-mini</code></strong> — $0.15/$0.60 per M tokens. Already works; no new setup.</p>
-<p><strong>DeepSeek steps:</strong></p>
+<h3 id="m4-first-manual-deploy-to-cloud-run-1-hour">M4 — First Manual Deploy to Cloud Run (1 hour)<a class="headerlink" href="#m4-first-manual-deploy-to-cloud-run-1-hour" title="Permanent link">&para;</a></h3>
+<p><strong>Goal.</strong> <code>https://sciagent-xxxxx-ew.a.run.app/health</code> returns 200 with the
+right <code>X-AGT-API-Key</code>.</p>
 <ul>
-<li>[ ] <strong>C1.1</strong> Sign up at <a href="https://platform.deepseek.com">https://platform.deepseek.com</a> (Google OAuth works).</li>
-<li>[ ] <strong>C1.2</strong> Top up $5. This covers ~30 million tokens of <code>deepseek-chat</code> — over
-  a year of solo SciAgent use.</li>
-<li>[ ] <strong>C1.3</strong> Create an API key. Save to password manager as <code>DEEPSEEK_API_KEY</code>.</li>
-<li>[ ] <strong>C1.4</strong> Verify with a direct curl (replace <code>&lt;KEY&gt;</code>):</li>
+<li>[ ] <strong>M4.1</strong> Build and push via Cloud Build (no local Docker needed):</li>
 </ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>curl<span class="w"> </span>https://api.deepseek.com/chat/completions<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer &lt;KEY&gt;&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;model&quot;:&quot;deepseek-chat&quot;,&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;Say hi&quot;}],&quot;max_tokens&quot;:10}&#39;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="nv">REGION</span><span class="o">=</span>europe-west1
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="nv">PROJECT_ID</span><span class="o">=</span><span class="k">$(</span>gcloud<span class="w"> </span>config<span class="w"> </span>get-value<span class="w"> </span>project<span class="k">)</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="nv">IMAGE</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$REGION</span><span class="s2">-docker.pkg.dev/</span><span class="nv">$PROJECT_ID</span><span class="s2">/sciagent/backend:v0.1.0&quot;</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>gcloud<span class="w"> </span>builds<span class="w"> </span>submit<span class="w"> </span>--tag<span class="w"> </span><span class="nv">$IMAGE</span><span class="w"> </span>.
 </code></pre></div>
-<p>Expect 200 JSON. <code>401</code> = wrong key. <code>402</code> = balance zero (top up first).</p>
+<p>Takes 2–4 minutes. Free tier covers 120 build-minutes/day.</p>
 <ul>
-<li>[ ] <strong>C1.5</strong> Verify the SciAgent env var wiring locally (no Docker):</li>
+<li>[ ] <strong>M4.2</strong> Deploy:</li>
 </ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nv">AGT_LLM_PROVIDER</span><span class="o">=</span>openai-compatible<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nv">AGT_LLM_BASE_URL</span><span class="o">=</span>https://api.deepseek.com/v1<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nv">AGT_LLM_MODEL</span><span class="o">=</span>deepseek-chat<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="nv">AGT_LLM_API_KEY</span><span class="o">=</span>&lt;KEY&gt;<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>uv<span class="w"> </span>run<span class="w"> </span>sciagent-server<span class="w"> </span>--port<span class="w"> </span><span class="m">57322</span><span class="w"> </span><span class="p">&amp;</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>curl<span class="w"> </span>-s<span class="w"> </span>http://127.0.0.1:57322/health<span class="w"> </span><span class="p">|</span><span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>json.tool
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="nb">kill</span><span class="w"> </span>%1
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>gcloud<span class="w"> </span>run<span class="w"> </span>deploy<span class="w"> </span>sciagent<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span>--image<span class="o">=</span><span class="nv">$IMAGE</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">  </span>--region<span class="o">=</span><span class="nv">$REGION</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">  </span>--service-account<span class="o">=</span><span class="nv">$SA</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">  </span>--platform<span class="o">=</span>managed<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">  </span>--allow-unauthenticated<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">  </span>--min-instances<span class="o">=</span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">  </span>--max-instances<span class="o">=</span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="w">  </span>--cpu<span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="w">  </span>--memory<span class="o">=</span>512Mi<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="w">  </span>--concurrency<span class="o">=</span><span class="m">40</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="w">  </span>--timeout<span class="o">=</span><span class="m">300</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a><span class="w">  </span>--port<span class="o">=</span><span class="m">8080</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a><span class="w">  </span>--set-secrets<span class="o">=</span><span class="s2">&quot;AGT_BACKEND_API_KEY=AGT_BACKEND_API_KEY:latest&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a><span class="w">  </span>--set-secrets<span class="o">=</span><span class="s2">&quot;AGT_ZOTERO_API_KEY=AGT_ZOTERO_API_KEY:latest&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a><span class="w">  </span>--set-secrets<span class="o">=</span><span class="s2">&quot;AGT_ZOTERO_LIBRARY_ID=AGT_ZOTERO_LIBRARY_ID:latest&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a><span class="w">  </span>--set-secrets<span class="o">=</span><span class="s2">&quot;AGT_LLM_API_KEY=AGT_LLM_API_KEY:latest&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a><span class="w">  </span>--set-env-vars<span class="o">=</span><span class="s2">&quot;AGT_LLM_PROVIDER=openai-compatible&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a><span class="w">  </span>--set-env-vars<span class="o">=</span><span class="s2">&quot;AGT_LLM_BASE_URL=https://api.deepseek.com/v1&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a><span class="w">  </span>--set-env-vars<span class="o">=</span><span class="s2">&quot;AGT_LLM_MODEL=deepseek-chat&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a><span class="w">  </span>--set-env-vars<span class="o">=</span><span class="s2">&quot;AGT_CORS_ALLOWED_ORIGINS=zotero://*,http://localhost:*,chrome-extension://*&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a><span class="w">  </span>--set-env-vars<span class="o">=</span><span class="s2">&quot;AGT_LOG_LEVEL=INFO&quot;</span>
 </code></pre></div>
-<p>Expect <code>/health</code> to return 200. If <code>llm_provider</code> is not in the health response,
-  that is what C2 fixes.</p>
-<p><strong>Cost: $5 one-time.</strong></p>
+<p>Flag notes:</p>
+<ul>
+<li><code>--allow-unauthenticated</code> — Phase 1 only. App-level <code>X-AGT-API-Key</code> is the
+    gate. M6 tightens this.</li>
+<li><code>--min-instances=0</code> — scales to zero. The single biggest cost knob.</li>
+<li><code>--set-secrets</code> — Secret Manager injects values at startup, not baked into image.</li>
+<li>
+<p><code>AGT_LLM_*</code> env vars — not secrets; set directly.</p>
+</li>
+<li>
+<p>[ ] <strong>M4.3</strong> Grab the service URL:</p>
+</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="nv">URL</span><span class="o">=</span><span class="k">$(</span>gcloud<span class="w"> </span>run<span class="w"> </span>services<span class="w"> </span>describe<span class="w"> </span>sciagent<span class="w"> </span>--region<span class="o">=</span><span class="nv">$REGION</span><span class="w"> </span>--format<span class="o">=</span><span class="s1">&#39;value(status.url)&#39;</span><span class="k">)</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="nb">echo</span><span class="w"> </span><span class="nv">$URL</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>M4.4</strong> Smoke test <code>/health</code>:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="nv">API_KEY</span><span class="o">=</span><span class="s2">&quot;&lt;the-AGT_BACKEND_API_KEY-you-saved&gt;&quot;</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>curl<span class="w"> </span>-H<span class="w"> </span><span class="s2">&quot;X-AGT-API-Key: </span><span class="nv">$API_KEY</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">     </span>-H<span class="w"> </span><span class="s2">&quot;X-AGT-Client-ID: dev-test&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">     </span><span class="s2">&quot;</span><span class="nv">$URL</span><span class="s2">/health&quot;</span>
+</code></pre></div>
+<p>Expect 200 JSON. Check for the <code>sciagent_startup</code> log line — it should show
+  <code>llm_provider=openai-compatible</code> and <code>llm_base_url=https://api.deepseek.com/v1</code>.</p>
+<ul>
+<li>[ ] <strong>M4.5</strong> Tail logs:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>gcloud<span class="w"> </span>run<span class="w"> </span>services<span class="w"> </span>logs<span class="w"> </span>tail<span class="w"> </span>sciagent<span class="w"> </span>--region<span class="o">=</span><span class="nv">$REGION</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>M4.6</strong> Run a real search:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$URL</span><span class="s2">/run&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;X-AGT-API-Key: </span><span class="nv">$API_KEY</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;X-AGT-Client-ID: dev-test&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;query&quot;:&quot;retrieval augmented generation&quot;,&quot;collection_name&quot;:&quot;SciAgent Cloud Test&quot;,&quot;limit&quot;:5}&#39;</span>
+</code></pre></div>
+<p>Expect a <code>run_id</code> and 5 results. Watch logs — DeepSeek should be hit.</p>
+<p><strong>Cost: a few cents</strong> for the build + test calls.</p>
 <hr />
-<h3 id="c2-startup-llm-config-log-line-30-minutes">C2 — Startup LLM Config Log Line (30 minutes)<a class="headerlink" href="#c2-startup-llm-config-log-line-30-minutes" title="Permanent link">&para;</a></h3>
-<p><strong>Goal.</strong> <code>create_app()</code> in <code>src/agt/api/app.py</code> emits one structured log line at
-<code>INFO</code> level showing the effective LLM provider, model, and base URL. When
-DeepSeek is on, the log is obvious. When debugging a cold-start failure on Cloud
-Run, this is the first thing to check.</p>
-<p><strong>Why this doesn't exist yet.</strong> <code>get_settings()</code> loads and validates settings but
-never logs the resolved LLM config. <code>create_app()</code> calls <code>get_settings()</code> at line
-297 but only uses it for CORS and rate limits — nothing is logged.</p>
-<p><strong>Implementation target:</strong> <code>src/agt/api/app.py</code>, inside <code>create_app()</code>, right
-after line 297 (<code>_settings = get_settings()</code>).</p>
+<h3 id="m5-zotero-add-on-updates-for-cloud-12-hours">M5 — Zotero Add-on Updates for Cloud (1–2 hours)<a class="headerlink" href="#m5-zotero-add-on-updates-for-cloud-12-hours" title="Permanent link">&para;</a></h3>
+<p><strong>Goal.</strong> The add-on talks to the Cloud Run URL exactly as it talked to
+<code>localhost:8080</code>. Two sub-items require code changes to the add-on.</p>
+<h4 id="m5-a-point-at-the-new-backend-10-minutes-no-code">M5-A — Point at the new backend (10 minutes, no code)<a class="headerlink" href="#m5-a-point-at-the-new-backend-10-minutes-no-code" title="Permanent link">&para;</a></h4>
 <ul>
-<li>[ ] <strong>C2.1</strong> Add a <code>structlog</code> import and log call:</li>
+<li>[ ] <strong>M5-A.1</strong> In Zotero → Tools → SciAgent → Settings → Connection:</li>
+<li>Backend Mode: <strong>Remote</strong>.</li>
+<li>Backend URL: paste <code>$URL</code> from M4.3.</li>
+<li>Backend API Key: paste your <code>AGT_BACKEND_API_KEY</code>.</li>
+<li>[ ] <strong>M5-A.2</strong> Click "Test Connection" — expect green.</li>
+<li>[ ] <strong>M5-A.3</strong> Run end-to-end: search → approve → write to a test collection.
+  If this works, the cloud deploy is real. <strong>This is the gate.</strong></li>
 </ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">structlog</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_structlog</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">_log</span> <span class="o">=</span> <span class="n">_structlog</span><span class="o">.</span><span class="n">get_logger</span><span class="p">()</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">create_app</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">FastAPI</span><span class="p">:</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">app</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;SciAgent API&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;0.1.0&quot;</span><span class="p">)</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">_settings</span> <span class="o">=</span> <span class="n">get_settings</span><span class="p">()</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="c1"># Log the effective LLM config at startup — visible in Cloud Run logs.</span>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="n">_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>        <span class="s2">&quot;sciagent_startup&quot;</span><span class="p">,</span>
-<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>        <span class="n">llm_provider</span><span class="o">=</span><span class="n">_settings</span><span class="o">.</span><span class="n">resolved_llm_provider</span><span class="p">,</span>
-<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>        <span class="n">llm_model</span><span class="o">=</span><span class="n">_settings</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span>
-<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>        <span class="n">llm_base_url</span><span class="o">=</span><span class="n">_settings</span><span class="o">.</span><span class="n">llm_base_url</span><span class="p">,</span>  <span class="c1"># not a secret; safe to log</span>
-<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>    <span class="p">)</span>
-<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>    <span class="c1"># ... rest of create_app unchanged</span>
-</code></pre></div>
-<p>Place these additions at the top of the file and inside <code>create_app()</code> only.
-  Do not move or restructure any existing code.</p>
+<h4 id="m5-b-surface-which-backend-is-active-in-the-ui-30-minutes-code">M5-B — Surface which backend is active in the UI (30 minutes, code)<a class="headerlink" href="#m5-b-surface-which-backend-is-active-in-the-ui-30-minutes-code" title="Permanent link">&para;</a></h4>
+<p><strong>Why.</strong> After you have both a local binary and a cloud backend, you will forget
+which one the add-on is hitting. This has no test to catch it.</p>
+<p><strong>Files to change:</strong> <code>zotero-addon/src/host/runtime.ts</code> or wherever the health
+badge is rendered (the component that calls <code>isServerRunning()</code>). Also potentially
+<code>zotero-addon/src/ui/components/</code> — search for where the green/red health dot is
+shown.</p>
 <ul>
+<li>[ ] <strong>M5-B.1</strong> After a successful <code>/health</code> call, display the backend URL's
+  hostname in the sidebar status area. Short: <code>localhost:57321</code>, <code>sciagent-xxx.run.app</code>.</li>
+<li>[ ] <strong>M5-B.2</strong> Add a Vitest test that asserts the hostname extraction works for
+  localhost, <code>*.run.app</code>, and a custom domain.</li>
+</ul>
+<h4 id="m5-c-tighten-cors-15-minutes-no-code">M5-C — Tighten CORS (15 minutes, no code)<a class="headerlink" href="#m5-c-tighten-cors-15-minutes-no-code" title="Permanent link">&para;</a></h4>
+<p>For Phase 1 the CORS config in M4.2 is correct (<code>zotero://*</code>, <code>localhost:*</code>). If
+you later add a docs site or admin UI:</p>
+<ul>
+<li>[ ] <strong>M5-C.1</strong> Update the Cloud Run env var:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>gcloud<span class="w"> </span>run<span class="w"> </span>services<span class="w"> </span>update<span class="w"> </span>sciagent<span class="w"> </span>--region<span class="o">=</span><span class="nv">$REGION</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">  </span>--update-env-vars<span class="o">=</span><span class="s2">&quot;AGT_CORS_ALLOWED_ORIGINS=zotero://*,http://localhost:*,https://yourdomain.com&quot;</span>
+</code></pre></div>
+<h4 id="m5-d-explicit-cloud-error-ux-in-the-add-on-30-minutes-code">M5-D — Explicit cloud error UX in the add-on (30 minutes, code)<a class="headerlink" href="#m5-d-explicit-cloud-error-ux-in-the-add-on-30-minutes-code" title="Permanent link">&para;</a></h4>
+<p><strong>Why.</strong> In local mode the backend either works or isn't running. In cloud mode
+it can be up but rejecting you (expired key, rate limit, cold-start timeout).
+The current add-on has no specific handling for these statuses.</p>
+<p><strong>File to change:</strong> <code>zotero-addon/src/client/backendClient.ts</code>.</p>
+<ul>
+<li>[ ] <strong>M5-D.1</strong> Add explicit status handling in the fetch path:</li>
+<li><strong>401</strong> → <code>"API key rejected. Check Settings → Connection."</code> Do not retry.</li>
+<li><strong>403</strong> → <code>"Origin not allowed."</code> Do not retry.</li>
+<li><strong>429</strong> → <code>"Rate limit hit."</code> Show a countdown if <code>Retry-After</code> header is set.</li>
 <li>
-<p>[ ] <strong>C2.2</strong> Confirm the redaction processor does NOT redact <code>llm_base_url</code> (it
-  shouldn't — the processor in <code>config.py:546</code> only redacts keys containing
-  <code>"key"</code>, <code>"token"</code>, <code>"secret"</code>, <code>"authorization"</code>, or <code>"password"</code>).</p>
+<p><strong>5xx + timeout</strong> → <code>"Backend not responding. Falling back to cached results."</code>
+    Trigger the existing offline cache path (<code>useOfflineCache.ts</code>).</p>
 </li>
 <li>
-<p>[ ] <strong>C2.3</strong> Run the quality gates:</p>
+<p>[ ] <strong>M5-D.2</strong> Add one Vitest test per status code — assert the right error
+  message and retry behavior.</p>
+</li>
+<li>
+<p>[ ] <strong>M5-D.3</strong> Run the Zotero add-on quality gate:</p>
 </li>
 </ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>check<span class="w"> </span>.<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>format<span class="w"> </span>--check<span class="w"> </span>.<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>uv<span class="w"> </span>run<span class="w"> </span>pyright
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>-q<span class="w"> </span>--vcr-record<span class="o">=</span>none
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="nb">cd</span><span class="w"> </span>zotero-addon<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>npm<span class="w"> </span>ci<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>npm<span class="w"> </span>run<span class="w"> </span>lint<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>npm<span class="w"> </span>run<span class="w"> </span>build<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>npm<span class="w"> </span>run<span class="w"> </span>typecheck<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>npm<span class="w"> </span>run<span class="w"> </span><span class="nb">test</span>
 </code></pre></div>
-<p>No new failures expected. The existing 563+ tests must still pass.</p>
+<h4 id="m5-e-update-docsdeploymentmd-10-minutes">M5-E — Update <code>docs/deployment.md</code> (10 minutes)<a class="headerlink" href="#m5-e-update-docsdeploymentmd-10-minutes" title="Permanent link">&para;</a></h4>
 <ul>
-<li>[ ] <strong>C2.4</strong> Manual verify: <code>uv run sciagent-server --port 57322</code> with DeepSeek
-  env vars. Confirm the log line appears in stderr/stdout with the correct values.</li>
+<li>[ ] <strong>M5-E.1</strong> Add a "Cloud Run quickstart" subsection pointing at this plan
+  and giving the one-liner for pointing the add-on at a hosted backend.</li>
 </ul>
-<p><strong>Pitfall:</strong> Do not add <code>structlog</code> as a new dependency — it is already in
-<code>pyproject.toml</code> (used throughout <code>src/agt/</code>). Import it directly.</p>
 <hr />
-<h3 id="c3-dockerfile-honor-port-5-minutes">C3 — Dockerfile: Honor <code>$PORT</code> (5 minutes)<a class="headerlink" href="#c3-dockerfile-honor-port-5-minutes" title="Permanent link">&para;</a></h3>
-<p><strong>Goal.</strong> The container listens on whatever port Cloud Run sets via <code>$PORT</code>
-(default 8080). The current <code>CMD</code> hardcodes <code>--port 8000</code>, which causes Cloud Run
-health checks to fail silently on the first deploy.</p>
-<p><strong>Current state</strong> (<code>Dockerfile:9</code>):</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">CMD</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;uv&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;run&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;uvicorn&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;agt.api.app:app&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;--host&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;0.0.0.0&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;--port&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;8000&quot;</span><span class="p">]</span>
+<h3 id="m6-tighten-auth-optional-phase-2">M6 — Tighten Auth (Optional, Phase 2)<a class="headerlink" href="#m6-tighten-auth-optional-phase-2" title="Permanent link">&para;</a></h3>
+<p><strong>When.</strong> You share the API key with someone else, or you go public.</p>
+<p>The Cloud Run URL is currently public — anyone can send requests (they still
+need the right <code>X-AGT-API-Key</code>, but cold-start CPU is still consumed).</p>
+<ul>
+<li>[ ] <strong>M6.1</strong> Disable public access:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>gcloud<span class="w"> </span>run<span class="w"> </span>services<span class="w"> </span>update<span class="w"> </span>sciagent<span class="w"> </span>--region<span class="o">=</span><span class="nv">$REGION</span><span class="w"> </span>--no-allow-unauthenticated
 </code></pre></div>
 <ul>
-<li>[ ] <strong>C3.1</strong> Change to:</li>
+<li>[ ] <strong>M6.2</strong> Grant your user invoker rights (for <code>curl</code> testing):</li>
 </ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">CMD</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;sh&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;-c&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;uv run uvicorn agt.api.app:app --host 0.0.0.0 --port ${PORT:-8080}&quot;</span><span class="p">]</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="nv">USER_EMAIL</span><span class="o">=</span><span class="k">$(</span>gcloud<span class="w"> </span>config<span class="w"> </span>get-value<span class="w"> </span>account<span class="k">)</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>gcloud<span class="w"> </span>run<span class="w"> </span>services<span class="w"> </span>add-iam-policy-binding<span class="w"> </span>sciagent<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="w">  </span>--member<span class="o">=</span><span class="s2">&quot;user:</span><span class="nv">$USER_EMAIL</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="w">  </span>--role<span class="o">=</span><span class="s2">&quot;roles/run.invoker&quot;</span><span class="w"> </span>--region<span class="o">=</span><span class="nv">$REGION</span>
 </code></pre></div>
-<p>The <code>${PORT:-8080}</code> idiom: uses Cloud Run's injected <code>$PORT</code> if set, falls
-  back to 8080 for local Docker runs.</p>
 <ul>
-<li>
-<p>[ ] <strong>C3.2</strong> Verify the base image is <code>python:3.14-slim</code> (it already is —
-  confirm with <code>head -1 Dockerfile</code>).</p>
-</li>
-<li>
-<p>[ ] <strong>C3.3</strong> Verify <code>uv sync --frozen</code> is in the build (already is — <code>Dockerfile:6</code>).</p>
-</li>
-<li>
-<p>[ ] <strong>C3.4</strong> Build and confirm the image starts without errors:</p>
-</li>
+<li>[ ] <strong>M6.3</strong> Test with an ID token:</li>
 </ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>sciagent:port-test<span class="w"> </span>.
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-p<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span>-e<span class="w"> </span><span class="nv">PORT</span><span class="o">=</span><span class="m">8080</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span>-e<span class="w"> </span><span class="nv">AGT_LLM_PROVIDER</span><span class="o">=</span>openai-compatible<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span>-e<span class="w"> </span><span class="nv">AGT_LLM_BASE_URL</span><span class="o">=</span>https://api.deepseek.com/v1<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span>-e<span class="w"> </span><span class="nv">AGT_LLM_MODEL</span><span class="o">=</span>deepseek-chat<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span>-e<span class="w"> </span><span class="nv">AGT_LLM_API_KEY</span><span class="o">=</span>&lt;KEY&gt;<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">  </span>sciagent:port-test<span class="w"> </span><span class="p">&amp;</span>
-<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>sleep<span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>curl<span class="w"> </span>-s<span class="w"> </span>http://localhost:8080/health
-<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>docker<span class="w"> </span>stop<span class="w"> </span><span class="k">$(</span>docker<span class="w"> </span>ps<span class="w"> </span>-q<span class="w"> </span>--filter<span class="w"> </span><span class="nv">ancestor</span><span class="o">=</span>sciagent:port-test<span class="k">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="nv">TOKEN</span><span class="o">=</span><span class="k">$(</span>gcloud<span class="w"> </span>auth<span class="w"> </span>print-identity-token<span class="k">)</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>curl<span class="w"> </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer </span><span class="nv">$TOKEN</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="w">     </span>-H<span class="w"> </span><span class="s2">&quot;X-AGT-API-Key: </span><span class="nv">$API_KEY</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="w">     </span><span class="s2">&quot;</span><span class="nv">$URL</span><span class="s2">/health&quot;</span>
 </code></pre></div>
-<p><strong>Cost: $0.</strong></p>
+<ul>
+<li>[ ] <strong>M6.4</strong> The Zotero add-on needs to mint and send an ID token per request.
+  This is ~50 lines of TypeScript + tests. <strong>Defer until you actually have a
+  second user.</strong> It requires a service-account JSON key stored in the add-on prefs
+  (non-trivial security surface).</li>
+</ul>
 <hr />
-<h3 id="c4-create-dockerignore-5-minutes">C4 — Create <code>.dockerignore</code> (5 minutes)<a class="headerlink" href="#c4-create-dockerignore-5-minutes" title="Permanent link">&para;</a></h3>
-<p><strong>Goal.</strong> Reduce the Docker build context from the full repo to only what the
-backend needs. Target: image &lt; 300 MB. Without <code>.dockerignore</code>, <code>tests/</code>,
-<code>zotero-addon/</code> (with <code>node_modules/</code>), and <code>docs/</code> all get copied into the
-build context, bloating the image and slowing Cloud Build.</p>
+<h3 id="m7-cicd-auto-deploy-on-push-to-main-1-hour">M7 — CI/CD: Auto-Deploy on Push to <code>main</code> (1 hour)<a class="headerlink" href="#m7-cicd-auto-deploy-on-push-to-main-1-hour" title="Permanent link">&para;</a></h3>
+<p><strong>Goal.</strong> Every push to <code>main</code> triggers a Cloud Build → Cloud Run deploy. No
+manual <code>gcloud builds submit</code> needed after this.</p>
 <ul>
-<li>[ ] <strong>C4.1</strong> Create <code>.dockerignore</code> at repo root:</li>
+<li>[ ] <strong>M7.1</strong> Create <code>cloudbuild.yaml</code> at repo root:</li>
 </ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>.git
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>.github
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>.venv
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>__pycache__
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>*.pyc
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>*.pyo
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>.pytest_cache
-<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>.ruff_cache
-<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>.mypy_cache
-<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>tests/
-<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>zotero-addon/
-<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>docs/
-<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>examples/
-<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>*.md
-<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>.env
-<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>.env.*
-<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>!.env.example
-<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>htmlcov/
-<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>.coverage
-<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a>build/dist/
-<a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a>build/work/
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="nt">steps</span><span class="p">:</span>
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gcr.io/cloud-builders/docker</span>
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="w">    </span><span class="nt">args</span><span class="p">:</span>
+<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">build</span>
+<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-t</span>
+<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">europe-west1-docker.pkg.dev/$PROJECT_ID/sciagent/backend:$SHORT_SHA</span>
+<a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-t</span>
+<a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">europe-west1-docker.pkg.dev/$PROJECT_ID/sciagent/backend:latest</span>
+<a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
+<a id="__codelineno-25-10" name="__codelineno-25-10" href="#__codelineno-25-10"></a>
+<a id="__codelineno-25-11" name="__codelineno-25-11" href="#__codelineno-25-11"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gcr.io/cloud-builders/docker</span>
+<a id="__codelineno-25-12" name="__codelineno-25-12" href="#__codelineno-25-12"></a><span class="w">    </span><span class="nt">args</span><span class="p">:</span>
+<a id="__codelineno-25-13" name="__codelineno-25-13" href="#__codelineno-25-13"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">push</span>
+<a id="__codelineno-25-14" name="__codelineno-25-14" href="#__codelineno-25-14"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--all-tags</span>
+<a id="__codelineno-25-15" name="__codelineno-25-15" href="#__codelineno-25-15"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">europe-west1-docker.pkg.dev/$PROJECT_ID/sciagent/backend</span>
+<a id="__codelineno-25-16" name="__codelineno-25-16" href="#__codelineno-25-16"></a>
+<a id="__codelineno-25-17" name="__codelineno-25-17" href="#__codelineno-25-17"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gcr.io/google.com/cloudsdktool/cloud-sdk</span>
+<a id="__codelineno-25-18" name="__codelineno-25-18" href="#__codelineno-25-18"></a><span class="w">    </span><span class="nt">entrypoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gcloud</span>
+<a id="__codelineno-25-19" name="__codelineno-25-19" href="#__codelineno-25-19"></a><span class="w">    </span><span class="nt">args</span><span class="p">:</span>
+<a id="__codelineno-25-20" name="__codelineno-25-20" href="#__codelineno-25-20"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">run</span>
+<a id="__codelineno-25-21" name="__codelineno-25-21" href="#__codelineno-25-21"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">deploy</span>
+<a id="__codelineno-25-22" name="__codelineno-25-22" href="#__codelineno-25-22"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sciagent</span>
+<a id="__codelineno-25-23" name="__codelineno-25-23" href="#__codelineno-25-23"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--image=europe-west1-docker.pkg.dev/$PROJECT_ID/sciagent/backend:$SHORT_SHA</span>
+<a id="__codelineno-25-24" name="__codelineno-25-24" href="#__codelineno-25-24"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--region=europe-west1</span>
+<a id="__codelineno-25-25" name="__codelineno-25-25" href="#__codelineno-25-25"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--platform=managed</span>
+<a id="__codelineno-25-26" name="__codelineno-25-26" href="#__codelineno-25-26"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--quiet</span>
+<a id="__codelineno-25-27" name="__codelineno-25-27" href="#__codelineno-25-27"></a>
+<a id="__codelineno-25-28" name="__codelineno-25-28" href="#__codelineno-25-28"></a><span class="nt">options</span><span class="p">:</span>
+<a id="__codelineno-25-29" name="__codelineno-25-29" href="#__codelineno-25-29"></a><span class="w">  </span><span class="nt">logging</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CLOUD_LOGGING_ONLY</span>
+</code></pre></div>
+<p>Secrets and resource flags persist on the service between deploys — <code>cloudbuild.yaml</code>
+  only swaps the image. Change CPU/memory/secrets via <code>gcloud run services update</code>,
+  not in CI.</p>
+<ul>
+<li>[ ] <strong>M7.2</strong> Create the GitHub trigger:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>gcloud<span class="w"> </span>builds<span class="w"> </span>triggers<span class="w"> </span>create<span class="w"> </span>github<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="w">  </span>--name<span class="o">=</span><span class="s2">&quot;sciagent-main-deploy&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="w">  </span>--repo-name<span class="o">=</span><span class="s2">&quot;sciagent&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="w">  </span>--repo-owner<span class="o">=</span><span class="s2">&quot;AdamKrysztopa&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="w">  </span>--branch-pattern<span class="o">=</span><span class="s2">&quot;^main</span>$<span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a><span class="w">  </span>--build-config<span class="o">=</span><span class="s2">&quot;cloudbuild.yaml&quot;</span>
+</code></pre></div>
+<p>First run prompts you to install the Google Cloud Build GitHub app. Approve it.</p>
+<ul>
+<li>[ ] <strong>M7.3</strong> Grant Cloud Build's service account the permissions it needs:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="nv">PROJECT_NUMBER</span><span class="o">=</span><span class="k">$(</span>gcloud<span class="w"> </span>projects<span class="w"> </span>describe<span class="w"> </span><span class="nv">$PROJECT_ID</span><span class="w"> </span>--format<span class="o">=</span><span class="s1">&#39;value(projectNumber)&#39;</span><span class="k">)</span>
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="nv">CB_SA</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">PROJECT_NUMBER</span><span class="si">}</span><span class="s2">@cloudbuild.gserviceaccount.com&quot;</span>
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>
+<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>gcloud<span class="w"> </span>projects<span class="w"> </span>add-iam-policy-binding<span class="w"> </span><span class="nv">$PROJECT_ID</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a><span class="w">  </span>--member<span class="o">=</span><span class="s2">&quot;serviceAccount:</span><span class="nv">$CB_SA</span><span class="s2">&quot;</span><span class="w"> </span>--role<span class="o">=</span><span class="s2">&quot;roles/run.admin&quot;</span>
+<a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a>
+<a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a>gcloud<span class="w"> </span>iam<span class="w"> </span>service-accounts<span class="w"> </span>add-iam-policy-binding<span class="w"> </span><span class="nv">$SA</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a><span class="w">  </span>--member<span class="o">=</span><span class="s2">&quot;serviceAccount:</span><span class="nv">$CB_SA</span><span class="s2">&quot;</span><span class="w"> </span>--role<span class="o">=</span><span class="s2">&quot;roles/iam.serviceAccountUser&quot;</span>
 </code></pre></div>
 <ul>
-<li>[ ] <strong>C4.2</strong> Build and measure image size:</li>
+<li>
+<p>[ ] <strong>M7.4</strong> Push a trivial commit to <code>main</code>. Watch Cloud Console → Cloud Build
+  → History. Within ~3 minutes Cloud Run shows a new revision.</p>
+</li>
+<li>
+<p>[ ] <strong>M7.5</strong> Verify: <code>gcloud run revisions list --service=sciagent --region=$REGION</code>
+  shows the new revision as ACTIVE.</p>
+</li>
 </ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>sciagent:size-check<span class="w"> </span>.
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>docker<span class="w"> </span>images<span class="w"> </span>sciagent:size-check<span class="w"> </span>--format<span class="w"> </span><span class="s2">&quot;{{.Size}}&quot;</span>
-</code></pre></div>
-<p>Target: <strong>&lt; 500 MB</strong>. The FastAPI + LangGraph + httpx + pyzotero stack lands at
-  ~467 MB. If over 700 MB, <code>streamlit</code>/<code>pandas</code>/<code>pyright</code> got pulled in — confirm
-  the Dockerfile uses <code>uv sync --frozen --no-dev</code> and those packages are not in
-  <code>[project.dependencies]</code>.</p>
-<p><strong>Cost: $0.</strong></p>
 <hr />
-<h3 id="c5-local-docker-smoke-test-with-cheap-llm-15-minutes">C5 — Local Docker Smoke Test with Cheap LLM (15 minutes)<a class="headerlink" href="#c5-local-docker-smoke-test-with-cheap-llm-15-minutes" title="Permanent link">&para;</a></h3>
-<p><strong>Goal.</strong> The container runs with DeepSeek env vars, <code>/health</code> returns 200, and a
-real <code>/run</code> query comes back with results — including evidence that DeepSeek was
-actually called (via the C2 startup log line and the DeepSeek dashboard).</p>
+<h3 id="m8-persistence-phase-2-trigger-based">M8 — Persistence (Phase 2, trigger-based)<a class="headerlink" href="#m8-persistence-phase-2-trigger-based" title="Permanent link">&para;</a></h3>
+<p><strong>When.</strong> You restart the service and notice your sessions / result cache are gone.
+Do not do this preemptively — the ephemeral filesystem is fine for Phase 1.</p>
+<p>The codebase stores sessions in <code>~/.sciagent/sessions/</code> (JSON) and result cache
+in <code>~/.sciagent/cache.sqlite</code>. On Cloud Run, both vanish on cold start.</p>
 <ul>
-<li>[ ] <strong>C5.1</strong> Create <code>.env.docker</code> at repo root (<strong>add to <code>.gitignore</code></strong>,
-  never commit):</li>
+<li>[ ] <strong>M8.1</strong> Create the Cloud Storage bucket:</li>
 </ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nv">AGT_BACKEND_API_KEY</span><span class="o">=</span>local-test-key-replace-me
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="nv">AGT_LLM_PROVIDER</span><span class="o">=</span>openai-compatible
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="nv">AGT_LLM_BASE_URL</span><span class="o">=</span>https://api.deepseek.com/v1
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="nv">AGT_LLM_MODEL</span><span class="o">=</span>deepseek-chat
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="nv">AGT_LLM_API_KEY</span><span class="o">=</span>&lt;your-deepseek-key&gt;
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="nv">AGT_ZOTERO_API_KEY</span><span class="o">=</span>&lt;your-zotero-key&gt;
-<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="nv">AGT_ZOTERO_LIBRARY_ID</span><span class="o">=</span>&lt;your-library-id&gt;
-<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="nv">AGT_LOG_LEVEL</span><span class="o">=</span>INFO
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>gcloud<span class="w"> </span>storage<span class="w"> </span>buckets<span class="w"> </span>create<span class="w"> </span>gs://sciagent-data-<span class="nv">$PROJECT_ID</span><span class="w"> </span>--location<span class="o">=</span><span class="nv">$REGION</span>
 </code></pre></div>
 <ul>
-<li>[ ] <strong>C5.2</strong> Run:</li>
+<li>[ ] <strong>M8.2</strong> Mount it as a volume and point SciAgent at it:</li>
 </ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-p<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span>--env-file<span class="w"> </span>.env.docker<span class="w"> </span>sciagent:size-check
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>gcloud<span class="w"> </span>run<span class="w"> </span>services<span class="w"> </span>update<span class="w"> </span>sciagent<span class="w"> </span>--region<span class="o">=</span><span class="nv">$REGION</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="w">  </span>--add-volume<span class="o">=</span><span class="nv">name</span><span class="o">=</span>data,type<span class="o">=</span>cloud-storage,bucket<span class="o">=</span>sciagent-data-<span class="nv">$PROJECT_ID</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="w">  </span>--add-volume-mount<span class="o">=</span><span class="nv">volume</span><span class="o">=</span>data,mount-path<span class="o">=</span>/data<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="w">  </span>--update-env-vars<span class="o">=</span><span class="s2">&quot;AGT_DATA_DIR=/data&quot;</span>
 </code></pre></div>
-<p>First line to look for in logs: <code>sciagent_startup</code> with
-  <code>llm_provider=openai-compatible</code> and <code>llm_base_url=https://api.deepseek.com/v1</code>
-  (the C2 log line). If that line is missing, C2 isn't complete.</p>
+<p><code>AGT_DATA_DIR</code> is read by <code>server.py</code> and propagated to <code>SessionStore</code> and
+  <code>ResultCache</code>. No code change required — the server already accepts <code>--data-dir</code>
+  and sets <code>AGT_DATA_DIR</code> from it.</p>
 <ul>
-<li>[ ] <strong>C5.3</strong> In a second terminal, hit <code>/health</code>:</li>
+<li>[ ] <strong>M8.3</strong> Verify: run a search, restart the service, run the same search
+  again. The result cache should be warm (cache hit logged) and session history
+  should persist.</li>
 </ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>curl<span class="w"> </span>-H<span class="w"> </span><span class="s2">&quot;X-AGT-API-Key: local-test-key-replace-me&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">     </span>-H<span class="w"> </span><span class="s2">&quot;X-AGT-Client-ID: smoke-test&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">     </span>http://localhost:8080/health
-</code></pre></div>
-<p>Expect 200 JSON.</p>
-<ul>
-<li>[ ] <strong>C5.4</strong> Run a real search:</li>
-</ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8080/run<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;X-AGT-API-Key: local-test-key-replace-me&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;X-AGT-Client-ID: smoke-test&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;query&quot;:&quot;retrieval augmented generation&quot;,&quot;collection_name&quot;:&quot;SciAgent Docker Test&quot;,&quot;limit&quot;:5}&#39;</span>
-</code></pre></div>
-<p>Expect a <code>run_id</code> and 5 results. Verify in logs that the query-rewrite step
-  hit DeepSeek (look for a log line referencing the LLM call).</p>
-<ul>
-<li>[ ] <strong>C5.5</strong> Check the DeepSeek dashboard at <a href="https://platform.deepseek.com">https://platform.deepseek.com</a>.
-  Expect 1–3 API calls and ~$0.0001 of spend. If spend is zero, query rewriting
-  silently fell through — check <code>AGT_LLM_API_KEY</code> is set correctly.</li>
-</ul>
-<p><strong>Cost: ~$0.0001.</strong></p>
+<p><strong>Cost: ~$0.02/GB-month.</strong></p>
 <hr />
-<h3 id="c6-end-to-end-zotero-docker-test-20-minutes">C6 — End-to-End Zotero → Docker Test (20 minutes)<a class="headerlink" href="#c6-end-to-end-zotero-docker-test-20-minutes" title="Permanent link">&para;</a></h3>
-<p><strong>Goal.</strong> The Zotero add-on talks to the local Docker container and completes a
-full search → approve → write cycle. This proves the cloud path before any GCP
-cost is incurred.</p>
+<h3 id="m9-observability-cost-control-always-on">M9 — Observability &amp; Cost Control (Always-On)<a class="headerlink" href="#m9-observability-cost-control-always-on" title="Permanent link">&para;</a></h3>
 <ul>
-<li>
-<p>[ ] <strong>C6.1</strong> Open Zotero. Confirm the SciAgent add-on is installed (XPI from
-  <code>zotero-addon/build/sciagent-zotero-addon.xpi</code>).</p>
-</li>
-<li>
-<p>[ ] <strong>C6.2</strong> In Zotero → Tools → SciAgent → Settings → Connection:</p>
-</li>
-<li>Backend Mode: <strong>Remote</strong> (<code>backendMode: "remote"</code> bypasses the binary path).</li>
-<li>Backend URL: <code>http://localhost:8080</code>.</li>
-<li>
-<p>Backend API Key: <code>local-test-key-replace-me</code>.</p>
-</li>
-<li>
-<p>[ ] <strong>C6.3</strong> Click "Test Connection" — expect green.</p>
-</li>
-<li>
-<p>[ ] <strong>C6.4</strong> Run a search from the main-window workspace. Approve 2–3 papers.
-  Write to a test collection ("SciAgent E2E Test" — do not pollute a real
-  collection).</p>
-</li>
-<li>
-<p>[ ] <strong>C6.5</strong> Verify the items appeared in Zotero. Check the per-item outcome
-  (created / unchanged) shown in the add-on UI.</p>
-</li>
-<li>
-<p>[ ] <strong>C6.6</strong> Re-run the same search. The second write must report <code>unchanged</code>
-  for every item (idempotent upsert working).</p>
-</li>
-<li>
-<p>[ ] <strong>C6.7</strong> Tear down: stop the Docker container, delete the test Zotero
-  collection.</p>
-</li>
+<li>[ ] <strong>M9.1</strong> Re-verify the budget alert from M0.4 is still active.</li>
+<li>[ ] <strong>M9.2</strong> Bookmark the Cloud Run dashboard: Console → Cloud Run → sciagent
+  → Metrics. Key tiles: request count, p50/p95 latency, billable container
+  instance time, memory utilization.</li>
+<li>[ ] <strong>M9.3</strong> Create one alert policy: "Billable instance time &gt; 10,000
+  vCPU-seconds in a day" → email. Catches runaway loops.</li>
+<li>[ ] <strong>M9.4</strong> Monthly: <code>gcloud run services describe sciagent --region=$REGION</code>.
+  Right-size if p95 memory utilization is &lt; 30%.</li>
+<li>[ ] <strong>M9.5</strong> Monthly: prune old Artifact Registry images. Keep last 5:</li>
 </ul>
-<p><strong>Cost: $0 (local Docker, no GCP).</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>gcloud<span class="w"> </span>artifacts<span class="w"> </span>docker<span class="w"> </span>images<span class="w"> </span>list<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="w">  </span>europe-west1-docker.pkg.dev/<span class="nv">$PROJECT_ID</span>/sciagent/backend<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="w">  </span>--sort-by<span class="o">=</span>~CREATE_TIME<span class="w"> </span>--limit<span class="o">=</span><span class="m">999</span><span class="w"> </span>--format<span class="o">=</span><span class="s1">&#39;value(IMAGE)&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-n<span class="w"> </span>+6<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="w">  </span>xargs<span class="w"> </span>-I<span class="w"> </span><span class="o">{}</span><span class="w"> </span>gcloud<span class="w"> </span>artifacts<span class="w"> </span>docker<span class="w"> </span>images<span class="w"> </span>delete<span class="w"> </span><span class="o">{}</span><span class="w"> </span>--quiet
+</code></pre></div>
 <hr />
-<h3 id="c7-commit-ci-10-minutes">C7 — Commit + CI (10 minutes)<a class="headerlink" href="#c7-commit-ci-10-minutes" title="Permanent link">&para;</a></h3>
-<p><strong>Goal.</strong> The three code changes (C2, C3, C4) land on <code>main</code> with CI green.</p>
+<h3 id="m10-custom-domain-optional-12year-for-the-domain">M10 — Custom Domain (Optional, ~$12/year for the domain)<a class="headerlink" href="#m10-custom-domain-optional-12year-for-the-domain" title="Permanent link">&para;</a></h3>
+<p>Only if you want <code>https://api.sciagent.yourname.dev</code> instead of <code>*.run.app</code>.</p>
 <ul>
-<li>[ ] <strong>C7.1</strong> Stage only the changed files:</li>
+<li>[ ] <strong>M10.1</strong> Buy a domain (Cloudflare Registrar is cheap).</li>
+<li>[ ] <strong>M10.2</strong> Map it:</li>
 </ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>git<span class="w"> </span>add<span class="w"> </span>src/agt/api/app.py<span class="w"> </span>Dockerfile<span class="w"> </span>.dockerignore
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>gcloud<span class="w"> </span>beta<span class="w"> </span>run<span class="w"> </span>domain-mappings<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="w">  </span>--service<span class="o">=</span>sciagent<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a><span class="w">  </span>--domain<span class="o">=</span>api.sciagent.yourname.dev<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="w">  </span>--region<span class="o">=</span><span class="nv">$REGION</span>
 </code></pre></div>
+<p>Cloud Run issues a managed TLS cert automatically (free).</p>
 <ul>
-<li>[ ] <strong>C7.2</strong> Run the full local gate before committing:</li>
+<li>[ ] <strong>M10.3</strong> Update the Zotero add-on Backend URL to the new domain.</li>
+<li>[ ] <strong>M10.4</strong> Update <code>AGT_CORS_ALLOWED_ORIGINS</code> if needed.</li>
 </ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>check<span class="w"> </span>.<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>format<span class="w"> </span>--check<span class="w"> </span>.<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>uv<span class="w"> </span>run<span class="w"> </span>pyright
-<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>-q<span class="w"> </span>--vcr-record<span class="o">=</span>none
-</code></pre></div>
-<p>All 563+ existing tests must pass. The <code>.dockerignore</code> and <code>Dockerfile</code> changes
-  are not covered by the Python suite — that is expected.</p>
-<ul>
-<li>[ ] <strong>C7.3</strong> Commit:</li>
-</ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;feat(p10): startup LLM log, Dockerfile \$PORT, .dockerignore&quot;</span>
-</code></pre></div>
-<ul>
-<li>[ ] <strong>C7.4</strong> Push and verify CI passes all three jobs: <code>python-quality</code>,
-  <code>zotero-addon-quality</code>, <code>docs-quality</code>, and <code>docker-build</code>. The <code>docker-build</code>
-  job in <code>ci.yml</code> will now benefit from <code>.dockerignore</code>.</li>
-</ul>
-<p><strong>Cost: $0 (CI is free).</strong></p>
 <hr />
-<h2 id="definition-of-done">Definition of Done<a class="headerlink" href="#definition-of-done" title="Permanent link">&para;</a></h2>
-<p>All C1–C7 boxes checked. To prove it, you must be able to:</p>
-<ol>
-<li>Show a passing CI run for the commit that adds C2/C3/C4.</li>
-<li>Run <code>docker run ... sciagent:size-check</code> with DeepSeek env vars and see the
-   <code>sciagent_startup</code> log line with <code>llm_provider=openai-compatible</code>.</li>
-<li>Hit <code>/health</code> and <code>/run</code> successfully against that container.</li>
-<li>Run an end-to-end Zotero search-approve-write against the local Docker container.</li>
-<li>Show the DeepSeek dashboard with non-zero usage.</li>
-</ol>
-<p>When all five are true, <strong>stop</strong>. Switch to <code>docs/actionable-plan-gcp.md</code> and
-start with M0.</p>
+<h2 id="hard-make-it-cheaper-checklist">Hard "Make It Cheaper" Checklist<a class="headerlink" href="#hard-make-it-cheaper-checklist" title="Permanent link">&para;</a></h2>
+<p>Walk this top-to-bottom whenever your bill surprises you.</p>
+<ul>
+<li>[ ] <code>--min-instances=0</code> set? Verify: <code>gcloud run services describe sciagent --region=$REGION | grep minScale</code>.</li>
+<li>[ ] <code>--max-instances</code> ≤ 5 for solo use?</li>
+<li>[ ] Memory ≤ 512 MiB?</li>
+<li>[ ] Concurrency ≥ 40?</li>
+<li>[ ] Region is Tier 1 (<code>europe-west1</code> or <code>us-central1</code>)?</li>
+<li>[ ] Image size &lt; 500 MB? (check in M9.5)</li>
+<li>[ ] Logs not retained beyond 30 days?</li>
+<li>[ ] No <code>--cpu-throttling=false</code>? Default is throttled — correct.</li>
+<li>[ ] No idle Cloud SQL instance? ($8+/month minimum, no scale-to-zero)</li>
+<li>[ ] No leftover Artifact Registry images? (M9.5)</li>
+<li>[ ] LLM model is <code>deepseek-chat</code>, not <code>deepseek-reasoner</code>? (reasoner burns tokens)</li>
+</ul>
 <hr />
 <h2 id="risk-register">Risk Register<a class="headerlink" href="#risk-register" title="Permanent link">&para;</a></h2>
 <table>
@@ -2121,96 +3060,95 @@ start with M0.</p>
 </thead>
 <tbody>
 <tr>
-<td>DeepSeek API hiccup during smoke test</td>
-<td>Low</td>
-<td>Use Groq free tier as a same-day fallback — same adapter, different <code>AGT_LLM_BASE_URL</code>.</td>
-</tr>
-<tr>
-<td><code>deepseek-chat</code> model name changes</td>
-<td>Low</td>
-<td>Check <a href="https://platform.deepseek.com/models">https://platform.deepseek.com/models</a>. The current name is <code>deepseek-chat</code> (not <code>deepseek-v3</code>).</td>
-</tr>
-<tr>
-<td>Docker image &gt; 300 MB despite <code>.dockerignore</code></td>
-<td>Low</td>
-<td>Confirm <code>uv sync --frozen</code> doesn't pull in <code>[keywords]</code>/<code>[rerank]</code> extras. Check <code>pyproject.toml</code> optional groups.</td>
-</tr>
-<tr>
-<td>C2 log line triggers the redaction processor</td>
-<td>Very low</td>
-<td><code>llm_base_url</code> doesn't contain <code>"key"</code>, <code>"token"</code>, or <code>"secret"</code>. Verified against <code>config.py:546</code>.</td>
-</tr>
-<tr>
-<td><code>.env.docker</code> committed accidentally</td>
+<td>Cold-start latency frustrates interactive use</td>
 <td>Medium</td>
-<td>Add it to <code>.gitignore</code> immediately in C5.1 before populating it.</td>
+<td><code>--min-instances=0</code> means first request after idle takes 3–8s. Acceptable for solo use. Set <code>--min-instances=1</code> ($1–2/month) if it bothers you.</td>
+</tr>
+<tr>
+<td>DeepSeek API outage during a cloud demo</td>
+<td>Low</td>
+<td>Switch to <code>AGT_LLM_PROVIDER=openai</code> + <code>AGT_LLM_API_KEY=&lt;openai-key&gt;</code> via <code>gcloud run services update --update-env-vars</code>. One command, no redeploy.</td>
+</tr>
+<tr>
+<td>Secret rotation breaks the running service</td>
+<td>Low</td>
+<td>Add a new secret version, deploy a new Cloud Run revision, then delete the old version. Zero downtime.</td>
+</tr>
+<tr>
+<td><code>cloudbuild.yaml</code> deploy races with a PR build</td>
+<td>Low</td>
+<td>Cloud Build triggers are branch-scoped. M7.2 only triggers on <code>main</code>, not PRs.</td>
+</tr>
+<tr>
+<td><code>.dockerignore</code> misses a heavy file</td>
+<td>Low</td>
+<td>Check <code>docker images</code> size after M4.1. If &gt; 500 MB, inspect with <code>docker history sciagent:latest</code>.</td>
+</tr>
+<tr>
+<td>M5-D code changes break existing add-on tests</td>
+<td>Medium</td>
+<td>Run the full Vitest suite before merging. The new error-status tests are additions, not replacements.</td>
 </tr>
 </tbody>
 </table>
 <hr />
-<h2 id="common-pitfalls">Common Pitfalls<a class="headerlink" href="#common-pitfalls" title="Permanent link">&para;</a></h2>
+<h2 id="what-this-plan-does-not-cover">What This Plan Does Not Cover<a class="headerlink" href="#what-this-plan-does-not-cover" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong><code>AGT_LLM_PROVIDER</code> not set, only <code>AGT_LLM_BASE_URL</code>.</strong> The auto-detection in
-  <code>config.py:483</code> handles this: when <code>llm_base_url is not None</code> and no explicit
-  provider is set, it resolves to <code>openai-compatible</code>. Still, set it explicitly in
-  <code>.env.docker</code> to be unambiguous.</li>
-<li><strong><code>AGT_LLM_BASE_URL=https://api.deepseek.com</code> without <code>/v1</code>.</strong> The correct base
-  for the OpenAI-compat path is <code>https://api.deepseek.com/v1</code>. Without <code>/v1</code>,
-  the SDK double-paths and gets 404.</li>
-<li><strong><code>AGT_LLM_MODEL</code> not set.</strong> The default for <code>openai-compatible</code> in
-  <code>_PROVIDER_DEFAULT_MODELS</code> is <code>gpt-4o-mini</code> (<code>config.py:28</code>). DeepSeek will
-  reject this model name. Always set <code>AGT_LLM_MODEL=deepseek-chat</code> explicitly.</li>
-<li><strong>Forgetting <code>-n</code> on <code>echo</code> when creating env files.</strong> Trailing newlines in API
-  keys cause 401s with no useful error. Always: <code>echo -n "key" | ...</code>.</li>
+<li><strong>Multi-user auth / OAuth</strong> — needs Cloud SQL + code work. Deferred.</li>
+<li><strong>Async job queue</strong> — Cloud Tasks or Pub/Sub. Only needed if requests exceed
+  Cloud Run's 15-min timeout (current <code>--timeout=300</code> is fine).</li>
+<li><strong>Terraform / Pulumi IaC</strong> — worth doing before you have &gt; 1 environment.</li>
+<li><strong>MkDocs hosting</strong> — GitHub Pages, free, unrelated to backend.</li>
+<li><strong>macOS / Windows code signing</strong> — planned for v1.1 (see <code>docs/local-first.md</code>).</li>
 </ul>
 <hr />
-<h2 id="quality-gates">Quality Gates<a class="headerlink" href="#quality-gates" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># Python (always)</span>
-<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>check<span class="w"> </span>.
-<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>format<span class="w"> </span>--check<span class="w"> </span>.
-<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>uv<span class="w"> </span>run<span class="w"> </span>pyright
-<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>-q<span class="w"> </span>--vcr-record<span class="o">=</span>none
-<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>
-<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="c1"># Docker (C3/C4)</span>
-<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>sciagent:ci-check<span class="w"> </span>.
-<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>docker<span class="w"> </span>images<span class="w"> </span>sciagent:ci-check<span class="w"> </span>--format<span class="w"> </span><span class="s2">&quot;{{.Size}}&quot;</span>
-</code></pre></div>
-<p>No new dependencies are added in P10. No Zotero add-on code changes.
-No docs changes beyond this plan file.</p>
-<hr />
 <h2 id="tracker">Tracker<a class="headerlink" href="#tracker" title="Permanent link">&para;</a></h2>
-<h3 id="p10-current-status">P10 Current Status<a class="headerlink" href="#p10-current-status" title="Permanent link">&para;</a></h3>
+<h3 id="current-status">Current Status<a class="headerlink" href="#current-status" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Current focus: <strong>C5 — Local Docker smoke test</strong></li>
-<li>Current next implementation target: <strong>C5.1</strong></li>
-<li>Last completed: <strong>C3+C4</strong> (2026-05-17) — Dockerfile CMD uses <code>/app/.venv/bin/uvicorn</code> + <code>${PORT:-8080}</code>; <code>uv sync --frozen --no-dev</code> excludes dev group; <code>streamlit</code>/<code>vcrpy</code>/<code>responses</code> moved out of core deps; <code>.dockerignore</code> created; image 467 MB (down from 1.19 GB); smoke test confirms health + startup log.</li>
+<li>Prerequisite: P10 (<code>actionable-plan-done-4.md</code>) ✅ complete (2026-05-17).</li>
+<li>Current focus: <strong>M0 — GCP Account &amp; Local Tooling</strong></li>
+<li>Current next implementation target: <strong>M0.1</strong></li>
+<li>Last completed: <em>(none)</em></li>
 </ul>
 <h3 id="phase-tracker">Phase Tracker<a class="headerlink" href="#phase-tracker" title="Permanent link">&para;</a></h3>
 <ul>
-<li>[ ] <strong>C1</strong> — Cheap LLM account + key <em>(operational)</em></li>
-<li>[ ] <strong>C2</strong> — Startup LLM config log line <em>(code)</em></li>
-<li>[ ] <strong>C3</strong> — Dockerfile: honor <code>$PORT</code> <em>(code)</em></li>
-<li>[ ] <strong>C4</strong> — Create <code>.dockerignore</code> <em>(code)</em></li>
-<li>[ ] <strong>C5</strong> — Local Docker smoke test <em>(operational)</em></li>
-<li>[ ] <strong>C6</strong> — End-to-end Zotero → Docker test <em>(operational)</em></li>
-<li>[ ] <strong>C7</strong> — Commit + CI <em>(code + operational)</em></li>
+<li>[x] <strong>P10 prereqs done</strong> — gate: do not proceed past this line until checked</li>
+<li>[ ] <strong>M0</strong> — GCP Account &amp; Local Tooling</li>
+<li>[ ] <strong>M1</strong> — Enable APIs and Foundation Resources</li>
+<li>[ ] <strong>M2</strong> — Service Account &amp; IAM</li>
+<li>[ ] <strong>M3</strong> — Secrets in Secret Manager</li>
+<li>[ ] <strong>M4</strong> — First Manual Deploy</li>
+<li>[ ] <strong>M5</strong> — Zotero Add-on Updates for Cloud</li>
+<li>[ ] M5-A — Point at new backend <em>(operational)</em></li>
+<li>[ ] M5-B — Surface backend hostname in UI <em>(code)</em></li>
+<li>[ ] M5-C — Tighten CORS <em>(operational)</em></li>
+<li>[ ] M5-D — Cloud error UX in <code>backendClient.ts</code> <em>(code)</em></li>
+<li>[ ] M5-E — Update <code>docs/deployment.md</code> <em>(docs)</em></li>
+<li>[ ] <strong>M6</strong> — Tighten Auth <em>(optional, Phase 2)</em></li>
+<li>[ ] <strong>M7</strong> — CI/CD via Cloud Build</li>
+<li>[ ] <strong>M8</strong> — Persistence <em>(trigger-based, Phase 2)</em></li>
+<li>[ ] <strong>M9</strong> — Observability</li>
+<li>[ ] <strong>M10</strong> — Custom Domain <em>(optional)</em></li>
 </ul>
 <h3 id="tracker-rules">Tracker Rules<a class="headerlink" href="#tracker-rules" title="Permanent link">&para;</a></h3>
 <ol>
 <li>Update status here first.</li>
-<li>Treat the first unchecked box as the next implementation target.</li>
-<li>Do not start M0 of <code>actionable-plan-gcp.md</code> until all C1–C7 are checked.</li>
-<li>If a pitfall from the list above bites you, add it to Common Pitfalls with the
-   fix so future-you doesn't repeat it.</li>
+<li>The P10 prereq gate is checked — proceed directly to M0.</li>
+<li>Treat the first unchecked milestone as the current focus.</li>
+<li>Secrets and resource flags persist between Cloud Run deploys. If you change
+   CPU/memory/secrets, do it via <code>gcloud run services update</code>, not <code>cloudbuild.yaml</code>.</li>
+<li>When a decision in the Executive Decisions table changes, write a one-line
+   rationale in the milestone where it changed.</li>
 </ol>
 <hr />
 <h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>docs/actionable-plan-gcp.md</code> — the GCP deployment plan (start after P10 is done).</li>
-<li><code>docs/actionable-plan-done-3.md</code> — completed P9 plan.</li>
-<li><code>.env.example</code> — canonical env var reference (already documents DeepSeek recipe).</li>
-<li><code>src/agt/providers/router.py</code> — provider routing logic (read before touching providers).</li>
-<li><code>src/agt/config.py</code> — settings contract (read before adding any new env var).</li>
+<li><code>docs/actionable-plan-done-4.md</code> — completed P10 prereqs plan.</li>
+<li><code>docs/deployment.md</code> — user-facing deployment overview (update in M5-E).</li>
+<li><code>docs/api.md</code> — REST contract the Zotero add-on calls.</li>
+<li><code>src/agt/providers/router.py</code> — provider routing (read before changing LLM config).</li>
+<li><code>src/agt/config.py</code> — settings contract (read before adding env vars).</li>
+<li><a href="https://cloud.google.com/run/pricing">Cloud Run pricing</a> — re-check before any architecture change.</li>
 </ul>
 
 
