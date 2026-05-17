@@ -5,6 +5,8 @@
 #   --region     Override region (default: europe-west1)
 set -euo pipefail
 
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
 PROJECT_ID="sciagent-496617"
 SERVICE="sciagent"
 REGION="europe-west1"
@@ -32,7 +34,7 @@ if [[ $NO_BUILD -eq 0 ]]; then
   gcloud builds submit \
     --project="${PROJECT_ID}" \
     --tag="${IMAGE}" \
-    .
+    "${REPO_ROOT}"
   # also tag as latest for reference
   gcloud container images add-tag "${IMAGE}" "${REGISTRY}:latest" --quiet
   echo ""
