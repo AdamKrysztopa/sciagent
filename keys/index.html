@@ -367,6 +367,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../hosted-demo-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hosted Demo Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../install/" class="md-nav__link">
         
   
@@ -455,15 +483,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#llm-provider-key-required-one-of-the-following" class="md-nav__link">
+  <a href="#llm-provider-key-required-for-self-hosted-optional-for-hosted-demo" class="md-nav__link">
     <span class="md-ellipsis">
       
-        LLM Provider Key — Required (one of the following)
+        LLM Provider Key — Required for self-hosted / optional for hosted demo
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="LLM Provider Key — Required (one of the following)">
+    <nav class="md-nav" aria-label="LLM Provider Key — Required for self-hosted / optional for hosted demo">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1288,15 +1316,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#llm-provider-key-required-one-of-the-following" class="md-nav__link">
+  <a href="#llm-provider-key-required-for-self-hosted-optional-for-hosted-demo" class="md-nav__link">
     <span class="md-ellipsis">
       
-        LLM Provider Key — Required (one of the following)
+        LLM Provider Key — Required for self-hosted / optional for hosted demo
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="LLM Provider Key — Required (one of the following)">
+    <nav class="md-nav" aria-label="LLM Provider Key — Required for self-hosted / optional for hosted demo">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1498,11 +1526,21 @@
 <h1 id="get-your-keys">Get Your Keys<a class="headerlink" href="#get-your-keys" title="Permanent link">&para;</a></h1>
 <p>A researcher reading this page can collect every credential SciAgent uses in under 15 minutes.
 You only need the <strong>Required</strong> ones to start.</p>
+<div class="admonition tip">
+<p class="admonition-title">Using the hosted demo? You only need a Zotero key.</p>
+<p>The public backend at <code>https://sciagent-ewpafdgfya-ew.a.run.app</code> runs its own LLM
+(DeepSeek, operator-paid). You do <strong>not</strong> need an LLM provider key — skip straight to
+the Zotero API Key section below.
+The LLM section applies only if you are running your own backend or want to override
+the operator's key with your own.</p>
+</div>
 <hr />
-<h2 id="llm-provider-key-required-one-of-the-following">LLM Provider Key — Required (one of the following)<a class="headerlink" href="#llm-provider-key-required-one-of-the-following" title="Permanent link">&para;</a></h2>
-<p>SciAgent requires exactly one LLM provider key to generate search plans and rerank results.
-If <code>AGT_LLM_PROVIDER</code> is unset, the runtime auto-detects a provider from whichever key is
-present (OpenAI → Anthropic → xAI → Groq).</p>
+<h2 id="llm-provider-key-required-for-self-hosted-optional-for-hosted-demo">LLM Provider Key — Required for self-hosted / optional for hosted demo<a class="headerlink" href="#llm-provider-key-required-for-self-hosted-optional-for-hosted-demo" title="Permanent link">&para;</a></h2>
+<p>When running your own backend, SciAgent requires exactly one LLM provider key to generate
+search plans and rerank results. If <code>AGT_LLM_PROVIDER</code> is unset, the runtime auto-detects
+a provider from whichever key is present (OpenAI → Anthropic → xAI → Groq).
+When using the hosted demo, you can optionally supply your own key via <strong>Preferences →
+LLM Override</strong> in the add-on to charge your account instead of the operator's.</p>
 <p>The first-run card in the add-on auto-detects the provider from the key prefix:
 <code>sk-ant-</code> → Anthropic · <code>xai-</code> → xAI · <code>gsk_</code> → Groq · <code>sk-</code> → OpenAI.</p>
 <h3 id="openai">OpenAI<a class="headerlink" href="#openai" title="Permanent link">&para;</a></h3>
