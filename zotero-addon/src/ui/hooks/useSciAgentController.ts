@@ -18,6 +18,7 @@ import {
   type HealthResponse,
   type KeyValidateResponse,
   type NormalizedPaper,
+  type PreflightStatus,
   type ProviderInfo,
   type SearchMetadata,
   type SearchPlan,
@@ -472,6 +473,12 @@ export function useSciAgentController(services: AddonUiServices) {
     },
   );
 
+  const testZotero = useEffectEvent(
+    async (): Promise<PreflightStatus> => {
+      return services.createClient(config).preflight();
+    },
+  );
+
   useEffect(() => {
     const trimmed = query.trim();
     if (trimmed.length === 0 || !config.spellCheckEnabled) {
@@ -637,6 +644,7 @@ export function useSciAgentController(services: AddonUiServices) {
     onSuggestVenues: (q: string) => services.createClient(config).suggestVenues(q),
     onSubmitSearch: () => void submitSearch(),
     validateKey: (provider: string, apiKey: string) => validateKey(provider, apiKey),
+    testZotero: () => testZotero(),
     onDepthChange: setSearchDepth,
     searchDepth,
     onToggleSelection: (index: number) => {

@@ -248,6 +248,112 @@ Automated monitoring wired up via Cloud Monitoring:
   - Option A: ratchet down `--max-instances 1`
   - Option B: add per-IP rate limit via slowapi (already in deps)
 
+### MU7 — Credential-leak safety tests ✅ done 2026-05-18
+
+**Goal.** Close the two open Risk Register items: prove credentials never appear in
+structlog output, and prove they never enter a LangGraph checkpoint.
+
+#### MU7 delivered
+
+- `RequestCredentials.zotero_api_key` migrated from `str` to `pydantic.SecretStr`.
+  `llm_api_key` also migrated. `credentials.py` wraps incoming header strings with
+  `SecretStr(...)` explicitly. `resolve_zotero_api_key` calls `.get_secret_value()`.
+  `router.py` no longer wraps `creds.llm_api_key` (already `SecretStr`).
+- `tests/test_credential_redaction.py` — 8 tests across three layers:
+  - `redact_value` unit tests (dict keys, nested dicts, `SecretStr` values, plain strings)
+  - `RequestCredentials.model_dump(mode="json")` and `repr()` do not expose the key
+  - `structlog.testing.capture_logs()` during a `/run` request: no event dict contains
+    the raw key value
+  - `/status/{run_id}` JSON response does not contain the raw key value
+
+#### MU7 acceptance criteria
+
+- [x] `uv run pytest tests/test_credential_redaction.py -v` passes (8 tests).
+- [x] `uv run pyright` zero errors after SecretStr migration.
+- [x] All 591 tests still pass (583 existing + 8 new).
+
+### MU8 — Live end-to-end verification
+
+**Goal.** Confirm the deployed backend works with a real second Zotero account
+(separate from Adam's dev account).
+
+#### MU8 tasks
+
+- [ ] Obtain a second Zotero account (test account or friend's with permission).
+- [ ] Configure the add-on: remote mode, hosted URL, second account's API key + library ID.
+- [ ] Run a search → approve → verify items appear in the second account's Zotero.
+- [ ] Toggle BYO LLM key ON with a fresh DeepSeek key. Run a search.
+  Verify DeepSeek dashboard shows the second key charged, not the operator's.
+- [ ] Toggle BYO LLM key OFF. Run a search.
+  Verify the operator's key is charged.
+- [ ] Mark MU2 acceptance criterion "no longer 401" as done.
+- [ ] Mark MU1 acceptance criterion "/preflight live smoke" as done.
+
+#### MU8 acceptance criteria
+
+- [ ] Second-account items appear in that account's Zotero library only.
+- [ ] BYO LLM key correctly routes charges.
+- [ ] All MU1/MU2 open acceptance criteria ticked off.
+
+### MU9 — API docs: document all new headers ✅ done 2026-05-18
+
+**Goal.** `docs/api.md` Authentication section was missing all seven new request headers.
+
+#### MU9 delivered
+
+- Updated Authentication table with `X-Zotero-API-Key`, `X-Zotero-Library-ID`,
+  `X-Zotero-Library-Type`, `X-LLM-API-Key`, `X-LLM-Provider`, `X-LLM-Model`,
+  `X-LLM-Base-URL`.
+- Added `POST /preflight` endpoint entry with request headers and response schema.
+- Noted that `/run`, `/resume`, `/library-doctor`, `/gap-finder`, `/watches/{id}/rerun`
+  all require Zotero headers (HTTP 401 if missing).
+
+#### MU9 acceptance criteria
+
+- [x] `uv run mkdocs build --strict` passes.
+- [x] Markdownlint passes on `docs/api.md`.
+
+### MU10 — "Test Connection" button + preflight client method ✅ done 2026-05-18
+
+**Goal.** README and docs reference a "Test Connection" button but it did not exist.
+`backendClient.ts` had no `preflight()` method. Users had no way to verify their
+Zotero credentials from the add-on UI without running a full search.
+
+#### MU10 delivered
+
+- `PreflightStatus` extended with `library_name?: string | null` in `contracts.ts`.
+- `preflight(): Promise<PreflightStatus>` method added to `SciAgentBackendClient`
+  (calls `POST /preflight` with current credential headers).
+- `onTestZotero()` prop added to `ConfigPanelProps`. Button renders in the "Zotero Account"
+  section below the zotero.org link. Shows spinner while loading; `✓ <library name> verified`
+  on success; `✗ <error>` on failure. Disabled when API key or library ID is empty.
+- `testZotero` `useEffectEvent` added to `useSciAgentController` and wired through `App.tsx`.
+- `ConfigPanel.test.ts` updated with `onTestZotero` stub. 2 new Vitest tests in
+  `backendClient.test.ts`: happy path + 401 propagation. Total: 154 tests pass.
+
+#### MU10 acceptance criteria
+
+- [x] `npm run lint && npm run build && npm run typecheck && npm run test` passes (154 tests).
+- [x] Button visible in the Zotero Account section of ConfigPanel.
+- [x] Success state shows the Zotero library name from the preflight response.
+- [x] Failure state shows an inline error, does not crash the panel.
+- [ ] Manual: open the add-on in Zotero, fill in credentials, click the button — verify green state.
+
+### MU11 — Screenshots for hosted-demo-guide.md
+
+**Goal.** The guide shared with new users needs screenshots showing each major step.
+Cannot be automated — requires Zotero 9 with the add-on installed and a real account.
+
+#### Steps (manual)
+
+- [ ] Screenshot: ConfigPanel showing Backend Mode = Remote + Zotero Account fields filled.
+- [ ] Screenshot: First-run card in remote mode (Zotero credential prompt).
+- [ ] Screenshot: Search results panel with paper cards and approval checkboxes.
+- [ ] Screenshot: Status pill green after successful preflight.
+- [ ] Screenshot: Write result showing `created` / `unchanged` badges.
+- [ ] Insert images into `docs/hosted-demo-guide.md` using `![alt](../assets/img/*.png)`.
+- [ ] Add images to `docs/assets/img/` and commit.
+
 ---
 
 ## Risk Register
@@ -293,9 +399,14 @@ Automated monitoring wired up via Cloud Monitoring:
 - [x] **MU2** — Frontend credential UI ✅ 2026-05-17
 - [x] **MU3** — Cloud Run reconfig ✅ 2026-05-17
 - [x] **MU4** — README + trust statement ✅ 2026-05-17
-- [ ] **MU5** — End-to-end smoke test
+- [ ] **MU5** — End-to-end smoke test (needs second Zotero account)
 - [x] **MU6** — Monitoring setup ✅ 2026-05-17 (3 alert policies + email channel)
-- [ ] **MU6.1** — Ongoing monitoring (manual, first week — see section above)
+- [ ] **MU6.1** — Ongoing monitoring (manual, first week)
+- [x] **MU7** — Credential-leak safety tests ✅ 2026-05-18 (SecretStr + structlog capture + checkpoint inspection)
+- [ ] **MU8** — Live end-to-end verification (needs second Zotero account)
+- [x] **MU9** — API docs: document new headers ✅ 2026-05-18
+- [x] **MU10** — "Test Connection" button + preflight client method ✅ 2026-05-18
+- [ ] **MU11** — Screenshots for hosted-demo-guide.md (manual, needs running Zotero)
 
 ### Tracker Rules
 
