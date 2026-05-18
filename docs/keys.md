@@ -3,13 +3,22 @@
 A researcher reading this page can collect every credential SciAgent uses in under 15 minutes.
 You only need the **Required** ones to start.
 
+!!! tip "Using the hosted demo? You only need a Zotero key."
+    The public backend at `https://sciagent-ewpafdgfya-ew.a.run.app` runs its own LLM
+    (DeepSeek, operator-paid). You do **not** need an LLM provider key — skip straight to
+    the Zotero API Key section below.
+    The LLM section applies only if you are running your own backend or want to override
+    the operator's key with your own.
+
 ---
 
-## LLM Provider Key — Required (one of the following)
+## LLM Provider Key — Required for self-hosted / optional for hosted demo
 
-SciAgent requires exactly one LLM provider key to generate search plans and rerank results.
-If `AGT_LLM_PROVIDER` is unset, the runtime auto-detects a provider from whichever key is
-present (OpenAI → Anthropic → xAI → Groq).
+When running your own backend, SciAgent requires exactly one LLM provider key to generate
+search plans and rerank results. If `AGT_LLM_PROVIDER` is unset, the runtime auto-detects
+a provider from whichever key is present (OpenAI → Anthropic → xAI → Groq).
+When using the hosted demo, you can optionally supply your own key via **Preferences →
+LLM Override** in the add-on to charge your account instead of the operator's.
 
 The first-run card in the add-on auto-detects the provider from the key prefix:
 `sk-ant-` → Anthropic · `xai-` → xAI · `gsk_` → Groq · `sk-` → OpenAI.
