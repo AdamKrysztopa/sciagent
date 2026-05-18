@@ -10,7 +10,7 @@ from __future__ import annotations
 from contextvars import ContextVar
 from typing import TYPE_CHECKING
 
-from pydantic import BaseModel
+from pydantic import BaseModel, SecretStr
 
 from agt.config import LibraryType
 
@@ -21,10 +21,10 @@ if TYPE_CHECKING:
 class RequestCredentials(BaseModel):
     """Per-request Zotero credentials and optional LLM override from HTTP headers."""
 
-    zotero_api_key: str
+    zotero_api_key: SecretStr
     zotero_library_id: str
     zotero_library_type: LibraryType = "user"
-    llm_api_key: str | None = None
+    llm_api_key: SecretStr | None = None
     llm_provider: str | None = None
     llm_model: str | None = None
     llm_base_url: str | None = None
@@ -39,7 +39,7 @@ def resolve_zotero_api_key(settings: Settings) -> str:
     """Return Zotero API key from request context, falling back to settings."""
     creds = current_credentials.get()
     if creds is not None:
-        return creds.zotero_api_key
+        return creds.zotero_api_key.get_secret_value()
     if settings.zotero_api_key is None:
         raise ValueError(
             "No Zotero API key — send X-Zotero-API-Key header or set AGT_ZOTERO_API_KEY"

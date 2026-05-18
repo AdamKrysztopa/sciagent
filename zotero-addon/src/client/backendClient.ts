@@ -8,6 +8,7 @@ import type {
   HealthResponse,
   KeyValidateResponse,
   NormalizedAuthor,
+  PreflightStatus,
   ProviderInfo,
   ResolvedVenue,
   ResumeRequest,
@@ -117,6 +118,10 @@ export class SciAgentBackendClient {
       }
       throw error;
     }
+  }
+
+  async preflight(): Promise<PreflightStatus> {
+    return this.request<PreflightStatus>("/preflight", { method: "POST" });
   }
 
   async capabilities(): Promise<CapabilitiesResponse> {

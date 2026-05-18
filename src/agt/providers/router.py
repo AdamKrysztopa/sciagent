@@ -5,8 +5,6 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from typing import Any
 
-from pydantic import SecretStr
-
 from agt.config import LLMProviderName, Settings, provider_env_aliases
 from agt.credential_context import current_credentials
 from agt.providers.anthropic import AnthropicProvider
@@ -221,7 +219,7 @@ def build_provider_for_request(settings: Settings) -> LLMProvider:
         return build_provider(settings)
 
     override: dict[str, object] = {
-        "llm_api_key": SecretStr(creds.llm_api_key),
+        "llm_api_key": creds.llm_api_key,
         "llm_provider": creds.llm_provider or "openai-compatible",
     }
     if creds.llm_base_url:

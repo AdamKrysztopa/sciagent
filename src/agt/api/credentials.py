@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Generator
 
 from fastapi import Header, HTTPException, status
+from pydantic import SecretStr
 
 from agt.config import LibraryType
 from agt.credential_context import RequestCredentials, current_credentials
@@ -34,10 +35,10 @@ def get_credentials(  # noqa: PLR0913
     )
 
     creds = RequestCredentials(
-        zotero_api_key=zotero_api_key,
+        zotero_api_key=SecretStr(zotero_api_key),
         zotero_library_id=zotero_library_id,
         zotero_library_type=lib_type,
-        llm_api_key=llm_api_key or None,
+        llm_api_key=SecretStr(llm_api_key) if llm_api_key else None,
         llm_provider=llm_provider or None,
         llm_model=llm_model or None,
         llm_base_url=llm_base_url or None,

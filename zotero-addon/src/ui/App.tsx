@@ -331,6 +331,7 @@ function IdleView({ controller, addonVersion }: { controller: SciAgentController
         saveError={controller.saveError}
         saveState={controller.saveState}
         onValidateKey={controller.validateKey}
+        onTestZotero={controller.testZotero}
       />
 
       <LibraryDoctor

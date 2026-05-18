@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import type { KeyValidateResponse } from "../../shared/contracts";
+import type { KeyValidateResponse, PreflightStatus } from "../../shared/contracts";
 import { VALIDATABLE_PROVIDERS } from "../../shared/contracts";
 import type { AddonConfig } from "../../host/prefs";
 import { CustomSelect } from "./CustomSelect";
@@ -82,6 +82,8 @@ function ProviderKeyRow({ provider, onValidate }: ProviderKeyRowProps) {
   );
 }
 
+type ZoteroTestState = "idle" | "testing" | "ok" | "error";
+
 interface ConfigPanelProps {
   addonVersion?: string;
   config: AddonConfig;
@@ -90,9 +92,33 @@ interface ConfigPanelProps {
   saveError: string | null;
   saveState: SaveState;
   onValidateKey(provider: string, apiKey: string): Promise<KeyValidateResponse>;
+  onTestZotero(): Promise<PreflightStatus>;
 }
 
-export function ConfigPanel({ addonVersion, config, onChange, onSave, saveError, saveState, onValidateKey }: ConfigPanelProps) {
+export function ConfigPanel({ addonVersion, config, onChange, onSave, saveError, saveState, onValidateKey, onTestZotero }: ConfigPanelProps) {
+  const [zoteroTestState, setZoteroTestState] = useState<ZoteroTestState>("idle");
+  const [zoteroTestMessage, setZoteroTestMessage] = useState<string | null>(null);
+
+  const handleTestZotero = async () => {
+    setZoteroTestState("testing");
+    setZoteroTestMessage(null);
+    try {
+      const result = await onTestZotero();
+      if (result.ok) {
+        const name = result.library_name ?? "Library";
+        setZoteroTestState("ok");
+        setZoteroTestMessage(`${name} verified`);
+      } else {
+        setZoteroTestState("error");
+        setZoteroTestMessage(result.message ?? "Preflight failed");
+      }
+    } catch (err) {
+      setZoteroTestState("error");
+      setZoteroTestMessage(err instanceof Error ? err.message : "Connection failed");
+    }
+  };
+
+  const canTestZotero = config.zoteroApiKey.length > 0 && config.zoteroLibraryId.length > 0;
   return (
     <section className="agt-card">
       <div className="agt-section-heading">
@@ -185,6 +211,22 @@ export function ConfigPanel({ addonVersion, config, onChange, onSave, saveError,
           Get your API key and library ID on zotero.org
         </a>
       </p>
+      <div className="agt-test-connection-row">
+        <button
+          className="agt-button agt-button--ghost"
+          disabled={!canTestZotero || zoteroTestState === "testing"}
+          onClick={() => { void handleTestZotero(); }}
+          type="button"
+        >
+          {zoteroTestState === "testing" ? "… Testing" : "Test Zotero Connection"}
+        </button>
+        {zoteroTestState === "ok" && zoteroTestMessage !== null ? (
+          <output className="agt-validation-ok">{"✓"} {zoteroTestMessage}</output>
+        ) : null}
+        {zoteroTestState === "error" && zoteroTestMessage !== null ? (
+          <p className="agt-validation-error" role="alert">{"✗"} {zoteroTestMessage}</p>
+        ) : null}
+      </div>
 
       <h3 className="agt-subsection-heading">LLM Provider</h3>
       <p className="agt-small-note">

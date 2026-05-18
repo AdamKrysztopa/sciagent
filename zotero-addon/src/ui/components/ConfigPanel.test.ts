@@ -22,6 +22,7 @@ function renderPanel(
       onValidateKey:
         onValidateKey ??
         vi.fn().mockResolvedValue({ provider: "x", valid: true, error: null }),
+      onTestZotero: vi.fn().mockResolvedValue({ ok: true, library_name: "Test Library" }),
     }),
   );
 }

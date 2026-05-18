@@ -11,6 +11,8 @@ http://localhost:8000
 
 ## Authentication
 
+### Backend access headers
+
 | Header            | Required | Description                                                     |
 | ----------------- | -------- | --------------------------------------------------------------- |
 | `X-AGT-API-Key`   | Optional | Backend API key (required if `AGT_BACKEND_API_KEY` set)         |
@@ -18,6 +20,34 @@ http://localhost:8000
 
 When `AGT_BACKEND_API_KEY` is configured, all requests must include a matching `X-AGT-API-Key`
 header. Workflows are scoped by `X-AGT-Client-ID` — each client can only access its own runs.
+
+### Zotero credential headers
+
+Required on all endpoints that write to Zotero: `/run`, `/resume`, `/preflight`,
+`/library-doctor`, `/gap-finder`, `/watches/{id}/rerun`. Missing headers return HTTP 401.
+
+| Header                  | Required | Description                                                     |
+| ----------------------- | -------- | --------------------------------------------------------------- |
+| `X-Zotero-API-Key`      | Yes      | Zotero Web API key with read + write scope                      |
+| `X-Zotero-Library-ID`   | Yes      | Numeric Zotero user ID or group ID                              |
+| `X-Zotero-Library-Type` | No       | `user` (default) or `group`                                     |
+
+Credentials are used only for the duration of the request and are never stored or logged
+(structlog redaction is enforced for any key that contains `"key"`, `"token"`, or `"secret"`).
+
+### LLM override headers (optional)
+
+When the hosted backend has a default LLM key configured, these headers let the caller
+substitute their own key so costs are charged to their account instead.
+
+| Header           | Required | Description                                               |
+| ---------------- | -------- | --------------------------------------------------------- |
+| `X-LLM-API-Key`  | Yes (if overriding) | Caller's LLM provider API key              |
+| `X-LLM-Provider` | No       | Provider name: `openai`, `anthropic`, `deepseek`, `xai`, `groq`, `openai-compatible` |
+| `X-LLM-Model`    | No       | Model name; provider default used if omitted              |
+| `X-LLM-Base-URL` | No       | Custom endpoint; useful for `openai-compatible` providers |
+
+If `X-LLM-API-Key` is absent the backend uses its own configured key.
 
 ## Contract Versioning
 
@@ -71,6 +101,38 @@ Check system health, Zotero connectivity, and LLM provider status.
 | `provider`             | string         | Active LLM provider name                                         |
 | `fallback_provider`    | string \| null | Fallback LLM provider (null if not configured)                   |
 | `api_contract_version` | string         | Backend contract version string (format: `YYYY-MM`)              |
+
+---
+
+### `POST /preflight`
+
+Validate Zotero credentials against the live Zotero API before running a search.
+Requires `X-Zotero-API-Key` and `X-Zotero-Library-ID` headers (HTTP 401 if missing).
+
+**Response:**
+
+```json
+{
+  "ok": true,
+  "can_read": true,
+  "can_write": true,
+  "key_valid": true,
+  "message": "Library access verified",
+  "library_name": "My Zotero Library"
+}
+```
+
+| Field          | Type    | Description                                           |
+| -------------- | ------- | ----------------------------------------------------- |
+| `ok`           | boolean | `true` only when both read and write are accessible   |
+| `can_read`     | boolean | Zotero read permission verified                       |
+| `can_write`    | boolean | Zotero write permission verified                      |
+| `key_valid`    | boolean | Zotero API key accepted                               |
+| `message`      | string  | Human-readable result (shown in the add-on status)    |
+| `library_name` | string \| null | Display name of the resolved library          |
+
+Use this endpoint to verify credentials in the Zotero add-on's Preferences panel
+("Test Connection") before running a search.
 
 ---
 

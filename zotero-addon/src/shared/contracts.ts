@@ -8,6 +8,7 @@ export interface PreflightStatus {
   can_write?: boolean;
   key_valid?: boolean;
   message?: string;
+  library_name?: string | null;
 }
 
 export interface HealthResponse {

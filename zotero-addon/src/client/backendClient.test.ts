@@ -401,4 +401,54 @@ describe("SciAgentBackendClient", () => {
     expect(result.source_policy[0]?.name).toBe("semantic_scholar");
     expect(result.pdf_import_supported).toBe(true);
   });
+
+  it("calls POST /preflight and returns PreflightStatus on success", async () => {
+    const preflightResponse = {
+      ok: true,
+      can_read: true,
+      can_write: true,
+      key_valid: true,
+      message: "Library access verified",
+      library_name: "My Research Library",
+    };
+    const calls: Array<{ init?: RequestInit; url: RequestInfo | URL }> = [];
+    const fetchImpl = vi.fn(async (url: RequestInfo | URL, init?: RequestInit) => {
+      calls.push({ init, url });
+      return jsonResponse(preflightResponse);
+    });
+    const client = createBackendClient({
+      apiKey: "",
+      baseUrl: "http://localhost:8000",
+      clientId: "sidebar-j",
+      fetchImpl,
+      zoteroApiKey: "zotero-test-key",
+      zoteroLibraryId: "1234567",
+    });
+
+    const result = await client.preflight();
+    expect(String(calls[0]?.url)).toBe("http://localhost:8000/preflight");
+    expect(calls[0]?.init?.method).toBe("POST");
+    const headers = calls[0]?.init?.headers as Headers;
+    expect(headers.get("X-Zotero-API-Key")).toBe("zotero-test-key");
+    expect(result.ok).toBe(true);
+    expect(result.library_name).toBe("My Research Library");
+    expect(result.can_write).toBe(true);
+  });
+
+  it("propagates BackendClientError on preflight 401", async () => {
+    const fetchImpl = vi.fn(async () => {
+      return new Response(JSON.stringify({ detail: "Missing credentials" }), {
+        headers: { "Content-Type": "application/json" },
+        status: 401,
+      });
+    });
+    const client = createBackendClient({
+      apiKey: "",
+      baseUrl: "http://localhost:8000",
+      clientId: "sidebar-k",
+      fetchImpl,
+    });
+
+    await expect(client.preflight()).rejects.toThrow(BackendClientError);
+  });
 });
