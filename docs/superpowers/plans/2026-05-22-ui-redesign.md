@@ -32,6 +32,24 @@
 | Modify | `src/ui/App.tsx` | Wire 3-zone shell; import new view components |
 | Modify | `src/ui/section.css` | Add `.agt-health-strip`, `.agt-advanced-filters`, `.agt-pipeline-*`, `.agt-paper-card` classes |
 
+## Task Status
+
+| # | Task | Status | Key deliverable |
+|---|---|---|---|
+| 1 | Expose `isMinConfigMissing` and `onCancel` from hook | ⬜ pending | `useSciAgentController` + `backendClient.cancelRun` |
+| 2 | `HeaderBar` component | ⬜ pending | Zone 1 header with status pill and ⚙/cancel button |
+| 3 | `HealthStrip` component | ⬜ pending | Zone 2 min-required row + optional extras hint |
+| 4 | `AdvancedFilters` component | ⬜ pending | Collapsible panel with 6 filter fields |
+| 5 | `IdleView` extracted | ⬜ pending | Query form + year dropdown + advanced filters + toolbar |
+| 6 | `PipelineTracker` component | ⬜ pending | Five-stage pipeline with per-stage status icons |
+| 7 | `RunningView` extracted | ⬜ pending | Verbose running view with query echo + tracker + sources |
+| 8 | `PaperCard` component | ⬜ pending | Paper row: title, stars, badges, abstract snippet |
+| 9 | `ReviewView` extracted | ⬜ pending | Review list with collection picker + action bar |
+| 10 | `DoneView` extracted | ⬜ pending | Confirmation screen with added/skipped counts |
+| 11 | Wire 3-zone shell in `App.tsx` | ⬜ pending | Full integration + all quality gates green |
+
+Update status as you go: ⬜ pending → 🔄 in progress → ✅ done → ❌ blocked.
+
 ---
 
 ## Task 1: Expose `isMinConfigMissing` and `onCancel` from the hook
