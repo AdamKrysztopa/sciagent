@@ -76,7 +76,9 @@
       "Bash(curl *)",
       "Bash(gcloud beta monitoring channels list *)",
       "Bash(gcloud components *)",
-      "Bash(gcloud beta monitoring channels create *)"
+      "Bash(gcloud beta monitoring channels create *)",
+      "mcp__plugin_context-mode_context-mode__ctx_batch_execute",
+      "mcp__plugin_claude-mem_mcp-search__observation_add"
     ]
   }
 }
