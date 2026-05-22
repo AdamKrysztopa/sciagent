@@ -176,9 +176,15 @@ Status pill: `● awaiting approval` (purple `#c084fc`, background `#1e0a2e`).
 
 ```
 Found 23 papers · 18 selected     [ all ] [ ★★★ ] [ none ]
+→ Collection: [ Inbox              ▾ ]
 ```
 
 Quick-select buttons toggle all / top-ranked / none.
+
+The **Collection** dropdown is editable at review time — it defaults to the collection chosen on the
+search form but can be changed before approving. Changing it here does not affect the search; it
+only controls where approved papers land in Zotero. The dropdown lists the same set of Zotero
+collections as the idle-state collection picker.
 
 ### Paper list (scrollable)
 
@@ -321,6 +327,7 @@ components.
 - [ ] Review list shows title, author/year/venue, stars, source badge, citation count, OA badge.
 - [ ] Abstract snippet shown for ★★★ and ★★☆ papers; hidden for ★☆☆.
 - [ ] Quick-select buttons (all / ★★★ / none) correctly toggle checkboxes.
+- [ ] Collection dropdown in the review summary bar defaults to the search-form collection and can be changed before approving.
 - [ ] "Add to Zotero" button label reflects the live checked count.
 - [ ] Done screen shows added count, skipped count, and elapsed time.
 - [ ] All quality gates pass: `npm run lint && npm run build && npm run typecheck && npm run test`.
