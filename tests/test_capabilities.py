@@ -40,10 +40,21 @@ HTTP_OK = 200
 # ---------------------------------------------------------------------------
 
 
-class _FakeSettings:
-    """Minimal settings stub — no API key so auth is skipped."""
+class _FakeSecret:
+    value: str = "backend-key"
 
-    backend_api_key: None = None
+    def get_secret_value(self) -> str:
+        return self.value
+
+
+class _FakeSettings:
+    """Minimal settings stub with single-key fallback for auth."""
+
+    backend_api_key: _FakeSecret = _FakeSecret()
+    gcp_project: str | None = None
+    gcp_secret_name: str = "agt-user-registry"
+    secret_cache_ttl_seconds: int = 60
+    shared_llm_budget_per_user_usd: float = 2.00
 
 
 # ---------------------------------------------------------------------------
@@ -281,7 +292,7 @@ def test_get_providers_returns_200_with_all_names(monkeypatch: pytest.MonkeyPatc
     app.dependency_overrides[get_settings] = fake_get_settings
 
     with TestClient(app) as client:
-        resp = client.get("/providers")
+        resp = client.get("/providers", headers={"X-AGT-API-Key": "backend-key"})
 
     app.dependency_overrides.clear()
 
@@ -300,7 +311,7 @@ def test_get_providers_each_entry_has_required_fields(monkeypatch: pytest.Monkey
     app.dependency_overrides[get_settings] = fake_get_settings
 
     with TestClient(app) as client:
-        resp = client.get("/providers")
+        resp = client.get("/providers", headers={"X-AGT-API-Key": "backend-key"})
 
     app.dependency_overrides.clear()
 
@@ -326,7 +337,7 @@ def test_get_providers_key_required_providers(monkeypatch: pytest.MonkeyPatch) -
     app.dependency_overrides[get_settings] = fake_get_settings
 
     with TestClient(app) as client:
-        resp = client.get("/providers")
+        resp = client.get("/providers", headers={"X-AGT-API-Key": "backend-key"})
 
     app.dependency_overrides.clear()
 
@@ -347,7 +358,7 @@ def test_get_providers_health_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     app.dependency_overrides[get_settings] = fake_get_settings
 
     with TestClient(app) as client:
-        resp = client.get("/providers")
+        resp = client.get("/providers", headers={"X-AGT-API-Key": "backend-key"})
 
     app.dependency_overrides.clear()
 

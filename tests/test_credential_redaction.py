@@ -102,7 +102,7 @@ class _Runtime:
 
 @dataclass(slots=True)
 class _Settings:
-    backend_api_key: _Secret | None = None
+    backend_api_key: _Secret | None = field(default_factory=lambda: _Secret("backend-key"))
     llm_provider: str = "xai"
     llm_fallback_provider: str | None = None
     runtime: _Runtime = field(default_factory=_Runtime)
@@ -128,6 +128,10 @@ class _Settings:
     api_rate_limit: str = "200/minute"
     resolved_llm_provider: str = "xai"
     llm_base_url: str | None = None
+    gcp_project: str | None = None
+    gcp_secret_name: str = "agt-user-registry"
+    secret_cache_ttl_seconds: int = 60
+    shared_llm_budget_per_user_usd: float = 2.00
 
     def provider_api_key(self, provider: str) -> _Secret | None:
         return getattr(self, f"{provider}_api_key", None)
@@ -179,7 +183,7 @@ def test_no_credential_in_structlog_output(monkeypatch: pytest.MonkeyPatch) -> N
     with structlog.testing.capture_logs() as captured:
         resp = client.post(
             "/run",
-            headers=_ZOTERO_HEADERS,
+            headers={"X-AGT-API-Key": "backend-key", **_ZOTERO_HEADERS},
             json={"query": "rag", "collection_name": "Inbox"},
         )
 
@@ -201,13 +205,15 @@ def test_no_credential_in_checkpoint_state(monkeypatch: pytest.MonkeyPatch) -> N
 
     run_resp = client.post(
         "/run",
-        headers=_ZOTERO_HEADERS,
+        headers={"X-AGT-API-Key": "backend-key", **_ZOTERO_HEADERS},
         json={"query": "rag", "collection_name": "Inbox"},
     )
     assert run_resp.status_code == HTTP_OK, run_resp.text
     run_id = run_resp.json()["run_id"]
 
-    status_resp = client.get(f"/status/{run_id}", headers=_ZOTERO_HEADERS)
+    status_resp = client.get(
+        f"/status/{run_id}", headers={"X-AGT-API-Key": "backend-key", **_ZOTERO_HEADERS}
+    )
     assert status_resp.status_code == HTTP_OK, status_resp.text
 
     serialized = json.dumps(status_resp.json())

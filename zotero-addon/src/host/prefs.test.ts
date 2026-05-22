@@ -5,6 +5,7 @@ import {
   PREF_KEYS,
   collectProviderEnv,
   createZoteroPreferenceStore,
+  isInsecureUrl,
 } from "./prefs";
 import type { ZoteroGlobal } from "./zoteroTypes";
 
@@ -64,6 +65,20 @@ function createMockZotero(): ZoteroGlobal {
     logError: () => undefined,
   };
 }
+
+describe("isInsecureUrl", () => {
+  it("returns true for http:// URLs", () => {
+    expect(isInsecureUrl("http://example.com/api")).toBe(true);
+  });
+
+  it("returns false for https:// URLs", () => {
+    expect(isInsecureUrl("https://example.com/api")).toBe(false);
+  });
+
+  it("returns false for empty string", () => {
+    expect(isInsecureUrl("")).toBe(false);
+  });
+});
 
 describe("DEFAULT_ADDON_CONFIG", () => {
   it("defaults backendMode to local so researchers get the standalone experience without configuration", () => {

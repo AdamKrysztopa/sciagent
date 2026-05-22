@@ -59,6 +59,10 @@ class _Settings:
         default_factory=lambda: Path(tempfile.mkdtemp()) / f"watches-{uuid.uuid4().hex}"
     )
     cache_ttl_seconds: int = 3600
+    gcp_project: str | None = None
+    gcp_secret_name: str = "agt-user-registry"
+    secret_cache_ttl_seconds: int = 60
+    shared_llm_budget_per_user_usd: float = 2.00
 
     def provider_api_key(self, provider: str) -> _Secret | None:
         return getattr(self, f"{provider}_api_key", None)

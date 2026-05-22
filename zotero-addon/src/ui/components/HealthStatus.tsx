@@ -3,9 +3,11 @@ import {
   validateContractVersion,
   type HealthResponse,
 } from "../../shared/contracts";
+import { isInsecureUrl } from "../../host/prefs";
 
 interface HealthStatusProps {
   backendUrl: string;
+  backendMode: string;
   busy: boolean;
   error: string | null;
   onRefresh(): void;
@@ -53,7 +55,7 @@ function healthLabel(busy: boolean, response: HealthResponse | null, error: stri
   return "Health not checked";
 }
 
-export function HealthStatus({ backendUrl, busy, error, onRefresh, response }: HealthStatusProps) {
+export function HealthStatus({ backendUrl, backendMode, busy, error, onRefresh, response }: HealthStatusProps) {
   const contractStatus = validateContractVersion(response);
   const showContractWarning = response !== null && contractStatus !== "compatible";
   const showPreflightWarning = response !== null && !response.ok;
@@ -75,6 +77,11 @@ export function HealthStatus({ backendUrl, busy, error, onRefresh, response }: H
           {contractStatus === "missing"
             ? `Backend contract version missing. Expected ${REQUIRED_API_CONTRACT_VERSION}.`
             : `Backend contract version mismatch. Expected ${REQUIRED_API_CONTRACT_VERSION}, got ${response.api_contract_version}.`}
+        </div>
+      ) : null}
+      {backendMode === "remote" && isInsecureUrl(backendUrl) ? (
+        <div className="agt-error">
+          Insecure connection — backend URL must use HTTPS.
         </div>
       ) : null}
       {response !== null ? (

@@ -285,6 +285,14 @@ export function createZoteroPreferenceStore(zotero: ZoteroGlobal): PreferenceSto
 }
 
 /**
+ * Returns true when the given URL uses the insecure `http://` scheme.
+ * Used by the UI to block remote-backend connections that are not HTTPS.
+ */
+export function isInsecureUrl(url: string): boolean {
+  return url.startsWith("http://");
+}
+
+/**
  * Collect LLM provider env vars from the add-on config for passing to the
  * embedded server process (SCI-0603/0604).
  */

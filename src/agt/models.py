@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Literal, TypedDict, cast
+from typing import Annotated, Any, Literal, TypedDict, cast
 
 from pydantic import (
     BaseModel,
@@ -38,6 +38,12 @@ class ResolvedVenue(BaseModel):
     issn: str | None = None
 
 
+_Keyword = Annotated[str, Field(max_length=500)]
+_AuthorName = Annotated[str, Field(max_length=200)]
+_VenueName = Annotated[str, Field(max_length=200)]
+_Doi = Annotated[str, Field(max_length=100)]
+
+
 class HardFilters(BaseModel):
     """Filters that cannot be relaxed or overridden by LLM rewriting."""
 
@@ -46,12 +52,12 @@ class HardFilters(BaseModel):
     min_citations: int = Field(default=0, ge=0)
     max_citations: int | None = Field(default=None, ge=0)
     open_access_only: bool = False
-    include_keywords: list[str] = Field(default_factory=list)
-    exclude_keywords: list[str] = Field(default_factory=list)
+    include_keywords: list[_Keyword] = Field(default_factory=list)
+    exclude_keywords: list[_Keyword] = Field(default_factory=list)
     author_ids: list[str] = Field(default_factory=list)
-    author_names: list[str] = Field(default_factory=list)
+    author_names: list[_AuthorName] = Field(default_factory=list)
     venue_ids: list[str] = Field(default_factory=list)
-    venue_names: list[str] = Field(default_factory=list)
+    venue_names: list[_VenueName] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def validate_ranges(self) -> HardFilters:
@@ -106,7 +112,7 @@ class FilterEditContract(BaseModel):
     hard_filters: HardFilters = Field(default_factory=HardFilters)
     soft_preferences: SoftPreferences = Field(default_factory=SoftPreferences)
     result_limit: int = Field(default=10, ge=1, le=50)
-    seed_dois: list[str] = Field(default_factory=list)
+    seed_dois: list[_Doi] = Field(default_factory=list)
     authors: list[ResolvedAuthor] = Field(default_factory=lambda: cast(list[ResolvedAuthor], []))
     venues: list[ResolvedVenue] = Field(default_factory=lambda: cast(list[ResolvedVenue], []))
 

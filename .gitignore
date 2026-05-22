@@ -15,3 +15,4 @@ site/
 *.egg-info/
 nohup.out
 .claude/worktrees/
+.superpowers/

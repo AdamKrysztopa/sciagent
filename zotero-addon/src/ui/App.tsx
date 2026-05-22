@@ -1,6 +1,7 @@
 import type { HealthResponse, WriteResult } from "../shared/contracts";
 import { getPaperIndex } from "../shared/contracts";
 import type { NativeWriteResult } from "../host/zoteroWriter";
+import { isInsecureUrl } from "../host/prefs";
 
 import { Component, type ErrorInfo, type ReactNode, useEffect, useRef, useState } from "react";
 import type { AddonUiServices } from "./serviceTypes";
@@ -185,6 +186,9 @@ function searchDisabledReason(controller: SciAgentController): string | null {
   if (controller.config.backendMode === "remote" && controller.config.zoteroLibraryId.trim().length === 0) {
     return "Set your Zotero Library ID in Settings → Zotero Account before searching.";
   }
+  if (controller.config.backendMode === "remote" && isInsecureUrl(controller.config.backendUrl)) {
+    return "Backend URL must use HTTPS. Update it in settings.";
+  }
   if (controller.healthBusy) {
     return "Checking the backend connection.";
   }
@@ -317,6 +321,7 @@ function IdleView({ controller, addonVersion }: { controller: SciAgentController
 
       <HealthStatus
         backendUrl={controller.config.backendUrl}
+        backendMode={controller.config.backendMode}
         busy={controller.healthBusy}
         error={controller.healthError}
         onRefresh={controller.onRefreshHealth}

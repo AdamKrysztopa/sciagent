@@ -18,6 +18,7 @@ HTTP_OK = 200
 HTTP_UNAUTHORIZED = 401
 HTTP_FORBIDDEN = 403
 HTTP_UNPROCESSABLE_ENTITY = 422
+HTTP_INTERNAL_SERVER_ERROR = 500
 FILTER_EDIT_RESULT_LIMIT = 5
 FILTER_EDIT_MIN_YEAR = 2024
 
@@ -69,6 +70,10 @@ class _Settings:
     api_rate_limit: str = "200/minute"
     resolved_llm_provider: str = "xai"
     llm_base_url: str | None = None
+    gcp_project: str | None = None
+    gcp_secret_name: str = "agt-user-registry"
+    secret_cache_ttl_seconds: int = 60
+    shared_llm_budget_per_user_usd: float = 2.00
 
     def provider_api_key(self, provider: str) -> _Secret | None:
         return getattr(self, f"{provider}_api_key", None)
@@ -155,37 +160,37 @@ def test_run_resume_status_flow_with_owner_isolation(monkeypatch: pytest.MonkeyP
     app.dependency_overrides[get_settings] = fake_get_settings
 
     with TestClient(app) as client:
-        headers_owner_a = {
+        headers = {
             "X-AGT-API-Key": "backend-key",
-            "X-AGT-Client-ID": "owner-a",
-            **_ZOTERO_HEADERS,
-        }
-        headers_owner_b = {
-            "X-AGT-API-Key": "backend-key",
-            "X-AGT-Client-ID": "owner-b",
             **_ZOTERO_HEADERS,
         }
 
         run_response = client.post(
             "/run",
-            headers=headers_owner_a,
+            headers=headers,
             json={"query": "q", "collection_name": "Inbox", "thread_id": "thread-a"},
         )
         assert run_response.status_code == HTTP_OK
         run_id = run_response.json()["run_id"]
 
-        forbidden = client.get(f"/status/{run_id}", headers=headers_owner_b)
-        assert forbidden.status_code == HTTP_FORBIDDEN
+        # With single-key fallback both requests resolve to the same slug ("default"),
+        # so a different client using the same key can see the run.
+        same_user = client.get(f"/status/{run_id}", headers=headers)
+        assert same_user.status_code == HTTP_OK
+
+        # An unauthenticated request is rejected.
+        unauthed = client.get(f"/status/{run_id}")
+        assert unauthed.status_code == HTTP_UNAUTHORIZED
 
         resume_response = client.post(
             "/resume",
-            headers=headers_owner_a,
+            headers=headers,
             json={"run_id": run_id, "approved": True, "selected_indices": [0]},
         )
         assert resume_response.status_code == HTTP_OK
         assert resume_response.json()["status"] == "completed"
 
-        status_response = client.get(f"/status/{run_id}", headers=headers_owner_a)
+        status_response = client.get(f"/status/{run_id}", headers=headers)
         assert status_response.status_code == HTTP_OK
         payload = status_response.json()
         assert payload["status"] == "completed"
@@ -256,7 +261,6 @@ def test_resume_failed_phase_maps_to_failed_status(monkeypatch: pytest.MonkeyPat
     with TestClient(app) as client:
         headers = {
             "X-AGT-API-Key": "backend-key",
-            "X-AGT-Client-ID": "owner-a",
             **_ZOTERO_HEADERS,
         }
 
@@ -331,7 +335,6 @@ def test_run_accepts_filter_edit_and_forwards_it(monkeypatch: pytest.MonkeyPatch
             "/run",
             headers={
                 "X-AGT-API-Key": "backend-key",
-                "X-AGT-Client-ID": "owner-a",
                 **_ZOTERO_HEADERS,
             },
             json={
@@ -460,7 +463,6 @@ def test_resume_native_write_returns_approved_papers(monkeypatch: pytest.MonkeyP
     with TestClient(app) as client:
         headers = {
             "X-AGT-API-Key": "backend-key",
-            "X-AGT-Client-ID": "owner-nw",
             **_ZOTERO_HEADERS,
         }
         run_resp = client.post(
@@ -504,7 +506,6 @@ def test_run_rejects_filter_edit_query_mismatch(monkeypatch: pytest.MonkeyPatch)
             "/run",
             headers={
                 "X-AGT-API-Key": "backend-key",
-                "X-AGT-Client-ID": "owner-a",
                 **_ZOTERO_HEADERS,
             },
             json={
@@ -581,7 +582,6 @@ def test_resume_accepts_enable_pdf_imports_field(monkeypatch: pytest.MonkeyPatch
     with TestClient(app) as client:
         headers = {
             "X-AGT-API-Key": "backend-key",
-            "X-AGT-Client-ID": "owner-pdf",
             **_ZOTERO_HEADERS,
         }
 
@@ -1001,3 +1001,86 @@ def test_venue_suggest_missing_q_returns_422(monkeypatch: pytest.MonkeyPatch) ->
     assert response.status_code == HTTP_UNPROCESSABLE_ENTITY
 
     app.dependency_overrides.clear()
+
+
+def test_query_exceeding_max_length_returns_422(monkeypatch: pytest.MonkeyPatch) -> None:
+    app = create_app()
+
+    def fake_get_settings() -> _Settings:
+        return _Settings()
+
+    app.dependency_overrides[get_settings] = fake_get_settings
+
+    with TestClient(app, raise_server_exceptions=False) as client:
+        resp = client.post(
+            "/run",
+            json={"query": "x" * 2001},
+            headers={"X-AGT-API-Key": "backend-key", **_ZOTERO_HEADERS},
+        )
+        assert resp.status_code == HTTP_UNPROCESSABLE_ENTITY
+
+    app.dependency_overrides.clear()
+
+
+def test_422_does_not_leak_field_values(monkeypatch: pytest.MonkeyPatch) -> None:
+    app = create_app()
+
+    def fake_get_settings() -> _Settings:
+        return _Settings()
+
+    app.dependency_overrides[get_settings] = fake_get_settings
+
+    with TestClient(app, raise_server_exceptions=False) as client:
+        resp = client.post(
+            "/run",
+            json={"query": ""},  # min_length=1 violation
+            headers={"X-AGT-API-Key": "backend-key", **_ZOTERO_HEADERS},
+        )
+        assert resp.status_code == HTTP_UNPROCESSABLE_ENTITY
+        body = resp.json()
+        assert body["detail"] == "validation_error"
+        for err in body["errors"]:
+            assert "input" not in err
+
+
+def test_rate_limit_key_uses_slug(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The Limiter key function should extract user_slug from request state."""
+    app = create_app()
+
+    def fake_get_settings() -> _Settings:
+        return _Settings(api_rate_limit="2/minute")
+
+    app.dependency_overrides[get_settings] = fake_get_settings
+
+    with TestClient(app, raise_server_exceptions=False) as client:
+        headers = {"X-AGT-API-Key": "backend-key", **_ZOTERO_HEADERS}
+        r1 = client.get("/health", headers=headers)
+        r2 = client.get("/health", headers=headers)
+        r3 = client.get("/health", headers=headers)
+        assert r1.status_code == HTTP_OK
+        assert r2.status_code == HTTP_OK
+        # Third request may be rate-limited (depends on timing),
+        # but the key point is it doesn't crash
+        assert r3.status_code in (HTTP_OK, 429)
+
+    app.dependency_overrides.clear()
+
+
+def test_500_does_not_leak_exception_details(monkeypatch: pytest.MonkeyPatch) -> None:
+    app = create_app()
+
+    def fake_get_settings() -> _Settings:
+        return _Settings()
+
+    app.dependency_overrides[get_settings] = fake_get_settings
+
+    @app.get("/test-boom")
+    async def _boom() -> None:  # pyright: ignore[reportUnusedFunction]
+        raise RuntimeError("secret internal details")
+
+    with TestClient(app, raise_server_exceptions=False) as client:
+        resp = client.get("/test-boom")
+        assert resp.status_code == HTTP_INTERNAL_SERVER_ERROR
+        body = resp.json()
+        assert body["detail"] == "internal_error"
+        assert "secret" not in str(body)

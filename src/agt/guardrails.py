@@ -231,3 +231,49 @@ def thread_context(thread_id: str) -> Generator[None]:
         yield
     finally:
         _thread_id_context.reset(token)
+
+
+class SharedBudgetExhaustedError(RuntimeError):
+    """Raised when a user's shared LLM spend exceeds their budget cap."""
+
+
+class SharedBudgetTracker:
+    """In-memory per-user LLM spend tracker.
+
+    Tracks cumulative cost and request count per user slug.
+    Resets on process restart -- this is intentional per spec.
+    """
+
+    def __init__(self, default_budget_usd: float) -> None:
+        self._default_budget = default_budget_usd
+        self._spend: dict[str, float] = {}
+        self._requests: dict[str, int] = {}
+        self._last_seen: dict[str, float] = {}
+
+    def record_cost(
+        self, slug: str, cost_usd: float, *, budget_override: float | None = None
+    ) -> None:
+        budget = budget_override if budget_override is not None else self._default_budget
+        current = self._spend.get(slug, 0.0)
+        if current + cost_usd > budget:
+            raise SharedBudgetExhaustedError(f"Shared LLM budget exhausted for user {slug!r}")
+        self._spend[slug] = current + cost_usd
+        self._last_seen[slug] = time.monotonic()
+
+    def record_request(self, slug: str) -> None:
+        self._requests[slug] = self._requests.get(slug, 0) + 1
+        self._last_seen[slug] = time.monotonic()
+
+    def get_spend(self, slug: str) -> float:
+        return self._spend.get(slug, 0.0)
+
+    def get_all_usage(self, default_budget: float) -> dict[str, dict[str, object]]:
+        slugs = set(self._spend) | set(self._requests)
+        result: dict[str, dict[str, object]] = {}
+        for slug in sorted(slugs):
+            result[slug] = {
+                "spend_usd": self._spend.get(slug, 0.0),
+                "cap_usd": default_budget,
+                "requests": self._requests.get(slug, 0),
+            }
+        return result

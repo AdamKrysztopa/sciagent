@@ -80,6 +80,31 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("AGT_BACKEND_API_KEY", "BACKEND_API_KEY"),
         description="Optional API key required by backend HTTP endpoints.",
     )
+    gcp_project: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("AGT_GCP_PROJECT", "GCP_PROJECT"),
+        description="GCP project ID. When set, enables Secret Manager auth mode.",
+    )
+    gcp_secret_name: str = Field(
+        default="agt-user-registry",
+        validation_alias=AliasChoices("AGT_GCP_SECRET_NAME", "GCP_SECRET_NAME"),
+        description="Secret Manager secret name for user registry.",
+    )
+    secret_cache_ttl_seconds: int = Field(
+        default=60,
+        ge=5,
+        le=3600,
+        validation_alias=AliasChoices("AGT_SECRET_CACHE_TTL_SECONDS", "SECRET_CACHE_TTL_SECONDS"),
+        description="Cache TTL in seconds for user registry reads from Secret Manager.",
+    )
+    shared_llm_budget_per_user_usd: float = Field(
+        default=2.00,
+        ge=0.0,
+        validation_alias=AliasChoices(
+            "AGT_SHARED_LLM_BUDGET_PER_USER_USD", "SHARED_LLM_BUDGET_PER_USER_USD"
+        ),
+        description="Default per-user shared LLM budget in USD.",
+    )
     zotero_library_id: str | None = Field(
         default=None,
         validation_alias=AliasChoices("AGT_ZOTERO_LIBRARY_ID", "ZOTERO_LIBRARY_ID"),

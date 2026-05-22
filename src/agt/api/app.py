@@ -10,19 +10,21 @@ from dataclasses import dataclass
 from typing import Any, Literal, cast
 
 import structlog
-from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, status
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse
 from pydantic import BaseModel, Field, model_validator
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
-from slowapi.util import get_remote_address
 
+from agt.api.auth import authenticate
 from agt.api.credentials import get_credentials
 from agt.config import Settings, get_settings
 from agt.credential_context import RequestCredentials
 from agt.graph.workflow import resume_workflow, run_search_phase
+from agt.guardrails import SharedBudgetExhaustedError, SharedBudgetTracker
 from agt.models import (
     AgentState,
     DoctorReport,
@@ -35,6 +37,7 @@ from agt.models import (
 )
 from agt.providers.router import build_provider_for_request
 from agt.result_cache import ResultCache
+from agt.secrets import UserRegistry
 from agt.session_export import ExportFormat, export_session
 from agt.session_store import SessionStore
 from agt.tools.author_resolver import resolve_author
@@ -56,7 +59,7 @@ API_CONTRACT_VERSION = "2026-05"
 
 
 class RunRequest(BaseModel):
-    query: str = Field(min_length=1)
+    query: str = Field(min_length=1, max_length=2000)
     collection_name: str | None = Field(default=None, min_length=1)
     thread_id: str | None = None
     filter_edit: FilterEditContract | None = None
@@ -180,8 +183,8 @@ class GapFinderResponse(BaseModel):
 
 
 class CreateWatchRequest(BaseModel):
-    name: str = Field(min_length=1)
-    query: str = Field(min_length=1)
+    name: str = Field(min_length=1, max_length=200)
+    query: str = Field(min_length=1, max_length=2000)
     collection_name: str | None = None
     filter_edit: FilterEditContract | None = None
 
@@ -250,27 +253,6 @@ class _RunStore:
         return record
 
 
-def _require_backend_key(
-    x_api_key: str | None = Header(default=None, alias="X-AGT-API-Key"),
-    settings: Settings = Depends(get_settings),
-) -> None:
-    if settings.backend_api_key is None:
-        return
-    if x_api_key != settings.backend_api_key.get_secret_value():
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="invalid_api_key",
-        )
-
-
-def _client_id_header(
-    x_client_id: str | None = Header(default=None, alias="X-AGT-Client-ID"),
-) -> str:
-    if x_client_id is None or not x_client_id.strip():
-        return "anonymous"
-    return x_client_id.strip()
-
-
 class _AppState:
     """Lazy-initialized per-app singletons."""
 
@@ -300,6 +282,10 @@ class _AppState:
 _log = structlog.get_logger()
 
 
+def _get_user_key(request: Request) -> str:
+    return getattr(request.state, "user_slug", request.client.host if request.client else "unknown")
+
+
 def create_app() -> FastAPI:  # noqa: PLR0915
     app = FastAPI(title="SciAgent API", version="0.1.0")
     _settings = get_settings()
@@ -317,7 +303,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
         allow_headers=["*"],
     )
     _limiter = Limiter(
-        key_func=get_remote_address,
+        key_func=_get_user_key,
         default_limits=[_settings.api_rate_limit],
     )
     app.state.limiter = _limiter
@@ -340,11 +326,60 @@ def create_app() -> FastAPI:  # noqa: PLR0915
         )
         return JSONResponse(
             status_code=500,
-            content={"detail": f"internal_server_error:{type(exc).__name__}:{exc}"},
+            content={"detail": "internal_error"},
         )
+
+    @app.exception_handler(RequestValidationError)
+    async def _validation_exception_handler(  # pyright: ignore[reportUnusedFunction]
+        request: Request, exc: RequestValidationError
+    ) -> JSONResponse:
+        safe_errors = [
+            {"loc": e.get("loc"), "msg": e.get("msg"), "type": e.get("type")} for e in exc.errors()
+        ]
+        return JSONResponse(
+            status_code=422,
+            content={"detail": "validation_error", "errors": safe_errors},
+        )
+
+    @app.exception_handler(SharedBudgetExhaustedError)
+    async def _shared_budget_handler(  # pyright: ignore[reportUnusedFunction]
+        request: Request, exc: SharedBudgetExhaustedError
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=402,
+            content={
+                "detail": "shared_llm_budget_exhausted",
+                "hint": "Set your own LLM API key in the addon settings to continue.",
+            },
+        )
+
+    _budget_tracker = SharedBudgetTracker(_settings.shared_llm_budget_per_user_usd)
+    app.state.budget_tracker = _budget_tracker
 
     store = _RunStore()
     app_state = _AppState()
+
+    _user_registry = UserRegistry(_settings)
+
+    def _get_registry() -> UserRegistry:
+        # Resolve settings through FastAPI's dependency override chain so that
+        # test-time overrides of get_settings are respected.
+        resolved_fn = app.dependency_overrides.get(get_settings, get_settings)
+        current_settings = resolved_fn()
+        if current_settings is not _settings:
+            return UserRegistry(current_settings)
+        return _user_registry
+
+    _auth = authenticate(_get_registry)
+
+    from agt.api.admin import create_admin_router  # noqa: PLC0415
+
+    _admin_router = create_admin_router(
+        _get_registry,
+        _budget_tracker,
+        default_budget=_settings.shared_llm_budget_per_user_usd,
+    )
+    app.include_router(_admin_router, dependencies=[Depends(_auth)])
 
     @app.get("/", include_in_schema=False)
     async def _root() -> RedirectResponse:  # pyright: ignore[reportUnusedFunction]
@@ -389,10 +424,9 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     @app.post("/run", response_model=RunAcceptedResponse)
     async def _run(  # pyright: ignore[reportUnusedFunction]
         payload: RunRequest,
-        _: None = Depends(_require_backend_key),
+        slug: str = Depends(_auth),
         _creds: RequestCredentials = Depends(get_credentials),
         settings: Settings = Depends(get_settings),
-        client_id: str = Depends(_client_id_header),
     ) -> RunAcceptedResponse:
         collection_name = payload.collection_name or settings.zotero_collection_name
         cache = app_state.result_cache(settings)
@@ -425,7 +459,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
             store.put(
                 _RunRecord(
                     run_id=run_id,
-                    owner=client_id,
+                    owner=slug,
                     thread_id=run_id,
                     status="awaiting_approval",
                     state=cached_state,
@@ -459,7 +493,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
             store.put(
                 _RunRecord(
                     run_id=run_id,
-                    owner=client_id,
+                    owner=slug,
                     thread_id=payload.thread_id or run_id,
                     status="failed",
                     state=None,
@@ -483,7 +517,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
         store.put(
             _RunRecord(
                 run_id=run_id,
-                owner=client_id,
+                owner=slug,
                 thread_id=state["thread_id"],
                 status="awaiting_approval",
                 state=state,
@@ -498,10 +532,9 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     @app.post("/resume", response_model=RunAcceptedResponse)
     async def _resume(  # pyright: ignore[reportUnusedFunction]
         payload: ResumeRequest,
-        _: None = Depends(_require_backend_key),
+        slug: str = Depends(_auth),
         _creds: RequestCredentials = Depends(get_credentials),
         settings: Settings = Depends(get_settings),
-        client_id: str = Depends(_client_id_header),
     ) -> RunAcceptedResponse:
         try:
             record = store.get(payload.run_id)
@@ -510,7 +543,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
                 status_code=status.HTTP_404_NOT_FOUND, detail="run_not_found"
             ) from exc
 
-        if record.owner != client_id:
+        if record.owner != slug:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="run_forbidden")
 
         if record.state is None:
@@ -587,7 +620,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
 
     @app.get("/capabilities", response_model=CapabilitiesResponse)
     async def _capabilities(  # pyright: ignore[reportUnusedFunction]
-        _: None = Depends(_require_backend_key),
+        slug: str = Depends(_auth),
         settings: Settings = Depends(get_settings),
     ) -> CapabilitiesResponse:
         source_policy = build_source_policy(settings)
@@ -610,7 +643,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
 
     @app.get("/providers", response_model=dict[str, ProviderInfo])
     async def _providers(  # pyright: ignore[reportUnusedFunction]
-        _: None = Depends(_require_backend_key),
+        slug: str = Depends(_auth),
     ) -> dict[str, ProviderInfo]:
         """Return capability + health for every known search provider.
 
@@ -640,7 +673,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     @app.post("/keys/validate", response_model=KeyValidateResponse)
     async def _validate_key(  # pyright: ignore[reportUnusedFunction]
         payload: KeyValidateRequest,
-        _: None = Depends(_require_backend_key),
+        slug: str = Depends(_auth),
     ) -> KeyValidateResponse:
         """Validate a provider API key with a minimal test call.
 
@@ -668,7 +701,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     @app.post("/extract-keywords", response_model=ExtractKeywordsResponse)
     async def _extract_keywords_endpoint(  # pyright: ignore[reportUnusedFunction]
         body: ExtractKeywordsRequest,
-        _: None = Depends(_require_backend_key),
+        slug: str = Depends(_auth),
         settings: Settings = Depends(get_settings),
     ) -> ExtractKeywordsResponse:
         try:
@@ -690,8 +723,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     @app.get("/status/{run_id}", response_model=StatusResponse)
     async def _status_endpoint(  # pyright: ignore[reportUnusedFunction]
         run_id: str,
-        _: None = Depends(_require_backend_key),
-        client_id: str = Depends(_client_id_header),
+        slug: str = Depends(_auth),
     ) -> StatusResponse:
         try:
             record = store.get(run_id)
@@ -700,7 +732,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
                 status_code=status.HTTP_404_NOT_FOUND, detail="run_not_found"
             ) from exc
 
-        if record.owner != client_id:
+        if record.owner != slug:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="run_forbidden")
 
         return StatusResponse(
@@ -715,8 +747,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     async def _export_run(  # pyright: ignore[reportUnusedFunction]
         run_id: str,
         fmt: ExportFormat = Query(default="markdown", alias="format"),
-        _: None = Depends(_require_backend_key),
-        client_id: str = Depends(_client_id_header),
+        slug: str = Depends(_auth),
     ) -> PlainTextResponse:
         try:
             record = store.get(run_id)
@@ -724,7 +755,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="run_not_found"
             ) from exc
-        if record.owner != client_id:
+        if record.owner != slug:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="run_forbidden")
         if record.state is None:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="run_has_no_state")
@@ -739,7 +770,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
 
     @app.get("/sessions")
     async def _list_sessions(  # pyright: ignore[reportUnusedFunction]
-        _: None = Depends(_require_backend_key),
+        slug: str = Depends(_auth),
         settings: Settings = Depends(get_settings),
     ) -> list[dict[str, Any]]:
         return app_state.session_store(settings).list_sessions()
@@ -747,7 +778,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     @app.get("/sessions/{session_id}")
     async def _get_session(  # pyright: ignore[reportUnusedFunction]
         session_id: str,
-        _: None = Depends(_require_backend_key),
+        slug: str = Depends(_auth),
         settings: Settings = Depends(get_settings),
     ) -> dict[str, Any]:
         try:
@@ -760,9 +791,8 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     @app.post("/sessions/{session_id}/rerun", response_model=RunAcceptedResponse)
     async def _rerun_session(  # pyright: ignore[reportUnusedFunction]
         session_id: str,
-        _: None = Depends(_require_backend_key),
+        slug: str = Depends(_auth),
         settings: Settings = Depends(get_settings),
-        client_id: str = Depends(_client_id_header),
     ) -> RunAcceptedResponse:
         try:
             rerun = app_state.session_store(settings).extract_rerun_payload(session_id)
@@ -794,7 +824,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
         store.put(
             _RunRecord(
                 run_id=run_id,
-                owner=client_id,
+                owner=slug,
                 thread_id=run_id,
                 status="awaiting_approval",
                 state=state,
@@ -808,7 +838,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
 
     @app.get("/cache/stats")
     async def _cache_stats(  # pyright: ignore[reportUnusedFunction]
-        _: None = Depends(_require_backend_key),
+        slug: str = Depends(_auth),
         settings: Settings = Depends(get_settings),
     ) -> dict[str, Any]:
         return app_state.result_cache(settings).stats()
@@ -816,7 +846,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     @app.delete("/cache/clear")
     async def _cache_clear(  # pyright: ignore[reportUnusedFunction]
         expired_only: bool = Query(default=False),
-        _: None = Depends(_require_backend_key),
+        slug: str = Depends(_auth),
         settings: Settings = Depends(get_settings),
     ) -> dict[str, Any]:
         deleted = app_state.result_cache(settings).clear(expired_only=expired_only)
@@ -825,7 +855,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     @app.post("/library-doctor", response_model=DoctorReport)
     async def _library_doctor(  # pyright: ignore[reportUnusedFunction]
         body: LibraryDoctorRequest,
-        _: None = Depends(_require_backend_key),
+        slug: str = Depends(_auth),
         _creds: RequestCredentials = Depends(get_credentials),
         settings: Settings = Depends(get_settings),
     ) -> DoctorReport:
@@ -834,7 +864,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     @app.post("/gap-finder", response_model=GapFinderResponse)
     async def _gap_finder(  # pyright: ignore[reportUnusedFunction]
         body: GapFinderRequest,
-        _: None = Depends(_require_backend_key),
+        slug: str = Depends(_auth),
         _creds: RequestCredentials = Depends(get_credentials),
         settings: Settings = Depends(get_settings),
     ) -> GapFinderResponse:
@@ -850,7 +880,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     @app.post("/watches", response_model=WatchSummary, status_code=status.HTTP_201_CREATED)
     async def _create_watch(  # pyright: ignore[reportUnusedFunction]
         body: CreateWatchRequest,
-        _: None = Depends(_require_backend_key),
+        slug: str = Depends(_auth),
         settings: Settings = Depends(get_settings),
     ) -> WatchSummary:
         watch = create_watch(
@@ -864,7 +894,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
 
     @app.get("/watches", response_model=list[WatchSummary])
     async def _list_watches(  # pyright: ignore[reportUnusedFunction]
-        _: None = Depends(_require_backend_key),
+        slug: str = Depends(_auth),
         settings: Settings = Depends(get_settings),
     ) -> list[WatchSummary]:
         return [_watch_to_summary(w) for w in app_state.watch_store(settings).list_watches()]
@@ -872,7 +902,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     @app.get("/watches/{watch_id}", response_model=WatchSummary)
     async def _get_watch(  # pyright: ignore[reportUnusedFunction]
         watch_id: str,
-        _: None = Depends(_require_backend_key),
+        slug: str = Depends(_auth),
         settings: Settings = Depends(get_settings),
     ) -> WatchSummary:
         try:
@@ -886,7 +916,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     @app.delete("/watches/{watch_id}", status_code=status.HTTP_204_NO_CONTENT)
     async def _delete_watch(  # pyright: ignore[reportUnusedFunction]
         watch_id: str,
-        _: None = Depends(_require_backend_key),
+        slug: str = Depends(_auth),
         settings: Settings = Depends(get_settings),
     ) -> None:
         try:
@@ -899,10 +929,9 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     @app.post("/watches/{watch_id}/rerun", response_model=WatchRerunResponse)
     async def _rerun_watch(  # pyright: ignore[reportUnusedFunction]
         watch_id: str,
-        _: None = Depends(_require_backend_key),
+        slug: str = Depends(_auth),
         _creds: RequestCredentials = Depends(get_credentials),
         settings: Settings = Depends(get_settings),
-        client_id: str = Depends(_client_id_header),
     ) -> WatchRerunResponse:
         ws = app_state.watch_store(settings)
         try:
@@ -961,7 +990,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
         store.put(
             _RunRecord(
                 run_id=run_id,
-                owner=client_id,
+                owner=slug,
                 thread_id=run_id,
                 status="awaiting_approval",
                 state=updated_state,
@@ -985,7 +1014,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     async def _author_suggest(  # pyright: ignore[reportUnusedFunction]
         q: str = Query(min_length=1),
         limit: int = Query(default=5, ge=1, le=20),
-        _: None = Depends(_require_backend_key),
+        slug: str = Depends(_auth),
         settings: Settings = Depends(get_settings),
     ) -> list[NormalizedAuthor]:
         cache_key = f"{q}:{limit}"
@@ -1005,7 +1034,7 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     async def _venue_suggest(  # pyright: ignore[reportUnusedFunction]
         q: str = Query(min_length=1),
         limit: int = Query(default=5, ge=1, le=20),
-        _: None = Depends(_require_backend_key),
+        slug: str = Depends(_auth),
         settings: Settings = Depends(get_settings),
     ) -> list[ResolvedVenue]:
         cache_key = f"{q}:{limit}"

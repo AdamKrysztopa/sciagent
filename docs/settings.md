@@ -312,12 +312,20 @@ You now have:
   - `AGT_LLM_FAILOVER_ON_RATE_LIMIT=true|false`
 - Failover is applied only for timeout and rate-limit failures; non-retryable provider errors are surfaced directly.
 
-## M5 Backend Security Direction (AGT-21)
+## M5 Backend Security (AGT-21)
 
-- Backend endpoints can require an API key with `AGT_BACKEND_API_KEY`; requests must include `X-AGT-API-Key`.
-- Run ownership isolation uses `X-AGT-Client-ID` and is enforced for `/resume` and `/status/{run_id}`.
-- Current mode is single-tenant with strong thread-owner separation.
-- Multi-user delegated-auth direction for production v2:
-  - Replace static backend key with per-user bearer tokens from an external IdP.
-  - Bind `run_id` ownership to token subject claims instead of header-provided client IDs.
-  - Keep `thread_id` and `request_id` as audit primitives, never as authorization primitives.
+Per-user API key authentication with GCP Secret Manager storage.
+
+| Variable | Default | Description |
+|---|---|---|
+| `AGT_GCP_PROJECT` | *(unset)* | GCP project ID. When set, enables Secret Manager auth mode. |
+| `AGT_GCP_SECRET_NAME` | `agt-user-registry` | Secret Manager secret name for the user registry JSON. |
+| `AGT_SECRET_CACHE_TTL_SECONDS` | `60` | Cache TTL for user registry reads (range: 5–3600). |
+| `AGT_SHARED_LLM_BUDGET_PER_USER_USD` | `2.00` | Default per-user shared LLM budget in USD. |
+| `AGT_BACKEND_API_KEY` | *(unset)* | Fallback single-key mode when `AGT_GCP_PROJECT` is not set. |
+
+- When `AGT_GCP_PROJECT` is set, per-user keys are read from Secret Manager. Each user has a unique key (`agt_{slug}_{hex}`), budget, and admin flag.
+- When `AGT_GCP_PROJECT` is not set, falls back to `AGT_BACKEND_API_KEY` (single-key mode, slug `"default"`, admin).
+- `X-AGT-Client-ID` header is no longer used; run ownership uses the authenticated slug.
+- Admin endpoints (`/admin/*`) require `is_admin=true` in the user registry.
+- Shared LLM budget tracking is per-user and in-memory (resets on restart). Users providing their own `X-LLM-API-Key` bypass shared budget tracking.
