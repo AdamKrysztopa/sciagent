@@ -391,21 +391,21 @@ Existing `AGT_BACKEND_API_KEY` retained as local-dev fallback.
 
 ### Phase 2 — Admin Panel
 
-- [ ] Admin can log in to `/portal/` with their API key.
-- [ ] Dashboard shows active users, total spend, health summary.
-- [ ] Users page lists all users with inline actions (revoke, edit budget).
-- [ ] Create User page generates and displays key once.
-- [ ] Health page shows backend status and active runs.
-- [ ] Non-admin keys cannot access the portal.
-- [ ] `admin-panel/` builds and passes lint + typecheck.
+- [x] Admin can log in to `/portal/` with their API key.
+- [x] Dashboard shows active users, total spend, health summary.
+- [x] Users page lists all users with inline actions (revoke, edit budget).
+- [x] Create User page generates and displays key once.
+- [x] Health page shows backend status and active runs.
+- [x] Non-admin keys cannot access the portal.
+- [x] `admin-panel/` builds and passes lint + typecheck.
 
 ### Phase 3 — Communication
 
-- [ ] Admin can compose and send messages from the portal.
-- [ ] Messages appear as banners in the Zotero addon sidebar.
-- [ ] Users can dismiss banner messages.
-- [ ] Email notifications sent via transactional email provider.
-- [ ] Admin can choose delivery channel: banner, email, or both.
+- [x] Admin can compose and send messages from the portal.
+- [x] Messages appear as banners in the Zotero addon sidebar.
+- [x] Users can dismiss banner messages.
+- [x] Email notifications sent via transactional email provider.
+- [x] Admin can choose delivery channel: banner, email, or both.
 
 ---
 

@@ -2398,10 +2398,10 @@ Phase 3 decisions are deferred (message persistence: Firestore vs. Secret Manage
 | 9 | 1 | `[x]` | Admin API endpoints |
 | 10 | 1 | `[x]` | HTTPS enforcement in addon |
 | 11 | 1 | `[x]` | Phase 1 quality gate |
-| 12 | 2 | `[ ]` | Admin panel project setup |
-| 13 | 2 | `[ ]` | API client + Login page |
-| 14 | 2 | `[ ]` | Dashboard, Users, Create User pages |
-| 15 | 2 | `[ ]` | Health page + static serving |
-| 16 | 3 | `[ ]` | Message backend (outline) |
-| 17 | 3 | `[ ]` | In-addon banners (outline) |
-| 18 | 3 | `[ ]` | Email integration (outline) |
+| 12 | 2 | `[x]` | Admin panel project setup |
+| 13 | 2 | `[x]` | API client + Login page |
+| 14 | 2 | `[x]` | Dashboard, Users, Create User pages |
+| 15 | 2 | `[x]` | Health page + static serving |
+| 16 | 3 | `[x]` | Message backend (outline) |
+| 17 | 3 | `[x]` | In-addon banners (outline) |
+| 18 | 3 | `[x]` | Email integration (outline) |

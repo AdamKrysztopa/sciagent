@@ -1,12 +1,22 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from fastapi import Depends, FastAPI
 from fastapi.testclient import TestClient
 
 from agt.api.admin import create_admin_router
 from agt.api.auth import authenticate
+from agt.comms import MessageStore
 from agt.guardrails import SharedBudgetTracker
 from agt.secrets import UserEntry, UserRegistry
+
+
+@dataclass(slots=True)
+class _FakeSettings:
+    email_api_key: object = None
+    email_from: str = "noreply@test.example"
+
 
 HTTP_OK = 200
 HTTP_CREATED = 201
@@ -53,7 +63,13 @@ def _make_app() -> tuple[FastAPI, _FakeRegistry]:
 
     app = FastAPI()
     _auth = authenticate(get_reg)
-    admin_router = create_admin_router(get_reg, tracker, default_budget=2.00)
+    admin_router = create_admin_router(
+        get_reg,
+        tracker,
+        MessageStore(),
+        default_budget=2.00,
+        settings=_FakeSettings(),  # type: ignore[arg-type]
+    )
     app.include_router(admin_router, dependencies=[Depends(_auth)])
     return app, registry
 

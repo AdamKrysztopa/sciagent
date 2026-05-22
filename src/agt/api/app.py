@@ -7,6 +7,7 @@ import time
 import traceback
 import uuid
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Literal, cast
 
 import structlog
@@ -14,6 +15,7 @@ from fastapi import Depends, FastAPI, HTTPException, Query, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, model_validator
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -373,13 +375,42 @@ def create_app() -> FastAPI:  # noqa: PLR0915
     _auth = authenticate(_get_registry)
 
     from agt.api.admin import create_admin_router  # noqa: PLC0415
+    from agt.comms import MessageStore  # noqa: PLC0415
+
+    _message_store = MessageStore()
 
     _admin_router = create_admin_router(
         _get_registry,
         _budget_tracker,
+        _message_store,
         default_budget=_settings.shared_llm_budget_per_user_usd,
+        settings=_settings,
     )
     app.include_router(_admin_router, dependencies=[Depends(_auth)])
+
+    @app.get("/user/messages")
+    async def _user_messages(  # pyright: ignore[reportUnusedFunction]
+        slug: str = Depends(_auth),
+    ) -> list[dict[str, object]]:
+        return [
+            {
+                "id": m.id,
+                "type": m.type,
+                "text": m.text,
+                "created_at": m.created_at,
+            }
+            for m in _message_store.get_pending(slug)
+        ]
+
+    @app.post("/user/messages/{message_id}/dismiss")
+    async def _dismiss_message(  # pyright: ignore[reportUnusedFunction]
+        message_id: str,
+        slug: str = Depends(_auth),
+    ) -> dict[str, str]:
+        dismissed = _message_store.dismiss(slug, message_id)
+        if not dismissed:
+            raise HTTPException(status_code=404, detail="message_not_found")
+        return {"status": "dismissed"}
 
     @app.get("/", include_in_schema=False)
     async def _root() -> RedirectResponse:  # pyright: ignore[reportUnusedFunction]
@@ -1045,6 +1076,10 @@ def create_app() -> FastAPI:  # noqa: PLR0915
         venue_results = await resolve_venue(q, settings=settings, limit=limit)
         _venue_suggest_cache[cache_key] = (now, venue_results)
         return venue_results
+
+    _portal_dir = Path(__file__).resolve().parents[3] / "admin-panel" / "dist"
+    if _portal_dir.is_dir():
+        app.mount("/portal", StaticFiles(directory=str(_portal_dir), html=True), name="portal")
 
     return app
 

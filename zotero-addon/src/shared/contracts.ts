@@ -454,6 +454,13 @@ export interface KeyValidateResponse {
   error: string | null;
 }
 
+export interface UserMessage {
+  id: string;
+  type: "info" | "warning" | "critical";
+  text: string;
+  created_at: number;
+}
+
 export const VALIDATABLE_PROVIDERS: readonly string[] = [
   "semantic_scholar",
   "ncbi",

@@ -7,6 +7,7 @@ import { Component, type ErrorInfo, type ReactNode, useEffect, useRef, useState 
 import type { AddonUiServices } from "./serviceTypes";
 import { BackendFailurePanel } from "./components/BackendFailurePanel";
 import { CapabilityBanner } from "./components/CapabilityBanner";
+import { MessageBanner } from "./components/MessageBanner";
 import { ConfigPanel } from "./components/ConfigPanel";
 import { FilterEditor } from "./components/FilterEditor";
 import { FirstRunConfigCard } from "./components/FirstRunConfigCard";
@@ -209,6 +210,10 @@ function IdleView({ controller, addonVersion }: { controller: SciAgentController
 
   return (
     <div className="agt-state-view">
+      <MessageBanner
+        messages={controller.pendingMessages}
+        onDismiss={controller.onDismissMessage}
+      />
       {controller.healthError !== null && controller.healthResponse === null ? (
         <BackendFailurePanel
           error={controller.healthError}

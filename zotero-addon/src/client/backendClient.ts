@@ -15,6 +15,7 @@ import type {
   RunAcceptedResponse,
   RunRequest,
   StatusResponse,
+  UserMessage,
   Watch,
   WatchRerunResponse,
 } from "../shared/contracts";
@@ -231,6 +232,16 @@ export class SciAgentBackendClient {
     const params = new URLSearchParams({ q, limit: String(limit) });
     return this.request<ResolvedVenue[]>(`/venues/suggest?${params.toString()}`, {
       method: "GET",
+    });
+  }
+
+  async fetchMessages(): Promise<UserMessage[]> {
+    return this.request<UserMessage[]>("/user/messages", { method: "GET" });
+  }
+
+  async dismissMessage(messageId: string): Promise<void> {
+    return this.requestVoid(`/user/messages/${messageId}/dismiss`, {
+      method: "POST",
     });
   }
 

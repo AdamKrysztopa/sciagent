@@ -105,6 +105,16 @@ class Settings(BaseSettings):
         ),
         description="Default per-user shared LLM budget in USD.",
     )
+    email_api_key: SecretStr | None = Field(
+        default=None,
+        validation_alias=AliasChoices("AGT_EMAIL_API_KEY", "EMAIL_API_KEY"),
+        description="Transactional email provider API key (Resend or SendGrid).",
+    )
+    email_from: str = Field(
+        default="noreply@sciagent.example.com",
+        validation_alias=AliasChoices("AGT_EMAIL_FROM", "EMAIL_FROM"),
+        description="From address for transactional emails.",
+    )
     zotero_library_id: str | None = Field(
         default=None,
         validation_alias=AliasChoices("AGT_ZOTERO_LIBRARY_ID", "ZOTERO_LIBRARY_ID"),

@@ -24,6 +24,7 @@ import {
   type SearchPlan,
   type SourceCapability,
   type StatusResponse,
+  type UserMessage,
   type Watch,
   type WatchRerunResponse,
   uniqueSortedIndices,
@@ -102,6 +103,7 @@ export function useSciAgentController(services: AddonUiServices) {
   const [watchSaveError, setWatchSaveError] = useState<string | null>(null);
   const [rerunningWatchId, setRerunningWatchId] = useState<string | null>(null);
   const [lastWatchRerun, setLastWatchRerun] = useState<WatchRerunResponse | null>(null);
+  const [pendingMessages, setPendingMessages] = useState<UserMessage[]>([]);
 
   // Tracks whether the current config state was changed by the user (vs loaded from prefs).
   const configChangedByUserRef = useRef(false);
@@ -419,6 +421,24 @@ export function useSciAgentController(services: AddonUiServices) {
     }
   });
 
+  const loadMessages = useEffectEvent(async () => {
+    try {
+      const msgs = await services.createClient(config).fetchMessages();
+      setPendingMessages(msgs);
+    } catch {
+      // silently ignore — message fetch is non-critical
+    }
+  });
+
+  const dismissUserMessage = useEffectEvent(async (messageId: string) => {
+    setPendingMessages((prev) => prev.filter((m) => m.id !== messageId));
+    try {
+      await services.createClient(config).dismissMessage(messageId);
+    } catch {
+      // optimistic dismiss already applied; ignore network errors
+    }
+  });
+
   const saveWatch = useEffectEvent(async () => {
     const trimmed = query.trim();
     const name = watchName.trim();
@@ -540,6 +560,10 @@ export function useSciAgentController(services: AddonUiServices) {
     void loadWatches();
   }, []);
 
+  useEffect(() => {
+    void loadMessages();
+  }, []);
+
   return {
     canApprove: selectedIndices.length > 0 && runView.phase === "awaiting_approval",
     capabilities,
@@ -561,6 +585,8 @@ export function useSciAgentController(services: AddonUiServices) {
     gapResult,
     gapRunning,
     onDismissBanner: () => void dismissBanner(),
+    onDismissMessage: (id: string) => void dismissUserMessage(id),
+    pendingMessages,
     onExtractKeywords: () => void runExtractKeywords(),
     onLibraryDoctor: () => void runLibraryDoctor(),
     onGapFinder: () => void runGapFinder(),
