@@ -41,11 +41,16 @@ if [[ $NO_BUILD -eq 0 ]]; then
 fi
 
 echo "==> Deploying to Cloud Run..."
+SA="${SERVICE}-backend@${PROJECT_ID}.iam.gserviceaccount.com"
+
 gcloud run deploy "${SERVICE}" \
   --project="${PROJECT_ID}" \
   --image="${IMAGE}" \
   --region="${REGION}" \
-  --platform=managed
+  --platform=managed \
+  --service-account="${SA}" \
+  --set-env-vars="AGT_GCP_PROJECT=${PROJECT_ID},AGT_GCP_SECRET_NAME=agt-user-registry,AGT_SECRET_CACHE_TTL_SECONDS=60" \
+  --allow-unauthenticated
 
 echo ""
 echo "==> Done. Service URL:"

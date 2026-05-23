@@ -114,6 +114,103 @@ docker run -d \
 
 ---
 
+### Multi-User GCP Deployment (Secret Manager + Admin Panel)
+
+The Phase 1–3 security hardening enables a multi-user hosted deployment using GCP Secret Manager
+for the user registry and the React admin panel for key management.
+
+**Prerequisites:**
+
+- GCP project with billing enabled (`sciagent-496617` or your own project)
+- `gcloud` CLI installed and authenticated:
+  `gcloud auth login && gcloud auth application-default login`
+- GCP APIs enabled: Secret Manager, Cloud Run, Artifact Registry, Cloud Build
+
+**One-time setup:**
+
+Run the following once per GCP project:
+
+```bash
+# Enable required GCP APIs
+gcloud services enable \
+  secretmanager.googleapis.com \
+  run.googleapis.com \
+  artifactregistry.googleapis.com \
+  cloudbuild.googleapis.com \
+  --project=sciagent-496617
+
+# Create service account
+gcloud iam service-accounts create sciagent-backend \
+  --display-name="SciAgent Backend" \
+  --project=sciagent-496617
+
+SA="sciagent-backend@sciagent-496617.iam.gserviceaccount.com"
+
+# Grant Secret Manager permissions
+gcloud projects add-iam-policy-binding sciagent-496617 \
+  --member="serviceAccount:${SA}" --role="roles/secretmanager.secretAccessor"
+gcloud projects add-iam-policy-binding sciagent-496617 \
+  --member="serviceAccount:${SA}" --role="roles/secretmanager.secretVersionAdder"
+
+# Bootstrap first admin user — SAVE the printed key, it cannot be recovered
+uv run python scripts/bootstrap_registry.py \
+  --project sciagent-496617 \
+  --slug admin \
+  --email your@email.com
+
+# Store LLM key as a secret (never embed in deploy.sh)
+printf '%s' "${AGT_OPENAI_API_KEY}" | \
+  gcloud secrets create agt-openai-key --data-file=- --project=sciagent-496617
+gcloud run services update sciagent \
+  --set-secrets="AGT_OPENAI_API_KEY=agt-openai-key:latest" \
+  --project=sciagent-496617 --region=europe-west1
+```
+
+**Deploy:**
+
+```bash
+./scripts/deploy.sh
+```
+
+**Verify:**
+
+```bash
+SERVICE_URL=$(gcloud run services describe sciagent \
+  --project=sciagent-496617 --region=europe-west1 \
+  --format="value(status.url)")
+
+curl "${SERVICE_URL}/health"
+# → {"ok": true, ...}
+
+curl -H "X-AGT-API-Key: <admin-key>" "${SERVICE_URL}/admin/keys"
+# → [{"slug": "admin", ...}]
+```
+
+**Admin panel:** Open `${SERVICE_URL}/portal/` in a browser and log in with the admin API key.
+
+**Add users:**
+
+```bash
+curl -X POST "${SERVICE_URL}/admin/keys" \
+  -H "X-AGT-API-Key: <admin-key>" \
+  -H "Content-Type: application/json" \
+  -d '{"slug": "alice", "email": "alice@example.com", "budget_usd": 5.0}'
+```
+
+**Environment variables managed via Cloud Run:**
+
+| Variable | Required | Source |
+|---|---|---|
+| `AGT_GCP_PROJECT` | Yes | Set in `deploy.sh` via `--set-env-vars` |
+| `AGT_GCP_SECRET_NAME` | No | Set in `deploy.sh` (default: `agt-user-registry`) |
+| `AGT_OPENAI_API_KEY` | Yes\* | GCP Secret via `--set-secrets` |
+| `AGT_RESEND_API_KEY` | No | GCP Secret via `--set-secrets` |
+| `AGT_EMAIL_FROM` | No | GCP Secret via `--set-secrets` |
+
+\*At least one LLM provider key (`AGT_OPENAI_API_KEY`, `AGT_ANTHROPIC_API_KEY`, etc.) is required.
+
+---
+
 ## Future SaaS Architecture
 
 The planned **multi-user SaaS deployment** (post-M6) would enable:
@@ -213,7 +310,7 @@ Before launching a hosted multi-user SaaS, the following stories must be complet
 
 ### 1. AGT-21: Security Checklist and Auth Hardening
 
-**Status:** Not Done
+**Status:** Done (implemented in Phases 1–3 of Admin Service & Security Hardening plan)
 
 **Scope:**
 

@@ -11,6 +11,8 @@ dist/
 build/dist/
 build/work/
 zotero-addon/build/
+admin-panel/dist/
+admin-panel/node_modules/
 site/
 *.egg-info/
 nohup.out

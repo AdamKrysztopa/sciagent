@@ -15,6 +15,7 @@ from agt.config import get_settings
 from agt.models import DoctorReport, GapSuggestion, NormalizedAuthor, NormalizedPaper, ResolvedVenue
 
 HTTP_OK = 200
+HTTP_PAYMENT_REQUIRED = 402
 HTTP_UNAUTHORIZED = 401
 HTTP_FORBIDDEN = 403
 HTTP_UNPROCESSABLE_ENTITY = 422
@@ -1084,3 +1085,29 @@ def test_500_does_not_leak_exception_details(monkeypatch: pytest.MonkeyPatch) ->
         body = resp.json()
         assert body["detail"] == "internal_error"
         assert "secret" not in str(body)
+
+
+def test_budget_exhaustion_returns_402(monkeypatch: pytest.MonkeyPatch) -> None:
+    app = create_app()
+
+    def fake_get_settings() -> _Settings:
+        return _Settings()
+
+    app.dependency_overrides[get_settings] = fake_get_settings
+
+    @app.get("/test-budget-boom")
+    async def _budget_boom() -> None:  # pyright: ignore[reportUnusedFunction]
+        from agt.guardrails import SharedBudgetExhaustedError  # noqa: PLC0415
+
+        raise SharedBudgetExhaustedError("Budget exhausted for test_user")
+
+    with TestClient(app, raise_server_exceptions=False) as client:
+        resp = client.get(
+            "/test-budget-boom",
+            headers={"X-AGT-API-Key": "backend-key", **_ZOTERO_HEADERS},
+        )
+    assert resp.status_code == HTTP_PAYMENT_REQUIRED
+    body = resp.json()
+    assert body["detail"] == "shared_llm_budget_exhausted"
+    assert "hint" in body
+    assert "internal" not in str(body)

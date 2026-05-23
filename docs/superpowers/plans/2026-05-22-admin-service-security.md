@@ -2383,6 +2383,1034 @@ Phase 3 decisions are deferred (message persistence: Firestore vs. Secret Manage
 
 ---
 
+## Phase 4 — GCP Deployment
+
+### Task 19: Bootstrap initial admin registry in GCP Secret Manager
+
+**Files:**
+
+- Create: `scripts/bootstrap_registry.py`
+
+- [x] **Step 1: Create `scripts/bootstrap_registry.py`**
+
+```python
+#!/usr/bin/env python3
+"""Bootstrap the SciAgent user registry in GCP Secret Manager.
+
+Usage:
+    uv run python scripts/bootstrap_registry.py \\
+        --project sciagent-496617 \\
+        --slug admin \\
+        --email admin@example.com \\
+        [--dry-run]
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import secrets
+import sys
+from datetime import datetime, timezone
+
+
+_SLUG_RE = re.compile(r"^[a-z0-9_-]{1,32}$")
+
+
+def generate_key(slug: str) -> str:
+    if not _SLUG_RE.match(slug):
+        raise ValueError(f"slug must match [a-z0-9_-]{{1,32}}, got: {slug!r}")
+    return f"agt_{slug}_{secrets.token_hex(16)}"
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Bootstrap SciAgent user registry")
+    parser.add_argument("--project", required=True, help="GCP project ID")
+    parser.add_argument("--secret", default="agt-user-registry", help="Secret name")
+    parser.add_argument("--slug", required=True, help="Admin slug, e.g. 'admin'")
+    parser.add_argument("--email", required=True, help="Admin email address")
+    parser.add_argument("--budget", type=float, default=100.0,
+                        help="Admin LLM budget in USD (default: 100.0)")
+    parser.add_argument("--force", action="store_true",
+                        help="Overwrite if secret already has versions")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Print what would be done without writing")
+    args = parser.parse_args()
+
+    if not _SLUG_RE.match(args.slug):
+        print(f"ERROR: --slug must match [a-z0-9_-]{{1,32}}, got: {args.slug!r}",
+              file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        from google.cloud import secretmanager  # type: ignore[import-untyped]
+    except ImportError:
+        print("ERROR: google-cloud-secret-manager not installed. Run: uv sync",
+              file=sys.stderr)
+        sys.exit(1)
+
+    key = generate_key(args.slug)
+    registry = {
+        args.slug: {
+            "key": key,
+            "email": args.email,
+            "budget_usd": args.budget,
+            "is_admin": True,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+    }
+    payload = json.dumps(registry, indent=2).encode("UTF-8")
+
+    if args.dry_run:
+        print("DRY RUN — would write:")
+        print(json.dumps(registry, indent=2))
+        print(f"\nGenerated key (NOT written): {key}")
+        return
+
+    client = secretmanager.SecretManagerServiceClient()
+    parent = f"projects/{args.project}/secrets/{args.secret}"
+
+    # Check for existing versions
+    try:
+        versions = list(client.list_secret_versions(request={"parent": parent}))
+        if versions and not args.force:
+            print(
+                f"ERROR: Secret {args.secret!r} already has {len(versions)} version(s).\n"
+                "Use --force to add a new version (existing users will be replaced).",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+    except Exception:
+        # Secret does not exist yet — create it
+        client.create_secret(
+            request={
+                "parent": f"projects/{args.project}",
+                "secret_id": args.secret,
+                "secret": {"replication": {"automatic": {}}},
+            }
+        )
+        print(f"Created secret: {args.secret}")
+
+    client.add_secret_version(
+        request={"parent": parent, "payload": {"data": payload}}
+    )
+
+    print("\n" + "=" * 60)
+    print(f"Registry bootstrapped: project={args.project} secret={args.secret}")
+    print(f"Admin user: {args.slug} ({args.email})")
+    print(f"\nAdmin API key (SAVE THIS — shown once):")
+    print(f"  {key}")
+    print("=" * 60 + "\n")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+- [x] **Step 2: Enable Secret Manager API (one-time, per GCP project)**
+
+```bash
+gcloud services enable secretmanager.googleapis.com --project=sciagent-496617
+```
+
+Expected: `Operation "operations/..." finished successfully.`
+
+- [x] **Step 3: Dry-run to verify**
+
+```bash
+uv run python scripts/bootstrap_registry.py \
+  --project sciagent-496617 \
+  --slug admin \
+  --email admin@example.com \
+  --dry-run
+```
+
+Expected: prints the registry JSON and a generated key; writes nothing.
+
+- [x] **Step 4: Bootstrap for real**
+
+```bash
+uv run python scripts/bootstrap_registry.py \
+  --project sciagent-496617 \
+  --slug admin \
+  --email admin@example.com
+```
+
+Expected: prints `Admin API key: agt_admin_<32 hex chars>`. **Copy and save this key — it cannot be recovered.**
+
+- [x] **Step 5: Verify secret was created**
+
+```bash
+gcloud secrets versions access latest \
+  --secret=agt-user-registry \
+  --project=sciagent-496617
+```
+
+Expected: valid JSON with the `admin` user entry and masked key.
+
+- [x] **Step 6: Commit**
+
+```bash
+git add scripts/bootstrap_registry.py
+git commit -m "feat: add GCP Secret Manager bootstrap script for initial admin user"
+```
+
+---
+
+### Task 20: Fix admin panel base URL for production serving
+
+**Files:**
+
+- Modify: `admin-panel/vite.config.ts`
+
+Without a `base` config, Vite emits asset paths as `/assets/xxx.js`. FastAPI serves the SPA from `/portal/`, so browsers would request `/assets/xxx.js` which does not exist — only `/portal/assets/xxx.js` does. Setting `base: "/portal/"` fixes all asset URLs in the built HTML.
+
+- [x] **Step 1: Verify current build has wrong asset paths**
+
+```bash
+cd admin-panel && npm run build && grep 'src="/assets' dist/index.html | head -3
+```
+
+Expected: shows `/assets/...` paths (missing `/portal/` prefix) — this confirms the bug.
+
+- [x] **Step 2: Update `admin-panel/vite.config.ts`**
+
+Replace the `export default defineConfig({` block with:
+
+```typescript
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+
+export default defineConfig({
+  base: "/portal/",
+  plugins: [react(), tailwindcss()],
+  build: {
+    outDir: "dist",
+  },
+  server: {
+    proxy: {
+      "/admin": "http://localhost:8000",
+      "/health": "http://localhost:8000",
+    },
+  },
+});
+```
+
+- [x] **Step 3: Rebuild and verify asset paths are now correct**
+
+```bash
+cd admin-panel && npm run build && grep 'src="/portal/assets' dist/index.html | head -3
+```
+
+Expected: shows `/portal/assets/...` paths. If the line is empty, check `dist/index.html` manually for `src` and `href` attributes — they should all start with `/portal/`.
+
+- [x] **Step 4: Run addon quality gates**
+
+```bash
+cd admin-panel && npm run lint && npm run build && npm run typecheck
+```
+
+Expected: All PASS.
+
+- [x] **Step 5: Commit**
+
+```bash
+git add admin-panel/vite.config.ts admin-panel/dist/
+git commit -m "fix: set Vite base=/portal/ so asset URLs resolve when served by FastAPI"
+```
+
+---
+
+### Task 21: Bundle admin panel in Docker image
+
+**Files:**
+
+- Modify: `Dockerfile`
+- Modify: `.gitignore`
+
+The current single-stage `Dockerfile` does not build or include the admin panel. This task converts it to a multi-stage build.
+
+- [x] **Step 1: Update `Dockerfile`**
+
+Replace the entire file content with:
+
+```dockerfile
+# Stage 1 — Build admin panel
+FROM node:20-slim AS admin-panel-builder
+WORKDIR /panel
+COPY admin-panel/package*.json ./
+RUN npm ci
+COPY admin-panel/ .
+RUN npm run build
+
+# Stage 2 — Python backend
+FROM python:3.14-slim
+RUN pip install --no-cache-dir uv
+WORKDIR /app
+COPY . .
+COPY --from=admin-panel-builder /panel/dist /app/admin-panel/dist
+RUN uv sync --frozen --no-dev
+
+EXPOSE 8080
+CMD ["sh", "-c", "/app/.venv/bin/uvicorn agt.api.app:app --host 0.0.0.0 --port ${PORT:-8080}"]
+```
+
+- [x] **Step 2: Ensure `admin-panel/dist/` is in `.gitignore`**
+
+In `.gitignore`, add if not already present:
+
+```
+admin-panel/dist/
+admin-panel/node_modules/
+```
+
+- [x] **Step 3: Build Docker image locally**
+
+```bash
+docker build -t sciagent-test:local .
+```
+
+Expected: both stages succeed; final image includes `/app/admin-panel/dist/`.
+
+- [x] **Step 4: Verify portal is served from Docker image**
+
+```bash
+docker run -d --name sciagent-test -p 8080:8080 \
+  -e AGT_BACKEND_API_KEY=test-key-local \
+  sciagent-test:local
+
+sleep 2
+curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/portal/
+
+docker rm -f sciagent-test
+```
+
+Expected: `200`.
+
+- [x] **Step 5: Commit**
+
+```bash
+git add Dockerfile .gitignore
+git commit -m "feat: bundle admin panel in Docker image via multi-stage build"
+```
+
+---
+
+### Task 22: Configure Cloud Run with service account and environment variables
+
+**Files:**
+
+- Modify: `scripts/deploy.sh`
+
+- [x] **Step 1: Create the Cloud Run service account (one-time)**
+
+```bash
+gcloud iam service-accounts create sciagent-backend \
+  --display-name="SciAgent Backend" \
+  --project=sciagent-496617
+```
+
+Expected: `Created service account [sciagent-backend]` (skip if already exists).
+
+- [x] **Step 2: Grant Secret Manager IAM roles (one-time)**
+
+```bash
+SA="sciagent-backend@sciagent-496617.iam.gserviceaccount.com"
+
+gcloud projects add-iam-policy-binding sciagent-496617 \
+  --member="serviceAccount:${SA}" \
+  --role="roles/secretmanager.secretAccessor"
+
+gcloud projects add-iam-policy-binding sciagent-496617 \
+  --member="serviceAccount:${SA}" \
+  --role="roles/secretmanager.secretVersionAdder"
+```
+
+Expected: each command prints `Updated IAM policy for project [sciagent-496617]`.
+
+- [x] **Step 3: Update `scripts/deploy.sh` — add service account and env vars**
+
+Replace the `gcloud run deploy` block:
+
+Before:
+
+```bash
+gcloud run deploy "${SERVICE}" \
+  --project="${PROJECT_ID}" \
+  --image="${IMAGE}" \
+  --region="${REGION}" \
+  --platform=managed
+```
+
+After:
+
+```bash
+SA="${SERVICE}-backend@${PROJECT_ID}.iam.gserviceaccount.com"
+
+gcloud run deploy "${SERVICE}" \
+  --project="${PROJECT_ID}" \
+  --image="${IMAGE}" \
+  --region="${REGION}" \
+  --platform=managed \
+  --service-account="${SA}" \
+  --set-env-vars="AGT_GCP_PROJECT=${PROJECT_ID},AGT_GCP_SECRET_NAME=agt-user-registry,AGT_SECRET_CACHE_TTL_SECONDS=60" \
+  --allow-unauthenticated
+```
+
+- [x] **Step 4: Store LLM API key as a GCP secret (one-time, do not put in deploy.sh)**
+
+```bash
+printf '%s' "${AGT_OPENAI_API_KEY}" | \
+  gcloud secrets create agt-openai-key \
+    --data-file=- \
+    --project=sciagent-496617
+
+gcloud run services update sciagent \
+  --set-secrets="AGT_OPENAI_API_KEY=agt-openai-key:latest" \
+  --project=sciagent-496617 \
+  --region=europe-west1
+```
+
+Repeat for `AGT_RESEND_API_KEY` and `AGT_EMAIL_FROM` if email is in use.
+
+- [x] **Step 5: Run deploy and verify**
+
+```bash
+./scripts/deploy.sh
+```
+
+Expected: Cloud Run service updated. Then verify:
+
+```bash
+SERVICE_URL=$(gcloud run services describe sciagent \
+  --project=sciagent-496617 \
+  --region=europe-west1 \
+  --format="value(status.url)")
+
+curl "${SERVICE_URL}/health"
+```
+
+Expected: `{"ok": true, ...}`
+
+- [x] **Step 6: Commit**
+
+```bash
+git add scripts/deploy.sh
+git commit -m "feat: configure Cloud Run with service account and Secret Manager env vars"
+```
+
+---
+
+### Task 23: Update deployment documentation
+
+**Files:**
+
+- Modify: `docs/deployment.md`
+
+- [x] **Step 1: Add multi-user GCP deployment section**
+
+In `docs/deployment.md`, after the "Docker and Docker Compose" section and before "Future SaaS Architecture", insert the following section:
+
+### Multi-User GCP Deployment (Secret Manager + Admin Panel)
+
+The Phase 1–3 security hardening enables a multi-user hosted deployment using GCP Secret Manager
+for the user registry and the React admin panel for key management.
+
+**Prerequisites:**
+
+- GCP project with billing enabled (`sciagent-496617` or your own project)
+- `gcloud` CLI installed and authenticated:
+  `gcloud auth login && gcloud auth application-default login`
+- GCP APIs enabled: Secret Manager, Cloud Run, Artifact Registry, Cloud Build
+
+**One-time setup:**
+
+Run the following once per GCP project:
+
+```bash
+# Enable required GCP APIs
+gcloud services enable \
+  secretmanager.googleapis.com \
+  run.googleapis.com \
+  artifactregistry.googleapis.com \
+  cloudbuild.googleapis.com \
+  --project=sciagent-496617
+
+# Create service account
+gcloud iam service-accounts create sciagent-backend \
+  --display-name="SciAgent Backend" \
+  --project=sciagent-496617
+
+SA="sciagent-backend@sciagent-496617.iam.gserviceaccount.com"
+
+# Grant Secret Manager permissions
+gcloud projects add-iam-policy-binding sciagent-496617 \
+  --member="serviceAccount:${SA}" --role="roles/secretmanager.secretAccessor"
+gcloud projects add-iam-policy-binding sciagent-496617 \
+  --member="serviceAccount:${SA}" --role="roles/secretmanager.secretVersionAdder"
+
+# Bootstrap first admin user — SAVE the printed key, it cannot be recovered
+uv run python scripts/bootstrap_registry.py \
+  --project sciagent-496617 \
+  --slug admin \
+  --email your@email.com
+
+# Store LLM key as a secret (never embed in deploy.sh)
+printf '%s' "${AGT_OPENAI_API_KEY}" | \
+  gcloud secrets create agt-openai-key --data-file=- --project=sciagent-496617
+gcloud run services update sciagent \
+  --set-secrets="AGT_OPENAI_API_KEY=agt-openai-key:latest" \
+  --project=sciagent-496617 --region=europe-west1
+```
+
+**Deploy:**
+
+```bash
+./scripts/deploy.sh
+```
+
+**Verify:**
+
+```bash
+SERVICE_URL=$(gcloud run services describe sciagent \
+  --project=sciagent-496617 --region=europe-west1 \
+  --format="value(status.url)")
+
+curl "${SERVICE_URL}/health"
+# → {"ok": true, ...}
+
+curl -H "X-AGT-API-Key: <admin-key>" "${SERVICE_URL}/admin/keys"
+# → [{"slug": "admin", ...}]
+```
+
+**Admin panel:** Open `${SERVICE_URL}/portal/` in a browser and log in with the admin API key.
+
+**Add users:**
+
+```bash
+curl -X POST "${SERVICE_URL}/admin/keys" \
+  -H "X-AGT-API-Key: <admin-key>" \
+  -H "Content-Type: application/json" \
+  -d '{"slug": "alice", "email": "alice@example.com", "budget_usd": 5.0}'
+```
+
+**Environment variables managed via Cloud Run:**
+
+| Variable | Required | Source |
+|---|---|---|
+| `AGT_GCP_PROJECT` | Yes | Set in `deploy.sh` via `--set-env-vars` |
+| `AGT_GCP_SECRET_NAME` | No | Set in `deploy.sh` (default: `agt-user-registry`) |
+| `AGT_OPENAI_API_KEY` | Yes\* | GCP Secret via `--set-secrets` |
+| `AGT_RESEND_API_KEY` | No | GCP Secret via `--set-secrets` |
+| `AGT_EMAIL_FROM` | No | GCP Secret via `--set-secrets` |
+
+\*At least one LLM provider key (`AGT_OPENAI_API_KEY`, `AGT_ANTHROPIC_API_KEY`, etc.) is required.
+
+- [x] **Step 2: Update the "Prerequisites for SaaS Readiness" section status**
+
+In `docs/deployment.md`, update the AGT-21 story status from `Not Done` to `Done (Phase 1–3)`:
+
+Change the line under "### 1. AGT-21: Security Checklist and Auth Hardening":
+
+```markdown
+**Status:** Done (implemented in Phases 1–3 of Admin Service & Security Hardening plan)
+```
+
+- [x] **Step 3: Run docs quality gate**
+
+```bash
+npx --yes markdownlint-cli2 "docs/**/*.md"
+uv run mkdocs build --strict
+```
+
+Expected: All PASS.
+
+- [x] **Step 4: Commit**
+
+```bash
+git add docs/deployment.md
+git commit -m "docs: add multi-user GCP deployment guide with bootstrap and Cloud Run steps"
+```
+
+---
+
+## Phase 5 — Integration & Smoke Testing
+
+### Task 24: GCP Secret Manager integration tests
+
+**Files:**
+
+- Create: `tests/test_secrets_integration.py`
+
+These tests hit real GCP Secret Manager. They are **skipped by default** unless `AGT_GCP_PROJECT` is set. Run them after a deployment or in a dedicated CI job with Workload Identity credentials.
+
+- [x] **Step 1: Create `tests/test_secrets_integration.py`**
+
+```python
+"""Integration tests for GCP Secret Manager.
+
+Run with:
+    AGT_GCP_PROJECT=sciagent-496617 \\
+    uv run pytest tests/test_secrets_integration.py -v
+"""
+from __future__ import annotations
+
+import json
+import os
+import secrets as _secrets
+from datetime import datetime, timezone
+
+import pytest
+
+pytestmark = pytest.mark.skipif(
+    os.environ.get("AGT_GCP_PROJECT") is None,
+    reason="AGT_GCP_PROJECT not set — skipping Secret Manager integration tests",
+)
+
+
+@pytest.fixture(scope="module")
+def gcp_project() -> str:
+    return os.environ["AGT_GCP_PROJECT"]
+
+
+@pytest.fixture(scope="module")
+def test_secret_name() -> str:
+    return f"agt-inttest-{_secrets.token_hex(4)}"
+
+
+@pytest.fixture(scope="module", autouse=True)
+def cleanup_test_secret(gcp_project: str, test_secret_name: str) -> None:
+    yield
+    try:
+        from google.cloud import secretmanager  # type: ignore[import-untyped]
+        client = secretmanager.SecretManagerServiceClient()
+        client.delete_secret(
+            request={"name": f"projects/{gcp_project}/secrets/{test_secret_name}"}
+        )
+    except Exception:
+        pass
+
+
+def _seed_secret(gcp_project: str, secret_name: str, data: dict) -> None:
+    from google.cloud import secretmanager  # type: ignore[import-untyped]
+    client = secretmanager.SecretManagerServiceClient()
+    parent = f"projects/{gcp_project}"
+    try:
+        client.create_secret(
+            request={
+                "parent": parent,
+                "secret_id": secret_name,
+                "secret": {"replication": {"automatic": {}}},
+            }
+        )
+    except Exception:
+        pass
+    client.add_secret_version(
+        request={
+            "parent": f"{parent}/secrets/{secret_name}",
+            "payload": {"data": json.dumps(data).encode("UTF-8")},
+        }
+    )
+
+
+def _fake_settings(gcp_project: str, secret_name: str) -> object:
+    class _FakeSettings:
+        pass
+
+    s = _FakeSettings()
+    s.gcp_project = gcp_project  # type: ignore[attr-defined]
+    s.gcp_secret_name = secret_name  # type: ignore[attr-defined]
+    s.secret_cache_ttl_seconds = 5  # type: ignore[attr-defined]
+    s.shared_llm_budget_per_user_usd = 2.0  # type: ignore[attr-defined]
+    s.backend_api_key = None  # type: ignore[attr-defined]
+    return s
+
+
+_ALICE_KEY = "agt_alice_aaaabbbbccccddddeeeeffffaaaabbbb"
+
+
+class TestSecretManagerRead:
+    def test_reads_user_entry(self, gcp_project: str, test_secret_name: str) -> None:
+        from agt.secrets import UserRegistry
+
+        _seed_secret(
+            gcp_project,
+            test_secret_name,
+            {
+                "alice": {
+                    "key": _ALICE_KEY,
+                    "email": "alice@test.com",
+                    "budget_usd": 2.0,
+                    "is_admin": True,
+                    "created_at": "2026-01-01T00:00:00Z",
+                }
+            },
+        )
+        settings = _fake_settings(gcp_project, test_secret_name)
+        reg = UserRegistry(settings)  # type: ignore[arg-type]
+        users = reg.get_all()
+
+        assert "alice" in users
+        assert users["alice"].email == "alice@test.com"
+        assert users["alice"].is_admin is True
+        assert users["alice"].key == _ALICE_KEY
+
+    def test_cache_returns_stale_within_ttl(self, gcp_project: str, test_secret_name: str) -> None:
+        from agt.secrets import UserRegistry
+
+        settings = _fake_settings(gcp_project, test_secret_name)
+        reg = UserRegistry(settings)  # type: ignore[arg-type]
+        result1 = reg.get_all()
+        result2 = reg.get_all()
+        assert result1 == result2
+
+
+class TestSecretManagerWrite:
+    def test_adds_user_and_persists(self, gcp_project: str, test_secret_name: str) -> None:
+        from agt.secrets import UserEntry, UserRegistry
+
+        settings = _fake_settings(gcp_project, test_secret_name)
+        reg = UserRegistry(settings)  # type: ignore[arg-type]
+        users = reg.get_all()
+
+        bob = UserEntry(
+            key="agt_bob_11112222333344445555666677778888",
+            email="bob@test.com",
+            budget_usd=5.0,
+            is_admin=False,
+            created_at=datetime.now(timezone.utc).isoformat(),
+        )
+        users["bob"] = bob
+        reg.update(users)
+        reg.invalidate_cache()
+
+        users2 = reg.get_all()
+        assert "bob" in users2
+        assert users2["bob"].budget_usd == 5.0
+
+    def test_removes_user_and_persists(self, gcp_project: str, test_secret_name: str) -> None:
+        from agt.secrets import UserRegistry
+
+        settings = _fake_settings(gcp_project, test_secret_name)
+        reg = UserRegistry(settings)  # type: ignore[arg-type]
+        users = reg.get_all()
+        assert "bob" in users
+
+        del users["bob"]
+        reg.update(users)
+        reg.invalidate_cache()
+
+        users2 = reg.get_all()
+        assert "bob" not in users2
+```
+
+- [x] **Step 2: Verify tests are skipped by default**
+
+Run: `uv run pytest tests/test_secrets_integration.py -v`
+
+Expected: all tests `SKIPPED` with reason `AGT_GCP_PROJECT not set`.
+
+- [x] **Step 3: Run with real GCP credentials**
+
+Requires `gcloud auth application-default login`:
+
+```bash
+AGT_GCP_PROJECT=sciagent-496617 \
+uv run pytest tests/test_secrets_integration.py -v
+```
+
+Expected: all tests `PASSED`.
+
+- [x] **Step 4: Commit**
+
+```bash
+git add tests/test_secrets_integration.py
+git commit -m "test: add GCP Secret Manager integration tests (skipped without AGT_GCP_PROJECT)"
+```
+
+---
+
+### Task 25: Budget enforcement E2E test
+
+**Files:**
+
+- Modify: `tests/test_api.py`
+
+The existing `tests/test_shared_budget.py` covers the `SharedBudgetTracker` class in isolation. This task adds a test that verifies the 402 HTTP handler is correctly wired into the FastAPI app — the same synthetic-route pattern used by the 500 handler test in Task 4.
+
+- [x] **Step 1: Write the failing test**
+
+Add to `tests/test_api.py`:
+
+```python
+def test_budget_exhaustion_returns_402(monkeypatch: pytest.MonkeyPatch) -> None:
+    app = create_app()
+
+    def fake_get_settings() -> _Settings:
+        return _Settings()
+
+    app.dependency_overrides[get_settings] = fake_get_settings
+
+    @app.get("/test-budget-boom")
+    async def _budget_boom() -> None:
+        from agt.guardrails import SharedBudgetExhaustedError
+        raise SharedBudgetExhaustedError("Budget exhausted for test_user")
+
+    with TestClient(app, raise_server_exceptions=False) as client:
+        resp = client.get(
+            "/test-budget-boom",
+            headers={"X-AGT-API-Key": "backend-key", **_ZOTERO_HEADERS},
+        )
+    assert resp.status_code == 402
+    body = resp.json()
+    assert body["detail"] == "shared_llm_budget_exhausted"
+    assert "hint" in body
+    assert "internal" not in str(body)
+```
+
+- [x] **Step 2: Run it to verify it fails (handler not yet confirmed)**
+
+Run: `uv run pytest tests/test_api.py::test_budget_exhaustion_returns_402 -v`
+
+Expected: FAIL with `AssertionError: assert 500 == 402` if the handler is missing, or PASS if it is already wired (confirming the implementation from Task 8 is correct).
+
+If the test PASSes, proceed to Step 3. If it FAILs, confirm the `SharedBudgetExhaustedError` exception handler is registered in `src/agt/api/app.py` (see Task 8 Step 5) and fix it before continuing.
+
+- [x] **Step 3: Run full test suite**
+
+Run: `uv run pytest -q --vcr-record=none`
+
+Expected: All PASS.
+
+- [x] **Step 4: Commit**
+
+```bash
+git add tests/test_api.py
+git commit -m "test: add budget exhaustion 402 handler regression test"
+```
+
+---
+
+### Task 26: Live smoke test suite
+
+**Files:**
+
+- Create: `tests/test_smoke.py`
+
+These tests hit the deployed Cloud Run service. They are **skipped by default** and only run when `AGT_SMOKE_URL` is set. Run them after every production deploy to validate the live service.
+
+- [x] **Step 1: Create `tests/test_smoke.py`**
+
+```python
+"""Live smoke tests against the deployed SciAgent Cloud Run service.
+
+Run with:
+    AGT_SMOKE_URL=https://sciagent-xxx-ew.a.run.app \\
+    AGT_SMOKE_ADMIN_KEY=agt_admin_... \\
+    uv run pytest tests/test_smoke.py -v
+"""
+from __future__ import annotations
+
+import os
+import secrets as _secrets
+
+import httpx
+import pytest
+
+pytestmark = pytest.mark.skipif(
+    os.environ.get("AGT_SMOKE_URL") is None,
+    reason="AGT_SMOKE_URL not set — skipping live smoke tests",
+)
+
+_SMOKE_URL = os.environ.get("AGT_SMOKE_URL", "")
+_ADMIN_KEY = os.environ.get("AGT_SMOKE_ADMIN_KEY", "")
+
+HTTP_OK = 200
+HTTP_CREATED = 201
+HTTP_UNAUTHORIZED = 401
+HTTP_FORBIDDEN = 403
+
+
+@pytest.fixture(scope="session")
+def client() -> httpx.Client:
+    with httpx.Client(base_url=_SMOKE_URL, timeout=30) as c:
+        yield c
+
+
+@pytest.fixture()
+def ephemeral_user(client: httpx.Client) -> dict:
+    if not _ADMIN_KEY:
+        pytest.skip("AGT_SMOKE_ADMIN_KEY not set")
+    slug = f"smoke-{_secrets.token_hex(4)}"
+    resp = client.post(
+        "/admin/keys",
+        json={"slug": slug, "email": f"{slug}@smoke.invalid", "budget_usd": 0.01},
+        headers={"X-AGT-API-Key": _ADMIN_KEY},
+    )
+    assert resp.status_code == HTTP_CREATED
+    data = resp.json()
+    yield data
+    client.delete(f"/admin/keys/{slug}", headers={"X-AGT-API-Key": _ADMIN_KEY})
+
+
+class TestHealthSmoke:
+    def test_https_url(self) -> None:
+        assert _SMOKE_URL.startswith("https://"), (
+            f"Smoke URL must use HTTPS, got: {_SMOKE_URL!r}"
+        )
+
+    def test_health_ok(self, client: httpx.Client) -> None:
+        resp = client.get("/health")
+        assert resp.status_code == HTTP_OK
+        assert resp.json()["ok"] is True
+
+
+class TestAuthSmoke:
+    def test_missing_key_returns_401(self, client: httpx.Client) -> None:
+        resp = client.get("/admin/keys")
+        assert resp.status_code == HTTP_UNAUTHORIZED
+        assert resp.json()["detail"] == "invalid_api_key"
+
+    def test_wrong_key_returns_401(self, client: httpx.Client) -> None:
+        resp = client.get("/admin/keys", headers={"X-AGT-API-Key": "wrong-key"})
+        assert resp.status_code == HTTP_UNAUTHORIZED
+
+    def test_admin_key_authenticates(self, client: httpx.Client) -> None:
+        if not _ADMIN_KEY:
+            pytest.skip("AGT_SMOKE_ADMIN_KEY not set")
+        resp = client.get("/admin/keys", headers={"X-AGT-API-Key": _ADMIN_KEY})
+        assert resp.status_code == HTTP_OK
+        users = resp.json()
+        assert isinstance(users, list)
+        assert len(users) > 0
+
+
+class TestAdminSmoke:
+    def test_create_user_key_has_correct_prefix(
+        self, client: httpx.Client, ephemeral_user: dict
+    ) -> None:
+        slug = ephemeral_user["slug"]
+        key = ephemeral_user["key"]
+        assert key.startswith(f"agt_{slug}_")
+        assert len(key.split("_")[2]) == 32
+
+    def test_user_key_cannot_access_admin_endpoints(
+        self, client: httpx.Client, ephemeral_user: dict
+    ) -> None:
+        user_key = ephemeral_user["key"]
+        resp = client.get("/admin/keys", headers={"X-AGT-API-Key": user_key})
+        assert resp.status_code == HTTP_FORBIDDEN
+        assert resp.json()["detail"] == "admin_required"
+
+    def test_usage_endpoint_returns_dict(self, client: httpx.Client) -> None:
+        if not _ADMIN_KEY:
+            pytest.skip("AGT_SMOKE_ADMIN_KEY not set")
+        resp = client.get("/admin/usage", headers={"X-AGT-API-Key": _ADMIN_KEY})
+        assert resp.status_code == HTTP_OK
+        assert isinstance(resp.json(), dict)
+
+    def test_error_responses_do_not_leak_details(self, client: httpx.Client) -> None:
+        resp = client.get("/admin/keys", headers={"X-AGT-API-Key": "leak-test-key"})
+        assert resp.status_code == HTTP_UNAUTHORIZED
+        body = resp.json()
+        assert "leak-test-key" not in str(body)
+
+
+class TestPortalSmoke:
+    def test_portal_serves_html(self, client: httpx.Client) -> None:
+        resp = client.get("/portal/")
+        assert resp.status_code == HTTP_OK
+        assert "text/html" in resp.headers.get("content-type", "")
+
+    def test_portal_assets_use_portal_prefix(self, client: httpx.Client) -> None:
+        resp = client.get("/portal/")
+        assert resp.status_code == HTTP_OK
+        body = resp.text
+        assert "/portal/assets/" in body, (
+            "Admin panel assets should be served under /portal/assets/ — "
+            "check that vite.config.ts has base='/portal/'"
+        )
+```
+
+- [x] **Step 2: Verify tests are skipped by default**
+
+Run: `uv run pytest tests/test_smoke.py -v`
+
+Expected: all tests `SKIPPED` with reason `AGT_SMOKE_URL not set`.
+
+- [x] **Step 3: Run full default test suite (no regressions)**
+
+Run: `uv run pytest -q --vcr-record=none`
+
+Expected: All PASS (smoke tests skipped).
+
+- [x] **Step 4: Run against deployed Cloud Run service (after Task 22 deploy)**
+
+```bash
+SERVICE_URL=$(gcloud run services describe sciagent \
+  --project=sciagent-496617 \
+  --region=europe-west1 \
+  --format="value(status.url)")
+
+AGT_SMOKE_URL="${SERVICE_URL}" \
+AGT_SMOKE_ADMIN_KEY="agt_admin_<your-key>" \
+uv run pytest tests/test_smoke.py -v
+```
+
+Expected: all tests `PASSED`.
+
+- [x] **Step 5: Commit**
+
+```bash
+git add tests/test_smoke.py
+git commit -m "test: add live smoke test suite for deployed Cloud Run service"
+```
+
+---
+
+### Task 27: Phase 4+5 quality gate
+
+**Files:** None (verification only)
+
+- [x] **Step 1: Run full Python quality gates**
+
+```bash
+uv run ruff check .
+uv run ruff format --check .
+uv run pyright
+uv run pytest -q --vcr-record=none
+```
+
+Expected: All PASS. Integration and smoke tests are automatically skipped.
+
+- [x] **Step 2: Run docs quality gate**
+
+```bash
+npx --yes markdownlint-cli2 "README.md" "docs/**/*.md" "examples/**/*.md" ".github/**/*.md" "zotero-addon/README.md"
+uv run mkdocs build --strict
+```
+
+Expected: All PASS.
+
+- [x] **Step 3: Build Docker image**
+
+```bash
+docker build -t sciagent-test:local .
+```
+
+Expected: Both stages complete. Final image size should be under 600 MB.
+
+- [x] **Step 4: Commit**
+
+```bash
+git status
+git add -u
+git commit -m "chore: phase 4+5 quality gate — deploy and test infrastructure complete"
+```
+
+---
+
 ## Task Status Tracking
 
 | Task | Phase | Status | Description |
@@ -2405,3 +3433,12 @@ Phase 3 decisions are deferred (message persistence: Firestore vs. Secret Manage
 | 16 | 3 | `[x]` | Message backend (outline) |
 | 17 | 3 | `[x]` | In-addon banners (outline) |
 | 18 | 3 | `[x]` | Email integration (outline) |
+| 19 | 4 | `[x]` | Bootstrap script for GCP Secret Manager |
+| 20 | 4 | `[x]` | Fix admin panel base URL for /portal/ serving |
+| 21 | 4 | `[x]` | Bundle admin panel in Docker image |
+| 22 | 4 | `[x]` | Configure Cloud Run service account + env vars |
+| 23 | 4 | `[x]` | Update deployment documentation |
+| 24 | 5 | `[x]` | GCP Secret Manager integration tests |
+| 25 | 5 | `[x]` | Budget enforcement E2E test |
+| 26 | 5 | `[x]` | Live smoke test suite |
+| 27 | 5 | `[x]` | Phase 4+5 quality gate |
