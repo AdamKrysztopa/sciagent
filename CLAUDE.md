@@ -1,10 +1,12 @@
-# SciAgent — Claude Code
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Source of Truth
 
-- `docs/core.md` — backlog, stories, execution order, and acceptance criteria (highest authority)
-- `docs/settings.md` — runtime stack, Python version policy, quality tooling, and dev setup
-- `docs/zotero.md` — Zotero add-on roadmap, native integration plan, and milestone targets
+- `docs/reference/core.md` — backlog, stories, execution order, and acceptance criteria (highest authority)
+- `docs/reference/settings.md` — runtime stack, Python version policy, quality tooling, and dev setup
+- `docs/reference/zotero.md` — Zotero add-on roadmap, native integration plan, and milestone targets
 
 ## Project Overview
 
@@ -52,6 +54,69 @@ npx --yes markdownlint-cli2 "README.md" "docs/**/*.md" "examples/**/*.md" ".gith
 uv run mkdocs build --strict
 ```
 
+## Common Commands
+
+```bash
+# Run the local backend (FastAPI via uvicorn), default port 57321
+uv run sciagent-server --port 57321 --data-dir ~/.sciagent --log-level info
+
+# Streamlit dev UI (optional `ui` extra)
+uv run streamlit run src/agt/ui/app.py
+
+# Single test file / single test / keyword filter
+uv run pytest tests/test_workflow.py --vcr-record=none
+uv run pytest tests/test_workflow.py::test_name --vcr-record=none
+uv run pytest -k "preflight" --vcr-record=none
+
+# Sync deps (including dev + extras) from uv.lock
+uv sync --all-extras --dev
+
+# Admin panel (Vite + React + Tailwind, separate app from the Zotero add-on)
+cd admin-panel && npm ci && npm run lint && npm run build
+```
+
+- `--vcr-record=none` is mandatory in CI/quality gates: provider HTTP is replayed from
+  cassettes, never live. New cassettes are recorded deliberately, not during normal runs.
+- The MCP server entry point is `src/agt/mcp_server.py` (exposes SciAgent tools over MCP).
+
+## Architecture
+
+**Request lifecycle (approval-gated, two-phase):** The API is *not* a single blocking call.
+A client `POST /run`s a query; the backend executes the **search phase** and returns results
+for human review. The client then `POST /resume`s with the approved item selection, which
+triggers the **write phase** (Zotero upsert). `GET /status/{run_id}` polls progress. This
+two-phase split *is* the approval gate — there is no path from query to Zotero write that
+skips human selection.
+
+**Workflow layer (`src/agt/graph/workflow.py`):** Orchestration is a set of explicit async
+phase functions (`run_search_phase` → `finalize_approval`/`resume_workflow` → write), not a
+compiled LangGraph `StateGraph` with auto-edges. State flows through the typed `AgentState`
+and related models in `src/agt/models.py` — never untyped dict blobs. Depth is controlled by
+`DEPTH_PROFILES` (`quick`/`balanced`/`deep`) in `tools/search_papers.py`, which gate how many
+providers and enrichment steps run.
+
+**Layers under `src/agt/`:**
+
+- `tools/` — the work units: provider adapters (`openalex.py`, `semantic_scholar.py`,
+  `crossref.py`, `pubmed.py`, `arxiv_api.py`, `europe_pmc.py`, `base_search.py`,
+  `opencitations.py`, …) plus cross-provider `merge.py`, `ranking.py`, `reranker.py`,
+  `summarize.py`, and the `zotero_upsert.py` write path. All adapters satisfy
+  `ProviderProtocol` / extend `provider_base.py`.
+- `providers/` — **LLM** providers (distinct from search `tools/`): `router.py` selects an
+  OpenAI/Anthropic/xAI/Groq client per request; `AGT_LLM_PROVIDER` auto-detects from keys.
+- `zotero/` — `preflight.py` (must pass before any write), `collection_inspector.py`
+  (duplicate detection / classification), `library_doctor.py`.
+- `api/` — `app.py` builds the FastAPI app and routes (`/run`, `/resume`, `/status`,
+  `/capabilities`, `/providers`, admin router, watches); `auth.py` + `credentials.py` handle
+  per-request API-key auth and transient Zotero credential handling (never persisted).
+- `config.py` — single `pydantic-settings` source (`extra='forbid'`); `models.py` — all
+  typed domain/state models; `guardrails.py`, `observability.py`, `result_cache.py`,
+  `session_store.py`, `watch_store.py`, `secrets.py` (GCP Secret Manager) — cross-cutting.
+
+**Three frontends, three toolchains:** `zotero-addon/` (the shipped add-on, Biome + Vitest +
+custom build), `admin-panel/` (Vite/React/Tailwind ops console), and `src/agt/ui/` (Streamlit
+dev UI). Only `zotero-addon/` is governed by the Frontend Rules below.
+
 ## MCP Tools
 
 | Server | When to use |
@@ -71,9 +136,9 @@ For single-domain tasks, execute directly without delegating.
 | Role | File | Domain |
 |---|---|---|
 | `sciagent-orchestrator` | `.github/agents/sciagent-orchestrator.agent.md` | Lead coordinator. Multi-domain decomposition and stage-gate verification. Never writes code. |
-| `core-planner` | `.github/agents/core-planner.agent.md` | Backlog mapping, story sequencing, acceptance checks against `docs/core.md`. |
+| `core-planner` | `.github/agents/core-planner.agent.md` | Backlog mapping, story sequencing, acceptance checks against `docs/reference/core.md`. |
 | `python-backend-engineer` | `.github/agents/python-backend-engineer.agent.md` | All Python: `src/agt/**`, `tests/**`, FastAPI, LangGraph, providers, retrieval, ranking, Zotero write paths. |
-| `settings-bootstrap` | `.github/agents/settings-bootstrap.agent.md` | Environment, uv, ruff, pyright/ty, CI, Docker, repo-wide quality gates (`docs/settings.md`). |
+| `settings-bootstrap` | `.github/agents/settings-bootstrap.agent.md` | Environment, uv, ruff, pyright/ty, CI, Docker, repo-wide quality gates (`docs/reference/settings.md`). |
 | `zotero-addon` | `.github/agents/zotero-addon.agent.md` | Zotero 9 add-on architecture, backend contracts, approval/write-path scoping. |
 | `zotero-frontend` | `.github/agents/zotero-frontend.agent.md` | TypeScript, React, WebExtension, sidebar UI, hooks, typed clients, host adapters. |
 

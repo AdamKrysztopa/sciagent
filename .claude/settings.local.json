@@ -78,7 +78,21 @@
       "Bash(gcloud components *)",
       "Bash(gcloud beta monitoring channels create *)",
       "mcp__plugin_context-mode_context-mode__ctx_batch_execute",
-      "mcp__plugin_claude-mem_mcp-search__observation_add"
+      "mcp__plugin_claude-mem_mcp-search__observation_add",
+      "mcp__plugin_context-mode_context-mode__ctx_search",
+      "mcp__plugin_context-mode_context-mode__ctx_execute",
+      "Bash(docker rm *)",
+      "Read(//Users/adamkrysztopa/projects/my_web_page/.claude/**)",
+      "Read(//Users/adamkrysztopa/projects/my_web_page/**)",
+      "Read(//Users/adamkrysztopa/projects/my_web_page/app/**)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "context7",
+    "git",
+    "fetch",
+    "sequential-thinking",
+    "github",
+    "puppeteer"
+  ]
 }

@@ -465,7 +465,7 @@ For organizations that want to self-host without the full SaaS stack:
 2. Set `AGT_BACKEND_API_KEY` and a restrictive `AGT_CORS_ALLOWED_ORIGINS`
 3. Use a reverse proxy (Nginx, Caddy) for TLS termination
 4. Restrict network access to internal users only
-5. See [Security](security.md) for the full pre-production checklist
+5. See [Security](../reference/security.md) for the full pre-production checklist
 6. Manually distribute the signed XPI to users
 
 **What You Lose:**
@@ -487,6 +487,6 @@ For organizations that want to self-host without the full SaaS stack:
 ## See Also
 
 - [Configuration & Usage Manual](manual.md) — Local setup and configuration
-- [REST API Reference](api.md) — Backend API contract
-- [Zotero Add-on Roadmap](zotero.md) — Native Zotero 9 integration and future plans
-- [Core Roadmap](core.md) — Detailed story backlog including AGT-21, AGT-24, AGT-25, AGT-26
+- [REST API Reference](../reference/api.md) — Backend API contract
+- [Zotero Add-on Roadmap](../reference/zotero.md) — Native Zotero 9 integration and future plans
+- [Core Roadmap](../reference/core.md) — Detailed story backlog including AGT-21, AGT-24, AGT-25, AGT-26

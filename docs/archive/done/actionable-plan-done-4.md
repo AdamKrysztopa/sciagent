@@ -1,7 +1,7 @@
 # SciAgent Actionable Plan — P10 (GCP Prerequisites: Cheap LLM + Docker Cloud Readiness) — DONE
 
 > **Completed: 2026-05-17** — All C1–C7 stories complete. Archived 2026-05-17.
-> See [actionable-plan.md](actionable-plan.md) for the current plan (GCP Deployment).
+> See [actionable-plan.md](../../project/actionable-plan.md) for the current plan (GCP Deployment).
 >
 > **Last audit: 2026-05-17** — All P0–P9 stories complete (see
 > [actionable-plan-done-3.md](actionable-plan-done-3.md) and earlier archives).
@@ -241,8 +241,8 @@ No new dependencies added in P10. No Zotero add-on code changes.
 
 ## See Also
 
-- `docs/actionable-plan.md` — current plan (GCP Deployment).
-- `docs/actionable-plan-done-3.md` — completed P9 plan.
+- `docs/project/actionable-plan.md` — current plan (GCP Deployment).
+- `docs/archive/done/actionable-plan-done-3.md` — completed P9 plan.
 - `.env.example` — canonical env var reference (documents DeepSeek recipe).
 - `src/agt/providers/router.py` — provider routing logic.
 - `src/agt/config.py` — settings contract.

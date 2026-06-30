@@ -209,6 +209,6 @@ AGT_MAILTO=your-email@example.com
 
 ## Next Steps
 
-- [Advanced Config](advanced-config.md) — full list of `AGT_*` environment variables, proxy
+- [Advanced Config](../power-user/advanced-config.md) — full list of `AGT_*` environment variables, proxy
   settings, timeouts, disabled providers, PDF attachment, and backend security options.
 - [User Manual](user-manual.md) — how to run searches, approve results, and use filters.

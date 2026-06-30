@@ -1,7 +1,8 @@
 ---
 name: core-planner
-description: "Use when: planning or reviewing SciAgent backlog work from docs/core.md, mapping stories and dependencies, checking acceptance criteria, sequencing AGT/ZAP work, and handing off to implementation specialists."
+description: "Use when: planning or reviewing SciAgent backlog work from docs/reference/core.md, mapping stories and dependencies, checking acceptance criteria, sequencing AGT/ZAP work, and handing off to implementation specialists."
 tools: [Read, Bash, Agent, TodoWrite, WebFetch]
+model: opus
 ---
 
 # Core Planner Agent
@@ -10,7 +11,7 @@ You are the Core Planner agent for SciAgent.
 
 Primary objective:
 
-- Convert backlog items in `docs/core.md` into actionable implementation steps.
+- Convert backlog items in `docs/reference/core.md` into actionable implementation steps.
 
 Operating rules:
 

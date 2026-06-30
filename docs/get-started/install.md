@@ -69,7 +69,7 @@ The server binary is not yet code-signed. Your OS will warn you on first run.
     ```
 
     Apple Developer ID signing is planned for a future release
-    (see [local-first.md Part 7](local-first.md#part-7--macos-codesigning)).
+    (see [local-first.md Part 7](../reference/local-first.md#part-7--macos-codesigning)).
 
 ### Windows — SmartScreen
 
@@ -103,7 +103,7 @@ For teams or power users who want to run their own backend:
 
 Then point the add-on at `http://your-server:8000` in **ConfigPanel → Backend URL**.
 
-See [deployment.md](deployment.md) for full configuration options, environment
+See [deployment.md](../power-user/deployment.md) for full configuration options, environment
 variables, and TLS setup.
 
 ---

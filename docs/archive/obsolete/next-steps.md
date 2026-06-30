@@ -1,7 +1,7 @@
 # SciAgent — Next Steps & Remaining Work
 
 > **⚠️ ARCHIVED — 2026-05-12.** This document was generated on 2026-03-22 when M6 was "Not started" and 132 tests existed. All items listed here are now complete or superseded.
-> For live open items and the current implementation target, see **[actionable-plan.md](actionable-plan-done-2.md)**.
+> For live open items and the current implementation target, see **[actionable-plan.md](../done/actionable-plan-done-2.md)**.
 > **Generated:** 2026-03-22. **Baseline at generation:** ruff 0 errors, pyright 0 errors, 132 tests passing.
 
 ---

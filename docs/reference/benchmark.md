@@ -9,7 +9,7 @@ Validated on 2026-05-11 against benchmark version `m2.7-agt29-v3` and baseline a
 - Hard-filter contract preservation, post-merge result filtering, topic coverage, alternate coverage, and source coverage all held at 1.000 in the validated default run.
 - The remaining regressions are narrowed to three recall-only misses: TS-02 (Temporal Fusion Transformer), BIO-01 (Therapeutic genome editing by CRISPR-Cas systems), and BIO-04 (Long COVID review).
 - These three are external-API retrieval misses — the target papers do not appear in the free-tier APIs' top results for those broad or vocabulary-mismatched queries. Further code changes are unlikely to close this gap without paid API coverage or query hardcoding.
-- P1 exit criteria per [docs/core.md](core.md) are not strictly satisfied (3 queries still trail the baseline on recall). The product team has decided to close P1 at 19/22 and advance to P2, treating the remaining three as known retrieval-depth limitations rather than P1 blockers.
+- P1 exit criteria per [docs/reference/core.md](core.md) are not strictly satisfied (3 queries still trail the baseline on recall). The product team has decided to close P1 at 19/22 and advance to P2, treating the remaining three as known retrieval-depth limitations rather than P1 blockers.
 
 ## Default Scenario
 

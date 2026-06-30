@@ -1701,15 +1701,15 @@ uv run mkdocs build --strict
 
 Expected: All PASS
 
-- [ ] **Step 4: Update `docs/settings.md` with new env vars**
+- [ ] **Step 4: Update `docs/reference/settings.md` with new env vars**
 
-Document the new settings fields (`AGT_GCP_PROJECT`, `AGT_GCP_SECRET_NAME`, `AGT_SECRET_CACHE_TTL_SECONDS`, `AGT_SHARED_LLM_BUDGET_PER_USER_USD`) in the environment variables section of `docs/settings.md`.
+Document the new settings fields (`AGT_GCP_PROJECT`, `AGT_GCP_SECRET_NAME`, `AGT_SECRET_CACHE_TTL_SECONDS`, `AGT_SHARED_LLM_BUDGET_PER_USER_USD`) in the environment variables section of `docs/reference/settings.md`.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add docs/settings.md
-git commit -m "docs: add new security settings to docs/settings.md"
+git add docs/reference/settings.md
+git commit -m "docs: add new security settings to docs/reference/settings.md"
 ```
 
 ---
@@ -2806,11 +2806,11 @@ git commit -m "feat: configure Cloud Run with service account and Secret Manager
 
 **Files:**
 
-- Modify: `docs/deployment.md`
+- Modify: `docs/power-user/deployment.md`
 
 - [x] **Step 1: Add multi-user GCP deployment section**
 
-In `docs/deployment.md`, after the "Docker and Docker Compose" section and before "Future SaaS Architecture", insert the following section:
+In `docs/power-user/deployment.md`, after the "Docker and Docker Compose" section and before "Future SaaS Architecture", insert the following section:
 
 ### Multi-User GCP Deployment (Secret Manager + Admin Panel)
 
@@ -2909,7 +2909,7 @@ curl -X POST "${SERVICE_URL}/admin/keys" \
 
 - [x] **Step 2: Update the "Prerequisites for SaaS Readiness" section status**
 
-In `docs/deployment.md`, update the AGT-21 story status from `Not Done` to `Done (Phase 1–3)`:
+In `docs/power-user/deployment.md`, update the AGT-21 story status from `Not Done` to `Done (Phase 1–3)`:
 
 Change the line under "### 1. AGT-21: Security Checklist and Auth Hardening":
 
@@ -2929,7 +2929,7 @@ Expected: All PASS.
 - [x] **Step 4: Commit**
 
 ```bash
-git add docs/deployment.md
+git add docs/power-user/deployment.md
 git commit -m "docs: add multi-user GCP deployment guide with bootstrap and Cloud Run steps"
 ```
 

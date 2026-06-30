@@ -18,3 +18,4 @@ site/
 nohup.out
 .claude/worktrees/
 .superpowers/
+NOTES.local.md

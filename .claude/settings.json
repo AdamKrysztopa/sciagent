@@ -20,6 +20,24 @@
       "Bash(wc *)"
     ]
   },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          { "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/protect-paths.sh" }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          { "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/python-format.sh" }
+        ]
+      }
+    ]
+  },
   "mcpServers": {
     "sciagent": {
       "command": "uv",

@@ -156,7 +156,7 @@ specify and suggests related papers not yet in your library.
 ### All environment variables
 
 For the full list of `AGT_*` settings (custom LLM models, proxy config, disabled
-providers, timeouts, and more) see [Advanced Config](advanced-config.md).
+providers, timeouts, and more) see [Advanced Config](../power-user/advanced-config.md).
 
 ### Optional provider keys
 

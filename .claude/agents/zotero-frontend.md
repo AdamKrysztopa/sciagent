@@ -2,6 +2,7 @@
 name: zotero-frontend
 description: "Use when: implementing modern Zotero add-on TypeScript, React, WebExtension, sidebar UI, hooks, strict types, typed backend clients, manifest/bootstrap code, host integration adapters, or frontend tests."
 tools: [Read, Edit, Write, Bash, Agent, TodoWrite, WebFetch, WebSearch]
+model: sonnet
 ---
 
 # Zotero Frontend Agent

@@ -1,14 +1,14 @@
 # SciAgent Priorities
 
 > **⚠️ ARCHIVED — 2026-05-12.** Generated 2026-03-24 when AGT-28, AGT-29, and ZAP-0 were "Not started". All priorities listed here are now implemented.
-> For current open items and priority order, see **[actionable-plan.md](actionable-plan-done-2.md)** — the P7 Open Items section.
+> For current open items and priority order, see **[actionable-plan.md](../done/actionable-plan-done-2.md)** — the P7 Open Items section.
 
 **Generated:** 2026-03-24
 **Purpose:** Historical priority map; superseded by P7 open items in `actionable-plan.md`.
 
 ## Scope
 
-This file converts the reviewer recommendations in `docs/reviewer/sciagent-review-fixes.md` and `docs/reviewer/sciagent-review-improvements.md` into an implementation order that preserves the dependency chain from [core.md](core.md).
+This file converts the reviewer recommendations in `docs/reviewer/sciagent-review-fixes.md` and `docs/reviewer/sciagent-review-improvements.md` into an implementation order that preserves the dependency chain from [core.md](../../reference/core.md).
 
 Recommended interpretation for ambiguous items:
 
@@ -25,19 +25,19 @@ Recommended interpretation for ambiguous items:
 | ---- | -------------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------ | ----------------------------------------------- |
 | P0   | AGT-28                     | Search plan model, deterministic filter extraction, filter pushdown/post-filter enforcement | Prevents LLM semantic search from ignoring hard constraints such as `year >= 2024` | [next-steps.md](next-steps.md) | User discovery-quality request                  |
 | P0   | AGT-29                     | Keyless-first retrieval quality benchmark against standalone LLM/web-search baseline        | Ensures SciAgent is not worse than asking a standalone LLM with web search         | [next-steps.md](next-steps.md) | User discovery-quality request                  |
-| P0   | ZAP-4A                     | Filter review/edit contract for app and Zotero add-on                                       | Users need visible filters and toggles, not only a chat box                        | [zotero.md](zotero.md)         | User discovery-quality request                  |
+| P0   | ZAP-4A                     | Filter review/edit contract for app and Zotero add-on                                       | Users need visible filters and toggles, not only a chat box                        | [zotero.md](../../reference/zotero.md)         | User discovery-quality request                  |
 | P0   | AGT-20                     | Truthful terminal write-failure status, typed failure handling, failure-path tests          | Current workflow can report success-like completion for failed writes              | [next-steps.md](next-steps.md) | `docs/reviewer/sciagent-review-fixes.md`        |
 | P0   | AGT-21                     | Security checklist, non-anonymous auth defaults, delegated-auth direction                   | Current backend defaults are still local-safe rather than production-safe          | [next-steps.md](next-steps.md) | `docs/reviewer/sciagent-review-fixes.md`        |
 | P0   | AGT-24                     | Durable distributed checkpointing and replay-safe resume behavior                           | Process-local state blocks restart safety and multi-instance deployment            | [next-steps.md](next-steps.md) | `docs/reviewer/sciagent-review-fixes.md`        |
-| P0   | ZAP-0, ZAP-1               | Add-on skeleton and hot-reload dev environment                                              | Plugin work can start once backend contract is pinned                              | [next-steps.md](next-steps.md) | [zotero.md](zotero.md)                          |
+| P0   | ZAP-0, ZAP-1               | Add-on skeleton and hot-reload dev environment                                              | Plugin work can start once backend contract is pinned                              | [next-steps.md](next-steps.md) | [zotero.md](../../reference/zotero.md)                          |
 | P1   | AGT-22                     | OpenAI and Anthropic adapters, startup validation, provider contract tests                  | Provider abstraction exists; usefulness is capped by missing adapters              | [next-steps.md](next-steps.md) | `docs/reviewer/sciagent-review-improvements.md` |
 | P1   | AGT-23                     | Retrieval protocol/registry extraction and `search_papers.py` stage split                   | Main retrieval orchestrator is the highest maintenance hotspot                     | [next-steps.md](next-steps.md) | `docs/reviewer/sciagent-review-improvements.md` |
 | P1   | AGT-20                     | Coverage, replay, contract, and resilience checks in CI                                     | The next gain is stronger guarantees, not more surface area                        | [next-steps.md](next-steps.md) | `docs/reviewer/sciagent-review-improvements.md` |
-| P1   | ZAP-2, ZAP-3, ZAP-4, ZAP-5 | Add-on backend connection layer and approval UI                                             | Backend APIs are sufficient for sidebar UX work                                    | [next-steps.md](next-steps.md) | [zotero.md](zotero.md)                          |
-| P1   | AGT-13                     | PDF attachment pipeline                                                                     | Blocks ZAP-8 and keeps write-path feature scope incomplete                         | [next-steps.md](next-steps.md) | [core.md](core.md)                              |
+| P1   | ZAP-2, ZAP-3, ZAP-4, ZAP-5 | Add-on backend connection layer and approval UI                                             | Backend APIs are sufficient for sidebar UX work                                    | [next-steps.md](next-steps.md) | [zotero.md](../../reference/zotero.md)                          |
+| P1   | AGT-13                     | PDF attachment pipeline                                                                     | Blocks ZAP-8 and keeps write-path feature scope incomplete                         | [next-steps.md](next-steps.md) | [core.md](../../reference/core.md)                              |
 | P1   | AGT-25                     | Async task queue                                                                            | Needed after durable checkpointing for long-running production workloads           | [next-steps.md](next-steps.md) | `docs/reviewer/sciagent-review-improvements.md` |
 | P2   | ZAP-6, ZAP-7, ZAP-8        | Native Zotero writes                                                                        | Requires a settled write-path decision and AGT-13 for PDF completeness             | [next-steps.md](next-steps.md) | [next-steps.md](next-steps.md)                  |
-| P2   | ZAP-9, ZAP-10, ZAP-11      | Preferences, fallback UX, release packaging                                                 | Release polish should follow backend hardening and plugin UX completion            | [next-steps.md](next-steps.md) | [zotero.md](zotero.md)                          |
+| P2   | ZAP-9, ZAP-10, ZAP-11      | Preferences, fallback UX, release packaging                                                 | Release polish should follow backend hardening and plugin UX completion            | [next-steps.md](next-steps.md) | [zotero.md](../../reference/zotero.md)                          |
 | P2   | AGT-26                     | Production deployment split, container hardening, IaC                                       | Reviewer deployment concerns fit best here, after queue and checkpoint work land   | [next-steps.md](next-steps.md) | `docs/reviewer/sciagent-review-improvements.md` |
 
 ## Reviewer Mapping

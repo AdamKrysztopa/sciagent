@@ -1,11 +1,11 @@
 ---
 name: env-bootstrap
-description: Apply docs/settings.md to bootstrap local development and quality tooling in a reproducible way.
+description: Apply docs/reference/settings.md to bootstrap local development and quality tooling in a reproducible way.
 ---
 
 # Environment Bootstrap Skill
 
-Use this skill for project initialization, developer environment setup, and CI-ready quality checks derived from `docs/settings.md`.
+Use this skill for project initialization, developer environment setup, and CI-ready quality checks derived from `docs/reference/settings.md`.
 
 ## Inputs
 

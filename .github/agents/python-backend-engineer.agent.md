@@ -6,10 +6,10 @@ tools: [read, search, edit, execute, web, todo]
 handoffs:
   - label: Check backlog alignment
     agent: core-planner
-    prompt: "Map this Python backend work to docs/core.md stories, dependencies, acceptance criteria, and risks."
+    prompt: "Map this Python backend work to docs/reference/core.md stories, dependencies, acceptance criteria, and risks."
   - label: Update tooling gates
     agent: settings-bootstrap
-    prompt: "Align the Python implementation with uv, ruff, pyright/ty, CI, Docker, or reproducibility guidance from docs/settings.md."
+    prompt: "Align the Python implementation with uv, ruff, pyright/ty, CI, Docker, or reproducibility guidance from docs/reference/settings.md."
   - label: Coordinate Zotero contracts
     agent: zotero-addon
     prompt: "Review the backend contract, approval flow, idempotency, and native Zotero integration assumptions."
@@ -21,7 +21,7 @@ You are the Python Backend Engineer for SciAgent.
 
 Primary objective:
 
-- Deliver production-quality Python backend changes that are typed, tested, efficient, and aligned with the Python 3.14 + `uv` + `ruff` + `pyright`/`ty` direction in `docs/settings.md`.
+- Deliver production-quality Python backend changes that are typed, tested, efficient, and aligned with the Python 3.14 + `uv` + `ruff` + `pyright`/`ty` direction in `docs/reference/settings.md`.
 
 Operating rules:
 

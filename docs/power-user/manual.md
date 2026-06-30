@@ -156,7 +156,7 @@ These keys are **optional** but improve retrieval coverage and rate limits.
 | `AGT_CORS_ALLOWED_ORIGINS` | `["*"]`      | JSON array of allowed CORS origins. Use `["*"]` for local use. |
 | `AGT_API_RATE_LIMIT`       | `200/minute` | Global HTTP rate limit per IP (slowapi format).                |
 
-See [docs/security.md](security.md) for the full security checklist.
+See [docs/reference/security.md](../reference/security.md) for the full security checklist.
 
 ### LLM Provider Routing
 
@@ -708,7 +708,7 @@ uv run uvicorn agt.api.app:app --host 127.0.0.1 --port 8000
 
 **Use case:** Custom integrations, automation, or embedding SciAgent in other tools.
 
-**Full API documentation:** See [API Reference](api.md) for request/response schemas, authentication, and client examples.
+**Full API documentation:** See [API Reference](../reference/api.md) for request/response schemas, authentication, and client examples.
 
 ---
 
@@ -755,7 +755,7 @@ your coding session without leaving the editor.
 
 ## REST API Reference
 
-For detailed API documentation, request/response schemas, authentication, and client examples, see [API Reference](api.md).
+For detailed API documentation, request/response schemas, authentication, and client examples, see [API Reference](../reference/api.md).
 
 **Quick summary:**
 

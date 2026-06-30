@@ -6,7 +6,7 @@ tools: [read, search, edit, execute, web, todo]
 handoffs:
   - label: Review plugin architecture
     agent: zotero-addon
-    prompt: "Review this frontend implementation against docs/zotero.md architecture and backend contracts."
+    prompt: "Review this frontend implementation against docs/reference/zotero.md architecture and backend contracts."
   - label: Coordinate backend contract
     agent: python-backend-engineer
     prompt: "Implement or review the Python backend endpoint, payload, and failure contract needed by this frontend work."

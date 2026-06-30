@@ -4,7 +4,7 @@
 > This plan covers **P8: Baseline Search + Provider Capability**.
 >
 > Canonical execution tracker. Update done / not done state here first.
-> See [docs/manual.md](manual.md) for configuration & usage.
+> See [docs/power-user/manual.md](../../power-user/manual.md) for configuration & usage.
 
 ## Design Philosophy
 
@@ -76,14 +76,14 @@ locally with `AGT_LLM_PROVIDER=ollama` and no hosted LLM key.
 ### Current Status
 
 - All P0–P7 milestones complete as of 2026-05-12.
-- Current status: **P8.14 complete — `AGT_DISABLED_PROVIDERS` config + disabled-by-config provider state; `.env.example` updated; 6-query P8 benchmark panel extension (P8-OA-01 through P8-CONF-01); `docs/benchmark.md` P8 section; 2 new orchestrator tests. 563 Python / 103 frontend tests green. All P8 stories complete.**
+- Current status: **P8.14 complete — `AGT_DISABLED_PROVIDERS` config + disabled-by-config provider state; `.env.example` updated; 6-query P8 benchmark panel extension (P8-OA-01 through P8-CONF-01); `docs/reference/benchmark.md` P8 section; 2 new orchestrator tests. 563 Python / 103 frontend tests green. All P8 stories complete.**
 - Next target: **P9** (or backlog review).
 
 ### Recent Progress
 
-- ✅ OPN-06 complete (2026-05-12): External baseline comparison. See `docs/benchmark.md`.
+- ✅ OPN-06 complete (2026-05-12): External baseline comparison. See `docs/reference/benchmark.md`.
 - ✅ OPN-07 complete (2026-05-12): `search_depth=deep` mitigates TS-02/BIO-04; BIO-01 confirmed API coverage gap.
-- ✅ OPN-08 complete (2026-05-12): `docs/api.md` full rewrite — all 20+ endpoints accurate.
+- ✅ OPN-08 complete (2026-05-12): `docs/reference/api.md` full rewrite — all 20+ endpoints accurate.
 - ✅ FirstRunDialog complete (2026-05-12): binary-missing download UI wired.
 - ✅ All P7 items (OPN-01–OPN-17) complete 2026-05-12.
 - ✅ P8.1 complete (2026-05-13): `capabilities.py`, `provider_base.py`, `GET /providers`, BYOK hint chip.
@@ -96,16 +96,16 @@ locally with `AGT_LLM_PROVIDER=ollama` and no hosted LLM key.
 - ✅ P8.8 complete (2026-05-14): `author_resolver.py` (`resolve_author` across OpenAlex + S2, ORCID dedup); `HardFilters.author_ids` + post-merge author-ID filter; author chips (OpenAlex/ORCID links) in result cards. All gates green.
 - ✅ P8.9 complete (2026-05-14): `SearchPlan.seed_dois`; `citation_expander.py` (`expand_citations` via OpenCitations + OpenAlex, tagged with `citation_relation`); directional citation badge (`↓ ref` / `↑ cites`) in result cards. 531 Python / 103 frontend tests green.
 - ✅ P8.10 complete (2026-05-14): `key_validator.py` with SSRF-safe allowlist; `POST /keys/validate` endpoint; `ProviderKeyRow` key entry panel in ConfigPanel with per-provider validate-on-demand UI; `validateKey` in controller hook. All gates green.
-- ✅ P8.11 complete (2026-05-14): 9-step provider onboarding checklist appended to `docs/providers.md`; `scripts/new_provider.py` scaffold generator (CamelCase → snake_case, emits `SearchProviderBase` skeleton + `anyio` test stub, skip-if-exists guard); `pyrightconfig.json` extended with `scripts/`. All gates green.
+- ✅ P8.11 complete (2026-05-14): 9-step provider onboarding checklist appended to `docs/reference/providers.md`; `scripts/new_provider.py` scaffold generator (CamelCase → snake_case, emits `SearchProviderBase` skeleton + `anyio` test stub, skip-if-exists guard); `pyrightconfig.json` extended with `scripts/`. All gates green.
 - ✅ P8.12 complete (2026-05-14): P8.12-A already done (44 tests in `test_provider_snapshots.py`); `test_merge.py` (12 tests), `test_capabilities.py` (14 tests), `test_explain_missing.py` (8 tests), `test_search_orchestrator.py` (5 tests); `live_api` + `regression_gate` markers in conftest.py; `test_zero_key_smoke.py` (1 test), `test_regression_gate.py` (4 tests); CI benchmark regression gate step in `ci.yml`. 561 Python tests green (+30).
 - ✅ P8.13 complete (2026-05-14): `AGT_DISABLED_PROVIDERS` field added to `Settings` (pydantic-settings `list[str]`, JSON array format); disabled-by-config pass wired into `_build_retrieval_registry` — any named provider gets `enabled=False, skip_reason="disabled"` regardless of key availability; `.env.example` updated with `AGT_MAILTO` and `AGT_DISABLED_PROVIDERS` entries; 2 new tests in `test_search_orchestrator.py` (keyless + keyed provider disable). 563 Python tests green.
-- ✅ P8.14 complete (2026-05-14): 6 new PanelEntry objects added to benchmark panel (P8-OA-01, P8-CITE-01, P8-DEPTH-01, P8-MULTI-01, P8-YEAR-01, P8-CONF-01); `_MIN_MUST_FIND_TARGETS` updated from 12 to 15; `docs/benchmark.md` P8 Benchmark Update section appended with per-query table, rationale, and updated panel statistics (22→28 queries). Docs gate (markdownlint + mkdocs strict) green.
+- ✅ P8.14 complete (2026-05-14): 6 new PanelEntry objects added to benchmark panel (P8-OA-01, P8-CITE-01, P8-DEPTH-01, P8-MULTI-01, P8-YEAR-01, P8-CONF-01); `_MIN_MUST_FIND_TARGETS` updated from 12 to 15; `docs/reference/benchmark.md` P8 Benchmark Update section appended with per-query table, rationale, and updated panel statistics (22→28 queries). Docs gate (markdownlint + mkdocs strict) green.
 
 ### P8 Status
 
 | ID      | Story                                            | Effort | Status  |
 | ------- | ------------------------------------------------ | ------ | ------- |
-| P8.0-A  | Provider inventory table (`docs/providers.md`)   | ~0.25d | done    |
+| P8.0-A  | Provider inventory table (`docs/reference/providers.md`)   | ~0.25d | done    |
 | P8.0-B  | Snapshot VCR tests                               | ~0.5d  | done    |
 | P8.0-C  | Cassette hygiene + `provider_snapshot` marker    | ~0.25d | done    |
 | P8.1-A  | `capabilities.py` — capability + health model    | ~0.5d  | done    |
@@ -142,7 +142,7 @@ locally with `AGT_LLM_PROVIDER=ollama` and no hosted LLM key.
 | P8.10-A | `POST /keys/validate`                            | ~0.5d  | done    |
 | P8.10-B | Key entry panel in `ConfigPanel.tsx`             | ~1d    | done    |
 | P8.10-C | Preference store bridging                        | ~0.5d  | done    |
-| P8.11-A | `docs/providers.md` onboarding checklist         | ~0.25d | done    |
+| P8.11-A | `docs/reference/providers.md` onboarding checklist         | ~0.25d | done    |
 | P8.11-B | `scripts/new_provider.py` scaffold               | ~0.5d  | done    |
 | P8.12-A | VCR cassettes (44 total, 11 providers × 4 cases) | ~0.25d | done    |
 | P8.12-B | `tests/test_merge.py`                            | ~0.25d | done    |
@@ -155,7 +155,7 @@ locally with `AGT_LLM_PROVIDER=ollama` and no hosted LLM key.
 | P8.13-B | Disabled-by-config provider state                | ~0.25d | ✅ done |
 | P8.13-C | `.env.example` update                            | ~0.1d  | ✅ done |
 | P8.14-A | New 6-query benchmark panel                      | ~0.5d  | ✅ done |
-| P8.14-B | `docs/benchmark.md` P8 update                    | ~0.1d  | ✅ done |
+| P8.14-B | `docs/reference/benchmark.md` P8 update                    | ~0.1d  | ✅ done |
 
 **All P8 stories complete as of 2026-05-14.**
 
@@ -176,11 +176,11 @@ detectable.
 
 | ID     | Story                                                                                                                                                                                                                                                                                                                                                                                                                   | Effort |
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| P8.0-A | **Provider inventory table** — document in `docs/providers.md`: each of `OpenAlexClient`, `CrossrefClient`, `ArxivClient`, `EuropePMCClient`, `PubMedClient`, `BaseSearchClient` (BASE SRU), `SemanticScholarClient`, `OpenCitationsClient`, `CoreClient`, `DimensionsClient`, `GoogleScholarClient`: base URL, auth model (keyless / key-required), fields populated today, retry/timeout wiring (tenacity or manual). | ~0.25d |
+| P8.0-A | **Provider inventory table** — document in `docs/reference/providers.md`: each of `OpenAlexClient`, `CrossrefClient`, `ArxivClient`, `EuropePMCClient`, `PubMedClient`, `BaseSearchClient` (BASE SRU), `SemanticScholarClient`, `OpenCitationsClient`, `CoreClient`, `DimensionsClient`, `GoogleScholarClient`: base URL, auth model (keyless / key-required), fields populated today, retry/timeout wiring (tenacity or manual). | ~0.25d |
 | P8.0-B | **Snapshot VCR tests** — add `tests/test_provider_snapshots.py` with one VCR cassette per provider covering: happy path (5+ results), empty results, 5xx, and 429. Must pass with `--vcr-record=none` throughout P8.                                                                                                                                                                                                    | ~0.5d  |
 | P8.0-C | **Cassette hygiene** — verify `tests/cassettes/.gitignore` excludes no committed cassettes; add rule if missing. Add `conftest.py` marker `@pytest.mark.provider_snapshot` so snapshots can be run selectively.                                                                                                                                                                                                         | ~0.25d |
 
-**Acceptance:** `pytest -m provider_snapshot --vcr-record=none` is green. Inventory table exists in `docs/providers.md`. No behavior changes.
+**Acceptance:** `pytest -m provider_snapshot --vcr-record=none` is green. Inventory table exists in `docs/reference/providers.md`. No behavior changes.
 
 ---
 
@@ -1148,10 +1148,10 @@ restarts without editing `.env`.
 
 | ID      | Story                                                                                                                                                                                                                                                                                                                                                                                                                                | Effort |
 | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
-| P8.11-A | **`docs/providers.md` checklist** — 7-step contract: (1) `SearchProviderProtocol` impl; (2) `SearchProviderCapabilities` entry in `capabilities.py` with `requires_key`/`key_env_var`/`key_upgrade_hint`; (3) VCR cassette fixtures; (4) `_build_retrieval_registry` entry with `skip_reason="no_key"` guard; (5) `/providers` payload update; (6) `SearchCoveragePanel` render path; (7) benchmark slot if must-find anchors exist. | ~0.25d |
+| P8.11-A | **`docs/reference/providers.md` checklist** — 7-step contract: (1) `SearchProviderProtocol` impl; (2) `SearchProviderCapabilities` entry in `capabilities.py` with `requires_key`/`key_env_var`/`key_upgrade_hint`; (3) VCR cassette fixtures; (4) `_build_retrieval_registry` entry with `skip_reason="no_key"` guard; (5) `/providers` payload update; (6) `SearchCoveragePanel` render path; (7) benchmark slot if must-find anchors exist. | ~0.25d |
 | P8.11-B | **Provider scaffold script** — `scripts/new_provider.py`: generates boilerplate (protocol stub, capability entry, cassette dir, test file) from `--name` and `--key-env-var`. Output passes `pyright`.                                                                                                                                                                                                                               | ~0.5d  |
 
-**Acceptance:** `docs/providers.md` exists. `python scripts/new_provider.py --name MySource --key-env-var MY_KEY` produces compilable stubs. `pyright` 0 on generated stubs.
+**Acceptance:** `docs/reference/providers.md` exists. `python scripts/new_provider.py --name MySource --key-env-var MY_KEY` produces compilable stubs. `pyright` 0 on generated stubs.
 
 ---
 
@@ -1192,7 +1192,7 @@ restarts without editing `.env`.
 | ID      | Story                                                                                                                                                                                                                                                                                        | Effort |
 | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
 | P8.14-A | **New query panel** — add 6 queries to the benchmark: 2 author-scoped (must-find specific papers by a named researcher), 2 citation-graph (must-find papers citing a well-known work), 2 DOAJ recall (papers likely in DOAJ but not in OpenAlex top results). Record as `m2.8-benchmark-v1`. | ~0.5d  |
-| P8.14-B | **`docs/benchmark.md` update** — record P8 panel results, note which queries are new, confirm baseline 22-query pass rate is unchanged.                                                                                                                                                      | ~0.1d  |
+| P8.14-B | **`docs/reference/benchmark.md` update** — record P8 panel results, note which queries are new, confirm baseline 22-query pass rate is unchanged.                                                                                                                                                      | ~0.1d  |
 
 ---
 
@@ -1256,7 +1256,7 @@ P8.1 ──▶ P8.11
 | P8.10-A | `POST /keys/validate`                           | ~0.5d  | ✅ done |
 | P8.10-B | Key entry panel in `ConfigPanel.tsx`            | ~1d    | ✅ done |
 | P8.10-C | Preference store bridging                       | ~0.5d  | ✅ done |
-| P8.11-A | `docs/providers.md` checklist                   | ~0.25d | ✅ done |
+| P8.11-A | `docs/reference/providers.md` checklist                   | ~0.25d | ✅ done |
 | P8.11-B | `scripts/new_provider.py` scaffold              | ~0.5d  | ✅ done |
 | P8.12-A | VCR cassettes (44 total)                        | ~0.25d | ✅ done |
 | P8.12-B | `test_merge.py`                                 | ~0.25d | ✅ done |
@@ -1269,7 +1269,7 @@ P8.1 ──▶ P8.11
 | P8.13-B | Disabled-by-config state                        | ~0.25d | ✅ done |
 | P8.13-C | `.env.example` update                           | ~0.1d  | ✅ done |
 | P8.14-A | New 6-query benchmark panel                     | ~0.5d  | ✅ done |
-| P8.14-B | `docs/benchmark.md` update                      | ~0.1d  | ✅ done |
+| P8.14-B | `docs/reference/benchmark.md` update                      | ~0.1d  | ✅ done |
 
 **All P8 stories complete. 563 Python / 103 frontend tests green.**
 

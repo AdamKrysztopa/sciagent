@@ -340,7 +340,7 @@ Existing `AGT_BACKEND_API_KEY` retained as local-dev fallback.
 | Prefs | `zotero-addon/src/host/prefs.ts` | `isInsecureUrl` helper |
 | HealthStrip | `zotero-addon/src/ui/components/HealthStrip.tsx` | Insecure URL warning |
 | IdleView | `zotero-addon/src/ui/components/IdleView.tsx` | Block search on insecure URL |
-| Docs | `.env.example`, `docs/settings.md` | Document new env vars |
+| Docs | `.env.example`, `docs/reference/settings.md` | Document new env vars |
 
 ### Phase 2
 
@@ -419,3 +419,160 @@ Existing `AGT_BACKEND_API_KEY` retained as local-dev fallback.
 - Per-user billing / Stripe integration.
 - Mobile-responsive admin panel.
 - Zotero credential storage hardening (Spec B).
+
+---
+
+## 11. Deployment Architecture
+
+### 11.1 GCP Project
+
+**Project:** `sciagent-496617` · **Region:** `europe-west1` · **Runtime:** Cloud Run (managed)
+
+Required GCP APIs: `secretmanager`, `run`, `artifactregistry`, `cloudbuild`.
+
+### 11.2 Secret Manager layout
+
+| Secret name | Contents | Accessed by |
+|---|---|---|
+| `agt-user-registry` | User registry JSON (see §4.2) | Cloud Run service account (read + write) |
+| `agt-openai-key` | `AGT_OPENAI_API_KEY` value | Cloud Run via `--set-secrets` |
+| `agt-resend-key` | `AGT_RESEND_API_KEY` value | Cloud Run via `--set-secrets` (optional) |
+| `agt-email-api-key` | alias for `agt-resend-key` | same |
+
+### 11.3 Service account IAM
+
+Service account: `sciagent-backend@sciagent-496617.iam.gserviceaccount.com`
+
+Required roles:
+
+| Role | Purpose |
+|---|---|
+| `roles/secretmanager.secretAccessor` | Read registry and LLM key secrets |
+| `roles/secretmanager.secretVersionAdder` | Write new registry versions on admin CRUD |
+
+### 11.4 Cloud Run environment variables
+
+Non-sensitive variables passed via `--set-env-vars` in `scripts/deploy.sh`:
+
+| Variable | Value |
+|---|---|
+| `AGT_GCP_PROJECT` | `sciagent-496617` |
+| `AGT_GCP_SECRET_NAME` | `agt-user-registry` |
+| `AGT_SECRET_CACHE_TTL_SECONDS` | `60` |
+
+Sensitive variables injected from Secret Manager via `--set-secrets` (run once, persists):
+
+```
+AGT_OPENAI_API_KEY=agt-openai-key:latest
+AGT_RESEND_API_KEY=agt-resend-key:latest
+```
+
+### 11.5 Admin panel bundling
+
+The admin panel SPA (`admin-panel/`) is built in a Docker multi-stage build and copied into
+the Python image at `/app/admin-panel/dist/`. FastAPI mounts it at `/portal/` via
+`StaticFiles(html=True)`.
+
+Vite must be configured with `base: "/portal/"` so that all asset URLs in the built HTML are
+prefixed with `/portal/`. Without this, browsers request `/assets/xxx.js` (not found) instead
+of `/portal/assets/xxx.js`.
+
+### 11.6 Bootstrap procedure
+
+Run once per GCP project to seed the initial admin user:
+
+```bash
+uv run python scripts/bootstrap_registry.py \
+  --project sciagent-496617 \
+  --slug admin \
+  --email admin@example.com
+```
+
+The script:
+
+1. Creates the `agt-user-registry` secret if it does not exist.
+2. Checks for existing versions and refuses to overwrite unless `--force` is given.
+3. Generates a key via `generate_key("admin")` (128-bit entropy).
+4. Writes the registry JSON as a new secret version.
+5. Prints the key to stdout. **The key is not stored anywhere else and cannot be recovered.**
+
+### 11.7 Deploy command
+
+```bash
+./scripts/deploy.sh
+```
+
+Builds the image via Cloud Build (two stages: Node + Python), pushes to Artifact Registry,
+and updates the Cloud Run service with the new image, service account, and env vars.
+
+---
+
+## 12. Testing Strategy
+
+### 12.1 Test tiers
+
+| Tier | Location | Runs in CI | Requires |
+|---|---|---|---|
+| Unit | `tests/test_*.py` (excluding integration + smoke) | Always | Nothing extra |
+| Integration | `tests/test_secrets_integration.py` | Optional job | `AGT_GCP_PROJECT` + GCP credentials |
+| Smoke | `tests/test_smoke.py` | Post-deploy | `AGT_SMOKE_URL` + `AGT_SMOKE_ADMIN_KEY` |
+
+### 12.2 Unit test coverage (Phases 1–3)
+
+| File | What it covers |
+|---|---|
+| `tests/test_secrets.py` | `UserRegistry` single-key fallback, `generate_key` validation |
+| `tests/test_auth.py` | `authenticate` dependency, `require_admin` guard, 401/403 responses |
+| `tests/test_admin_endpoints.py` | Admin CRUD: create, list, revoke, update, usage |
+| `tests/test_shared_budget.py` | `SharedBudgetTracker`: record, cap, per-user, get_all_usage |
+| `tests/test_api.py` | 422/500 sanitisation, budget 402 handler, query length limit |
+
+All unit tests run with `uv run pytest -q --vcr-record=none` and must pass before any commit.
+
+### 12.3 Integration tests (`tests/test_secrets_integration.py`)
+
+Skipped unless `AGT_GCP_PROJECT` is set. Cover:
+
+- Reading a user entry from a real Secret Manager secret.
+- Cache returns same data within TTL.
+- Writing a new user version and reading it back after `invalidate_cache()`.
+- Deleting a user and confirming it is absent after `invalidate_cache()`.
+
+Run locally with `gcloud auth application-default login`. In CI, use Workload Identity
+Federation to avoid service account key files.
+
+### 12.4 Smoke tests (`tests/test_smoke.py`)
+
+Skipped unless `AGT_SMOKE_URL` is set. Run after every production deploy:
+
+```bash
+SERVICE_URL=$(gcloud run services describe sciagent \
+  --project=sciagent-496617 --region=europe-west1 \
+  --format="value(status.url)")
+
+AGT_SMOKE_URL="${SERVICE_URL}" \
+AGT_SMOKE_ADMIN_KEY="agt_admin_<key>" \
+uv run pytest tests/test_smoke.py -v
+```
+
+Coverage:
+
+- `/health` returns `{"ok": true}` over HTTPS.
+- Missing/wrong key → 401 `invalid_api_key`.
+- Admin key authenticates → 200 on `/admin/keys`.
+- Ephemeral user created → key has correct prefix and 32-char hex suffix.
+- User key → 403 `admin_required` on admin endpoints.
+- Error responses do not echo the submitted key.
+- `/portal/` returns HTML with `/portal/assets/` asset paths.
+
+### 12.5 Security regression targets
+
+These properties are verified by unit tests and must not regress:
+
+| Property | Test |
+|---|---|
+| Constant-time key comparison | `tests/test_auth.py::TestAuthenticate::test_timing_safe_comparison` |
+| 422 strips field input values | `tests/test_api.py::test_422_does_not_leak_field_values` |
+| 500 returns only `internal_error` | `tests/test_api.py::test_500_does_not_leak_exception_details` |
+| Budget exhaustion returns 402 | `tests/test_api.py::test_budget_exhaustion_returns_402` |
+| Non-admin → 403 on admin routes | `tests/test_admin_endpoints.py::TestListKeys::test_non_admin_gets_403` |

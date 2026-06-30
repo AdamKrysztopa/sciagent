@@ -297,7 +297,7 @@ structlog output, and prove they never enter a LangGraph checkpoint.
 
 ### MU9 — API docs: document all new headers ✅ done 2026-05-18
 
-**Goal.** `docs/api.md` Authentication section was missing all seven new request headers.
+**Goal.** `docs/reference/api.md` Authentication section was missing all seven new request headers.
 
 #### MU9 delivered
 
@@ -311,7 +311,7 @@ structlog output, and prove they never enter a LangGraph checkpoint.
 #### MU9 acceptance criteria
 
 - [x] `uv run mkdocs build --strict` passes.
-- [x] Markdownlint passes on `docs/api.md`.
+- [x] Markdownlint passes on `docs/reference/api.md`.
 
 ### MU10 — "Test Connection" button + preflight client method ✅ done 2026-05-18
 
@@ -351,7 +351,7 @@ Cannot be automated — requires Zotero 9 with the add-on installed and a real a
 - [ ] Screenshot: Search results panel with paper cards and approval checkboxes.
 - [ ] Screenshot: Status pill green after successful preflight.
 - [ ] Screenshot: Write result showing `created` / `unchanged` badges.
-- [ ] Insert images into `docs/hosted-demo-guide.md` using `![alt](../assets/img/*.png)`.
+- [ ] Insert images into `docs/get-started/hosted-demo-guide.md` using `![alt](../../assets/img/*.png)`.
 - [ ] Add images to `docs/assets/img/` and commit.
 
 ---
@@ -418,8 +418,8 @@ Cannot be automated — requires Zotero 9 with the add-on installed and a real a
 
 ## See Also
 
-- `docs/actionable-plan.md` — single-user deploy plan (M0–M4 done, M5–M10 superseded by this file).
-- `docs/api.md` — REST contract; update headers section as part of MU1.
+- `docs/project/actionable-plan.md` — single-user deploy plan (M0–M4 done, M5–M10 superseded by this file).
+- `docs/reference/api.md` — REST contract; update headers section as part of MU1.
 - `src/agt/api/app.py` — endpoint definitions.
 - `src/agt/zotero/preflight.py` — preflight logic to refactor.
 - `zotero-addon/src/host/prefs.ts` — prefs schema to extend.

@@ -7,7 +7,7 @@
 > plan; they assume single-user secrets baked into the service.
 >
 > **Prerequisite.** Every box in P10 is checked — see
-> [actionable-plan-done-4.md](actionable-plan-done-4.md). This plan assumes:
+> [actionable-plan-done-4.md](../archive/done/actionable-plan-done-4.md). This plan assumes:
 >
 > - The cheap LLM (DeepSeek or equivalent) is wired and smoke-tested locally.
 > - The `Dockerfile` honors `$PORT`.
@@ -172,7 +172,7 @@ from datacenter IPs — Google's anti-bot systems flag those immediately. You ge
 CAPTCHA-walled in minutes. Commercial SERP APIs (SerpAPI) cost $50–$120/month
 minimum — 25–60x your entire GCP bill. The existing keyless sources (OpenAlex,
 Semantic Scholar, Crossref, PubMed, arXiv, Europe PMC) are competitive per
-`docs/benchmark.md`. Leave `AGT_SERPAPI_KEY` unset in production.
+`docs/reference/benchmark.md`. Leave `AGT_SERPAPI_KEY` unset in production.
 
 ---
 
@@ -495,7 +495,7 @@ The current add-on has no specific handling for these statuses.
   cd zotero-addon && npm ci && npm run lint && npm run build && npm run typecheck && npm run test
   ```
 
-#### M5-E — Update `docs/deployment.md` (10 minutes)
+#### M5-E — Update `docs/power-user/deployment.md` (10 minutes)
 
 - [ ] **M5-E.1** Add a "Cloud Run quickstart" subsection pointing at this plan
   and giving the one-liner for pointing the add-on at a hosted backend.
@@ -732,7 +732,7 @@ Walk this top-to-bottom whenever your bill surprises you.
   Cloud Run's 15-min timeout (current `--timeout=300` is fine).
 - **Terraform / Pulumi IaC** — worth doing before you have > 1 environment.
 - **MkDocs hosting** — GitHub Pages, free, unrelated to backend.
-- **macOS / Windows code signing** — planned for v1.1 (see `docs/local-first.md`).
+- **macOS / Windows code signing** — planned for v1.1 (see `docs/reference/local-first.md`).
 
 ---
 
@@ -760,7 +760,7 @@ Walk this top-to-bottom whenever your bill surprises you.
   - [ ] M5-B — Surface backend hostname in UI *(code)*
   - [ ] M5-C — Tighten CORS *(operational)*
   - [ ] M5-D — Cloud error UX in `backendClient.ts` *(code)*
-  - [ ] M5-E — Update `docs/deployment.md` *(docs)*
+  - [ ] M5-E — Update `docs/power-user/deployment.md` *(docs)*
 - [ ] **M6** — Tighten Auth *(optional, Phase 2)*
 - [ ] **M7** — CI/CD via Cloud Build
 - [ ] **M8** — Persistence *(trigger-based, Phase 2)*
@@ -781,9 +781,9 @@ Walk this top-to-bottom whenever your bill surprises you.
 
 ## See Also
 
-- `docs/actionable-plan-done-4.md` — completed P10 prereqs plan.
-- `docs/deployment.md` — user-facing deployment overview (update in M5-E).
-- `docs/api.md` — REST contract the Zotero add-on calls.
+- `docs/archive/done/actionable-plan-done-4.md` — completed P10 prereqs plan.
+- `docs/power-user/deployment.md` — user-facing deployment overview (update in M5-E).
+- `docs/reference/api.md` — REST contract the Zotero add-on calls.
 - `src/agt/providers/router.py` — provider routing (read before changing LLM config).
 - `src/agt/config.py` — settings contract (read before adding env vars).
 - [Cloud Run pricing](https://cloud.google.com/run/pricing) — re-check before any architecture change.

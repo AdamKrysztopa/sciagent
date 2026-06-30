@@ -1,7 +1,7 @@
 # SciAgent Actionable Plan — P9 (Standalone Distribution + First-Class Search Fields + Docs Overhaul) — DONE
 
 > **Completed: 2026-05-14** — All P9.0–P9.17 stories complete. Archived 2026-05-17.
-> See [actionable-plan.md](actionable-plan.md) for the current plan (P10 prereqs + GCP).
+> See [actionable-plan.md](../../project/actionable-plan.md) for the current plan (P10 prereqs + GCP).
 >
 > **Last audit: 2026-05-13** — All P0–P8 stories complete (see
 > [actionable-plan-done-2.md](actionable-plan-done-2.md) and
@@ -20,7 +20,7 @@
 inside Zotero, the same way they install any other Zotero add-on. Today the
 `README.md` still requires `git clone`, `uv sync`, `npm ci`, and `npm run build` —
 that is a developer install. The local-first plan
-([docs/local-first.md](local-first.md)) and the embedded-server binary already exist
+([docs/reference/local-first.md](../../reference/local-first.md)) and the embedded-server binary already exist
 and work on macOS arm64; what is missing is the **release pipeline that bundles
 them**, the **default backend mode**, and the **end-user docs that hide the dev
 path**.
@@ -106,10 +106,10 @@ asked for.
 | P9.9  | `Venue/Journal` first-class field                      | ~0.5d  | full-stack    | ✅ done (2026-05-13) |
 | P9.10 | `Seed DOI` paste field (drives `seed_dois`)            | ~0.25d | zotero-frontend | ✅ done (2026-05-13) |
 | P9.11 | README rewrite: XPI-first quick start                  | ~0.25d | core-planner  | ✅ done (2026-05-14) |
-| P9.12 | `docs/user-manual.md` rewrite (minimum-config path)    | ~0.5d  | core-planner  | ✅ done (2026-05-14) |
-| P9.13 | New `docs/install.md` (single source for install flow) | ~0.25d | core-planner  | ✅ done (2026-05-14) |
-| P9.14 | New `docs/keys.md` (how to get every key)              | ~0.5d  | core-planner  | ✅ done (2026-05-14) |
-| P9.15 | `docs/advanced-config.md` (everything that is optional) | ~0.25d | core-planner | ✅ done (2026-05-14) |
+| P9.12 | `docs/get-started/user-manual.md` rewrite (minimum-config path)    | ~0.5d  | core-planner  | ✅ done (2026-05-14) |
+| P9.13 | New `docs/get-started/install.md` (single source for install flow) | ~0.25d | core-planner  | ✅ done (2026-05-14) |
+| P9.14 | New `docs/get-started/keys.md` (how to get every key)              | ~0.5d  | core-planner  | ✅ done (2026-05-14) |
+| P9.15 | `docs/power-user/advanced-config.md` (everything that is optional) | ~0.25d | core-planner | ✅ done (2026-05-14) |
 | P9.16 | `mkdocs.yml` nav reshuffle + landing-page redesign     | ~0.25d | core-planner  | ✅ done (2026-05-14) |
 | P9.17 | Telemetry-free first-run smoke (manual checklist)      | ~0.25d | sciagent-orchestrator | ✅ done (2026-05-14) |
 
@@ -159,7 +159,7 @@ not bury under three terminal commands.
 
 ### P9.A — Standalone XPI Install *(2 days)*
 
-> Source: docs/local-first.md (already designed; this is the integration and
+> Source: docs/reference/local-first.md (already designed; this is the integration and
 > release pass). Everything below builds on existing code — no new architecture.
 
 **Goal:** A researcher downloads one XPI from a GitHub Release, installs it from
@@ -168,10 +168,10 @@ inside Zotero, opens it, pastes an LLM key, and runs a search. No terminal.
 | ID    | Story                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Effort |
 | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
 | P9.0  | **Release-mode default.** In `zotero-addon/src/host/prefs.ts`, set `backendMode` default to `"local"` (it may already be — verify and document). Confirm `bootstrap.js` calls `serverManager.startServer()` on plugin load and `stopServer()` on shutdown. Add an integration check that warns if the binary is missing **and** `backendMode === "local"`.                                                                                                                                                                                  | ~0.25d |
-| P9.1  | **Cross-platform binary validation.** Trigger `.github/workflows/build-binaries.yml` on a release-candidate branch. Confirm `linux-x86_64`, `macos-arm64`, `macos-x86_64`, `windows-x64` binaries all pass the `--version` and `/health` smoke step. Fix any platform-specific PyInstaller hooks (most likely Linux missing `anyio` backends, Windows missing console subsystem flags). Record SHA256s in CI logs and in `docs/install.md`.                                                                                                  | ~0.75d |
+| P9.1  | **Cross-platform binary validation.** Trigger `.github/workflows/build-binaries.yml` on a release-candidate branch. Confirm `linux-x86_64`, `macos-arm64`, `macos-x86_64`, `windows-x64` binaries all pass the `--version` and `/health` smoke step. Fix any platform-specific PyInstaller hooks (most likely Linux missing `anyio` backends, Windows missing console subsystem flags). Record SHA256s in CI logs and in `docs/get-started/install.md`.                                                                                                  | ~0.75d |
 | P9.2  | **Unified release workflow.** Either extend `build-binaries.yml` to also run the existing XPI build (already present in `package-xpi` job) and publish `update.rdf`, or merge `zotero-addon-release.yml` into `build-binaries.yml`. Outcome: one tag (`v1.0.0`) produces one GitHub Release that contains: four signed binaries, four `.sha256`, one XPI, one `update.rdf`. Verify by tagging `v1.0.0-rc.1` from a branch.                                                                                                                  | ~0.5d  |
 | P9.3  | **Self-update wiring.** The XPI metadata already declares `updateURL`; point it at the `update.rdf` published in P9.2. After the next tag, an installed plugin must offer to auto-update without a re-download. Test by installing `v1.0.0-rc.1` and tagging `v1.0.0-rc.2` 10 minutes later.                                                                                                                                                                                                                                                | ~0.25d |
-| P9.4  | **Code-signing notes.** Add a short admonition block to `docs/install.md` for macOS Gatekeeper (`right-click → Open`) and Windows SmartScreen ("More info → Run anyway"). Keep the long-term Apple Developer / EV cert plan in `docs/local-first.md` Part 7 — do not block P9 on it.                                                                                                                                                                                                                                                       | ~0.25d |
+| P9.4  | **Code-signing notes.** Add a short admonition block to `docs/get-started/install.md` for macOS Gatekeeper (`right-click → Open`) and Windows SmartScreen ("More info → Run anyway"). Keep the long-term Apple Developer / EV cert plan in `docs/reference/local-first.md` Part 7 — do not block P9 on it.                                                                                                                                                                                                                                                       | ~0.25d |
 | P9.5  | **Embedded First-Run Config Card.** After the binary downloads and the server is healthy, the sidebar must show a single card: one input for an LLM key (pre-selected provider auto-detected from key prefix) and one input for the Zotero API key + Library ID with a "Find these on zotero.org/settings/keys" link. Saving the card writes to Zotero prefs and triggers a `/health` re-check. Hide every other config (sources, depth, advanced filters) behind a "Show advanced" toggle.                                                  | ~0.5d  |
 
 **Acceptance (P9.A):**
@@ -183,7 +183,7 @@ inside Zotero, opens it, pastes an LLM key, and runs a search. No terminal.
   one LLM key + one Zotero key → first search returns results — all without a
   terminal.
 - The same flow tested manually on Linux x86_64 and Windows x64 (one each,
-  documented in `docs/install.md` § Verified Platforms).
+  documented in `docs/get-started/install.md` § Verified Platforms).
 
 ---
 
@@ -234,22 +234,22 @@ can do all three. Everything beyond that is one link deep.
 | ID    | Story                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Effort |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
 | P9.11 | **README rewrite.** Front matter: one paragraph, one badge row, one image of the sidebar. Quick Start collapses to three steps — download XPI, install in Zotero, paste LLM key. A second collapsed section labelled "Developer install (uv + npm)" keeps the current `uv sync` / `npm run build` path verbatim for contributors. No fewer than four anchor links — Install, Manual, API, Roadmap.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | ~0.25d |
-| P9.12 | **User manual rewrite.** Split `docs/user-manual.md` into three top-of-file sections — `## 5 minutes from install to first search`, `## When something goes wrong`, `## When you want more`. Move everything provider-specific into `docs/keys.md` (P9.14). Move every optional flag into `docs/advanced-config.md` (P9.15). Keep the screenshots inline.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | ~0.5d  |
-| P9.13 | **New `docs/install.md`.** Single source of truth for installation. Sections: Standalone (XPI), Verified platforms table, Self-update, macOS Gatekeeper / Windows SmartScreen notes, Docker (recommended for self-hosters), Source build (the current README content). Becomes the destination of every "Install" anchor across the docs.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | ~0.25d |
-| P9.14 | **New `docs/keys.md` — "How to get every key".** One section per credential: LLM keys (OpenAI, Anthropic, xAI, Groq, Ollama, custom OpenAI-compatible), Zotero API key + Library ID, optional academic keys (Semantic Scholar, NCBI/PubMed, CORE, SerpAPI, Dimensions), polite-pool email. Each section has: who needs it, why, exact link to the console, the form value to copy, the env var name, the matching sidebar ConfigPanel field name. Screenshots where the console UI is non-obvious (Zotero key page, OpenAI dashboard). Tag every key as **Required**, **Strongly recommended**, or **Optional**. Promise: a researcher reading this can collect every credential SciAgent might want in under 15 minutes — but they only need the **Required** ones to start.                                                                                                                                                                                                                | ~0.5d  |
-| P9.15 | **New `docs/advanced-config.md`.** Every `AGT_*` flag that is not in the **Required** set above. Grouped by purpose: provider tuning, search depth, PDF attachments, rate guards, Docker/data dir, MCP server. Links into `docs/api.md` and `docs/settings.md` for canonical definitions. The page makes it explicit that nothing here is needed to start.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | ~0.25d |
+| P9.12 | **User manual rewrite.** Split `docs/get-started/user-manual.md` into three top-of-file sections — `## 5 minutes from install to first search`, `## When something goes wrong`, `## When you want more`. Move everything provider-specific into `docs/get-started/keys.md` (P9.14). Move every optional flag into `docs/power-user/advanced-config.md` (P9.15). Keep the screenshots inline.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | ~0.5d  |
+| P9.13 | **New `docs/get-started/install.md`.** Single source of truth for installation. Sections: Standalone (XPI), Verified platforms table, Self-update, macOS Gatekeeper / Windows SmartScreen notes, Docker (recommended for self-hosters), Source build (the current README content). Becomes the destination of every "Install" anchor across the docs.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | ~0.25d |
+| P9.14 | **New `docs/get-started/keys.md` — "How to get every key".** One section per credential: LLM keys (OpenAI, Anthropic, xAI, Groq, Ollama, custom OpenAI-compatible), Zotero API key + Library ID, optional academic keys (Semantic Scholar, NCBI/PubMed, CORE, SerpAPI, Dimensions), polite-pool email. Each section has: who needs it, why, exact link to the console, the form value to copy, the env var name, the matching sidebar ConfigPanel field name. Screenshots where the console UI is non-obvious (Zotero key page, OpenAI dashboard). Tag every key as **Required**, **Strongly recommended**, or **Optional**. Promise: a researcher reading this can collect every credential SciAgent might want in under 15 minutes — but they only need the **Required** ones to start.                                                                                                                                                                                                                | ~0.5d  |
+| P9.15 | **New `docs/power-user/advanced-config.md`.** Every `AGT_*` flag that is not in the **Required** set above. Grouped by purpose: provider tuning, search depth, PDF attachments, rate guards, Docker/data dir, MCP server. Links into `docs/reference/api.md` and `docs/reference/settings.md` for canonical definitions. The page makes it explicit that nothing here is needed to start.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | ~0.25d |
 | P9.16 | **MkDocs nav and landing redesign.** New nav (see proposed shape in §Docs Tree Below). New `docs/index.md` lead — three cards: Install, Manual, Power user. Move planning docs and historical action plans into a collapsed "Project" section. Verify `mkdocs build --strict` is clean and `markdownlint-cli2` is clean.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | ~0.25d |
-| P9.17 | **Telemetry-free first-run manual smoke.** Add a one-page checklist `docs/install.md#smoke-checklist` that a fresh user can run on macOS, Linux, and Windows. Use it once per platform before tagging the v1.0.0 release and record the verified date in the table.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | ~0.25d |
+| P9.17 | **Telemetry-free first-run manual smoke.** Add a one-page checklist `docs/get-started/install.md#smoke-checklist` that a fresh user can run on macOS, Linux, and Windows. Use it once per platform before tagging the v1.0.0 release and record the verified date in the table.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | ~0.25d |
 
 **Acceptance (P9.C):**
 
-- New `docs/install.md`, `docs/keys.md`, `docs/advanced-config.md` exist and
+- New `docs/get-started/install.md`, `docs/get-started/keys.md`, `docs/power-user/advanced-config.md` exist and
   pass `markdownlint-cli2` and `mkdocs build --strict`.
 - `README.md` Quick Start is three steps. The developer install is one
   collapsed section.
 - The MkDocs landing page has three cards and ten total nav entries (today: 16).
 - Every external service that exposes a key referenced in `.env.example` is
-  documented in `docs/keys.md` with a link to the console.
+  documented in `docs/get-started/keys.md` with a link to the console.
 
 ---
 
@@ -259,26 +259,26 @@ can do all three. Everything beyond that is one link deep.
 Overview
   Home (cards: Install / Manual / API)
 Get Started
-  Install (docs/install.md)
-  Get Your Keys (docs/keys.md)
-  User Manual (docs/user-manual.md)
+  Install (docs/get-started/install.md)
+  Get Your Keys (docs/get-started/keys.md)
+  User Manual (docs/get-started/user-manual.md)
 Power User
-  Advanced Config (docs/advanced-config.md)
-  Configuration & Usage (docs/manual.md)
-  Deployment & Hosting (docs/deployment.md)
+  Advanced Config (docs/power-user/advanced-config.md)
+  Configuration & Usage (docs/power-user/manual.md)
+  Deployment & Hosting (docs/power-user/deployment.md)
 Reference
-  REST API (docs/api.md)
-  Provider Inventory (docs/providers.md)
-  Settings (docs/settings.md)
-  Security (docs/security.md)
-  Zotero Add-on (docs/zotero.md)
-  P1 Benchmark (docs/benchmark.md)
+  REST API (docs/reference/api.md)
+  Provider Inventory (docs/reference/providers.md)
+  Settings (docs/reference/settings.md)
+  Security (docs/reference/security.md)
+  Zotero Add-on (docs/reference/zotero.md)
+  P1 Benchmark (docs/reference/benchmark.md)
 Project
-  Roadmap (docs/core.md)
-  Action Plan (docs/actionable-plan.md)
-  History (docs/actionable-plan-done.md, docs/actionable-plan-done-2.md)
-  Priorities (docs/priorities.md)
-  Next Steps (docs/next-steps.md)
+  Roadmap (docs/reference/core.md)
+  Action Plan (docs/project/actionable-plan.md)
+  History (docs/archive/done/actionable-plan-done.md, docs/archive/done/actionable-plan-done-2.md)
+  Priorities (docs/archive/obsolete/priorities.md)
+  Next Steps (docs/archive/obsolete/next-steps.md)
 ```
 
 ---
@@ -305,7 +305,7 @@ Each tranche is shippable on its own. Recommended order:
 | Risk                                                                  | Likelihood | Mitigation                                                                                                                  |
 | --------------------------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------- |
 | Windows / Linux PyInstaller surprises                                  | Medium     | P9.1 runs in CI before any tag. Time-box at ~0.75d; if a platform refuses, ship macOS + Linux first and Windows in v1.0.1. |
-| macOS Gatekeeper friction breaks the "no terminal" promise            | Medium     | P9.4 ships an inline note in the FirstRunDialog and a `docs/install.md` admonition. Long-term: Apple Developer cert.       |
+| macOS Gatekeeper friction breaks the "no terminal" promise            | Medium     | P9.4 ships an inline note in the FirstRunDialog and a `docs/get-started/install.md` admonition. Long-term: Apple Developer cert.       |
 | Author resolver returns the wrong person ("J. Smith" disambiguation)  | Medium     | P9.7 returns up to 5 ranked candidates with `works_count`, OpenAlex affiliation, and ORCID. The user picks before search. |
 | Venue resolution drifts (journal-merge events, deprecated venues)     | Low        | OpenAlex is the canonical source; fall back to free-text venue name only when no ID resolves.                              |
 | Docs sprawl — three new MD files plus rewrites                        | Low        | P9.16 enforces the new nav and the markdownlint + mkdocs-strict gates catch dead links and stale tables.                   |
@@ -333,7 +333,7 @@ npx --yes markdownlint-cli2 "README.md" "docs/**/*.md" "examples/**/*.md" ".gith
 uv run mkdocs build --strict
 ```
 
-Plus three P9-specific manual smokes recorded in `docs/install.md`:
+Plus three P9-specific manual smokes recorded in `docs/get-started/install.md`:
 
 - Fresh macOS arm64: install XPI → paste keys → run search → write to Zotero.
 - Fresh Linux x86_64: same.
@@ -343,8 +343,8 @@ Plus three P9-specific manual smokes recorded in `docs/install.md`:
 
 ## Out of Scope for P9
 
-- macOS / Windows code signing (planned for v1.1, see `docs/local-first.md` Part 7).
-- Hosted SaaS tier (planned for "Later / SaaS phase" release in `docs/core.md`).
+- macOS / Windows code signing (planned for v1.1, see `docs/reference/local-first.md` Part 7).
+- Hosted SaaS tier (planned for "Later / SaaS phase" release in `docs/reference/core.md`).
 - New academic providers beyond the 9 already in P8.
 - Reranker / model swaps. P8.10 covered the key-validation surface.
 - Title and abstract fields as separate inputs (low marginal value over the

@@ -1,6 +1,6 @@
 ---
 name: core-planner
-description: "Use when: planning or reviewing SciAgent backlog work from docs/core.md, mapping stories and dependencies, checking acceptance criteria, sequencing AGT/ZAP work, and handing off to implementation specialists."
+description: "Use when: planning or reviewing SciAgent backlog work from docs/reference/core.md, mapping stories and dependencies, checking acceptance criteria, sequencing AGT/ZAP work, and handing off to implementation specialists."
 argument-hint: "Describe the story, epic, or feature slice and the planner will map scope, dependencies, risks, and verification."
 tools: [read, search, agent, todo]
 handoffs:
@@ -9,13 +9,13 @@ handoffs:
     prompt: "Choose the implementation specialist, handoff order, and validation path for this planned work."
   - label: Implement Python backend
     agent: python-backend-engineer
-    prompt: "Turn this planned work into strict, tested Python backend changes aligned with Python 3.14, uv, ruff, pyright/ty, and docs/settings.md."
+    prompt: "Turn this planned work into strict, tested Python backend changes aligned with Python 3.14, uv, ruff, pyright/ty, and docs/reference/settings.md."
   - label: Bootstrap environment
     agent: settings-bootstrap
-    prompt: "Turn this planned work into concrete environment, tooling, or CI changes aligned to docs/settings.md."
+    prompt: "Turn this planned work into concrete environment, tooling, or CI changes aligned to docs/reference/settings.md."
   - label: Implement Zotero add-on
     agent: zotero-addon
-    prompt: "Turn this planned work into a Zotero add-on architecture and implementation plan aligned to docs/zotero.md."
+    prompt: "Turn this planned work into a Zotero add-on architecture and implementation plan aligned to docs/reference/zotero.md."
 ---
 
 # Core Planner Agent
@@ -24,7 +24,7 @@ You are the Core Planner agent for SciAgent.
 
 Primary objective:
 
-- Convert backlog items in `docs/core.md` into actionable implementation steps.
+- Convert backlog items in `docs/reference/core.md` into actionable implementation steps.
 
 Operating rules:
 

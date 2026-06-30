@@ -4,7 +4,7 @@ Nothing on this page is required to start using SciAgent. The defaults work for 
 Come here when you want to tune performance, add privacy layers, or deploy for a team.
 
 All settings are loaded from environment variables (or a `.env` file in the repo root) via
-`pydantic-settings`. The canonical reference for every variable is [Settings](settings.md).
+`pydantic-settings`. The canonical reference for every variable is [Settings](../reference/settings.md).
 
 ---
 
@@ -87,7 +87,7 @@ Valid source names match the provider identifiers used internally: `openalex`, `
 
 `AGT_MAILTO` — email address for the polite-pool access offered by OpenAlex, Crossref, and
 DOAJ. Providing a real address typically doubles the rate limit you receive from those
-services. See [docs/settings.md](settings.md) for details.
+services. See [docs/reference/settings.md](../reference/settings.md) for details.
 
 ```ini
 AGT_MAILTO=your-email@example.com
@@ -246,13 +246,13 @@ AGT_LOG_LEVEL=DEBUG
 ## MCP Server
 
 SciAgent exposes an MCP-compatible server that allows tool-use workflows to query the
-academic search and Zotero write paths programmatically. See [API Reference](api.md) for
+academic search and Zotero write paths programmatically. See [API Reference](../reference/api.md) for
 the full endpoint contract and authentication details.
 
 ---
 
 ## See Also
 
-- [Settings](settings.md) — canonical reference for every environment variable and its
+- [Settings](../reference/settings.md) — canonical reference for every environment variable and its
   validation rules
 - [Deployment](deployment.md) — self-hosting, Docker, reverse-proxy, and team setup guide

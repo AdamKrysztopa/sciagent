@@ -341,7 +341,7 @@ Follow these steps in order. Each step names the exact file to edit and the exac
    This writes `tests/cassettes/{snake_name}_happy_path.yaml`. Commit the cassette, then
    use `--vcr-record=none` for all subsequent CI runs.
 
-8. **Update provider inventory** — open `docs/providers.md` and:
+8. **Update provider inventory** — open `docs/reference/providers.md` and:
    - Add a row to the Summary Table under `## Summary Table`.
    - Add a `## FooClient` section following the format of the existing client sections
      (Base URL, Auth, Key env var, Fields populated, Retry / timeout, Notes).

@@ -2,15 +2,15 @@
 
 This repository currently defines product and engineering direction in three docs:
 
-- `docs/core.md`: platform, retrieval, workflow, and delivery epic/story backlog.
-- `docs/settings.md`: runtime stack, bootstrap flow, quality tooling, and dev setup.
-- `docs/zotero.md`: Zotero add-on roadmap and native integration plan.
+- `docs/reference/core.md`: platform, retrieval, workflow, and delivery epic/story backlog.
+- `docs/reference/settings.md`: runtime stack, bootstrap flow, quality tooling, and dev setup.
+- `docs/reference/zotero.md`: Zotero add-on roadmap and native integration plan.
 
 When making or proposing changes:
 
-1. Treat `docs/core.md` as the source of truth for execution order and acceptance criteria.
-2. Treat `docs/settings.md` as the source of truth for environment and tooling choices.
-3. Treat `docs/zotero.md` as the source of truth for plugin/UI integration scope.
+1. Treat `docs/reference/core.md` as the source of truth for execution order and acceptance criteria.
+2. Treat `docs/reference/settings.md` as the source of truth for environment and tooling choices.
+3. Treat `docs/reference/zotero.md` as the source of truth for plugin/UI integration scope.
 4. Keep outputs implementation-ready and explicit about tradeoffs.
 5. Prefer strict, typed Python and testable interfaces.
 6. Preserve idempotency and approval gates for any Zotero write path.
@@ -33,10 +33,10 @@ Global execution policy (highest priority for this repository):
 Agent routing and research rules:
 
 1. Use `sciagent-orchestrator` when the user asks who should act, requests agent selection, gives mixed-domain work that needs explicit sequencing, or asks for end-to-end task delivery from idea to verified done. The orchestrator acts as a seasoned product manager and scrum master with 20 years of development experience — it decomposes tasks, screens for risks, routes to specialists, enforces stage gates, and never writes code itself.
-2. Use `core-planner` for backlog mapping, acceptance checks, and story sequencing against `docs/core.md`.
+2. Use `core-planner` for backlog mapping, acceptance checks, and story sequencing against `docs/reference/core.md`.
 3. Use `python-backend-engineer` for modern Python backend implementation and review across `src/agt/**`, `tests/**`, FastAPI, LangGraph, provider adapters, retrieval, ranking, workflow, Zotero write paths, performance, strict typing, and failure handling.
-4. Use `settings-bootstrap` for environment, Python 3.14 policy, `uv`, quality tooling, CI, Docker, and reproducibility work tied to `docs/settings.md`.
-5. Use `zotero-addon` for Zotero plugin architecture, backend contract mapping, native integration boundaries, and write/approval flow design tied to `docs/zotero.md`.
+4. Use `settings-bootstrap` for environment, Python 3.14 policy, `uv`, quality tooling, CI, Docker, and reproducibility work tied to `docs/reference/settings.md`.
+5. Use `zotero-addon` for Zotero plugin architecture, backend contract mapping, native integration boundaries, and write/approval flow design tied to `docs/reference/zotero.md`.
 6. Use `zotero-frontend` for TypeScript, React, WebExtension, sidebar UI, manifest, bootstrap, typed clients, host adapters, hooks, and add-on frontend tests and quality commands.
 7. For unfamiliar third-party libraries or fast-moving APIs, fetch current documentation through Context7 (`mcp_io`) before coding. Prefer official docs over memory for React, Zotero add-on tooling, LangGraph, and VS Code customization behavior.
 8. Keep agent descriptions keyword-rich so the right specialist is discoverable from the user prompt.

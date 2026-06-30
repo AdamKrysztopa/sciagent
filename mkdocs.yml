@@ -30,24 +30,41 @@ nav:
   - Overview:
       - Home: index.md
   - Get Started:
-      - Hosted Demo Guide: hosted-demo-guide.md
-      - Installation: install.md
-      - API Keys: keys.md
-      - User Manual: user-manual.md
+      - Hosted Demo Guide: get-started/hosted-demo-guide.md
+      - Installation: get-started/install.md
+      - API Keys: get-started/keys.md
+      - User Manual: get-started/user-manual.md
   - Power User:
-      - Advanced Configuration: advanced-config.md
-      - Configuration & Usage: manual.md
-      - Deployment & Hosting: deployment.md
+      - Advanced Configuration: power-user/advanced-config.md
+      - Configuration & Usage: power-user/manual.md
+      - Deployment & Hosting: power-user/deployment.md
   - Reference:
-      - REST API: api.md
-      - Provider Inventory: providers.md
-      - Settings: settings.md
-      - Zotero Add-on: zotero.md
-      - Security: security.md
-      - P1 Benchmark: benchmark.md
-      - Local-First Install: local-first.md
+      - REST API: reference/api.md
+      - Provider Inventory: reference/providers.md
+      - Settings: reference/settings.md
+      - Zotero Add-on: reference/zotero.md
+      - Security: reference/security.md
+      - P1 Benchmark: reference/benchmark.md
+      - Local-First Install: reference/local-first.md
+      - Core Roadmap: reference/core.md
   - Project:
-      - Core Roadmap: core.md
-      - Action Plan: actionable-plan.md
-      - Priorities: priorities.md
-      - Next Steps: next-steps.md
+      - Action Plan (GCP Deploy): project/actionable-plan.md
+      - Multi-User Plan: project/actionable-plan-multiuser.md
+  - Plans & Specs:
+      - Admin Service & Security — Plan: superpowers/plans/2026-05-22-admin-service-security.md
+      - Admin Service & Security — Spec: superpowers/specs/2026-05-22-admin-service-security-design.md
+      - Sidebar UI Redesign — Plan: superpowers/plans/2026-05-22-ui-redesign.md
+      - Sidebar UI Redesign — Spec: superpowers/specs/2026-05-22-ui-redesign-design.md
+      - Email Welcome & Invite — Plan: superpowers/plans/2026-05-23-email-welcome-invite.md
+      - Email Welcome & Invite — Spec: superpowers/specs/2026-05-23-email-welcome-invite-design.md
+  - Archive:
+      - Done:
+          - P0–P7 Action Plan: archive/done/actionable-plan-done.md
+          - P8 Baseline Search: archive/done/actionable-plan-done-2.md
+          - P9 Standalone Distribution: archive/done/actionable-plan-done-3.md
+          - P10 GCP Prerequisites: archive/done/actionable-plan-done-4.md
+      - Obsolete:
+          - Next Steps (archived): archive/obsolete/next-steps.md
+          - Priorities (archived): archive/obsolete/priorities.md
+          - Zotero Add-on UI Plan (superseded): archive/obsolete/zotero-addon-ui-plan.md
+          - Expanded Idle Panel Plan (superseded): archive/obsolete/zotero-addon-expanded-idle-plan.md

@@ -77,7 +77,7 @@ your own key instead.
 
 That is the entire install. No terminal. No Python. No `git clone`.
 
-See [Installation](docs/install.md) for OS security warnings and platform notes.
+See [Installation](docs/get-started/install.md) for OS security warnings and platform notes.
 
 <details>
 <summary>Developer install (uv + npm)</summary>
@@ -113,18 +113,18 @@ Prerequisites:
 
 ## Documentation
 
-- **[Installation](docs/install.md)** — XPI download, OS security warnings, and
+- **[Installation](docs/get-started/install.md)** — XPI download, OS security warnings, and
   platform notes
-- **[User Manual](docs/user-manual.md)** — Zero-to-running guide; shareable with
+- **[User Manual](docs/get-started/user-manual.md)** — Zero-to-running guide; shareable with
   anyone new to SciAgent
-- **[REST API Reference](docs/api.md)** — Backend contract for the add-on and
+- **[REST API Reference](docs/reference/api.md)** — Backend contract for the add-on and
   developer tooling
-- **[Core Roadmap](docs/core.md)** — Feature backlog and milestone details
-- **[Configuration & Usage Manual](docs/manual.md)** — Full Zotero workflow,
+- **[Core Roadmap](docs/reference/core.md)** — Feature backlog and milestone details
+- **[Configuration & Usage Manual](docs/power-user/manual.md)** — Full Zotero workflow,
   configuration reference, and developer interfaces
-- **[Deployment Guide](docs/deployment.md)** — Local, Docker, and future SaaS
+- **[Deployment Guide](docs/power-user/deployment.md)** — Local, Docker, and future SaaS
   architecture
-- **[Settings](docs/settings.md)** — Runtime stack, bootstrap flow, and quality
+- **[Settings](docs/reference/settings.md)** — Runtime stack, bootstrap flow, and quality
   tooling
 
 ## Quality

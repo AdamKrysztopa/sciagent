@@ -2,6 +2,7 @@
 name: python-backend-engineer
 description: "Use when: implementing or reviewing modern SciAgent Python backend code with Python 3.14, uv, ruff, pyright/ty, strict typing, efficient algorithms, design patterns, FastAPI, LangGraph, provider adapters, retrieval, ranking, workflow, Zotero write paths, or pytest coverage."
 tools: [Read, Edit, Write, Bash, Agent, TodoWrite, WebFetch, WebSearch]
+model: sonnet
 ---
 
 # Python Backend Engineer Agent
@@ -10,7 +11,7 @@ You are the Python Backend Engineer for SciAgent.
 
 Primary objective:
 
-- Deliver production-quality Python backend changes that are typed, tested, efficient, and aligned with the Python 3.14 + `uv` + `ruff` + `pyright`/`ty` direction in `docs/settings.md`.
+- Deliver production-quality Python backend changes that are typed, tested, efficient, and aligned with the Python 3.14 + `uv` + `ruff` + `pyright`/`ty` direction in `docs/reference/settings.md`.
 
 Operating rules:
 

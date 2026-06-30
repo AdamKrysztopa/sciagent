@@ -6,9 +6,9 @@
 >
 > This is the canonical execution tracker for live status, overall progress, and the next implementation target.
 > Update done / not done state here first.
-> See [docs/manual.md](manual.md) for configuration & usage.
+> See [docs/power-user/manual.md](../../power-user/manual.md) for configuration & usage.
 
-This document is synthesized from [core.md](core.md), [settings.md](settings.md), and [zotero.md](zotero.md) using role-specific subagent prioritization.
+This document is synthesized from [core.md](../../reference/core.md), [settings.md](../../reference/settings.md), and [zotero.md](../../reference/zotero.md) using role-specific subagent prioritization.
 
 ## Execution Tracker
 
@@ -21,31 +21,31 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 ### Recent Progress
 
-- ✅ OPN-06 complete (2026-05-12): External baseline comparison — SciAgent default 19/22 (87%), recall@20=0.769, hard-filter compliance 1.000 vs OpenAlex direct ~11/22 (0%), SS direct ~13/22 (0%), ChatGPT web-search ~17/22 (~70%); deep mode ~21/22. See `docs/benchmark.md` § External Baseline Comparison.
-- ✅ OPN-07 complete (2026-05-12): `search_depth=deep` mitigates TS-02 and BIO-04; BIO-01 confirmed free-tier API coverage gap. See `docs/benchmark.md` § Deep Search Mode Evaluation.
-- ✅ OPN-08 complete (2026-05-12): `docs/api.md` full rewrite — all 20+ endpoints documented with accurate schemas; `FilterEditContract` / `HardFilters` / `NormalizedPaper` / `SearchMetadata` / `SourceTerminalState` / `SearchPlan` reference section added; `search_depth`, `native_write`, `enable_pdf_imports` documented; `/capabilities`, watch list, sessions, cache endpoints all documented.
+- ✅ OPN-06 complete (2026-05-12): External baseline comparison — SciAgent default 19/22 (87%), recall@20=0.769, hard-filter compliance 1.000 vs OpenAlex direct ~11/22 (0%), SS direct ~13/22 (0%), ChatGPT web-search ~17/22 (~70%); deep mode ~21/22. See `docs/reference/benchmark.md` § External Baseline Comparison.
+- ✅ OPN-07 complete (2026-05-12): `search_depth=deep` mitigates TS-02 and BIO-04; BIO-01 confirmed free-tier API coverage gap. See `docs/reference/benchmark.md` § Deep Search Mode Evaluation.
+- ✅ OPN-08 complete (2026-05-12): `docs/reference/api.md` full rewrite — all 20+ endpoints documented with accurate schemas; `FilterEditContract` / `HardFilters` / `NormalizedPaper` / `SearchMetadata` / `SourceTerminalState` / `SearchPlan` reference section added; `search_depth`, `native_write`, `enable_pdf_imports` documented; `/capabilities`, watch list, sessions, cache endpoints all documented.
 - ✅ FirstRunDialog complete (2026-05-12): local-first binary-missing path wired — `checkBinaryInstalled` / `downloadBinary` / `startServerAfterDownload` in `AddonUiServices`; `FirstRunDialog.tsx` with progress bar; `App.tsx` binary check triggers when `backendMode="local"`.
 - ✅ OPN-17 complete (2026-05-12): Source terminal state normalization — `SourceTerminalState` literal (queried/zero_results/rate_limited/failed/skipped_no_key/skipped_disabled); `SearchMetadata.source_states` dict populated on every search; key-absent fallback sources (CORE/Dimensions/Google Scholar) now tagged `skipped_no_key` instead of silently absent; `SearchCoveragePanel.tsx` collapsed section in ReviewView with per-source state chips. 386 Python tests + 40 add-on tests.
 - ✅ OPN-12/13 complete (2026-05-12): `venue`, `item_type`, `volume`, `issue`, `pages` fields added to `NormalizedPaper`; populated from OpenAlex, Semantic Scholar, Crossref, PubMed; mapped to Zotero `itemType` in both upsert and ZAP write paths; `ResultsList.tsx` shows venue+vol/issue/pages inline, DOI badge, abstract, influential citation count; `nativeWriteEnabled` checkbox added to ConfigPanel.
 - ✅ OPN-05 complete (2026-05-12): MCP server wired into Claude Code — `mcpServers.sciagent` entry added to `.claude/settings.json`; runs `uv run --directory <repo> python -m agt.mcp_server`; all four tools confirmed (`search_papers`, `list_watches`, `get_session`, `library_doctor`); Docker rebuilt.
 - ✅ OPN-04 complete (2026-05-12): GitHub Pages deploy — `deploy-docs` job added to `ci.yml`; runs `mkdocs gh-deploy --force` on push to `main`, gated on `docs-quality` passing; `site_url: https://adamkrysztopa.github.io/sciagent/` and `repo_url` added to `mkdocs.yml` so canonical links resolve correctly.
 - ✅ OPN-09 complete (2026-05-12): Real PDF download pipeline — `fetch_pdf_bytes` (httpx + follow_redirects + magic-byte validation), `sha256_hex`, `is_valid_pdf`, `save_pdf`; 4-step Zotero `imported_file` upload (auth → S3 raw-body → register); `enable_pdf_imports=True` from Zotero UI now forces `enable_pdf_attachment=True` in settings; ArXiv `pdf_url` bug fixed (was going to `url=`); OpenAlex `open_access.oa_url` + `primary_location.pdf_url` populated; Semantic Scholar `openAccessPdf.url` added to fields + parsed; Docker container rebuilt and verified — `pdf_url` present in `/status` results; integration test downloads "Attention Is All You Need" (1706.03762) and verifies 2MB valid PDF. 333 tests pass.
-- ✅ OPN-03 complete (2026-05-12): CI release pipeline corrected — wrong addon ID (`sciagent@sciagent.dev` → `agt@yourdomain.org`), wrong XPI path (`zotero-addon/` → `zotero-addon/build/`), wrong Zotero version range (`7.0/*` → `9.0.0/9.*`), SHA256 added, `Commit update.rdf to main` step added, all release steps guarded on `github.ref_type == 'tag'`; `update.rdf` stable raw URL live at main branch; GitHub Releases install path and release process documented in `docs/manual.md`.
-- ✅ OPN-02 complete (2026-05-12): PyInstaller binary built and verified on macOS arm64 — 37 MB UPX-compressed; `--version` returns `0.1.0`; `/health` HTTP 200 (ok:false without creds, ok:true with); `POST /run` returns real paper search results; `serverManager.ts` spawn contract validated; manual added to `docs/manual.md` §Standalone Binary; stale spec example in `docs/local-first.md` corrected.
+- ✅ OPN-03 complete (2026-05-12): CI release pipeline corrected — wrong addon ID (`sciagent@sciagent.dev` → `agt@yourdomain.org`), wrong XPI path (`zotero-addon/` → `zotero-addon/build/`), wrong Zotero version range (`7.0/*` → `9.0.0/9.*`), SHA256 added, `Commit update.rdf to main` step added, all release steps guarded on `github.ref_type == 'tag'`; `update.rdf` stable raw URL live at main branch; GitHub Releases install path and release process documented in `docs/power-user/manual.md`.
+- ✅ OPN-02 complete (2026-05-12): PyInstaller binary built and verified on macOS arm64 — 37 MB UPX-compressed; `--version` returns `0.1.0`; `/health` HTTP 200 (ok:false without creds, ok:true with); `POST /run` returns real paper search results; `serverManager.ts` spawn contract validated; manual added to `docs/power-user/manual.md` §Standalone Binary; stale spec example in `docs/reference/local-first.md` corrected.
 - ✅ OPN-01 complete (2026-05-12): Live Zotero 9 desktop smoke test passed — full search→filter→approve→write verified; both `uvicorn` and Docker container backends confirmed; M6 fully signed off.
 - ✅ P6 complete (2026-05-12): SCI-0601 generic OpenAI-compatible adapter (AGT_LLM_BASE_URL/AGT_LLM_API_KEY/AGT_LLM_MODEL, covers DeepSeek, Together AI, LM Studio); SCI-0602 Ollama named shorthand (AGT_LLM_PROVIDER=ollama, localhost:11434/v1, no key); SCI-0603 Zotero sidebar provider dropdown (OpenAI/Anthropic/xAI/Groq/Ollama/Custom, prefs, collectProviderEnv); SCI-0604 embedded server binary (sciagent-server CLI, AGT_DATA_DIR, GET /version, PyInstaller spec, CI build-binaries workflow, serverManager.ts, FirstRunDialog.tsx). All gates: ruff 0, pyright 0, 318 tests, addon 40 tests.
-- ✅ P5 complete (2026-05-12): SCI-0501 CORS + slowapi rate limiting + docs/security.md; SCI-0502 Groq provider adapter (llama-3.3-70b-versatile, wired into auto-detect); SCI-0503 Dockerfile CMD fixed (uvicorn) + docker-compose.yml + CI docker-build smoke test; SCI-0504 read-only MCP server (FastMCP, 4 tools: search_papers/list_watches/get_session/library_doctor). All gates: ruff 0, pyright 0, 309 tests, markdownlint 0.
+- ✅ P5 complete (2026-05-12): SCI-0501 CORS + slowapi rate limiting + docs/reference/security.md; SCI-0502 Groq provider adapter (llama-3.3-70b-versatile, wired into auto-detect); SCI-0503 Dockerfile CMD fixed (uvicorn) + docker-compose.yml + CI docker-build smoke test; SCI-0504 read-only MCP server (FastMCP, 4 tools: search_papers/list_watches/get_session/library_doctor). All gates: ruff 0, pyright 0, 309 tests, markdownlint 0.
 - ✅ P4 complete (2026-05-12): SCI-0401 WatchStore (JSON-backed per-watch files, `~/.sciagent/watches/`), CRUD API (`POST/GET/DELETE /watches`); SCI-0402 watch rerun (`POST /watches/{id}/rerun`) — runs search, tags new vs seen papers by DOI+fingerprint, extends seen_fingerprints, returns run_id for normal approve/reject flow; SCI-0403 Zotero sidebar WatchList.tsx component, watch_status badge in ResultsList.tsx, backendClient methods, useSciAgentController state. All gates: ruff 0, pyright 0, 298 tests, addon clean.
 - ✅ P3 complete (2026-05-11): SCI-0301 collection-aware search with library status badges (in_library/possible_duplicate/new); SCI-0302 PDF attachment pipeline (linked-URL, never blocks metadata import); SCI-0303 Library Doctor (missing DOI/abstract/PDF/duplicate scanner); SCI-0304 Gap Finder (LLM generates gap queries from existing collection, filters already-in-library); spell-check checkbox, keyword extraction from natural language, `GET /correct-query`, `POST /extract-keywords`, `POST /library-doctor`, `POST /gap-finder` endpoints. Addon v0.2.0. All gates: ruff 0, pyright 0, 274 tests, addon clean.
 - ✅ P2 complete (2026-05-11): SCI-0201 `/capabilities` extended with `provider_availability` + `active_provider`; SCI-0203 `SessionStore` (JSON file persistence, list/load/rerun API); SCI-0204 `ResultCache` (SQLite, TTL, stats/clear API); SCI-0206 `export_session` (Markdown PRISMA-lite, JSON, CSV via `/status/{id}/export`); SCI-0202 `SourcePresets` component in Zotero sidebar (Balanced, Open Access, Recent 5yr, Highly Cited, Quick 5, Deep 20). All gates: ruff 0, pyright 0, 230 tests, addon clean.
 - ✅ SCI-0205 complete: `NormalizedPaper.explanation` field added; `explain_paper()` in ranking.py generates deterministic, signal-based reasons (semantic score tier, keyword hit count, citations, influential citations, open access, source, year); populated by `_attach_explanations` before all result returns in search_papers; shown in Streamlit UI, Zotero sidebar (ResultsList.tsx), and m2_7_search_plan_demo (2026-05-11)
 - ✅ SCI-0104 closed: final validated run 19/22, recall@20=0.769; INTER-03 recovered via long-query prefix variant; TS-02/BIO-01/BIO-04 remain as external-API retrieval-depth limits; P1 closed by product decision (2026-05-11)
 - ✅ SCI-0103 complete: KeyBERT is retired from active tuning after benchmark regression, spell check is explicitly deferred pending a typo-focused panel, and reranker is retained as a positive opt-in experiment; P1 remains open pending SCI-0104 on the 4 remaining below-baseline queries
-- ✅ SCI-0101 complete: benchmark report published in `docs/benchmark.md`; validated default run preserves hard filters and source coverage across all 22 queries, with 9 recall-only regressions against the manual web-search baseline
+- ✅ SCI-0101 complete: benchmark report published in `docs/reference/benchmark.md`; validated default run preserves hard filters and source coverage across all 22 queries, with 9 recall-only regressions against the manual web-search baseline
 - ✅ M6 complete: all ZAP-0–ZAP-11 stories done — native write path (ZAP-6/7/8), offline cache (ZAP-10), release automation (ZAP-11), /capabilities backend endpoint, nativeWriteEnabled pref
 - ✅ M6.1 complete: settings panel split (Connection & Auth / Search Defaults), pre-search filter composer, main-window panel (Tools > SciAgent opens standalone dialog), SourceToggles, version bumped to 0.1.2
 - ✅ M6.1-D complete: PDF attachment status surfaced per-item in write result (pdfStatus: attached/failed/skipped), nativeWriteResult state added to controller, renderNativeWriteResult in App, zoteroWriter tests added
-- ✅ Docs reorganized: new `docs/api.md`, `docs/deployment.md`, updated `docs/manual.md` with full local run guide
+- ✅ Docs reorganized: new `docs/reference/api.md`, `docs/power-user/deployment.md`, updated `docs/power-user/manual.md` with full local run guide
 - ✅ macOS XPI installation instructions added to manual
 - ✅ MkDocs nav restructured into Overview / Planning / Manuals / Reference
 - ✅ README rewritten in researcher language with the Zotero-first product path
@@ -86,14 +86,14 @@ This document is synthesized from [core.md](core.md), [settings.md](settings.md)
 
 | ID     | Story                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Effort | Blocking              |
 | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | --------------------- |
-| OPN-01 | ~~Live Zotero 9 desktop smoke test — install unsigned XPI in actual Zotero 9.x, run search→filter→approve→write, check off `docs/manual.md` checklist~~ **DONE 2026-05-12** — both `uvicorn` and Docker container confirmed                                                                                                                                                                                                                                                                   | ~2h    | M6 sign-off ✓         |
-| OPN-02 | ~~**PyInstaller binary build** — run `pyinstaller build/sciagent-server.spec`, verify the produced binary starts and responds to `/health` on macOS-arm64; validate `serverManager.ts` spawning~~ **DONE 2026-05-12** — 37 MB arm64 binary verified; manual added to `docs/manual.md`                                                                                                                                                                                                         | ~0.5d  | SCI-0604 final mile ✓ |
+| OPN-01 | ~~Live Zotero 9 desktop smoke test — install unsigned XPI in actual Zotero 9.x, run search→filter→approve→write, check off `docs/power-user/manual.md` checklist~~ **DONE 2026-05-12** — both `uvicorn` and Docker container confirmed                                                                                                                                                                                                                                                                   | ~2h    | M6 sign-off ✓         |
+| OPN-02 | ~~**PyInstaller binary build** — run `pyinstaller build/sciagent-server.spec`, verify the produced binary starts and responds to `/health` on macOS-arm64; validate `serverManager.ts` spawning~~ **DONE 2026-05-12** — 37 MB arm64 binary verified; manual added to `docs/power-user/manual.md`                                                                                                                                                                                                         | ~0.5d  | SCI-0604 final mile ✓ |
 | OPN-03 | ~~**XPI signing + update.rdf** — publish unsigned XPI to GitHub Releases; generate `update.rdf` with correct `em:version` and download URL at a stable raw URL; document Zotero 9 self-signed install path~~ **DONE 2026-05-12** — CI pipeline fixed; stable update_url live; release process documented                                                                                                                                                                                      | ~0.5d  | ZAP-11 completion ✓   |
 | OPN-04 | ~~**Docs site deployment** — add GitHub Pages deploy job to CI (`mkdocs gh-deploy`) so docs are publicly browsable on push to `main`~~ **DONE 2026-05-12** — `deploy-docs` job in `ci.yml` runs `mkdocs gh-deploy --force` on push to `main`, gated on `docs-quality`; `site_url`/`repo_url` added to `mkdocs.yml`                                                                                                                                                                            | ~0.25d | Public docs ✓         |
 | OPN-05 | ~~**Wire MCP server into Claude Code** — add `agt.mcp_server` entry to `.claude/settings.json` so `search_papers`, `list_watches`, `get_session`, and `library_doctor` are available as tools in this session~~ **DONE 2026-05-12** — `mcpServers.sciagent` in `.claude/settings.json`; all 4 tools verified; Docker rebuilt                                                                                                                                                                  | ~0.25d | MCP usability ✓       |
-| OPN-06 | ~~**SCI-0102 external baseline comparison**~~ **DONE 2026-05-12** — 22-query panel compared against OpenAlex direct (~11/22), Semantic Scholar direct (~13/22), and ChatGPT web-search baseline (~17/22); SciAgent default 19/22 with 1.000 hard-filter compliance; deep mode ~21/22. Methodology, per-system recall table, and key findings published in `docs/benchmark.md` § External Baseline Comparison.                                                                                 | ~1d    | P1 gap ✓              |
-| OPN-07 | ~~**Retrieval recall for TS-02/BIO-01/BIO-04**~~ **DONE 2026-05-12** — `search_depth=deep` (OPN-14) mitigates TS-02 and BIO-04 (depth issues); BIO-01 confirmed as free-tier API coverage gap requiring paid sources — no code fix possible. Disposition documented in `docs/benchmark.md` § Deep Search Mode Evaluation.                                                                                                                                                                     | ~0.5d  | P1 gap ✓              |
-| OPN-08 | ~~**M6.1-B backend capability contract** — normalize per-source terminal states; structured filter payload in `/run`; update `docs/api.md` and `contracts.ts`~~ **DONE 2026-05-12** — `SourceTerminalState` done in OPN-17; `FilterEditContract` in `RunRequest` done; `docs/api.md` fully rewritten with correct schemas for all 20+ endpoints, `HardFilters`, `NormalizedPaper`, `SearchMetadata`, `SourceTerminalState`, `SearchPlan`                                                      | ~1-2d  | ZAP-4A ✓              |
+| OPN-06 | ~~**SCI-0102 external baseline comparison**~~ **DONE 2026-05-12** — 22-query panel compared against OpenAlex direct (~11/22), Semantic Scholar direct (~13/22), and ChatGPT web-search baseline (~17/22); SciAgent default 19/22 with 1.000 hard-filter compliance; deep mode ~21/22. Methodology, per-system recall table, and key findings published in `docs/reference/benchmark.md` § External Baseline Comparison.                                                                                 | ~1d    | P1 gap ✓              |
+| OPN-07 | ~~**Retrieval recall for TS-02/BIO-01/BIO-04**~~ **DONE 2026-05-12** — `search_depth=deep` (OPN-14) mitigates TS-02 and BIO-04 (depth issues); BIO-01 confirmed as free-tier API coverage gap requiring paid sources — no code fix possible. Disposition documented in `docs/reference/benchmark.md` § Deep Search Mode Evaluation.                                                                                                                                                                     | ~0.5d  | P1 gap ✓              |
+| OPN-08 | ~~**M6.1-B backend capability contract** — normalize per-source terminal states; structured filter payload in `/run`; update `docs/reference/api.md` and `contracts.ts`~~ **DONE 2026-05-12** — `SourceTerminalState` done in OPN-17; `FilterEditContract` in `RunRequest` done; `docs/reference/api.md` fully rewritten with correct schemas for all 20+ endpoints, `HardFilters`, `NormalizedPaper`, `SearchMetadata`, `SourceTerminalState`, `SearchPlan`                                                      | ~1-2d  | ZAP-4A ✓              |
 | OPN-09 | ~~**AGT-13 backend PDF pipeline** — `src/agt/tools/pdf_attach.py` with httpx async download, SHA256 checksum, `AGT_ENABLE_PDF_ATTACHMENT` flag; integrate with upsert; attachment failure never corrupts item write~~ **DONE 2026-05-12** — real PDF download via `fetch_pdf_bytes` + SHA256 + Zotero 4-step `imported_file` upload; `enable_pdf_imports=True` forces download path; arXiv `pdf_url` bug fixed; OpenAlex + Semantic Scholar `pdf_url` populated; container rebuilt + verified | ~2d    | ZAP-8 completeness ✓  |
 
 ### Open Items (P7.1 — UX & Metadata Fidelity)
@@ -119,7 +119,7 @@ All SCI-01xx through SCI-06xx stories shipped. See **Recent Progress** and **Don
 
 1. Update status here first whenever a story or milestone changes.
 2. Treat the first unchecked item in `Next Items In Order` as the default next implementation target.
-3. Keep acceptance criteria and dependency details in [core.md](core.md), [settings.md](settings.md), and [zotero.md](zotero.md); keep live execution state here.
+3. Keep acceptance criteria and dependency details in [core.md](../../reference/core.md), [settings.md](../../reference/settings.md), and [zotero.md](../../reference/zotero.md); keep live execution state here.
 4. If another planning doc disagrees with this file about status or next work, this file wins.
 
 ## Product Thesis
@@ -245,7 +245,7 @@ flowchart LR
 - [x] AGT-3: LLMProvider protocol with provider-agnostic interface and xAI baseline adapter
 - [x] Multi-provider config base: normalize provider key ingestion from AGT\_\* and plain key aliases
 - [x] AGT-4: Request/thread IDs and span-level tracing for search/approve/write
-- [x] Docs: add reproducibility contract in [settings.md](settings.md)
+- [x] Docs: add reproducibility contract in [settings.md](../../reference/settings.md)
 
 ### M2 (Week 2-3): Retrieval and Ranking Core
 
@@ -619,7 +619,7 @@ The scaffold proved the add-on can load, but the current item-pane-first UX does
 - [x] Keep the ownership split explicit in product copy and docs:
   - Add-on prefs are allowed to store backend URL, backend API key, client ID, and local UX defaults.
   - Backend provider and search-source secrets remain backend-owned in `.env` and `.env.example`; the add-on must not become the source of truth for OpenAI, xAI, Anthropic, Semantic Scholar, CORE, Dimensions, SerpAPI, or similar backend credentials.
-- [x] Pull forward a `docs/settings.md` and `.env.example` planning update for add-on deployment fields, including `AGT_BACKEND_API_KEY` and backend-side keyed-source availability.
+- [x] Pull forward a `docs/reference/settings.md` and `.env.example` planning update for add-on deployment fields, including `AGT_BACKEND_API_KEY` and backend-side keyed-source availability.
 
 Acceptance criteria:
 
@@ -636,7 +636,7 @@ Acceptance criteria:
 - [x] Add-on consumes capabilities to drive `SourceToggles` and capability-driven UI copy
 - [ ] Normalize per-source run metadata: each source appears in exactly one terminal state with a human-readable reason (`used` / `disabled_by_user` / `unavailable_missing_key` / `skipped` / `failed` / `zero_results`)
 - [ ] Initial `POST /run` carries structured deterministic filters and source/search-tool selections; filter payload not encoded only in natural language
-- [ ] `docs/api.md` and `contracts.ts` updated to reflect the contract version handshake
+- [ ] `docs/reference/api.md` and `contracts.ts` updated to reflect the contract version handshake
 
 See **OPN-08** for full scope and acceptance criteria.
 
@@ -822,7 +822,7 @@ Acceptance criteria:
 
 | ID       | Story                                                                                                                                                   | Owner                   | Status | Est  |
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- | ------ | ---- |
-| SCI-0501 | Security hardening: CORS origin allowlist (`CORS_ORIGINS` env), HTTP rate limiting via `slowapi`, `/docs/security.md` auth model checklist              | python-backend-engineer | [x]    | 1 d  |
+| SCI-0501 | Security hardening: CORS origin allowlist (`CORS_ORIGINS` env), HTTP rate limiting via `slowapi`, `/docs/reference/security.md` auth model checklist              | python-backend-engineer | [x]    | 1 d  |
 | SCI-0502 | Groq provider adapter: `src/agt/providers/groq.py` cloning OpenAI adapter with `base_url="https://api.groq.com/openai/v1"`; wired into auto-detection   | python-backend-engineer | [x]    | 0.5d |
 | SCI-0503 | Fix Dockerfile + docker-compose: `CMD uvicorn agt.api.app:app ...`; `docker-compose.yml` mounts `.env` and `~/.sciagent`; CI `docker build` smoke test  | settings-bootstrap      | [x]    | 0.5d |
 | SCI-0504 | Read-only MCP server: `src/agt/mcp_server.py` via FastMCP; tools: `search_papers`, `list_watches`, `get_session`, `library_doctor`; no write operations | python-backend-engineer | [x]    | 1 d  |
@@ -860,7 +860,7 @@ the XPI and start searching without touching a terminal.
 | SCI-0601 | Generic OpenAI-compatible adapter: `AGT_LLM_BASE_URL` + `AGT_LLM_API_KEY` + `AGT_LLM_MODEL` in config; `"openai-compatible"` provider name in router; covers DeepSeek, Together, LM Studio                                                               | python-backend-engineer | [x]    | 1 d   |
 | SCI-0602 | Ollama named shorthand: `AGT_LLM_PROVIDER=ollama` auto-sets `base_url=http://localhost:11434/v1`, no API key required; delegates to SCI-0601 generic adapter internally                                                                                  | python-backend-engineer | [x]    | 0.5 d |
 | SCI-0603 | Zotero sidebar provider selector: dropdown for all providers + Custom; conditional base_url + model fields; `collectProviderEnv()` passes all vars to embedded server                                                                                    | zotero-frontend         | [x]    | 1 d   |
-| SCI-0604 | Embedded server binary: `src/agt/server.py` CLI, PyInstaller spec, `serverManager.ts`, `FirstRunDialog.tsx`, CI binary build; full spec in [docs/local-first.md](local-first.md) _(CLI ✓; binary artifact built and verified on macOS arm64 — OPN-02 ✓)_ | python-backend-engineer | [x]    | 1 w   |
+| SCI-0604 | Embedded server binary: `src/agt/server.py` CLI, PyInstaller spec, `serverManager.ts`, `FirstRunDialog.tsx`, CI binary build; full spec in [docs/reference/local-first.md](../../reference/local-first.md) _(CLI ✓; binary artifact built and verified on macOS arm64 — OPN-02 ✓)_ | python-backend-engineer | [x]    | 1 w   |
 
 **SCI-0601 config additions:**
 
@@ -902,7 +902,7 @@ AGT_LLM_MODEL=llama3.2          # any model pulled with `ollama pull`
 
 **Gate:** All P6 items shipped. ✓ ruff 0, pyright 0, 318 tests. ✓ Docker image builds and `/version` returns `0.1.0`. ✓ `sciagent-server --version` works. ✓ Binary artifact (OPN-02) and live Zotero smoke test (OPN-01) both complete (2026-05-12).
 
-**Full local-first delivery spec:** [docs/local-first.md](local-first.md)
+**Full local-first delivery spec:** [docs/reference/local-first.md](../../reference/local-first.md)
 
 ---
 
@@ -914,14 +914,14 @@ AGT_LLM_MODEL=llama3.2          # any model pulled with `ollama pull`
 
 | ID     | Story                                                                                                                                              | Effort | Status         |
 | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | -------------- |
-| OPN-01 | Live Zotero 9 desktop smoke test — run through full smoke test checklist in `docs/manual.md` on actual Zotero 9.x desktop                          | ~2h    | [x] 2026-05-12 |
+| OPN-01 | Live Zotero 9 desktop smoke test — run through full smoke test checklist in `docs/power-user/manual.md` on actual Zotero 9.x desktop                          | ~2h    | [x] 2026-05-12 |
 | OPN-02 | PyInstaller binary — `pyinstaller build/sciagent-server.spec`; test produced binary starts and serves `/health`; validate `serverManager.ts` spawn | ~0.5d  | [x] 2026-05-12 |
 | OPN-03 | XPI signing + `update.rdf` — publish XPI to GitHub Releases; generate `update.rdf` at stable raw URL; document self-signed install                 | ~0.5d  | [x] 2026-05-12 |
 | OPN-04 | Docs deployment — add `mkdocs gh-deploy` job; publish GitHub Pages on push to `main`                                                               | ~0.25d | [ ]            |
 | OPN-05 | MCP server wire-up — add `agt.mcp_server` entry to `.claude/settings.json` for live tool use from Claude Code                                      | ~0.25d | [ ]            |
 | OPN-06 | SCI-0102 external baseline — compare recall on 22-query panel vs OpenAlex direct, Semantic Scholar direct, ChatGPT web-search                      | ~1d    | [ ]            |
 | OPN-07 | Retrieval recall gaps — test `AGT_SEARCH_MAX_PAGES=2` + source tuning on TS-02/BIO-01/BIO-04 benchmark queries                                     | ~0.5d  | [ ]            |
-| OPN-08 | M6.1-B capability contract — per-source terminal states; structured filter in `/run`; `docs/api.md` + `contracts.ts` update                        | ~1-2d  | [ ]            |
+| OPN-08 | M6.1-B capability contract — per-source terminal states; structured filter in `/run`; `docs/reference/api.md` + `contracts.ts` update                        | ~1-2d  | [ ]            |
 | OPN-09 | AGT-13 backend PDF pipeline — `pdf_attach.py`, `AGT_ENABLE_PDF_ATTACHMENT` flag, SHA256 checksum, failure isolation                                | ~2d    | [ ]            |
 
 **Gate:** OPN-01 passes smoke test. XPI is installable without "Install from File" workaround. Docs site live. Binary artifact produced and tested.
@@ -1051,7 +1051,7 @@ AGT_LLM_MODEL=llama3.2          # any model pulled with `ollama pull`
 - [x] Phase C: Routing policy enabled — `RoutedProvider` wraps primary + fallback with `failover_on_timeout` / `failover_on_rate_limit` config
 - [ ] Phase D: Tracing and cost telemetry include provider and model labels — partial; request IDs propagate but per-call cost labels not emitted
 - [x] Phase E: Failure semantics standardized — `RoutedProvider` maps timeout/rate-limit to failover; unrecognized provider raises `RuntimeError` at startup
-- [x] Phase F: Documentation updated — `docs/manual.md` provider table, Ollama/DeepSeek examples, `AGT_LLM_PROVIDER` variants
+- [x] Phase F: Documentation updated — `docs/power-user/manual.md` provider table, Ollama/DeepSeek examples, `AGT_LLM_PROVIDER` variants
 
 ## Backend Gates for ZAP Blocks
 
@@ -1059,13 +1059,13 @@ AGT_LLM_MODEL=llama3.2          # any model pulled with `ollama pull`
 - [x] Gate for ZAP-2 (sidebar UX): AGT-5, AGT-6, AGT-7, AGT-15, AGT-27 done
 - [x] Gate for ZAP-3 (native write integration): AGT-10, AGT-11, AGT-12, AGT-14, AGT-16 done
 - [ ] Gate for ZAP-3 optional PDF: AGT-13 backend PDF pipeline _(open — tracked as OPN-09)_
-- [x] Gate for ZAP-4 (release): AGT-19, AGT-20 done; AGT-21 auth docs shipped in `docs/security.md`
+- [x] Gate for ZAP-4 (release): AGT-19, AGT-20 done; AGT-21 auth docs shipped in `docs/reference/security.md`
 
 ## Documentation Deliverables
 
-- [ ] Keep [core.md](core.md) dependency edges updated when story dependencies change
-- [ ] Keep [settings.md](settings.md) aligned with CI and pre-commit behavior
-- [ ] Add endpoint contract section to [core.md](core.md) for AGT-18 and plugin usage
+- [ ] Keep [core.md](../../reference/core.md) dependency edges updated when story dependencies change
+- [ ] Keep [settings.md](../../reference/settings.md) aligned with CI and pre-commit behavior
+- [ ] Add endpoint contract section to [core.md](../../reference/core.md) for AGT-18 and plugin usage
 - [ ] Add release checklist document for MVP and Production v1 promotion criteria
 
 ## CI/CD and Release Delivery Plan

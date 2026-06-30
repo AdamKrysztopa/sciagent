@@ -762,6 +762,6 @@ Interactive docs:
 
 ## See Also
 
-- [Configuration & Usage Manual](manual.md)
-- [Deployment Guide](deployment.md)
+- [Configuration & Usage Manual](../power-user/manual.md)
+- [Deployment Guide](../power-user/deployment.md)
 - [Zotero Add-on Roadmap](zotero.md)
