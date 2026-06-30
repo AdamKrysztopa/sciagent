@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://adamkrysztopa.github.io/sciagent/superpowers/specs/2026-05-22-ui-redesign-design/">
+        <link rel="canonical" href="https://adamkrysztopa.github.io/sciagent/superpowers/specs/2026-05-23-email-welcome-invite-design/">
       
       
-        <link rel="prev" href="../../plans/2026-05-22-ui-redesign/">
+        <link rel="prev" href="../../plans/2026-05-23-email-welcome-invite/">
       
       
-        <link rel="next" href="../../plans/2026-05-23-email-welcome-invite/">
+        <link rel="next" href="../../../archive/done/actionable-plan-done/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Sidebar UI Redesign — Spec - SciAgent Docs</title>
+        <title>Email Welcome & Invite — Spec - SciAgent Docs</title>
       
     
     
@@ -68,7 +68,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#spec-c-zotero-sidebar-ui-redesign" class="md-skip">
+        <a href="#email-welcome-email-admin-invite-system" class="md-skip">
           Skip to content
         </a>
       
@@ -104,7 +104,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Sidebar UI Redesign — Spec
+              Email Welcome & Invite — Spec
             
           </span>
         </div>
@@ -1168,37 +1168,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Sidebar UI Redesign — Spec
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../2026-05-22-ui-redesign-design/" class="md-nav__link">
         
   
   
@@ -1214,314 +1187,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-problem-statement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Problem Statement
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-design-principles" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Design Principles
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-shell-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Shell Structure
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. Shell Structure">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#zone-1-header-bar" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Zone 1 — Header bar
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zone-2-health-strip" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Zone 2 — Health strip
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zone-3-content" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Zone 3 — Content
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-design-language-zotero-native" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Design Language (Zotero-native)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-phase-idle-search-form" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Phase: Idle (Search Form)
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. Phase: Idle (Search Form)">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#collapsed-default" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Collapsed (default)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#expanded-user-clicks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Expanded (user clicks ▸)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-phase-running-progress" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Phase: Running (Progress)
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="6. Phase: Running (Progress)">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#query-echo" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Query echo
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pipeline-tracker" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Pipeline tracker
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#per-source-status" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Per-source status
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-phase-review-awaiting-approval" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. Phase: Review / Awaiting Approval
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="7. Phase: Review / Awaiting Approval">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#summary-bar-pinned-top-of-zone-3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Summary bar (pinned top of Zone 3)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#paper-list-scrollable" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Paper list (scrollable)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#action-bar-pinned-bottom-of-zone-3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Action bar (pinned bottom of Zone 3)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-phase-done" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. Phase: Done
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#9-settings-panel-no-change-to-existing-pane" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9. Settings Panel (no change to existing pane)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#10-state-machine" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10. State Machine
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#11-component-breakdown" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11. Component Breakdown
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#12-acceptance-criteria" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        12. Acceptance Criteria
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#13-out-of-scope" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        13. Out of Scope
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1559,10 +1224,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../2026-05-23-email-welcome-invite-design/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Email Welcome & Invite — Spec
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1578,6 +1270,264 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#section-1-infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Section 1 — Infrastructure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Section 1 — Infrastructure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resend-setup-one-time-manual-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resend setup (one-time manual steps)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gcp-wiring-gcloud-commands-run-once" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GCP wiring (gcloud commands — run once)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#section-2-backend-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Section 2 — Backend Changes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Section 2 — Backend Changes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#srcagtemailpy-html-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/agt/email.py — HTML support
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#srcagtemail_templatespy-new-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/agt/email_templates.py — new module
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#srcagtapiadminpy-welcome-email-on-create" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/agt/api/admin.py — welcome email on create
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#srcagtapiadminpy-resend-invite-endpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/agt/api/admin.py — resend invite endpoint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#srcagtconfigpy-two-new-optional-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/agt/config.py — two new optional fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#section-3-frontend-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Section 3 — Frontend Changes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Section 3 — Frontend Changes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#admin-panelsrcapits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        admin-panel/src/api.ts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#admin-panelsrcpagescreateusertsx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        admin-panel/src/pages/CreateUser.tsx
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#admin-panelsrcpagesuserstsx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        admin-panel/src/pages/Users.tsx
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Flow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#invariants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Invariants
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files-changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Files Changed
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -2020,10 +1970,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-problem-statement" class="md-nav__link">
+  <a href="#overview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Problem Statement
+        Overview
       
     </span>
   </a>
@@ -2031,10 +1981,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-design-principles" class="md-nav__link">
+  <a href="#goals" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Design Principles
+        Goals
       
     </span>
   </a>
@@ -2042,22 +1992,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-shell-structure" class="md-nav__link">
+  <a href="#non-goals" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Shell Structure
+        Non-Goals
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. Shell Structure">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#section-1-infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Section 1 — Infrastructure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Section 1 — Infrastructure">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#zone-1-header-bar" class="md-nav__link">
+  <a href="#resend-setup-one-time-manual-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Zone 1 — Header bar
+        Resend setup (one-time manual steps)
       
     </span>
   </a>
@@ -2065,21 +2026,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#zone-2-health-strip" class="md-nav__link">
+  <a href="#gcp-wiring-gcloud-commands-run-once" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Zone 2 — Health strip
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#zone-3-content" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Zone 3 — Content
+        GCP wiring (gcloud commands — run once)
       
     </span>
   </a>
@@ -2092,33 +2042,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-design-language-zotero-native" class="md-nav__link">
+  <a href="#section-2-backend-changes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Design Language (Zotero-native)
+        Section 2 — Backend Changes
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-phase-idle-search-form" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Phase: Idle (Search Form)
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. Phase: Idle (Search Form)">
+    <nav class="md-nav" aria-label="Section 2 — Backend Changes">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#collapsed-default" class="md-nav__link">
+  <a href="#srcagtemailpy-html-support" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Collapsed (default)
+        src/agt/email.py — HTML support
       
     </span>
   </a>
@@ -2126,10 +2065,43 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#expanded-user-clicks" class="md-nav__link">
+  <a href="#srcagtemail_templatespy-new-module" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Expanded (user clicks ▸)
+        src/agt/email_templates.py — new module
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#srcagtapiadminpy-welcome-email-on-create" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/agt/api/admin.py — welcome email on create
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#srcagtapiadminpy-resend-invite-endpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/agt/api/admin.py — resend invite endpoint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#srcagtconfigpy-two-new-optional-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        src/agt/config.py — two new optional fields
       
     </span>
   </a>
@@ -2142,22 +2114,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-phase-running-progress" class="md-nav__link">
+  <a href="#section-3-frontend-changes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Phase: Running (Progress)
+        Section 3 — Frontend Changes
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="6. Phase: Running (Progress)">
+    <nav class="md-nav" aria-label="Section 3 — Frontend Changes">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#query-echo" class="md-nav__link">
+  <a href="#admin-panelsrcapits" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Query echo
+        admin-panel/src/api.ts
       
     </span>
   </a>
@@ -2165,10 +2137,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#pipeline-tracker" class="md-nav__link">
+  <a href="#admin-panelsrcpagescreateusertsx" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Pipeline tracker
+        admin-panel/src/pages/CreateUser.tsx
       
     </span>
   </a>
@@ -2176,10 +2148,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#per-source-status" class="md-nav__link">
+  <a href="#admin-panelsrcpagesuserstsx" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Per-source status
+        admin-panel/src/pages/Users.tsx
       
     </span>
   </a>
@@ -2192,60 +2164,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-phase-review-awaiting-approval" class="md-nav__link">
+  <a href="#data-flow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. Phase: Review / Awaiting Approval
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="7. Phase: Review / Awaiting Approval">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#summary-bar-pinned-top-of-zone-3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Summary bar (pinned top of Zone 3)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#paper-list-scrollable" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Paper list (scrollable)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#action-bar-pinned-bottom-of-zone-3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Action bar (pinned bottom of Zone 3)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-phase-done" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. Phase: Done
+        Data Flow
       
     </span>
   </a>
@@ -2253,10 +2175,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#9-settings-panel-no-change-to-existing-pane" class="md-nav__link">
+  <a href="#invariants" class="md-nav__link">
     <span class="md-ellipsis">
       
-        9. Settings Panel (no change to existing pane)
+        Invariants
       
     </span>
   </a>
@@ -2264,10 +2186,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#10-state-machine" class="md-nav__link">
+  <a href="#testing" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10. State Machine
+        Testing
       
     </span>
   </a>
@@ -2275,32 +2197,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#11-component-breakdown" class="md-nav__link">
+  <a href="#files-changed" class="md-nav__link">
     <span class="md-ellipsis">
       
-        11. Component Breakdown
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#12-acceptance-criteria" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        12. Acceptance Criteria
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#13-out-of-scope" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        13. Out of Scope
+        Files Changed
       
     </span>
   </a>
@@ -2327,511 +2227,231 @@
   
 
 
-<h1 id="spec-c-zotero-sidebar-ui-redesign">Spec C — Zotero Sidebar UI Redesign<a class="headerlink" href="#spec-c-zotero-sidebar-ui-redesign" title="Permanent link">&para;</a></h1>
-<p><strong>Date:</strong> 2026-05-22
-<strong>Status:</strong> Approved — ready for implementation planning
-<strong>Scope:</strong> <code>zotero-addon/</code> frontend only (TypeScript + React). No backend changes required.</p>
-<hr />
-<h2 id="1-problem-statement">1. Problem Statement<a class="headerlink" href="#1-problem-statement" title="Permanent link">&para;</a></h2>
-<p>The current sidebar mixes configuration fields, health status, banner messages, and the search form
-into a single undifferentiated scroll. New users cannot tell where to start. Experienced users cannot
-scan the state of a running search at a glance. The information hierarchy is flat.</p>
-<hr />
-<h2 id="2-design-principles">2. Design Principles<a class="headerlink" href="#2-design-principles" title="Permanent link">&para;</a></h2>
+<h1 id="email-welcome-email-admin-invite-system">Email: Welcome Email &amp; Admin Invite System<a class="headerlink" href="#email-welcome-email-admin-invite-system" title="Permanent link">&para;</a></h1>
+<p><strong>Date:</strong> 2026-05-23
+<strong>Status:</strong> Approved for implementation</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>Wire the existing email infrastructure (Resend API, <code>email.py</code>, <code>email_api_key</code> config) to send
+a formatted HTML welcome email when an admin creates a new user. The Messages page email channel
+becomes functional as a side-effect of the same infrastructure setup. A "Resend invite" button
+on the Users page allows re-sending the welcome email to existing users.</p>
+<h2 id="goals">Goals<a class="headerlink" href="#goals" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Zotero-native chrome.</strong> Dark gray palette matching Zotero's own UI (<code>#3c3c3c</code> header, <code>#2d2d2d</code>
-  panels, <code>#333</code> inputs). No custom dark-mode or light-mode themes. Blends in rather than standing
-  out.</li>
-<li><strong>Three permanent zones.</strong> Every screen state uses the same layout skeleton. The user always knows
-  where to look.</li>
-<li><strong>Progressive disclosure.</strong> Advanced options are collapsed by default and revealed on demand.
-  Phase-specific content (running, review, done) replaces the idle form rather than stacking on top.</li>
-<li><strong>Settings live in Zotero's preference pane.</strong> The sidebar does not embed a settings form. The ⚙
-  button opens the existing Zotero preferences dialog. The button signals config problems via colour.</li>
+<li>Admin creates a user → user receives a well-formatted HTML welcome email with their API key</li>
+<li>Messages page "Email only" / "Banner + Email" channels work in production</li>
+<li>Admin can resend a welcome email to any existing user from the Users table</li>
+<li>All email credential management happens via GCP Secret Manager + gcloud commands (no manual
+  file editing on the server)</li>
+</ul>
+<h2 id="non-goals">Non-Goals<a class="headerlink" href="#non-goals" title="Permanent link">&para;</a></h2>
+<ul>
+<li>PDF manual / user guide (future work; template includes a placeholder)</li>
+<li>SendGrid or SMTP alternative (Resend is the chosen provider)</li>
+<li>Email open/click tracking</li>
+<li>Email scheduling or queuing</li>
 </ul>
 <hr />
-<h2 id="3-shell-structure">3. Shell Structure<a class="headerlink" href="#3-shell-structure" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>┌─ Zone 1: Header bar (always visible, ~28px) ─────────────────┐
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>│  SciAgent  ● status-pill                         ⚙ button     │
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├─ Zone 2: Health strip (always visible, ~38px) ────────────────┤
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│  ✓ Backend · ✓ Zotero · ✓ LLM                                 │
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│  + S2 key → faster results · + Core → more OA papers          │
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>├─ Zone 3: Content (flex-fill, scrollable) ──────────────────────┤
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│  Phase-driven content (idle / running / review / done)         │
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>└────────────────────────────────────────────────────────────────┘
-</code></pre></div>
-<h3 id="zone-1-header-bar">Zone 1 — Header bar<a class="headerlink" href="#zone-1-header-bar" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Element</th>
-<th>Detail</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>App name</td>
-<td>"SciAgent" — <code>font-weight: 700</code>, <code>color: #e0e0e0</code></td>
-</tr>
-<tr>
-<td>Status pill</td>
-<td>Rounded pill beside the name. Colour and label change per phase (see §5).</td>
-</tr>
-<tr>
-<td>⚙ button</td>
-<td>Opens existing Zotero preferences dialog. <strong>Border and text turn <code>#e05c5c</code> (red) when minimum config is missing</strong> (backend URL, Zotero API key, or LLM key absent). Grey (<code>#555</code>) otherwise.</td>
-</tr>
-</tbody>
-</table>
-<h3 id="zone-2-health-strip">Zone 2 — Health strip<a class="headerlink" href="#zone-2-health-strip" title="Permanent link">&para;</a></h3>
-<p>Two rows, always visible, never removed:</p>
-<ul>
-<li><strong>Row 1 — minimum required:</strong> <code>✓ Backend · ✓ Zotero · ✓ LLM</code> — each item green (<code>#4ade80</code>)
-  when healthy, red (<code>#e05c5c</code>) when failing, yellow (<code>#facc15</code>) when pending.</li>
-<li><strong>Row 2 — optional extras hint:</strong> Inline nudges for unconfigured optional keys, e.g.
-  <code>+ S2 key → faster results · + Core → more OA papers</code>. Hidden once all optional keys are set.</li>
-</ul>
-<h3 id="zone-3-content">Zone 3 — Content<a class="headerlink" href="#zone-3-content" title="Permanent link">&para;</a></h3>
-<p>Phase-driven. The four states are described in §5–§8.</p>
-<hr />
-<h2 id="4-design-language-zotero-native">4. Design Language (Zotero-native)<a class="headerlink" href="#4-design-language-zotero-native" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Token</th>
-<th>Value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Header background</td>
-<td><code>#3c3c3c</code></td>
-</tr>
-<tr>
-<td>Health strip background</td>
-<td><code>#2d2d2d</code></td>
-</tr>
-<tr>
-<td>Content background</td>
-<td><code>#252525</code></td>
-</tr>
-<tr>
-<td>Input / card background</td>
-<td><code>#333</code></td>
-</tr>
-<tr>
-<td>Border default</td>
-<td><code>1px solid #555</code></td>
-</tr>
-<tr>
-<td>Border subtle</td>
-<td><code>1px solid #444</code></td>
-</tr>
-<tr>
-<td>Text primary</td>
-<td><code>#e0e0e0</code></td>
-</tr>
-<tr>
-<td>Text secondary</td>
-<td><code>#aaa</code></td>
-</tr>
-<tr>
-<td>Text muted</td>
-<td><code>#777</code></td>
-</tr>
-<tr>
-<td>Accent blue</td>
-<td><code>#1d6bbf</code> (Search button, links)</td>
-</tr>
-<tr>
-<td>Accent green</td>
-<td><code>#4ade80</code> (healthy, selected, approved)</td>
-</tr>
-<tr>
-<td>Accent yellow</td>
-<td><code>#facc15</code> (running, in-progress)</td>
-</tr>
-<tr>
-<td>Accent purple</td>
-<td><code>#c084fc</code> (awaiting approval)</td>
-</tr>
-<tr>
-<td>Accent red</td>
-<td><code>#e05c5c</code> (error, unconfigured)</td>
-</tr>
-<tr>
-<td>Base font size</td>
-<td><code>0.78rem</code> (sidebar constraint)</td>
-</tr>
-<tr>
-<td>Border radius</td>
-<td><code>3–4px</code></td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="5-phase-idle-search-form">5. Phase: Idle (Search Form)<a class="headerlink" href="#5-phase-idle-search-form" title="Permanent link">&para;</a></h2>
-<h3 id="collapsed-default">Collapsed (default)<a class="headerlink" href="#collapsed-default" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>[ Search query textarea — 3 rows                      ]
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>[ Collection dropdown ▾ ]  [ Year dropdown ▾          ]
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>▸ Advanced filters (author, keywords, citations…)
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>[ Search ]  [ ABC✓ ]  [ ⚑ ]
-</code></pre></div>
-<p><strong>Toolbar icons:</strong>
-- <code>ABC✓</code> — spell-check the query in-place, briefly shows diff before applying.
-- <code>⚑</code> — extract keywords from the currently selected Zotero item, populates query + keywords fields.</p>
-<h3 id="expanded-user-clicks">Expanded (user clicks ▸)<a class="headerlink" href="#expanded-user-clicks" title="Permanent link">&para;</a></h3>
-<p>The toggle becomes <code>▾ Advanced filters</code> and reveals a bordered block:</p>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Notes</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Author</td>
-<td>Text input</td>
-<td>Single name fragment</td>
-</tr>
-<tr>
-<td>Must include keywords</td>
-<td>Text input</td>
-<td>Comma-separated</td>
-</tr>
-<tr>
-<td>Exclude keywords</td>
-<td>Text input</td>
-<td>Comma-separated</td>
-</tr>
-<tr>
-<td>Min citations</td>
-<td>Number input</td>
-<td>Default empty (no minimum)</td>
-</tr>
-<tr>
-<td>Open access only</td>
-<td>Checkbox</td>
-<td>Filters to OA results</td>
-</tr>
-<tr>
-<td>Venue / journal</td>
-<td>Text input</td>
-<td>Abbreviation or full name</td>
-</tr>
-</tbody>
-</table>
-<p>The advanced block collapses when the user clicks <code>▾</code> again. State persists across searches within the session.</p>
-<p><strong>Year dropdown options:</strong> Any year / ≥ 2024 / ≥ 2022 / ≥ 2020 / Custom (shows year input).</p>
-<hr />
-<h2 id="6-phase-running-progress">6. Phase: Running (Progress)<a class="headerlink" href="#6-phase-running-progress" title="Permanent link">&para;</a></h2>
-<p>Status pill: <code>● running</code> (yellow <code>#facc15</code>, background <code>#2a2000</code>).</p>
-<p>Header row gains a <code>✕ Cancel</code> button (grey, right-aligned). Pressing it sends a cancel request and
-returns to idle.</p>
-<h3 id="query-echo">Query echo<a class="headerlink" href="#query-echo" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Searching for
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>&quot;&lt;original query&gt;&quot;
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>→ rewritten: &quot;&lt;LLM-rewritten query&gt;&quot;   ← appears once LLM step completes
-</code></pre></div>
-<h3 id="pipeline-tracker">Pipeline tracker<a class="headerlink" href="#pipeline-tracker" title="Permanent link">&para;</a></h3>
-<p>Ordered list of phases. Each row: status icon · label · elapsed time (on completion).</p>
-<table>
-<thead>
-<tr>
-<th>Icon</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>✓</code> green</td>
-<td>Completed</td>
-</tr>
-<tr>
-<td><code>⟳</code> yellow (animated)</td>
-<td>In progress</td>
-</tr>
-<tr>
-<td><code>○</code> grey</td>
-<td>Pending</td>
-</tr>
-<tr>
-<td><code>✕</code> red</td>
-<td>Failed / skipped</td>
-</tr>
-</tbody>
-</table>
-<p>Pipeline phases in order:
-1. Spell-check query
-2. LLM query rewrite
-3. Fetch sources <em>(shows "N / 8 done" counter while running)</em>
-4. Merge &amp; deduplicate
-5. Rank &amp; rerank</p>
-<h3 id="per-source-status">Per-source status<a class="headerlink" href="#per-source-status" title="Permanent link">&para;</a></h3>
-<p>Displayed as a list once "Fetch sources" begins. Each row: source name · status.</p>
-<p>Status values: <code>waiting</code> (grey) → <code>⟳ fetching…</code> (yellow, row highlighted) → <code>✓ N papers</code> (green)
-/ <code>✕ timeout</code> (red, non-blocking).</p>
-<p>Sources: S2, OpenAlex, arXiv, PubMed, CORE, Europe PMC, Crossref, BASE.</p>
-<p>A timed-out or errored source is shown in red but does not block results — the pipeline continues
-with successful sources.</p>
-<hr />
-<h2 id="7-phase-review-awaiting-approval">7. Phase: Review / Awaiting Approval<a class="headerlink" href="#7-phase-review-awaiting-approval" title="Permanent link">&para;</a></h2>
-<p>Status pill: <code>● awaiting approval</code> (purple <code>#c084fc</code>, background <code>#1e0a2e</code>).</p>
-<h3 id="summary-bar-pinned-top-of-zone-3">Summary bar (pinned top of Zone 3)<a class="headerlink" href="#summary-bar-pinned-top-of-zone-3" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>Found 23 papers · 18 selected     [ all ] [ ★★★ ] [ none ]
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>→ Collection: [ Inbox              ▾ ]
-</code></pre></div>
-<p>Quick-select buttons toggle all / top-ranked / none.</p>
-<p>The <strong>Collection</strong> dropdown is editable at review time — it defaults to the collection chosen on the
-search form but can be changed before approving. Changing it here does not affect the search; it
-only controls where approved papers land in Zotero. The dropdown lists the same set of Zotero
-collections as the idle-state collection picker.</p>
-<h3 id="paper-list-scrollable">Paper list (scrollable)<a class="headerlink" href="#paper-list-scrollable" title="Permanent link">&para;</a></h3>
-<p>Each paper card:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>☑  Title of the Paper                           ← checkbox left-aligned
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>   Author et al. · Year · Venue
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>   ★★★  [S2]  14,203 cit.  [OA]
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>   Abstract snippet (first ~150 chars)…          ← shown for ★★★ and ★★☆
-</code></pre></div>
-<table>
-<thead>
-<tr>
-<th>Element</th>
-<th>Detail</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Checkbox</td>
-<td>Checked = include in Zotero write. Unchecked = skip.</td>
-</tr>
-<tr>
-<td>Title</td>
-<td>Full title. Clickable → opens DOI/URL in system browser.</td>
-</tr>
-<tr>
-<td>Authors</td>
-<td>"First-author et al." format.</td>
-</tr>
-<tr>
-<td>Year · Venue</td>
-<td>Publication year + venue abbreviation (NeurIPS, Nature, etc.).</td>
-</tr>
-<tr>
-<td>★ rank</td>
-<td>1–3 stars from reranker score. 3 stars → dark green card. 1 star → greyed, no abstract.</td>
-</tr>
-<tr>
-<td>Source badge</td>
-<td>Coloured pill: S2 / OAlex / arXiv / EPMC / CORE / Crossref / BASE.</td>
-</tr>
-<tr>
-<td>Citation count</td>
-<td>From Semantic Scholar or OpenAlex.</td>
-</tr>
-<tr>
-<td>OA badge</td>
-<td>Blue "OA" pill when open-access PDF is available.</td>
-</tr>
-<tr>
-<td>Abstract snippet</td>
-<td>~150 chars, shown only for ★★★ and ★★☆ papers.</td>
-</tr>
-</tbody>
-</table>
-<p>Unchecked (deselected) cards: reduced opacity (0.7), no abstract, no coloured border.</p>
-<h3 id="action-bar-pinned-bottom-of-zone-3">Action bar (pinned bottom of Zone 3)<a class="headerlink" href="#action-bar-pinned-bottom-of-zone-3" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>[ ✓ Add 18 to Zotero ]  [ ↩ New search ]
-</code></pre></div>
-<ul>
-<li><strong>Add to Zotero</strong> — calls <code>POST /resume/{run_id}</code> with the checked paper IDs. Button label updates
-  dynamically with the current checked count.</li>
-<li><strong>New search</strong> — discards the current run and returns to idle state.</li>
-</ul>
-<hr />
-<h2 id="8-phase-done">8. Phase: Done<a class="headerlink" href="#8-phase-done" title="Permanent link">&para;</a></h2>
-<p>Status pill returns to <code>● idle</code> (green).</p>
-<p>Zone 3 shows a centred confirmation card:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>    ✓
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>18 papers added to Zotero
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>in collection: Inbox
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>📄 18 added · 5 skipped (already in library)
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>⏱ 8.4s total
-<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>
-<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>[ New search ]  [ View in Zotero ]
-</code></pre></div>
-<ul>
-<li><strong>View in Zotero</strong> — focuses the target collection in the Zotero main panel (calls
-  <code>Zotero.getActiveZoteroPane().selectCollection(...)</code> if the host API permits).</li>
-<li>After ~30 seconds idle on this screen the sidebar auto-returns to idle with the search form.</li>
-</ul>
-<hr />
-<h2 id="9-settings-panel-no-change-to-existing-pane">9. Settings Panel (no change to existing pane)<a class="headerlink" href="#9-settings-panel-no-change-to-existing-pane" title="Permanent link">&para;</a></h2>
-<p>The settings panel remains the existing Zotero preferences dialog, accessed via <strong>Edit → Preferences
-→ SciAgent</strong> (or <strong>Zotero → Preferences → SciAgent</strong> on macOS). No form is embedded in the sidebar.</p>
-<p>The ⚙ button in the sidebar header calls <code>Zotero.openPreferences('SciAgent')</code>.</p>
-<p><strong>"Minimum to work" check</strong> — at startup and after any config change, the addon evaluates whether
-these three values are present and non-empty:</p>
+<h2 id="section-1-infrastructure">Section 1 — Infrastructure<a class="headerlink" href="#section-1-infrastructure" title="Permanent link">&para;</a></h2>
+<h3 id="resend-setup-one-time-manual-steps">Resend setup (one-time manual steps)<a class="headerlink" href="#resend-setup-one-time-manual-steps" title="Permanent link">&para;</a></h3>
 <ol>
-<li>Backend URL (<code>extensions.agt.backendUrl</code>)</li>
-<li>Zotero API key (<code>extensions.agt.zoteroApiKey</code>)</li>
-<li>LLM key (any of <code>extensions.agt.openaiApiKey</code>, <code>anthropicApiKey</code>, <code>xaiApiKey</code>, <code>groqApiKey</code>)</li>
+<li>Sign up at <a href="https://resend.com">https://resend.com</a> and create an API key (name it <code>sciagent-production</code>)</li>
+<li>Add domain <code>mechai.pl</code> in the Resend dashboard → Domains → Add Domain</li>
+<li>Resend provides 3 DNS TXT records; add them in Google Workspace Admin → Domains → DNS records</li>
+<li>Wait ~5 minutes for verification to complete</li>
+<li>Confirm the domain shows <strong>Verified</strong> in Resend</li>
 </ol>
-<p>If any are absent, the ⚙ button renders with a red border and label:
-<code>border: 1px solid #e05c5c; color: #e05c5c</code>. When all three are present, the button is grey.</p>
-<hr />
-<h2 id="10-state-machine">10. State Machine<a class="headerlink" href="#10-state-machine" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>idle → submitting → running → awaiting_approval → resuming → completed
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>                ↘ error / failed / rejected → idle
+<h3 id="gcp-wiring-gcloud-commands-run-once">GCP wiring (gcloud commands — run once)<a class="headerlink" href="#gcp-wiring-gcloud-commands-run-once" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nv">PROJECT</span><span class="o">=</span>sciagent-496617
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nv">SA</span><span class="o">=</span>sciagent-backend@sciagent-496617.iam.gserviceaccount.com
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nv">REGION</span><span class="o">=</span>europe-west1
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># 1. Create the secret</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>gcloud<span class="w"> </span>secrets<span class="w"> </span>create<span class="w"> </span>agt-email-api-key<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span>--replication-policy<span class="o">=</span>automatic<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span>--project<span class="o">=</span><span class="nv">$PROJECT</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="c1"># 2. Populate it (replace re_YOUR_KEY with the actual Resend API key)</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="nb">echo</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;re_YOUR_KEY&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>gcloud<span class="w"> </span>secrets<span class="w"> </span>versions<span class="w"> </span>add<span class="w"> </span>agt-email-api-key<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">  </span>--data-file<span class="o">=</span>-<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">  </span>--project<span class="o">=</span><span class="nv">$PROJECT</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="c1"># 3. Grant the backend service account read access</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>gcloud<span class="w"> </span>secrets<span class="w"> </span>add-iam-policy-binding<span class="w"> </span>agt-email-api-key<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">  </span>--member<span class="o">=</span><span class="s2">&quot;serviceAccount:</span><span class="nv">$SA</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">  </span>--role<span class="o">=</span><span class="s2">&quot;roles/secretmanager.secretAccessor&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">  </span>--project<span class="o">=</span><span class="nv">$PROJECT</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="c1"># 4. Wire env vars into the Cloud Run revision</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>gcloud<span class="w"> </span>run<span class="w"> </span>services<span class="w"> </span>update<span class="w"> </span>sciagent<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="w">  </span>--update-env-vars<span class="o">=</span><span class="s2">&quot;AGT_EMAIL_API_KEY=re_YOUR_KEY,AGT_EMAIL_FROM=sciagent@mechai.pl&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="w">  </span>--region<span class="o">=</span><span class="nv">$REGION</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="w">  </span>--project<span class="o">=</span><span class="nv">$PROJECT</span>
 </code></pre></div>
-<p>The status pill in Zone 1 maps directly to the <code>RunPhase</code> enum from the existing backend contract.
-No new states are needed.</p>
-<p><strong>Status pill colours per phase:</strong></p>
+<blockquote>
+<p><strong>Note:</strong> The email API key is passed as a plain env var (same pattern as the existing config).
+It is also stored in Secret Manager for auditability and rotation. The Cloud Run env var is
+the live value; update it when rotating the key.</p>
+</blockquote>
+<hr />
+<h2 id="section-2-backend-changes">Section 2 — Backend Changes<a class="headerlink" href="#section-2-backend-changes" title="Permanent link">&para;</a></h2>
+<h3 id="srcagtemailpy-html-support"><code>src/agt/email.py</code> — HTML support<a class="headerlink" href="#srcagtemailpy-html-support" title="Permanent link">&para;</a></h3>
+<p>Add an optional <code>html: str | None = None</code> parameter to <code>send_email()</code>. When provided, include
+it in the Resend payload so the email client renders the HTML version with the plain-text as
+fallback. No new dependencies.</p>
+<h3 id="srcagtemail_templatespy-new-module"><code>src/agt/email_templates.py</code> — new module<a class="headerlink" href="#srcagtemail_templatespy-new-module" title="Permanent link">&para;</a></h3>
+<p>A single public function:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">welcome_email</span><span class="p">(</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">slug</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">service_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">support_email</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>  <span class="c1"># (subject, text, html)</span>
+</code></pre></div>
+<p><strong>Subject:</strong> <code>Welcome to SciAgent — your API key is ready</code></p>
+<p><strong>HTML template sections:</strong>
+1. SciAgent header (name + tagline, no external image dependency)
+2. Greeting: "Hi {slug},"
+3. API key in a styled <code>&lt;code&gt;</code> block with a copy hint
+4. 3-step getting started:
+   - Install the Zotero addon
+   - Open Zotero → SciAgent sidebar
+   - Paste your API key
+5. Service URL link
+6. "Full user manual coming soon" note
+7. Support footer: reply to <code>{support_email}</code></p>
+<p><strong>Plain-text version:</strong> Same content, no HTML tags, API key on its own line.</p>
+<h3 id="srcagtapiadminpy-welcome-email-on-create"><code>src/agt/api/admin.py</code> — welcome email on create<a class="headerlink" href="#srcagtapiadminpy-welcome-email-on-create" title="Permanent link">&para;</a></h3>
+<p>In <code>create_key</code>, after <code>registry.update(users)</code> succeeds, fire <code>send_email()</code> with the welcome
+template. Email errors are caught, logged at <code>warning</code> level, and do <strong>not</strong> propagate — the
+HTTP 201 response is returned regardless. This prevents a flaky email provider from blocking
+user provisioning.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">subject</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">html</span> <span class="o">=</span> <span class="n">welcome_email</span><span class="p">(</span><span class="n">body</span><span class="o">.</span><span class="n">slug</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">settings</span><span class="o">.</span><span class="n">service_url</span><span class="p">,</span> <span class="n">settings</span><span class="o">.</span><span class="n">email_support</span><span class="p">)</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="k">await</span> <span class="n">send_email</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="n">email_key</span><span class="p">,</span> <span class="n">from_address</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">email_from</span><span class="p">,</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>                     <span class="n">to</span><span class="o">=</span><span class="p">[</span><span class="n">entry</span><span class="o">.</span><span class="n">email</span><span class="p">],</span> <span class="n">subject</span><span class="o">=</span><span class="n">subject</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">html</span><span class="o">=</span><span class="n">html</span><span class="p">)</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">_log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;welcome_email_failed&quot;</span><span class="p">,</span> <span class="n">slug</span><span class="o">=</span><span class="n">body</span><span class="o">.</span><span class="n">slug</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="srcagtapiadminpy-resend-invite-endpoint"><code>src/agt/api/admin.py</code> — resend invite endpoint<a class="headerlink" href="#srcagtapiadminpy-resend-invite-endpoint" title="Permanent link">&para;</a></h3>
+<p>New endpoint: <code>POST /admin/keys/{slug}/email</code></p>
+<ul>
+<li>Looks up the user in the registry (404 if not found)</li>
+<li>Re-sends the welcome email using the same template</li>
+<li>Returns <code>{"status": "sent", "slug": slug}</code></li>
+<li>Same error-suppression pattern as create: email failure → logged, not propagated</li>
+</ul>
+<h3 id="srcagtconfigpy-two-new-optional-fields"><code>src/agt/config.py</code> — two new optional fields<a class="headerlink" href="#srcagtconfigpy-two-new-optional-fields" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">service_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">default</span><span class="o">=</span><span class="s2">&quot;https://sciagent-ewpafdgfya-ew.a.run.app&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">alias</span><span class="o">=</span><span class="s2">&quot;AGT_SERVICE_URL&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Public service URL included in welcome emails.&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p">)</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">email_support</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">default</span><span class="o">=</span><span class="s2">&quot;krysztopa@gmail.com&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">alias</span><span class="o">=</span><span class="s2">&quot;AGT_EMAIL_SUPPORT&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Support email address shown in welcome emails.&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="p">)</span>
+</code></pre></div>
+<p>Both have sensible defaults so no env var change is required immediately.</p>
+<hr />
+<h2 id="section-3-frontend-changes">Section 3 — Frontend Changes<a class="headerlink" href="#section-3-frontend-changes" title="Permanent link">&para;</a></h2>
+<h3 id="admin-panelsrcapits"><code>admin-panel/src/api.ts</code><a class="headerlink" href="#admin-panelsrcapits" title="Permanent link">&para;</a></h3>
+<p>Add one method:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nx">resendInvite</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="nx">apiKey</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">slug</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nx">apiFetch</span><span class="o">&lt;</span><span class="p">{</span><span class="w"> </span><span class="nx">status</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="p">}</span><span class="o">&gt;</span><span class="p">(</span><span class="sb">`/admin/keys/</span><span class="si">${</span><span class="nx">slug</span><span class="si">}</span><span class="sb">/email`</span><span class="p">,</span><span class="w"> </span><span class="nx">apiKey</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">method</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;POST&quot;</span><span class="w"> </span><span class="p">})</span>
+</code></pre></div>
+<h3 id="admin-panelsrcpagescreateusertsx"><code>admin-panel/src/pages/CreateUser.tsx</code><a class="headerlink" href="#admin-panelsrcpagescreateusertsx" title="Permanent link">&para;</a></h3>
+<p>In the success state (after a user is created), display below the key:</p>
+<blockquote>
+<p>Email sent to <code>{email}</code> — they'll receive their API key and getting-started instructions.</p>
+</blockquote>
+<p>No API change needed; the email address is already in the <code>CreateKeyResponse</code>.</p>
+<h3 id="admin-panelsrcpagesuserstsx"><code>admin-panel/src/pages/Users.tsx</code><a class="headerlink" href="#admin-panelsrcpagesuserstsx" title="Permanent link">&para;</a></h3>
+<p>Each row in the users table gets a <strong>"Resend invite"</strong> action button alongside the existing
+Revoke button. Clicking it:</p>
+<ol>
+<li>Calls <code>api.resendInvite(apiKey, slug)</code></li>
+<li>Shows inline "Sent!" text for 2 seconds, then resets</li>
+<li>On error, shows inline error text</li>
+</ol>
+<hr />
+<h2 id="data-flow">Data Flow<a class="headerlink" href="#data-flow" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>Admin fills CreateUser form
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>  → POST /admin/keys
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    → write to GCP Secret Manager
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    → call send_email() [fire-and-forget, errors logged]
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>      → POST https://api.resend.com/emails
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>        → Resend delivers to user&#39;s inbox
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>  → 201 response with { slug, key, email, budget_usd }
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    → CreateUser.tsx shows key + &quot;Email sent to {email}&quot;
+</code></pre></div>
+<hr />
+<h2 id="invariants">Invariants<a class="headerlink" href="#invariants" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Email failure never fails user creation (catch-and-log pattern)</li>
+<li><code>send_email()</code> is a no-op when <code>api_key</code> is empty (existing behaviour preserved)</li>
+<li>No new runtime dependencies added to the core package</li>
+<li>All new config fields have defaults → zero breaking change to existing deployments</li>
+<li><code>pyright</code> must pass at zero errors on all changed files</li>
+</ul>
+<hr />
+<h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>email_templates.py</code>: unit test that <code>welcome_email()</code> returns non-empty subject/text/html
+  and that the key appears in both text and html outputs</li>
+<li><code>admin.py</code> create endpoint: existing VCR tests remain green; add a test that asserts email
+  send is attempted (mock <code>send_email</code>) and that a send failure does not affect the 201 response</li>
+<li><code>email.py</code>: existing no-op test (empty api_key → no HTTP call) remains; add test for html
+  parameter being included in the payload</li>
+</ul>
+<hr />
+<h2 id="files-changed">Files Changed<a class="headerlink" href="#files-changed" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Phase</th>
-<th>Label</th>
-<th>Text/border colour</th>
-<th>Background</th>
+<th>File</th>
+<th>Change</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>idle</code></td>
-<td>● idle</td>
-<td><code>#4ade80</code></td>
-<td><code>#0d2318</code></td>
+<td><code>src/agt/email.py</code></td>
+<td>Add <code>html</code> parameter</td>
 </tr>
 <tr>
-<td><code>submitting</code></td>
-<td>● submitting</td>
-<td><code>#facc15</code></td>
-<td><code>#2a2000</code></td>
+<td><code>src/agt/email_templates.py</code></td>
+<td>New — welcome email template</td>
 </tr>
 <tr>
-<td><code>running</code></td>
-<td>● running</td>
-<td><code>#facc15</code></td>
-<td><code>#2a2000</code></td>
+<td><code>src/agt/api/admin.py</code></td>
+<td>Call welcome email in create_key; add resend endpoint</td>
 </tr>
 <tr>
-<td><code>awaiting_approval</code></td>
-<td>● awaiting approval</td>
-<td><code>#c084fc</code></td>
-<td><code>#1e0a2e</code></td>
+<td><code>src/agt/config.py</code></td>
+<td>Add <code>service_url</code> and <code>email_support</code> fields</td>
 </tr>
 <tr>
-<td><code>resuming</code></td>
-<td>● saving…</td>
-<td><code>#facc15</code></td>
-<td><code>#2a2000</code></td>
+<td><code>admin-panel/src/api.ts</code></td>
+<td>Add <code>resendInvite</code> method</td>
 </tr>
 <tr>
-<td><code>completed</code></td>
-<td>● idle</td>
-<td><code>#4ade80</code></td>
-<td><code>#0d2318</code></td>
+<td><code>admin-panel/src/pages/CreateUser.tsx</code></td>
+<td>Show "email sent" confirmation</td>
 </tr>
 <tr>
-<td><code>error</code> / <code>failed</code></td>
-<td>● error</td>
-<td><code>#e05c5c</code></td>
-<td><code>#2a0a0a</code></td>
+<td><code>admin-panel/src/pages/Users.tsx</code></td>
+<td>Add "Resend invite" button per row</td>
+</tr>
+<tr>
+<td><code>NOTES.local.md</code></td>
+<td>Document email secret + gcloud commands</td>
+</tr>
+<tr>
+<td><code>docs/superpowers/specs/2026-05-23-email-welcome-invite-design.md</code></td>
+<td>This file</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Running state header:</strong> The ⚙ settings button is replaced by <code>✕ Cancel</code> while <code>RunPhase</code> is
-<code>submitting</code>, <code>running</code>, or <code>resuming</code>. It reappears (as grey ⚙ or red ⚙) once the phase
-exits back to idle/error.</p>
-<hr />
-<h2 id="11-component-breakdown">11. Component Breakdown<a class="headerlink" href="#11-component-breakdown" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Component</th>
-<th>Responsibility</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>SciAgentSidebar</code></td>
-<td>Root — renders zones 1/2/3, reads <code>RunPhase</code></td>
-</tr>
-<tr>
-<td><code>HeaderBar</code></td>
-<td>Zone 1: title, status pill, settings button (red logic)</td>
-</tr>
-<tr>
-<td><code>HealthStrip</code></td>
-<td>Zone 2: min-required row + optional extras hint</td>
-</tr>
-<tr>
-<td><code>IdleView</code></td>
-<td>Zone 3 idle: query form, dropdowns, collapsible <code>AdvancedFilters</code></td>
-</tr>
-<tr>
-<td><code>AdvancedFilters</code></td>
-<td>Collapsible panel: author, keywords, min-citations, OA, venue</td>
-</tr>
-<tr>
-<td><code>RunningView</code></td>
-<td>Zone 3 running: query echo, pipeline tracker, <code>SourceGrid</code></td>
-</tr>
-<tr>
-<td><code>PipelineTracker</code></td>
-<td>Ordered phase list with icon + elapsed time</td>
-</tr>
-<tr>
-<td><code>SourceGrid</code></td>
-<td>Per-source status list</td>
-</tr>
-<tr>
-<td><code>ReviewView</code></td>
-<td>Zone 3 review: summary bar, <code>PaperList</code>, action bar</td>
-</tr>
-<tr>
-<td><code>PaperCard</code></td>
-<td>Individual paper row: checkbox, title, authors, badges, abstract</td>
-</tr>
-<tr>
-<td><code>DoneView</code></td>
-<td>Zone 3 done: confirmation card + action buttons</td>
-</tr>
-</tbody>
-</table>
-<p>All existing Zotero host API calls stay in <code>src/host/</code> adapters. No <code>Zotero.*</code> calls in leaf
-components.</p>
-<hr />
-<h2 id="12-acceptance-criteria">12. Acceptance Criteria<a class="headerlink" href="#12-acceptance-criteria" title="Permanent link">&para;</a></h2>
-<ul>
-<li>[ ] Three-zone layout renders at all sidebar widths (240px–400px).</li>
-<li>[ ] ⚙ button is red when any of backend URL / Zotero key / LLM key is absent; grey otherwise.</li>
-<li>[ ] ⚙ button opens Zotero preferences pane to the SciAgent tab.</li>
-<li>[ ] Advanced filters panel collapses and expands; state persists within the session.</li>
-<li>[ ] <code>ABC✓</code> spell-check populates the query field in-place.</li>
-<li>[ ] <code>⚑</code> keyword extraction reads the selected Zotero item and populates the query + keywords.</li>
-<li>[ ] Running state shows pipeline phases with live icons; per-source status updates as sources complete.</li>
-<li>[ ] A timed-out source shows red ✕ but does not block the rest of the pipeline.</li>
-<li>[ ] Review list shows title, author/year/venue, stars, source badge, citation count, OA badge.</li>
-<li>[ ] Abstract snippet shown for ★★★ and ★★☆ papers; hidden for ★☆☆.</li>
-<li>[ ] Quick-select buttons (all / ★★★ / none) correctly toggle checkboxes.</li>
-<li>[ ] Collection dropdown in the review summary bar defaults to the search-form collection and can be changed before approving.</li>
-<li>[ ] "Add to Zotero" button label reflects the live checked count.</li>
-<li>[ ] Done screen shows added count, skipped count, and elapsed time.</li>
-<li>[ ] All quality gates pass: <code>npm run lint &amp;&amp; npm run build &amp;&amp; npm run typecheck &amp;&amp; npm run test</code>.</li>
-</ul>
-<hr />
-<h2 id="13-out-of-scope">13. Out of Scope<a class="headerlink" href="#13-out-of-scope" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Dark/light theme toggle (Zotero-native only).</li>
-<li>Settings fields inside the sidebar (stays in Zotero prefs pane).</li>
-<li>Backend API changes (frontend reads existing <code>/status</code>, <code>/run</code>, <code>/resume</code>, <code>/health</code> endpoints).</li>
-<li>Watches, gap-finder, library-doctor UI (future spec).</li>
-</ul>
 
 
 

@@ -10,26 +10,28 @@
       
       
       
-        <link rel="canonical" href="https://adamkrysztopa.github.io/sciagent/">
+        <link rel="canonical" href="https://adamkrysztopa.github.io/sciagent/get-started/user-manual/">
       
       
+        <link rel="prev" href="../keys/">
       
-        <link rel="next" href="get-started/hosted-demo-guide/">
+      
+        <link rel="next" href="../../power-user/advanced-config/">
       
       
         
       
       
-      <link rel="icon" href="assets/images/favicon.png">
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>Home - SciAgent Docs</title>
+        <title>User Manual - SciAgent Docs</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
       
 
@@ -48,7 +50,7 @@
       
     
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -66,7 +68,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#sciagent" class="md-skip">
+        <a href="#sciagent-user-manual" class="md-skip">
           Skip to content
         </a>
       
@@ -82,7 +84,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="SciAgent Docs" class="md-header__button md-logo" aria-label="SciAgent Docs" data-md-component="logo">
+    <a href="../.." title="SciAgent Docs" class="md-header__button md-logo" aria-label="SciAgent Docs" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -102,7 +104,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              User Manual
             
           </span>
         </div>
@@ -192,7 +194,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="SciAgent Docs" class="md-nav__button md-logo" aria-label="SciAgent Docs" data-md-component="logo">
+    <a href="../.." title="SciAgent Docs" class="md-nav__button md-logo" aria-label="SciAgent Docs" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -219,8 +221,6 @@
       
   
   
-    
-  
   
   
     
@@ -233,11 +233,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
         
           
           <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="">
@@ -258,7 +260,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_1">
             <span class="md-nav__icon md-icon"></span>
             
@@ -273,37 +275,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Home
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="." class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -319,59 +294,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#start-here" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Start Here
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#what-is-in-this-docs-site" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What Is in This Docs Site
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#docs-maintenance" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Docs Maintenance
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -388,8 +310,10 @@
       
   
   
+    
   
   
+  
     
     
     
@@ -400,13 +324,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
@@ -427,7 +349,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -445,7 +367,7 @@
   
   
     <li class="md-nav__item">
-      <a href="get-started/hosted-demo-guide/" class="md-nav__link">
+      <a href="../hosted-demo-guide/" class="md-nav__link">
         
   
   
@@ -473,7 +395,7 @@
   
   
     <li class="md-nav__item">
-      <a href="get-started/install/" class="md-nav__link">
+      <a href="../install/" class="md-nav__link">
         
   
   
@@ -501,7 +423,7 @@
   
   
     <li class="md-nav__item">
-      <a href="get-started/keys/" class="md-nav__link">
+      <a href="../keys/" class="md-nav__link">
         
   
   
@@ -526,10 +448,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="get-started/user-manual/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Manual
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -545,6 +494,275 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#5-minutes-from-install-to-first-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5 Minutes from Install to First Search
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5 Minutes from Install to First Search">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#open-the-sciagent-panel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Open the SciAgent panel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#first-run-card-enter-an-llm-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        First-run card: enter an LLM key
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-your-first-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run your first search
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#approve-results-into-zotero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Approve results into Zotero
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-something-goes-wrong" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When Something Goes Wrong
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="When Something Goes Wrong">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#backend-offline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend offline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No results
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#llm-key-not-accepted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LLM key not accepted
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#macos-windows-binary-warning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        macOS / Windows binary warning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-error-codes-in-the-status-panel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common error codes in the status panel
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-you-want-more" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When You Want More
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="When You Want More">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#author-filter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Author filter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#venue-journal-filter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Venue / Journal filter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#seed-doi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Seed DOI
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#year-and-citation-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Year and citation filters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#search-depth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Search depth
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#watch-list-for-recurring-searches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Watch List for recurring searches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#library-doctor-and-gap-finder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Library Doctor and Gap Finder
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#all-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        All environment variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional-provider-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optional provider keys
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -618,7 +836,7 @@
   
   
     <li class="md-nav__item">
-      <a href="power-user/advanced-config/" class="md-nav__link">
+      <a href="../../power-user/advanced-config/" class="md-nav__link">
         
   
   
@@ -646,7 +864,7 @@
   
   
     <li class="md-nav__item">
-      <a href="power-user/manual/" class="md-nav__link">
+      <a href="../../power-user/manual/" class="md-nav__link">
         
   
   
@@ -674,7 +892,7 @@
   
   
     <li class="md-nav__item">
-      <a href="power-user/deployment/" class="md-nav__link">
+      <a href="../../power-user/deployment/" class="md-nav__link">
         
   
   
@@ -763,7 +981,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/api/" class="md-nav__link">
+      <a href="../../reference/api/" class="md-nav__link">
         
   
   
@@ -791,7 +1009,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/providers/" class="md-nav__link">
+      <a href="../../reference/providers/" class="md-nav__link">
         
   
   
@@ -819,7 +1037,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/settings/" class="md-nav__link">
+      <a href="../../reference/settings/" class="md-nav__link">
         
   
   
@@ -847,7 +1065,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/zotero/" class="md-nav__link">
+      <a href="../../reference/zotero/" class="md-nav__link">
         
   
   
@@ -875,7 +1093,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/security/" class="md-nav__link">
+      <a href="../../reference/security/" class="md-nav__link">
         
   
   
@@ -903,7 +1121,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/benchmark/" class="md-nav__link">
+      <a href="../../reference/benchmark/" class="md-nav__link">
         
   
   
@@ -931,7 +1149,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/local-first/" class="md-nav__link">
+      <a href="../../reference/local-first/" class="md-nav__link">
         
   
   
@@ -959,7 +1177,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/core/" class="md-nav__link">
+      <a href="../../reference/core/" class="md-nav__link">
         
   
   
@@ -1048,7 +1266,7 @@
   
   
     <li class="md-nav__item">
-      <a href="project/actionable-plan/" class="md-nav__link">
+      <a href="../../project/actionable-plan/" class="md-nav__link">
         
   
   
@@ -1076,7 +1294,7 @@
   
   
     <li class="md-nav__item">
-      <a href="project/actionable-plan-multiuser/" class="md-nav__link">
+      <a href="../../project/actionable-plan-multiuser/" class="md-nav__link">
         
   
   
@@ -1165,7 +1383,7 @@
   
   
     <li class="md-nav__item">
-      <a href="superpowers/plans/2026-05-22-admin-service-security/" class="md-nav__link">
+      <a href="../../superpowers/plans/2026-05-22-admin-service-security/" class="md-nav__link">
         
   
   
@@ -1193,7 +1411,7 @@
   
   
     <li class="md-nav__item">
-      <a href="superpowers/specs/2026-05-22-admin-service-security-design/" class="md-nav__link">
+      <a href="../../superpowers/specs/2026-05-22-admin-service-security-design/" class="md-nav__link">
         
   
   
@@ -1221,7 +1439,7 @@
   
   
     <li class="md-nav__item">
-      <a href="superpowers/plans/2026-05-22-ui-redesign/" class="md-nav__link">
+      <a href="../../superpowers/plans/2026-05-22-ui-redesign/" class="md-nav__link">
         
   
   
@@ -1249,7 +1467,7 @@
   
   
     <li class="md-nav__item">
-      <a href="superpowers/specs/2026-05-22-ui-redesign-design/" class="md-nav__link">
+      <a href="../../superpowers/specs/2026-05-22-ui-redesign-design/" class="md-nav__link">
         
   
   
@@ -1277,7 +1495,7 @@
   
   
     <li class="md-nav__item">
-      <a href="superpowers/plans/2026-05-23-email-welcome-invite/" class="md-nav__link">
+      <a href="../../superpowers/plans/2026-05-23-email-welcome-invite/" class="md-nav__link">
         
   
   
@@ -1305,7 +1523,7 @@
   
   
     <li class="md-nav__item">
-      <a href="superpowers/specs/2026-05-23-email-welcome-invite-design/" class="md-nav__link">
+      <a href="../../superpowers/specs/2026-05-23-email-welcome-invite-design/" class="md-nav__link">
         
   
   
@@ -1445,7 +1663,7 @@
   
   
     <li class="md-nav__item">
-      <a href="archive/done/actionable-plan-done/" class="md-nav__link">
+      <a href="../../archive/done/actionable-plan-done/" class="md-nav__link">
         
   
   
@@ -1473,7 +1691,7 @@
   
   
     <li class="md-nav__item">
-      <a href="archive/done/actionable-plan-done-2/" class="md-nav__link">
+      <a href="../../archive/done/actionable-plan-done-2/" class="md-nav__link">
         
   
   
@@ -1501,7 +1719,7 @@
   
   
     <li class="md-nav__item">
-      <a href="archive/done/actionable-plan-done-3/" class="md-nav__link">
+      <a href="../../archive/done/actionable-plan-done-3/" class="md-nav__link">
         
   
   
@@ -1529,7 +1747,7 @@
   
   
     <li class="md-nav__item">
-      <a href="archive/done/actionable-plan-done-4/" class="md-nav__link">
+      <a href="../../archive/done/actionable-plan-done-4/" class="md-nav__link">
         
   
   
@@ -1616,7 +1834,7 @@
   
   
     <li class="md-nav__item">
-      <a href="archive/obsolete/next-steps/" class="md-nav__link">
+      <a href="../../archive/obsolete/next-steps/" class="md-nav__link">
         
   
   
@@ -1644,7 +1862,7 @@
   
   
     <li class="md-nav__item">
-      <a href="archive/obsolete/priorities/" class="md-nav__link">
+      <a href="../../archive/obsolete/priorities/" class="md-nav__link">
         
   
   
@@ -1672,7 +1890,7 @@
   
   
     <li class="md-nav__item">
-      <a href="archive/obsolete/zotero-addon-ui-plan/" class="md-nav__link">
+      <a href="../../archive/obsolete/zotero-addon-ui-plan/" class="md-nav__link">
         
   
   
@@ -1700,7 +1918,7 @@
   
   
     <li class="md-nav__item">
-      <a href="archive/obsolete/zotero-addon-expanded-idle-plan/" class="md-nav__link">
+      <a href="../../archive/obsolete/zotero-addon-expanded-idle-plan/" class="md-nav__link">
         
   
   
@@ -1763,35 +1981,251 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#start-here" class="md-nav__link">
+  <a href="#5-minutes-from-install-to-first-search" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Start Here
+        5 Minutes from Install to First Search
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5 Minutes from Install to First Search">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#open-the-sciagent-panel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Open the SciAgent panel
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#what-is-in-this-docs-site" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#first-run-card-enter-an-llm-key" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What Is in This Docs Site
+        First-run card: enter an LLM key
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#docs-maintenance" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#run-your-first-search" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Docs Maintenance
+        Run your first search
       
     </span>
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#approve-results-into-zotero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Approve results into Zotero
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-something-goes-wrong" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When Something Goes Wrong
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="When Something Goes Wrong">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#backend-offline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend offline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No results
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#llm-key-not-accepted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LLM key not accepted
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#macos-windows-binary-warning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        macOS / Windows binary warning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-error-codes-in-the-status-panel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common error codes in the status panel
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-you-want-more" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When You Want More
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="When You Want More">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#author-filter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Author filter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#venue-journal-filter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Venue / Journal filter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#seed-doi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Seed DOI
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#year-and-citation-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Year and citation filters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#search-depth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Search depth
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#watch-list-for-recurring-searches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Watch List for recurring searches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#library-doctor-and-gap-finder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Library Doctor and Gap Finder
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#all-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        All environment variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional-provider-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optional provider keys
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1815,33 +2249,193 @@
   
 
 
-<h1 id="sciagent">SciAgent<a class="headerlink" href="#sciagent" title="Permanent link">&para;</a></h1>
-<p>SciAgent is a federated academic search assistant that queries OpenAlex, Semantic Scholar,
-Crossref, PubMed, arXiv, Europe PMC, BASE, and OpenCitations in a single deterministic plan,
-ranks and deduplicates results, and routes approved papers into your Zotero library through an
-idempotent, approval-gated write path — so nothing lands in Zotero without your explicit sign-off.</p>
-<h2 id="start-here">Start Here<a class="headerlink" href="#start-here" title="Permanent link">&para;</a></h2>
+<h1 id="sciagent-user-manual">SciAgent — User Manual<a class="headerlink" href="#sciagent-user-manual" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>Version 0.2.0 · Zotero-native, approval-gated academic search across 9 free sources.</p>
+</blockquote>
+<hr />
+<h2 id="5-minutes-from-install-to-first-search">5 Minutes from Install to First Search<a class="headerlink" href="#5-minutes-from-install-to-first-search" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>This section assumes the XPI is already installed and the backend binary is running.
+If you have not done that yet, start with <a href="../install/">Installation</a>.</p>
+</blockquote>
+<h3 id="open-the-sciagent-panel">Open the SciAgent panel<a class="headerlink" href="#open-the-sciagent-panel" title="Permanent link">&para;</a></h3>
+<p>In Zotero, go to <strong>Tools → SciAgent</strong>. The sidebar opens on the right side of the Zotero window.</p>
+<p>The status pill at the top of the panel shows the backend connection state:</p>
 <ul>
-<li>New to SciAgent? <a href="get-started/install/">Install and configure the backend and Zotero add-on.</a></li>
-<li>Running your first search? <a href="get-started/user-manual/">Follow the User Manual for a step-by-step walkthrough.</a></li>
-<li>Deploying for a team? <a href="power-user/deployment/">See Deployment and Hosting for server and Docker setup.</a></li>
+<li><strong>Green</strong> — backend is running and reachable.</li>
+<li><strong>Red</strong> — backend is offline. Click <strong>Retry</strong> to reconnect, or check that the
+  binary started correctly (see <a href="#backend-offline">Backend offline</a>).</li>
 </ul>
-<h2 id="what-is-in-this-docs-site">What Is in This Docs Site<a class="headerlink" href="#what-is-in-this-docs-site" title="Permanent link">&para;</a></h2>
+<h3 id="first-run-card-enter-an-llm-key">First-run card: enter an LLM key<a class="headerlink" href="#first-run-card-enter-an-llm-key" title="Permanent link">&para;</a></h3>
+<p>On first launch, SciAgent shows a setup card asking for one LLM API key. Paste any one of:</p>
 <ul>
-<li><strong>Get Started</strong> — installation, API key setup, and the user manual for daily use</li>
-<li><strong>Power User</strong> — advanced configuration, the full configuration and usage reference, and
-  deployment options for self-hosted or team environments</li>
-<li><strong>Reference</strong> — REST API, provider inventory, settings contract, Zotero add-on architecture,
-  security policy, benchmark results, local-first install guide, and the core roadmap</li>
-<li><strong>Project</strong> — the active action plan and the multi-user backend plan</li>
-<li><strong>Plans &amp; Specs</strong> — implementation plans and design specs for in-flight workstreams</li>
-<li><strong>Archive</strong> — completed plans (<code>done/</code>) and superseded or historical notes (<code>obsolete/</code>)</li>
+<li>OpenAI (<code>sk-...</code>)</li>
+<li>Anthropic (<code>sk-ant-...</code>)</li>
+<li>xAI</li>
+<li>Groq (<code>gsk_...</code>)</li>
 </ul>
-<h2 id="docs-maintenance">Docs Maintenance<a class="headerlink" href="#docs-maintenance" title="Permanent link">&para;</a></h2>
-<p>To lint and build the docs locally:</p>
-<div class="highlight"><pre><span></span><code>npx --yes markdownlint-cli2 &quot;README.md&quot; &quot;docs/**/*.md&quot; &quot;.github/**/*.md&quot; &quot;zotero-addon/README.md&quot;
-uv run mkdocs build --strict
-</code></pre></div>
+<p>Click <strong>Save</strong>. SciAgent tests the key and stores it in the add-on preferences.
+For provider-specific instructions see <a href="../keys/">Keys</a>.</p>
+<h3 id="run-your-first-search">Run your first search<a class="headerlink" href="#run-your-first-search" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Type a research question in the search box, for example:
+   <code>transformer-based retrieval augmented generation 2022–2024</code></li>
+<li>Click <strong>Search</strong> (or press Enter).</li>
+<li>SciAgent shows a <strong>search plan</strong> before fetching anything: parsed year filters,
+   exclude terms, active providers, and depth. Review it and click <strong>Confirm</strong> to proceed.</li>
+<li>Results appear as cards showing title, authors, year, citation count, abstract, and
+   which sources contributed to each merged record.</li>
+</ol>
+<h3 id="approve-results-into-zotero">Approve results into Zotero<a class="headerlink" href="#approve-results-into-zotero" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Check the papers you want to save. Uncheck any you want to skip.</li>
+<li>Set a <strong>Collection</strong> name (e.g. <code>RAG Papers</code>). SciAgent creates it if it does not exist.</li>
+<li>Click <strong>Approve</strong>. Each card updates with a write status:</li>
+<li><code>created</code> — new item added to Zotero.</li>
+<li><code>unchanged</code> — item was already in your library; no duplicate created.</li>
+<li><code>failed</code> — see the inline error message.</li>
+</ol>
+<p>Nothing touches your Zotero library until you click Approve.</p>
+<hr />
+<h2 id="when-something-goes-wrong">When Something Goes Wrong<a class="headerlink" href="#when-something-goes-wrong" title="Permanent link">&para;</a></h2>
+<h3 id="backend-offline">Backend offline<a class="headerlink" href="#backend-offline" title="Permanent link">&para;</a></h3>
+<p>The status pill turns red when the backend is not reachable.</p>
+<ol>
+<li>Click <strong>Retry</strong> in the panel. If it stays red, check the terminal or system tray
+   where the backend binary runs.</li>
+<li>If you just installed, the binary may need a one-time OS approval.
+   See <a href="../install/#os-security-warnings">OS Security Warnings</a>.</li>
+<li>Confirm the backend URL in <strong>Preferences → SciAgent</strong> matches where the server started
+   (default: <code>http://localhost:8000</code>).</li>
+</ol>
+<h3 id="no-results">No results<a class="headerlink" href="#no-results" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Check for spelling mistakes — SciAgent does not auto-correct queries.</li>
+<li>Try broader or shorter search terms.</li>
+<li><code>quick</code> depth queries only 2 sources. Switch to <code>balanced</code> or <code>deep</code> in the depth
+  selector before re-running.</li>
+<li>Very recent dates (e.g. "2025 papers") return fewer results by nature.</li>
+</ul>
+<h3 id="llm-key-not-accepted">LLM key not accepted<a class="headerlink" href="#llm-key-not-accepted" title="Permanent link">&para;</a></h3>
+<p>The search plan step requires a working LLM key. If the key is rejected:</p>
+<ul>
+<li>Check that you pasted the full key with no leading/trailing whitespace.</li>
+<li>Verify the key is active in your provider dashboard.</li>
+<li>See <a href="../keys/">Keys</a> for provider-specific troubleshooting.</li>
+</ul>
+<h3 id="macos-windows-binary-warning">macOS / Windows binary warning<a class="headerlink" href="#macos-windows-binary-warning" title="Permanent link">&para;</a></h3>
+<p>The server binary is not yet code-signed. Both Gatekeeper (macOS) and SmartScreen (Windows)
+will block it on first run. Full approval steps are at
+<a href="../install/#os-security-warnings">OS Security Warnings</a>.</p>
+<h3 id="common-error-codes-in-the-status-panel">Common error codes in the status panel<a class="headerlink" href="#common-error-codes-in-the-status-panel" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Meaning</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ERR_PREFLIGHT</code></td>
+<td>Zotero API key lacks write access</td>
+<td>Go to <a href="https://www.zotero.org/settings/keys">zotero.org/settings/keys</a> and enable <strong>Allow write access</strong></td>
+</tr>
+<tr>
+<td><code>ERR_NO_LLM</code></td>
+<td>No LLM key configured</td>
+<td>Open <strong>Preferences → SciAgent → LLM Provider</strong> and add a key</td>
+</tr>
+<tr>
+<td><code>ERR_RATE_LIMIT</code></td>
+<td>Provider throttled the request</td>
+<td>Wait a moment and retry; add <code>AGT_MAILTO</code> or a provider key to raise limits</td>
+</tr>
+<tr>
+<td><code>ERR_CONFLICT</code></td>
+<td>Providers disagreed on a field</td>
+<td>Open the approval dialog to review each conflict before writing</td>
+</tr>
+<tr>
+<td><code>ERR_PORT</code></td>
+<td>Port 8000 already in use</td>
+<td>Restart the backend on a different port and update the URL in preferences</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="when-you-want-more">When You Want More<a class="headerlink" href="#when-you-want-more" title="Permanent link">&para;</a></h2>
+<h3 id="author-filter">Author filter<a class="headerlink" href="#author-filter" title="Permanent link">&para;</a></h3>
+<p>In the sidebar, click the <strong>Authors</strong> chip input and type a name. SciAgent resolves the
+author against OpenAlex and Semantic Scholar and restricts results to that author's
+verified IDs. You can add multiple authors — results match any of them.</p>
+<h3 id="venue-journal-filter">Venue / Journal filter<a class="headerlink" href="#venue-journal-filter" title="Permanent link">&para;</a></h3>
+<p>Click the <strong>Venue</strong> chip input and type a journal or conference name (partial matches work).
+Results are restricted to papers published in matching venues.</p>
+<h3 id="seed-doi">Seed DOI<a class="headerlink" href="#seed-doi" title="Permanent link">&para;</a></h3>
+<p>Paste a DOI into the <strong>Seed DOI</strong> field to anchor a citation-graph search. SciAgent
+expands forward and backward citation links from that paper via OpenCitations and
+Semantic Scholar. Result cards show:</p>
+<ul>
+<li><code>↓ ref</code> — cited by your seed paper.</li>
+<li><code>↑ cites</code> — cites your seed paper.</li>
+</ul>
+<h3 id="year-and-citation-filters">Year and citation filters<a class="headerlink" href="#year-and-citation-filters" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Year range</strong> — set min/year and max/year in the filter bar, or write them inline in
+  your query (e.g. <code>2021–2024</code>). Parsed filters are shown in the search plan before search.</li>
+<li><strong>Min citations</strong> — slide the citation threshold to surface only well-cited work.</li>
+<li><strong>Open access only</strong> — toggle the OA switch to restrict results to open-access papers.</li>
+</ul>
+<h3 id="search-depth">Search depth<a class="headerlink" href="#search-depth" title="Permanent link">&para;</a></h3>
+<p>Select depth in the sidebar before running. The panel shows which providers will be
+queried at each level.</p>
+<table>
+<thead>
+<tr>
+<th>Depth</th>
+<th>Providers queried</th>
+<th>Results per source</th>
+<th>Speed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>quick</code></td>
+<td>OpenAlex, arXiv</td>
+<td>10</td>
+<td>~5 s</td>
+</tr>
+<tr>
+<td><code>balanced</code></td>
+<td>+ Crossref, Europe PMC, DOAJ, PubMed</td>
+<td>25</td>
+<td>~15 s</td>
+</tr>
+<tr>
+<td><code>deep</code></td>
+<td>+ Semantic Scholar, CORE, BASE, OpenCitations</td>
+<td>50</td>
+<td>~30 s</td>
+</tr>
+</tbody>
+</table>
+<h3 id="watch-list-for-recurring-searches">Watch List for recurring searches<a class="headerlink" href="#watch-list-for-recurring-searches" title="Permanent link">&para;</a></h3>
+<p>Click <strong>Save as Watch</strong> from the search plan panel. SciAgent saves the full plan
+(query, filters, depth) and re-runs it on demand. Only papers new since the last
+run are shown — safe to approve repeatedly without creating duplicates.</p>
+<h3 id="library-doctor-and-gap-finder">Library Doctor and Gap Finder<a class="headerlink" href="#library-doctor-and-gap-finder" title="Permanent link">&para;</a></h3>
+<p>Open <strong>Tools → SciAgent → Library Doctor</strong> to scan your Zotero library for missing
+abstracts, broken DOIs, or incomplete metadata. <strong>Gap Finder</strong> takes a collection you
+specify and suggests related papers not yet in your library.</p>
+<h3 id="all-environment-variables">All environment variables<a class="headerlink" href="#all-environment-variables" title="Permanent link">&para;</a></h3>
+<p>For the full list of <code>AGT_*</code> settings (custom LLM models, proxy config, disabled
+providers, timeouts, and more) see <a href="../../power-user/advanced-config/">Advanced Config</a>.</p>
+<h3 id="optional-provider-keys">Optional provider keys<a class="headerlink" href="#optional-provider-keys" title="Permanent link">&para;</a></h3>
+<p>Adding free API keys for Semantic Scholar, PubMed, or CORE raises rate limits and
+unlocks additional data. For the full list and where to get each key see <a href="../keys/">Keys</a>.</p>
 
 
 
@@ -1891,10 +2485,10 @@ uv run mkdocs build --strict
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["navigation.instant", "navigation.sections", "navigation.expand", "content.code.copy"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.sections", "navigation.expand", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>
